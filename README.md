@@ -146,16 +146,6 @@ failure. Execution state persists and survives interruption, so the
 system reconstructs from durable state rather than replaying a prompt
 transcript.
 
-The concrete, code-traced version of this loop — same diagram the
-running app renders on its own Lemon Metrics page
-(`living-world-explorer/src/components/ArchitectureDiagram.tsx`),
-traced directly from the real per-tick stage list
-(`ComparisonIntegratedPolicy.configure()`,
-[`docs/architecture.md`](docs/architecture.md#cognitive-pipeline-per-actor-tick)).
-TransitionGate/Negotiation/World Commit run *inside* Execute, gating
-each action before it mutates shared state — not as steps after
-Compare/Learn. Security/Policy governs the cycle as a boundary, not a
-sequential stage in it.
 
 ```mermaid
 flowchart TD
