@@ -255,39 +255,16 @@ from under an actor's plan, the actor gets a chance to notice and
 rethink before acting on stale reasoning.
 
 **World perturbations — the world drifts and throws surprises on its
-own** (`kernel/society/world.py::WorldModel.perturb`, called from
-`PlanetaryRuntime._run_cycle` in `kernel/society/integration.py`
-before every planetary tick, "to ensure prediction ≠ execution")
-
-Before each cycle, every numeric attribute on every world entity (a
-price, a quantity, a capacity) has a 40% chance of drifting by a small
-random amount, and there's a separate chance a random disruption event
-(`supply_disruption`, `demand_shift`, `equipment_failure`,
-`quality_issue`, `price_change`, `capacity_change`) gets injected into
-the world. How big the drift is and how likely an event is both scale
+own** . How big the drift is and how likely an event is both scale
 with how much has been happening lately — busier, more severe recent
-activity means bigger swings. On top of that, a small, separate chance
-each cycle picks one occupied Space at random and evacuates every
-actor in it to somewhere else, for a random cause (fire, flood,
-structural failure, security incident, chemical spill) —
-`kernel/society/movement_perturbation.py::MovementPerturbationEngine.
-perturb`. The point of both: an actor's plan is never reasoning about
+activity means bigger swings.  an actor's plan is never reasoning about
 a frozen world, and Predict's forecast and Execute's real outcome can
 genuinely diverge — which is exactly what the Compare stage above is
 there to measure.
 
-There's also an operator-driven path: `POST /planet/perturbations`
-lets something outside the simulation (an operator, another system)
-report a real change to a specific entity. That gets queued
-(`kernel/society/perturbation_queue.py::PerturbationQueue`) and
-drained into the world at the start of the next cycle, additive to the
-random drift above, not a replacement for it.
 
 **Deja Vu — replaying an actor's reasoning when its plan gets
-invalidated** (`kernel/pipeline/planning/deja_vu.py::
-replay_affected_actors`, called from the same `_run_cycle`
-immediately after perturbations are applied, only when the queued
-operator-reported perturbations above touched at least one entity)
+invalidated** 
 
 Deja Vu answers one question: "did any actor's standing plan depend on
 something that just changed?" For every actor with a saved plan for a
@@ -295,10 +272,7 @@ goal, it checks whether any of the perturbed entity IDs appear
 anywhere in that plan — if so, the actor's reasoning gets replayed
 from scratch under the now-current world state, toward the same goal,
 using the same planner and context-assembly a normal tick already
-uses. The same keep-vs-replace scoring that decides a normal tick's
-plan (`plan_hysteresis.score_plan`/`decide`) then decides whether the
-fresh reasoning actually diverges enough to replace the saved plan, or
-whether the old plan still holds up and is kept as-is.
+uses. 
 
 Deliberately, Deja Vu never re-executes anything — it only re-decides
 whether the old REASONING is still valid. Re-running Execute here
