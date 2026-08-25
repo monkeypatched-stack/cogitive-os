@@ -14,4 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-A separate commercial license is also available — see LICENSE-ENTERPRISE.md.
+Monkeypatched also offers optional commercial services (enterprise
+world integration, ongoing support, etc.) alongside this open-source
+runtime — see the "CognitiveOS Commercial Services" section of
+README.md. These services do not modify or replace this license; they
+are governed by separate customer agreements, not a second software
+license.

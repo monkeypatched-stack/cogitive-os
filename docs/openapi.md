@@ -11,8 +11,8 @@ way a hand-maintained spec can.
 - `GET /redoc` — ReDoc (readable reference)
 
 **Frozen snapshot:** [`docs/openapi.json`](openapi.json) — captured live
-from a running server on 2026-08-03 (`info.version: 2.0.0`,
-277 paths / 319 operations, 100% have a `summary`). Regenerate with:
+from a running server on 2026-08-26 (`info.version: 2.0.0`,
+337 paths / 384 operations, 100% have a `summary`). Regenerate with:
 
 ```bash
 curl -s http://localhost:8031/openapi.json | python3 -m json.tool > docs/openapi.json

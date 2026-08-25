@@ -30,3 +30,39 @@ docs/adr/0018-todo-agent-architecture-decision.md
 
 # Accumulated local world-tensor state (MB_WORLD_TENSOR_PATH)
 .data/
+
+# Release hygiene pass (v0.1.0) — defense in depth. .venv/venv/
+# node_modules already exclude themselves via their own generated
+# .gitignore files; listed here too so intent is visible without
+# relying on that.
+.venv/
+venv/
+venv_test/
+node_modules/
+
+# Secrets / credentials — never committed, regardless of how they
+# land locally (env files above already covered .env variants).
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+.aws/
+.ssh/
+credentials.json
+secrets.json
+secrets.yaml
+secrets.yml
+*.local.yaml
+*.local.yml
+
+# OS / editor / coverage junk
+.DS_Store
+.idea/
+.vscode/
+coverage.xml
+htmlcov/
+*.log

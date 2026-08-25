@@ -19,29 +19,38 @@ Last evaluated: 2026-08-03, against `beta-0.0.1` after Gates 3-11.
       under `/api/v1/...` (`docs/openapi.json`). Caveat: `/health`,
       `/live`, `/ready`, `/metrics` are intentionally unversioned
       (infra endpoints, not API surface) — documented, not an oversight.
-- [ ] **No TODOs in production paths** — **NOT MET.** 25 real `# TODO`
-      comments in `src/monkey_brain/` (confirmed via grep, 2026-08-03),
-      including known DRY violations across `/simulate`, `/compare`,
-      `/execute` in `api/routes/predict.py`, and a `kernel.py:564`
-      comment noting an entire subsystem ("Mem0 never exists so this
-      will never work") is dead on arrival. Per this project's standing
-      practice, these are left in place (not deleted to make this box
-      checkable) until each is actually resolved.
+- [ ] **No TODOs in production paths** — **NOT MET, but improved.**
+      11 real `# TODO` comments in `src/monkey_brain/` (re-checked
+      2026-08-26; was 25 on 2026-08-03 — some real resolution happened,
+      not just drift). The `kernel.py:564` Mem0 comment cited in the
+      2026-08-03 evaluation as "an entire subsystem dead on arrival" no
+      longer reads that way — it now explicitly documents the disconnected
+      Mem0Resource as **expected, not a bug** ("Mem0 is not configured in
+      this deployment, so this resource never connects... Registered
+      anyway... so /health has something [to report]"). That example was
+      stale as of this re-check; the remaining 11 TODOs were not
+      individually re-audited here. Per this project's standing practice,
+      these are left in place until each is actually resolved.
 
 ## Quality
 
-- [ ] **Unit test target met** — **NO FORMAL TARGET EXISTS.** 130 real
-      unit test files under `tests/unit/`. No coverage threshold is
+- [ ] **Unit test target met** — **NO FORMAL TARGET EXISTS.** 153 real
+      unit test files under `tests/unit/` (re-checked 2026-08-26; was
+      130 on 2026-08-03 — the suite has grown, not shrunk). No coverage
+      threshold is
       configured anywhere (`pyproject.toml`, `pytest.ini`, `.coveragerc`
       — checked, none exist). Can't be "met" against a target that was
       never defined; defining one is a prerequisite to ever checking
       this box honestly.
 - [ ] **Integration test target met** — same gap as above; no target
       defined.
-- [ ] **Scenario suite passes** — **UNVERIFIED BY ME.** 60 real
-      scenario test files (`tests/scenarios/test_mb3000`–`mb3060`,
-      the actual e-commerce customer-journey suite — registration
-      through delivery, returns, and edge cases). This session has
+- [ ] **Scenario suite passes** — **UNVERIFIED BY ME.** 56 files match
+      `test_mb30*.py` under `tests/scenarios/` (re-checked 2026-08-26;
+      the "60" and "test_mb3000–mb3060" range in the 2026-08-03
+      evaluation was already an approximation, close but not exact); 84
+      test files total exist under `tests/scenarios/`, so the mb30xx
+      e-commerce-journey sequence is a subset, not the whole suite. This
+      session has
       never run `pytest` against them — standing project instruction is
       "fix code only, never execute test runs." What IS verified this
       session is a separate, REST-level regression sweep
@@ -103,8 +112,9 @@ Last evaluated: 2026-08-03, against `beta-0.0.1` after Gates 3-11.
 
 ## Documentation
 
-- [x] **API documentation** — live OpenAPI 3.1 spec, 277 paths / 319
-      operations, 100% have summaries (`docs/openapi.md`).
+- [x] **API documentation** — live OpenAPI 3.1 spec, 337 paths / 384
+      operations (re-verified 2026-08-26 against a running server; was
+      277/319 on 2026-08-03), 100% have summaries (`docs/openapi.md`).
 - [x] **Deployment guide** — `docs/deployment.md`.
 - [x] **Runbooks** — `docs/troubleshooting.md`, 10 entries, all real
       incidents actually hit and diagnosed this build, not generic

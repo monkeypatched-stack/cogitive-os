@@ -84,8 +84,9 @@ duplicates — don't merge them:
   architecture-as-code documentation. Referenced by the `somatic`
   umbrella chart for a different purpose entirely.
 
-The real chart's `templates/services.yaml` is shared across all 24
-services in `values.yaml`'s `services.*` map — only `agentos` has a
+The real chart's `templates/services.yaml` is shared across all 23
+services in `values.yaml`'s `services.*` map (re-verified 2026-08-26;
+was previously stated as 24) — only `agentos` has a
 real `/live` endpoint, so the liveness path is per-service-configurable
 (`livenessPath`, defaulting to `/health`) rather than a blanket switch,
 which would 404-restart-loop every other service.

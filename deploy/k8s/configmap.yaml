@@ -16,10 +16,14 @@ data:
   MB_WORLD_TENSOR: "true"
   MB_WORLD_TENSOR_PATH: "/data/world_tensor.json"
   AGENTOS_AUTH_REQUIRED: "true"
-  # Was unset here — require_opa() (api/dependencies.py) fails OPEN
-  # (default_allow=True) whenever OPA_URL is unset or unreachable, so
-  # every require_opa(...) check on every route silently allowed
-  # everything in this deployment until opa.yaml's real OPA service
-  # existed for this to point at.
+  # Was unset here — require_opa()/evaluate_full() (services.common.opa,
+  # api/routes/actors.py) uses default_allow (fails OPEN) when OPA_URL is
+  # unset, so every require_opa(...) check on every route silently
+  # allowed everything in this deployment until opa.yaml's real OPA
+  # service existed for this to point at. Setting OPA_URL still matters
+  # even now that OPA-unreachable/erroring fails CLOSED (Doot audit
+  # P1-6, kernel/governance.py + services.common.opa) — that fix only
+  # covers "configured but broken," not "never configured at all," which
+  # is what leaving this unset would still mean.
   OPA_URL: "http://opa:8181"
   LOG_LEVEL: "INFO"

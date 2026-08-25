@@ -49,12 +49,19 @@ previously-stored key permanently undecryptable, by design.
 `POST /api/v1/agentos/planet/tick` can take 30-90+ seconds and, under
 load, a client-side 30s timeout will see a `ReadTimeout` (confirmed
 live, reproduced twice in this session's Gate 9 regression sweep — once
-on `/planet/tick` itself, once on `POST /actors/{id}/execute`). Root
-cause (`docs/adr/016-performance-gate9.md`): `GeographicEntityRuntime.tick()`
-(`kernel/geography/runtime.py`) awaits each present actor's ticker
-**serially**, and each actor tick invokes the LLM planner
-(~3s/actor locally against Ollama). Cycle time is
-`O(actor_count)`, not `O(1)`.
+on `/planet/tick` itself, once on `POST /actors/{id}/execute`).
+
+**Update**: `GeographicEntityRuntime.tick()` (`kernel/geography/runtime.py`)
+no longer awaits same-Space occupants serially — per `docs/adr/019-
+runtime-performance-audit.md`, occupants of one Space are now ticked
+concurrently via `asyncio.gather` (each occupant only reads state already
+settled before the gather and only writes its own keyed entries, so this
+is safe). What's still serial: the loop across **child geography entities**
+(`Planet → Country → City → Space`) — one Space fully finishes before the
+next starts. So cycle time is no longer strictly `O(actor_count)`; it's
+closer to `O(spaces) × O(slowest actor in that space)`, each actor tick
+still ~3s locally against Ollama. Still slow at scale, just not for the
+reason originally written here.
 
 At scale this is a real livelock risk, not just slowness: the server's
 own 300s auto-tick can fire while a previous tick is still running,
@@ -89,15 +96,14 @@ detail in [`deployment.md`](deployment.md).
 
 ## Health folder in the Postman collection fails against port 8000
 
-The two `[Health]` entries in
-`MonkeyBrain_2.0_Runtime_Gateway.postman_collection.json` hit
-`localhost:8000`, not `localhost:8031` — a pre-existing, known-wrong
-hardcoded port in the source collection, not a server bug. Depending on
-what else is running locally (Docker Desktop's own proxy, another
-service on 8000), this shows up as either connection-refused or a
-generic `404 {"message":"no Route matched..."}` — both are the same
-underlying "wrong port" issue, just different symptoms depending on
-what (if anything) happens to be listening on 8000 that day.
+**Fixed** — re-checked `MonkeyBrain_2.0_Runtime_Gateway.postman_collection.json`
+directly: every `localhost:*` reference in the collection (13 total,
+including both `[Health]` entries) now points at `localhost:8031`. Zero
+`8000` references remain. If you still see a connection-refused or
+`404 {"message":"no Route matched..."}` against this collection, it's a
+new/different issue, not this pre-existing hardcoded-port bug — don't
+assume it's the same root cause without re-checking the collection file
+yourself.
 
 ## Simulate and Compare return 422 missing graph field
 
@@ -108,6 +114,13 @@ pre-existing route/schema mismatch (not introduced by Gates 3-10) — it
 shows up consistently across every regression sweep this session
 (2 of the same 4-6 recurring failures). Not yet root-caused or fixed;
 flagged here so it isn't re-investigated as new each time.
+
+**Unverified update**: `predict.py`'s own inline comments now describe
+handling a "missing execution graph" case by returning `SimulateResponse`
+with an empty graph/answer (HTTP 200), which reads like a related fix —
+but this is inferred from a comment, not confirmed against a live 422
+repro. Re-test against a running server before trusting either this note
+or the original entry above.
 
 ## World validation blocks writes with accumulated test data
 

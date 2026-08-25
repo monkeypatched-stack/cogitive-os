@@ -10,7 +10,7 @@ live across Gates 3-9 of this build.
 ## Layering
 
 ```
-API layer        src/monkey_brain/api/routes/*.py   (41 route modules, 277 paths)
+API layer        src/monkey_brain/api/routes/*.py   (45 route modules, 337 paths)
                         │
 Kernel            src/monkey_brain/kernel/*          (29 subsystems — see below)
                         │
@@ -213,7 +213,7 @@ found and fixed via an actual `docker build`, not static review).
 
 ## API surface
 
-277 paths / 319 operations, all documented — see
+337 paths / 384 operations, all documented — see
 [`openapi.md`](openapi.md) for the live and frozen OpenAPI 3.1.0 spec,
 and [`examples.md`](examples.md) for real request/response pairs.
 
