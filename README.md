@@ -18,6 +18,9 @@ tick — not reconstructed fresh per call. See
 
 FastAPI entry point: `src/monkey_brain/api/main.py`, port 8031.
 
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/29fecbd3-8922-45d7-b80d-eb351a1a9fea" />
+
+
 ## Documentation
 
 - [Install & Run](docs/install-and-run.md) — clone, install (Docker
