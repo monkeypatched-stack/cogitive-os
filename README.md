@@ -296,20 +296,19 @@ produces differs.
 ### Two actors, one contended resource
 
 Now suppose Priya and another actor both try to buy the **last unit**
-of the same product at close to the same time (`test_gate002b`, a real
-regression test in `tests/scenarios/test_transition_gate.py`). Neither
+of the same product at close to the same time . Neither
 actor's local belief knows about the other's in-flight purchase — they
 only find out through the gate:
 
-- Both proposals reach `TransitionGate.evaluate()`. Whichever proposal
+- Both proposals reach  . Whichever proposal
   the gate processes first sees the reservation succeed and commits.
 - The second proposal's inventory read now reflects the first
-  actor's live claim (`test_gate002a`) — the gate never lets a second
+  actor's live claim the gate never lets a second
   buyer commit against stock that's already spoken for.
 - If the two actors' claims are for genuinely *incompatible* resources
   under a declared constraint (not just a stock race), the gate pauses
   the losing action for negotiation instead of silently failing it —
-  `PendingNegotiation` holds it open until it's accepted or rejected,
+  holds it open until it's accepted or rejected,
   and only an accepted negotiation resumes into a real commit.
 
 The world is never oversold and never double-committed — one of those
@@ -319,13 +318,13 @@ negotiation, never both succeeding against the same unit.
 ### Actors sharing a resource on purpose
 
 Contention isn't always a race — sometimes actors are *meant* to share.
-A household budget (`create_shared_budget`) works the opposite way
-from the contention case: Priya and a family member spending against
+A household budget works the opposite way from the contention case: 
+Priya and a family member spending against
 the same budget don't need to negotiate every purchase — the budget
 tracks cross-actor accounting, reserves against the ceiling per
 purchase, and reconciles on completion or failure, so two genuinely
-compatible spends both commit with no artificial negotiation
-(`test_gate004`), while a spend that would actually break the shared
+compatible spends both commit with no artificial negotiation, 
+while a spend that would actually break the shared
 ceiling still gets caught the same way stock contention does.
 
 This is the same TransitionGate mechanism the diagram above shows —
