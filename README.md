@@ -201,6 +201,101 @@ flowchart TD
     class SEC security
 ```
 
+### Learning: the Comparator Loss and the Transition Model
+
+Compare, Learn, and LearnTransitions in the diagram above are two real,
+live computations — both traced to actual call sites in the running
+pipeline, not to the separate, disconnected sparse-tensor implementation
+described at the end of this section.
+
+**Compare — the loss hierarchy**
+(`kernel/comparator_runtime.py::ComparatorRuntime`, called from the
+Compare stage in `kernel/pipeline/comparison/integration.py`)
+
+Every tick, the Comparator diffs the Predict stage's forecast against
+what Execute actually did — as a graph (nodes/edges), execution order,
+world state, operations, events, artifacts, latency, reward, and
+confidence — and folds each diff into one weighted score:
+
+```python
+comparison_score = round(
+    max(0.0, 1.0 - (
+        ((1.0 - graph_diff["score"])           * 0.227)
+        + ((1.0 - execution_order_diff["score"]) * 0.136)
+        + ((1.0 - state_diff["score"])           * 0.182)
+        + ((1.0 - operation_diff["score"])       * 0.091)
+        + ((1.0 - event_diff["score"])           * 0.091)
+        + ((1.0 - artifact_diff["score"])        * 0.091)
+        + (latency_diff                          * 0.0)
+        + (reward_diff                           * 0.091)
+        + (confidence_diff                       * 0.091)
+    )), 4,
+)
+
+topology_loss  = round(1.0 - ((graph_diff["score"] * 0.5) + (execution_order_diff["score"] * 0.5)), 4)
+epistemic_loss = round(1.0 - ((state_diff["score"] * 0.4) + (operation_diff["score"] * 0.2)
+                               + (event_diff["score"] * 0.2) + ((1.0 - confidence_diff) * 0.2)), 4)
+world_loss     = round(min(1.0, topology_loss + epistemic_loss), 4)
+policy_loss    = round(reward_diff, 4)
+actor_loss     = round(min(1.0, world_loss * 0.7 + policy_loss * 0.3), 4)
+```
+
+`latency_diff`, `reward_diff`, and `confidence_diff` are each a
+normalized numeric diff — `|expected − observed| / max(|expected|,
+|observed|, 1.0)`, clamped to `[0, 1]`. `topology_loss` is "did the plan
+execute the shape I predicted"; `epistemic_loss` is "was I right about
+the world"; `world_loss` combines them; `policy_loss` is reward
+miscalibration; `actor_loss` is the actor's overall miss, weighted 70%
+world / 30% policy.
+
+**Learn / LearnTransitions — the exponential moving average**
+(`kernel/pipeline/prediction/transitions.py::TransitionModel.
+learn_from_execution`, invoked from `kernel/pipeline/comparison/
+integration.py::_learn_transitions`)
+
+This is the module that backs the Predict stage — `kernel/pipeline/
+prediction/`, not the separate `kernel/predict/` package below. For
+each executed action the Comparator supplied real per-node evidence
+for (an unexecuted or unevidenced step is skipped, never learned as a
+failure), the per-`(goal_key, action_key)` transition probability is
+blended:
+
+```python
+observed_prob = min(0.95, confidence) if success else max(0.05, 1.0 - confidence)
+if confidence < 0.3:
+    observed_prob = 0.5  # low-confidence observation: stay neutral
+
+blended_p = old_p * (1 - learning_rate) + observed_prob * learning_rate
+```
+
+Called with `confidence=0.85` and `learning_rate=0.15` — a flat, high
+confidence in the *observation* (gated on the Comparator having a real
+verified record), independent of how accurate the prior prediction
+was. A first-ever observation for a `(goal_key, action_key)` pair
+seeds a new transition instead of blending into one.
+
+**What `SparseTransitionTensor` is, and why it's not in this loop**
+
+`kernel/compile/tensor.py::SparseTransitionTensor` is a separate,
+fully-implemented sparse tensor `W[d, i, j, f]` (domain × from-state ×
+to-state × feature) with its own genuine Bellman/Q-learning update:
+
+```python
+# Q ← Q + α(r + γ·maxₖ Q(j→k) − Q)
+nq = next_best_q if next_best_q is not None else self._max_out_q(j)
+cell.q += self._lr * (reward + self._discount * nq - cell.q)
+```
+
+(`learning_rate=0.1`, `discount=0.95` by default.) Its only caller is
+`kernel/compile/society_runtime.py::CompileSocietyRuntime`, which is
+never instantiated anywhere in the real boot path (`api/main.py` →
+`PlanetaryRuntime` → `SocietyRuntime` builds the live pipeline above,
+not `CompileSocietyRuntime`) — confirmed by grepping the whole tree
+for a real constructor call and finding none outside the class's own
+definition. It's real, working code sitting in a parallel `kernel/
+compile/` architecture the live runtime doesn't wire in — the loss and
+EMA formulas above are what actually runs.
+
 ## Example: Buying Groceries
 
 The reference domain shipped with CognitiveOS is grocery commerce
