@@ -201,6 +201,91 @@ flowchart TD
     class SEC security
 ```
 
+## Example: Buying Groceries
+
+The reference domain shipped with CognitiveOS is grocery commerce
+(`kernel/domains/grocery.py`) — chosen precisely because "buy milk" is
+simple enough to follow end to end while still exercising every layer
+above: grounding, planning, gated execution, negotiation, and
+learning. This walks through what actually happens, at each layer,
+using the same seeded demo actor (Priya Sharma) the
+[Install & Run guide](docs/install-and-run.md) has you run yourself.
+
+### One actor, the world, and a single request
+
+Priya asks: *"Buy 2 liters of milk."* Her actor doesn't treat that as
+a one-shot function call — it runs the full loop:
+
+1. **Observe / Believe** — her cognitive tick grounds against the
+   real Knowledge Graph: which stores carry milk, current price,
+   current stock, her existing beliefs and standing goals.
+2. **Plan** — the LLM planner produces a concrete step sequence:
+   `ProductSelection → OrderCreation → PaymentConfirmation → Payment →
+   OrderConfirmation → Delivery`.
+3. **Predict** — before anything executes, the runtime forecasts the
+   expected outcome of that plan against the *pre-execution* world
+   state — a real forecast, not a look back at what already happened.
+4. **Decide** — accepts the fresh plan (or, on a later request, keeps
+   the standing plan for this goal if nothing about the world has
+   invalidated it).
+5. **Execute** — each step runs in order. `OrderCreation` doesn't just
+   write an order — it proposes a transition through **TransitionGate**
+   first: the actual inventory reservation (`try_reserve`) only
+   commits if the gate clears it. `Payment` debits Priya's wallet the
+   same way — proposed, gated, then committed, never the reverse.
+6. **Observe Outcome / Compare** — the real result (order created,
+   payment captured, 1 fewer unit of milk in stock) is compared
+   against what was predicted in step 3.
+7. **Learn** — the comparison updates Priya's learned model of this
+   specific action (`ProductSelection` → milk, this store), so a
+   future prediction for the same kind of purchase is better
+   calibrated, and updates the shared PolicyStore's Q-value for that
+   (goal, action) pair.
+
+Nothing here is scripted per-request. The same loop runs whether Priya
+asks for milk, eggs, bread, or ground coffee — only the plan the LLM
+produces differs.
+
+### Two actors, one contended resource
+
+Now suppose Priya and another actor both try to buy the **last unit**
+of the same product at close to the same time (`test_gate002b`, a real
+regression test in `tests/scenarios/test_transition_gate.py`). Neither
+actor's local belief knows about the other's in-flight purchase — they
+only find out through the gate:
+
+- Both proposals reach `TransitionGate.evaluate()`. Whichever proposal
+  the gate processes first sees the reservation succeed and commits.
+- The second proposal's inventory read now reflects the first
+  actor's live claim (`test_gate002a`) — the gate never lets a second
+  buyer commit against stock that's already spoken for.
+- If the two actors' claims are for genuinely *incompatible* resources
+  under a declared constraint (not just a stock race), the gate pauses
+  the losing action for negotiation instead of silently failing it —
+  `PendingNegotiation` holds it open until it's accepted or rejected,
+  and only an accepted negotiation resumes into a real commit.
+
+The world is never oversold and never double-committed — one of those
+two proposals either loses the race honestly, or gets a real
+negotiation, never both succeeding against the same unit.
+
+### Actors sharing a resource on purpose
+
+Contention isn't always a race — sometimes actors are *meant* to share.
+A household budget (`create_shared_budget`) works the opposite way
+from the contention case: Priya and a family member spending against
+the same budget don't need to negotiate every purchase — the budget
+tracks cross-actor accounting, reserves against the ceiling per
+purchase, and reconciles on completion or failure, so two genuinely
+compatible spends both commit with no artificial negotiation
+(`test_gate004`), while a spend that would actually break the shared
+ceiling still gets caught the same way stock contention does.
+
+This is the same TransitionGate mechanism the diagram above shows —
+what differs is only what the proposed transition touches: exclusive
+stock triggers contention, a shared budget's own accounting doesn't,
+and the gate is what tells the two cases apart before either commits.
+
 ## Feature Set
 
 Current architecture and qualification status — consolidated
