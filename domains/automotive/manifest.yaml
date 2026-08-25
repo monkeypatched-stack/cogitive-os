@@ -1,0 +1,32 @@
+name: automotive
+version: "0.1.0"
+description: "Automotive bounded context — vehicle manufacturing, dealer management, connected vehicles"
+bounded_context:
+  name: automotive
+  aggregates:
+    - Vehicle
+    - Dealer
+    - ServiceRecord
+    - Telemetry
+    - Order
+  entities:
+    - Vehicle
+    - Dealer
+    - ServiceRecord
+    - Telemetry
+    - Order
+    - Component
+    - Recall
+  value_objects:
+    - VehicleStatus
+    - DealerTier
+    - ServiceType
+    - TelemetryAlert
+  events:
+    - VehicleAssembled
+    - VehicleDelivered
+    - ServiceCompleted
+    - TelemetryAlert
+    - RecallIssued
+    - OrderPlaced
+    - OrderFulfilled

@@ -1,0 +1,77 @@
+capability:
+  name: ci_static_analysis
+  id: cap-ci-static-001
+  platform: Pipeline/CI
+  description: Runs ruff, mypy static analysis via OpenClaw/n8n with local fallback
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-28'
+  review_date: '2026-12-28'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - pipeline
+  - ci
+  - static-analysis
+  - linting
+  references:
+  - src/cerebellum/capabilities/pipeline/pipeline.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/ci_static_analysis
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: analyze
+  method: POST
+  path: /analyze
+  description: Run static analysis
+  required_params:
+  - target
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

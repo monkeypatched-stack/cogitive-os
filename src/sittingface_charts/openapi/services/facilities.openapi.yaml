@@ -1,0 +1,4445 @@
+openapi: 3.1.0
+info:
+  title: facilities API
+  description: MonkeyBrain facilities service API
+  version: 1.0.0
+paths:
+  /api/v1/plants/:
+    get:
+      tags:
+      - Plants
+      summary: List Plants
+      operationId: list_plants_api_v1_plants__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - name: type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Type
+      - name: country
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+      - name: timezone
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Timezone
+      - name: manager
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manager
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlantResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Plants
+      summary: Create Plant
+      operationId: create_plant_api_v1_plants__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustrialPlantCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialPlantResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/plants/{plant_id}/lines:
+    get:
+      tags:
+      - Plants
+      summary: List Plant Lines
+      operationId: list_plant_lines_api_v1_plants__plant_id__lines_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndustrialLineResponse'
+                title: Response List Plant Lines Api V1 Plants  Plant Id  Lines Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/plants/{plant_id}/stages:
+    get:
+      tags:
+      - Plants
+      summary: List Plant Stages
+      operationId: list_plant_stages_api_v1_plants__plant_id__stages_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndustrialStageResponse'
+                title: Response List Plant Stages Api V1 Plants  Plant Id  Stages
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/plants/{plant_id}/machines:
+    get:
+      tags:
+      - Plants
+      summary: List Plant Machines
+      operationId: list_plant_machines_api_v1_plants__plant_id__machines_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PharmaceuticalMachineResponse'
+                title: Response List Plant Machines Api V1 Plants  Plant Id  Machines
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/plants/{plant_id}/equipment:
+    get:
+      tags:
+      - Plants
+      summary: List Plant Equipment
+      operationId: list_plant_equipment_api_v1_plants__plant_id__equipment_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PharmaceuticalEquipmentResponse'
+                title: Response List Plant Equipment Api V1 Plants  Plant Id  Equipment
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/plants/{plant_id}:
+    get:
+      tags:
+      - Plants
+      summary: Get Plant
+      operationId: get_plant_api_v1_plants__plant_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialPlantResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Plants
+      summary: Update Plant
+      operationId: update_plant_api_v1_plants__plant_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustrialPlantUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialPlantResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Plants
+      summary: Delete Plant
+      operationId: delete_plant_api_v1_plants__plant_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lines/:
+    get:
+      tags:
+      - Lines
+      summary: List Lines
+      operationId: list_lines_api_v1_lines__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLineResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Lines
+      summary: Create Line
+      operationId: create_line_api_v1_lines__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustrialLineCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialLineResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lines/by-plant/{plant_id}:
+    get:
+      tags:
+      - Lines
+      summary: List Lines By Plant
+      operationId: list_lines_by_plant_api_v1_lines_by_plant__plant_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndustrialLineResponse'
+                title: Response List Lines By Plant Api V1 Lines By Plant  Plant Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lines/{line_id}/stages:
+    get:
+      tags:
+      - Lines
+      summary: List Line Stages
+      operationId: list_line_stages_api_v1_lines__line_id__stages_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Line Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndustrialStageResponse'
+                title: Response List Line Stages Api V1 Lines  Line Id  Stages Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lines/{line_id}/workstations:
+    get:
+      tags:
+      - Lines
+      summary: List Line Workstations
+      operationId: list_line_workstations_api_v1_lines__line_id__workstations_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Line Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkstationResponse'
+                title: Response List Line Workstations Api V1 Lines  Line Id  Workstations
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lines/{line_id}:
+    get:
+      tags:
+      - Lines
+      summary: Get Line
+      operationId: get_line_api_v1_lines__line_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Line Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialLineResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Lines
+      summary: Update Line
+      operationId: update_line_api_v1_lines__line_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Line Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustrialLineUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialLineResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Lines
+      summary: Delete Line
+      operationId: delete_line_api_v1_lines__line_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Line Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/stages/:
+    get:
+      tags:
+      - Stages
+      summary: List Stages
+      operationId: list_stages_api_v1_stages__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStageResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Stages
+      summary: Create Stage
+      operationId: create_stage_api_v1_stages__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustrialStageCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialStageResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/stages/by-circuit/{circuit_id}:
+    get:
+      tags:
+      - Stages
+      summary: List Stages By Circuit
+      operationId: list_stages_by_circuit_api_v1_stages_by_circuit__circuit_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: circuit_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Circuit Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndustrialStageResponse'
+                title: Response List Stages By Circuit Api V1 Stages By Circuit  Circuit
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/stages/by-line/{line_id}:
+    get:
+      tags:
+      - Stages
+      summary: List Stages By Line
+      operationId: list_stages_by_line_api_v1_stages_by_line__line_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Line Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndustrialStageResponse'
+                title: Response List Stages By Line Api V1 Stages By Line  Line Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/stages/by-plant/{plant_id}:
+    get:
+      tags:
+      - Stages
+      summary: List Stages By Plant
+      operationId: list_stages_by_plant_api_v1_stages_by_plant__plant_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IndustrialStageResponse'
+                title: Response List Stages By Plant Api V1 Stages By Plant  Plant
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/stages/{stage_id}/workstations:
+    get:
+      tags:
+      - Stages
+      summary: List Stage Workstations
+      operationId: list_stage_workstations_api_v1_stages__stage_id__workstations_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: stage_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Stage Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkstationResponse'
+                title: Response List Stage Workstations Api V1 Stages  Stage Id  Workstations
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/stages/{stage_id}:
+    get:
+      tags:
+      - Stages
+      summary: Get Stage
+      operationId: get_stage_api_v1_stages__stage_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: stage_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Stage Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialStageResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Stages
+      summary: Update Stage
+      operationId: update_stage_api_v1_stages__stage_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: stage_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Stage Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustrialStageUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndustrialStageResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Stages
+      summary: Delete Stage
+      operationId: delete_stage_api_v1_stages__stage_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: stage_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Stage Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workstations/:
+    get:
+      tags:
+      - Workstations
+      summary: List Workstations
+      operationId: list_workstations_api_v1_workstations__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkstationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Workstations
+      summary: Create Workstation
+      operationId: create_workstation_api_v1_workstations__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkstationCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkstationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workstations/by-line/{line_id}:
+    get:
+      tags:
+      - Workstations
+      summary: List Workstations By Line
+      operationId: list_workstations_by_line_api_v1_workstations_by_line__line_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Line Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkstationResponse'
+                title: Response List Workstations By Line Api V1 Workstations By Line  Line
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workstations/by-stage/{stage_id}:
+    get:
+      tags:
+      - Workstations
+      summary: List Workstations By Stage
+      operationId: list_workstations_by_stage_api_v1_workstations_by_stage__stage_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: stage_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Stage Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkstationResponse'
+                title: Response List Workstations By Stage Api V1 Workstations By
+                  Stage  Stage Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workstations/{workstation_id}/machines:
+    get:
+      tags:
+      - Workstations
+      summary: List Workstation Machines
+      operationId: list_workstation_machines_api_v1_workstations__workstation_id__machines_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PharmaceuticalMachineResponse'
+                title: Response List Workstation Machines Api V1 Workstations  Workstation
+                  Id  Machines Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workstations/{workstation_id}/equipment:
+    get:
+      tags:
+      - Workstations
+      summary: List Workstation Equipment
+      operationId: list_workstation_equipment_api_v1_workstations__workstation_id__equipment_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PharmaceuticalEquipmentResponse'
+                title: Response List Workstation Equipment Api V1 Workstations  Workstation
+                  Id  Equipment Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workstations/bottlenecks:
+    get:
+      tags:
+      - Workstations
+      summary: List Bottlenecks
+      operationId: list_bottlenecks_api_v1_workstations_bottlenecks_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: line_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Optionally scope to a specific line
+          title: Line Id
+        description: Optionally scope to a specific line
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkstationResponse'
+                title: Response List Bottlenecks Api V1 Workstations Bottlenecks Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workstations/{workstation_id}:
+    get:
+      tags:
+      - Workstations
+      summary: Get Workstation
+      operationId: get_workstation_api_v1_workstations__workstation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkstationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Workstations
+      summary: Update Workstation
+      operationId: update_workstation_api_v1_workstations__workstation_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkstationUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkstationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Workstations
+      summary: Delete Workstation
+      operationId: delete_workstation_api_v1_workstations__workstation_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/locations/:
+    get:
+      tags:
+      - Locations
+      summary: List Locations
+      description: List all locations with filtering and pagination.
+      operationId: list_locations_api_v1_locations__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 20
+          title: Page Size
+        description: Items per page
+      - name: location_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by location type
+          title: Location Type
+        description: Filter by location type
+      - name: parent_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by parent ID
+          title: Parent Id
+        description: Filter by parent ID
+      - name: level
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: Filter by hierarchy level
+          title: Level
+        description: Filter by hierarchy level
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Locations
+      summary: Create Location
+      description: Create a new location.
+      operationId: create_location_api_v1_locations__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/locations/{location_id}:
+    get:
+      tags:
+      - Locations
+      summary: Get Location
+      description: Get a specific location by ID.
+      operationId: get_location_api_v1_locations__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - Locations
+      summary: Update Location
+      description: Update a location.
+      operationId: update_location_api_v1_locations__location_id__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Locations
+      summary: Delete Location
+      description: Delete a location.
+      operationId: delete_location_api_v1_locations__location_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/locations/{location_id}/hierarchy:
+    get:
+      tags:
+      - Locations
+      summary: Get Location Hierarchy
+      description: Get the complete hierarchy for a location.
+      operationId: get_location_hierarchy_api_v1_locations__location_id__hierarchy_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationHierarchyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/locations/{location_id}/children:
+    get:
+      tags:
+      - Locations
+      summary: Get Location Children
+      description: Get a location with its children.
+      operationId: get_location_children_api_v1_locations__location_id__children_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationWithChildrenResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/locations/by-location-id/{location_id}:
+    get:
+      tags:
+      - Locations
+      summary: Get Location By Location Id
+      description: Get a location by its location_id (not MongoDB ID).
+      operationId: get_location_by_location_id_api_v1_locations_by_location_id__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/locations/types/{location_type}:
+    get:
+      tags:
+      - Locations
+      summary: Get Locations By Type
+      description: Get all locations of a specific type.
+      operationId: get_locations_by_type_api_v1_locations_types__location_type__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Type
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 20
+          title: Page Size
+        description: Items per page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/locations/search/:
+    get:
+      tags:
+      - Locations
+      summary: Search Locations
+      description: Search locations by name, location_id, or path.
+      operationId: search_locations_api_v1_locations_search__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: search_term
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          description: Search term
+          title: Search Term
+        description: Search term
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 1
+          description: Maximum results
+          default: 10
+          title: Limit
+        description: Maximum results
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocationResponse'
+                title: Response Search Locations Api V1 Locations Search  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/buildings/:
+    get:
+      tags:
+      - Buildings
+      summary: List Buildings
+      operationId: list_buildings_api_v1_buildings__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 100
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Buildings
+      summary: Create Building
+      operationId: create_building_api_v1_buildings__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/buildings/{building_id}:
+    patch:
+      tags:
+      - Buildings
+      summary: Update Building
+      operationId: update_building_api_v1_buildings__building_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: building_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Building Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Buildings
+      summary: Delete Building
+      operationId: delete_building_api_v1_buildings__building_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: building_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Building Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/floors/:
+    get:
+      tags:
+      - Floors
+      summary: List Floors
+      operationId: list_floors_api_v1_floors__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 100
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Floors
+      summary: Create Floor
+      operationId: create_floor_api_v1_floors__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/floors/{floor_id}:
+    patch:
+      tags:
+      - Floors
+      summary: Update Floor
+      operationId: update_floor_api_v1_floors__floor_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: floor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Floor Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Floors
+      summary: Delete Floor
+      operationId: delete_floor_api_v1_floors__floor_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: floor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Floor Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/rooms/:
+    get:
+      tags:
+      - Rooms
+      summary: List Rooms
+      operationId: list_rooms_api_v1_rooms__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 100
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Rooms
+      summary: Create Room
+      operationId: create_room_api_v1_rooms__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/rooms/{room_id}:
+    patch:
+      tags:
+      - Rooms
+      summary: Update Room
+      operationId: update_room_api_v1_rooms__room_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Rooms
+      summary: Delete Room
+      operationId: delete_room_api_v1_rooms__room_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Room Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/bays/:
+    get:
+      tags:
+      - Bays
+      summary: List Bays
+      operationId: list_bays_api_v1_bays__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 100
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Bays
+      summary: Create Bay
+      operationId: create_bay_api_v1_bays__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/bays/{bay_id}:
+    patch:
+      tags:
+      - Bays
+      summary: Update Bay
+      operationId: update_bay_api_v1_bays__bay_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: bay_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bay Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Data
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Bays
+      summary: Delete Bay
+      operationId: delete_bay_api_v1_bays__bay_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: bay_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bay Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    CalibrationPoint:
+      properties:
+        reference_value:
+          type: number
+          title: Reference Value
+        measured_value:
+          type: number
+          title: Measured Value
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        deviation:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Deviation
+      type: object
+      required:
+      - reference_value
+      - measured_value
+      title: CalibrationPoint
+    CalibrationRecord:
+      properties:
+        record_id:
+          type: string
+          minLength: 1
+          title: Record Id
+        equipment_id:
+          type: string
+          minLength: 1
+          title: Equipment Id
+        work_order_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Work Order Id
+        instrument_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instrument Tag
+        instrument_range:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instrument Range
+        instrument_resolution:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instrument Resolution
+        calibration_type:
+          type: string
+          enum:
+          - Routine
+          - Post-Repair
+          - Validation
+          - Verification
+          - Emergency
+          title: Calibration Type
+        status:
+          type: string
+          enum:
+          - Scheduled
+          - In Progress
+          - Completed
+          - Passed
+          - Failed
+          - Overdue
+          - Cancelled
+          title: Status
+          default: Scheduled
+        standard_used:
+          type: string
+          enum:
+          - NIST
+          - ISO 17025
+          - USP
+          - EP
+          - In-House
+          - OEM
+          - Other
+          title: Standard Used
+          default: In-House
+        certificate_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certificate No
+        scheduled_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Scheduled Date
+        performed_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Performed Date
+        next_due_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Due Date
+        calibration_interval_days:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Calibration Interval Days
+        performed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Performed By
+        reviewed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reviewed By
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        reference_instrument:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reference Instrument
+        reference_cert_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reference Cert No
+        reference_expiry:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Reference Expiry
+        data_points:
+          items:
+            $ref: '#/components/schemas/CalibrationPoint'
+          type: array
+          title: Data Points
+        tolerance:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Tolerance
+        max_deviation_found:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Max Deviation Found
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        room_temp_celsius:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Room Temp Celsius
+        room_humidity_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Room Humidity Pct
+        out_of_tolerance:
+          type: boolean
+          title: Out Of Tolerance
+          default: false
+        corrective_action:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Corrective Action
+        as_found_condition:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: As Found Condition
+        as_left_condition:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: As Left Condition
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+        attachments:
+          items:
+            type: string
+          type: array
+          title: Attachments
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - record_id
+      - equipment_id
+      - calibration_type
+      title: CalibrationRecord
+    Certification:
+      properties:
+        name:
+          type: string
+          title: Name
+        issued_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Issued By
+        issue_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Issue Date
+        expiry_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Expiry Date
+        status:
+          type: string
+          enum:
+          - Valid
+          - Expired
+          - Pending Renewal
+          title: Status
+          default: Valid
+      type: object
+      required:
+      - name
+      title: Certification
+    ContactInfo:
+      properties:
+        name:
+          type: string
+          title: Name
+        role:
+          type: string
+          title: Role
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+      type: object
+      required:
+      - name
+      - role
+      title: ContactInfo
+    Downtime:
+      properties:
+        start_time:
+          type: string
+          title: Start Time
+        end_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: End Time
+      type: object
+      required:
+      - start_time
+      title: Downtime
+    GeoCoordinates:
+      properties:
+        latitude:
+          type: number
+          maximum: 90.0
+          minimum: -90.0
+          title: Latitude
+        longitude:
+          type: number
+          maximum: 180.0
+          minimum: -180.0
+          title: Longitude
+      type: object
+      required:
+      - latitude
+      - longitude
+      title: GeoCoordinates
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    IndustrialLineCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        plant_id:
+          type: string
+          title: Plant Id
+        type:
+          type: string
+          enum:
+          - Assembly
+          - Continuous
+          - Batch
+          title: Type
+        takt_time:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Takt Time
+          description: Cycle time in seconds
+        status:
+          type: string
+          enum:
+          - Operational
+          - Maintenance
+          - Down
+          - Stalled
+          title: Status
+        efficiency:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Efficiency
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - plant_id
+      - type
+      - takt_time
+      - status
+      - efficiency
+      title: IndustrialLineCreate
+    IndustrialLineResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        plant_id:
+          type: string
+          title: Plant Id
+        type:
+          type: string
+          enum:
+          - Assembly
+          - Continuous
+          - Batch
+          title: Type
+        takt_time:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Takt Time
+          description: Cycle time in seconds
+        status:
+          type: string
+          enum:
+          - Operational
+          - Maintenance
+          - Down
+          - Stalled
+          title: Status
+        efficiency:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Efficiency
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - plant_id
+      - type
+      - takt_time
+      - status
+      - efficiency
+      title: IndustrialLineResponse
+    IndustrialLineUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        type:
+          anyOf:
+          - type: string
+            enum:
+            - Assembly
+            - Continuous
+            - Batch
+          - type: 'null'
+          title: Type
+        takt_time:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Takt Time
+        status:
+          anyOf:
+          - type: string
+            enum:
+            - Operational
+            - Maintenance
+            - Down
+            - Stalled
+          - type: 'null'
+          title: Status
+        efficiency:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Efficiency
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: IndustrialLineUpdate
+    IndustrialPlantCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        plant_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Code
+          description: Internal short code e.g. PLT-001
+        type:
+          type: string
+          enum:
+          - Production
+          - Packaging
+          - R&D
+          - Warehouse
+          title: Type
+        location:
+          type: string
+          title: Location
+        address:
+          type: string
+          title: Address
+        country:
+          type: string
+          title: Country
+        geo:
+          anyOf:
+          - $ref: '#/components/schemas/GeoCoordinates'
+          - type: 'null'
+        timezone:
+          type: string
+          enum:
+          - UTC
+          - CET
+          - IST
+          - EST
+          - PST
+          - JST
+          - CST
+          - GST
+          - AEST
+          title: Timezone
+        status:
+          type: string
+          enum:
+          - Active
+          - Reduced Capacity
+          - Shutdown
+          - Maintenance
+          - Decommissioned
+          title: Status
+        capacity_utilization:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Capacity Utilization
+          description: Current utilization %
+        total_area_sqm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Area Sqm
+          description: "Total floor area in m\xB2"
+        employee_count:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Employee Count
+        established_year:
+          anyOf:
+          - type: integer
+            maximum: 2100.0
+            minimum: 1800.0
+          - type: 'null'
+          title: Established Year
+        manager:
+          type: string
+          title: Manager
+        manager_contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactInfo'
+          - type: 'null'
+        emergency_contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactInfo'
+          - type: 'null'
+        shift_schedule:
+          anyOf:
+          - $ref: '#/components/schemas/ShiftSchedule'
+          - type: 'null'
+        utilities:
+          anyOf:
+          - $ref: '#/components/schemas/UtilityInfo'
+          - type: 'null'
+        certifications:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Certification'
+            type: array
+          - type: 'null'
+          title: Certifications
+        regulatory_body:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Regulatory Body
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - type
+      - location
+      - address
+      - country
+      - timezone
+      - status
+      - capacity_utilization
+      - manager
+      title: IndustrialPlantCreate
+    IndustrialPlantResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        plant_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Code
+          description: Internal short code e.g. PLT-001
+        type:
+          type: string
+          enum:
+          - Production
+          - Packaging
+          - R&D
+          - Warehouse
+          title: Type
+        location:
+          type: string
+          title: Location
+        address:
+          type: string
+          title: Address
+        country:
+          type: string
+          title: Country
+        geo:
+          anyOf:
+          - $ref: '#/components/schemas/GeoCoordinates'
+          - type: 'null'
+        timezone:
+          type: string
+          enum:
+          - UTC
+          - CET
+          - IST
+          - EST
+          - PST
+          - JST
+          - CST
+          - GST
+          - AEST
+          title: Timezone
+        status:
+          type: string
+          enum:
+          - Active
+          - Reduced Capacity
+          - Shutdown
+          - Maintenance
+          - Decommissioned
+          title: Status
+        capacity_utilization:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Capacity Utilization
+          description: Current utilization %
+        total_area_sqm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Area Sqm
+          description: "Total floor area in m\xB2"
+        employee_count:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Employee Count
+        established_year:
+          anyOf:
+          - type: integer
+            maximum: 2100.0
+            minimum: 1800.0
+          - type: 'null'
+          title: Established Year
+        manager:
+          type: string
+          title: Manager
+        manager_contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactInfo'
+          - type: 'null'
+        emergency_contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactInfo'
+          - type: 'null'
+        shift_schedule:
+          anyOf:
+          - $ref: '#/components/schemas/ShiftSchedule'
+          - type: 'null'
+        utilities:
+          anyOf:
+          - $ref: '#/components/schemas/UtilityInfo'
+          - type: 'null'
+        certifications:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Certification'
+            type: array
+          - type: 'null'
+          title: Certifications
+        regulatory_body:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Regulatory Body
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - type
+      - location
+      - address
+      - country
+      - timezone
+      - status
+      - capacity_utilization
+      - manager
+      title: IndustrialPlantResponse
+    IndustrialPlantUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        plant_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Code
+        type:
+          anyOf:
+          - type: string
+            enum:
+            - Production
+            - Packaging
+            - R&D
+            - Warehouse
+          - type: 'null'
+          title: Type
+        location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location
+        address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address
+        country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+        geo:
+          anyOf:
+          - $ref: '#/components/schemas/GeoCoordinates'
+          - type: 'null'
+        timezone:
+          anyOf:
+          - type: string
+            enum:
+            - UTC
+            - CET
+            - IST
+            - EST
+            - PST
+            - JST
+            - CST
+            - GST
+            - AEST
+          - type: 'null'
+          title: Timezone
+        status:
+          anyOf:
+          - type: string
+            enum:
+            - Active
+            - Reduced Capacity
+            - Shutdown
+            - Maintenance
+            - Decommissioned
+          - type: 'null'
+          title: Status
+        capacity_utilization:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Capacity Utilization
+        total_area_sqm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Area Sqm
+        employee_count:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Employee Count
+        established_year:
+          anyOf:
+          - type: integer
+            maximum: 2100.0
+            minimum: 1800.0
+          - type: 'null'
+          title: Established Year
+        manager:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manager
+        manager_contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactInfo'
+          - type: 'null'
+        emergency_contact:
+          anyOf:
+          - $ref: '#/components/schemas/ContactInfo'
+          - type: 'null'
+        shift_schedule:
+          anyOf:
+          - $ref: '#/components/schemas/ShiftSchedule'
+          - type: 'null'
+        utilities:
+          anyOf:
+          - $ref: '#/components/schemas/UtilityInfo'
+          - type: 'null'
+        certifications:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Certification'
+            type: array
+          - type: 'null'
+          title: Certifications
+        regulatory_body:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Regulatory Body
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: IndustrialPlantUpdate
+    IndustrialStageCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+        type:
+          type: string
+          enum:
+          - Assembly
+          - Continuous
+          - Batch
+          title: Type
+        takt_time:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Takt Time
+          description: Cycle time in seconds
+        status:
+          type: string
+          enum:
+          - Operational
+          - Maintenance
+          - Down
+          - Decommissioned
+          title: Status
+        line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Line Id
+        efficiency:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Efficiency
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        last_pm:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Pm
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - type
+      - takt_time
+      - status
+      - efficiency
+      title: IndustrialStageCreate
+    IndustrialStageResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+        type:
+          type: string
+          enum:
+          - Assembly
+          - Continuous
+          - Batch
+          title: Type
+        takt_time:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Takt Time
+          description: Cycle time in seconds
+        status:
+          type: string
+          enum:
+          - Operational
+          - Maintenance
+          - Down
+          - Decommissioned
+          title: Status
+        line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Line Id
+        efficiency:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Efficiency
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        last_pm:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Pm
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - type
+      - takt_time
+      - status
+      - efficiency
+      title: IndustrialStageResponse
+    IndustrialStageUpdate:
+      properties:
+        name:
+          type: string
+          title: Name
+        plant_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Name
+        type:
+          type: string
+          enum:
+          - Assembly
+          - Continuous
+          - Batch
+          title: Type
+        takt_time:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Takt Time
+          description: Cycle time in seconds
+        status:
+          type: string
+          enum:
+          - Operational
+          - Maintenance
+          - Down
+          - Decommissioned
+          title: Status
+        line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Line Id
+        efficiency:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Efficiency
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        last_pm:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Pm
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - name
+      - type
+      - takt_time
+      - status
+      - efficiency
+      title: IndustrialStageUpdate
+    LocationCreate:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Location name
+        location_id:
+          type: string
+          title: Location Id
+          description: Location ID/code
+        type:
+          type: string
+          title: Type
+          description: Location type (plant, building, floor, room, bay)
+        level:
+          type: integer
+          maximum: 5.0
+          minimum: 1.0
+          title: Level
+          description: Hierarchy level (1-5)
+        path:
+          type: string
+          title: Path
+          description: Full hierarchical path
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Detailed description
+        status:
+          type: string
+          title: Status
+          description: Operational status
+          default: Operational
+        parent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Id
+          description: Parent location ID
+      type: object
+      required:
+      - name
+      - location_id
+      - type
+      - level
+      - path
+      title: LocationCreate
+      description: Model for creating locations.
+    LocationHierarchyResponse:
+      properties:
+        plant:
+          anyOf:
+          - $ref: '#/components/schemas/LocationResponse'
+          - type: 'null'
+          description: Plant location
+        building:
+          anyOf:
+          - $ref: '#/components/schemas/LocationResponse'
+          - type: 'null'
+          description: Building location
+        floor:
+          anyOf:
+          - $ref: '#/components/schemas/LocationResponse'
+          - type: 'null'
+          description: Floor location
+        room:
+          anyOf:
+          - $ref: '#/components/schemas/LocationResponse'
+          - type: 'null'
+          description: Room location
+        bay:
+          anyOf:
+          - $ref: '#/components/schemas/LocationResponse'
+          - type: 'null'
+          description: Bay location
+      type: object
+      title: LocationHierarchyResponse
+      description: Model for location hierarchy responses.
+    LocationResponse:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Location name
+        location_id:
+          type: string
+          title: Location Id
+          description: Location ID/code
+        type:
+          type: string
+          title: Type
+          description: Location type (plant, building, floor, room, bay)
+        level:
+          type: integer
+          maximum: 5.0
+          minimum: 1.0
+          title: Level
+          description: Hierarchy level (1-5)
+        path:
+          type: string
+          title: Path
+          description: Full hierarchical path
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Detailed description
+        status:
+          type: string
+          title: Status
+          description: Operational status
+          default: Operational
+        id:
+          type: string
+          title: Id
+          description: MongoDB ID
+        parent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Id
+          description: Parent location ID
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+          description: Plant ID
+        building_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Building Id
+          description: Building ID
+        floor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Floor Id
+          description: Floor ID
+        room_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room Id
+          description: Room ID
+        bay_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bay Id
+          description: Bay ID
+        cleanroom_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cleanroom Class
+          description: ISO cleanroom classification
+        workstation_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workstation Id
+          description: Associated workstation ID
+        room_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room Number
+          description: Room number
+        bay_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bay Number
+          description: Bay number
+        floor_number:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Floor Number
+          description: Floor number
+        has_ahu:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Has Ahu
+          description: Has AHU system
+        has_exhaust:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Has Exhaust
+          description: Has exhaust system
+        temperature_controlled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Temperature Controlled
+          description: Temperature controlled
+        humidity_controlled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Humidity Controlled
+          description: Humidity controlled
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: Creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+          description: Last update timestamp
+      type: object
+      required:
+      - name
+      - location_id
+      - type
+      - level
+      - path
+      - id
+      - created_at
+      - updated_at
+      title: LocationResponse
+      description: Model for location responses.
+    LocationUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+          description: Location name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+          description: Detailed description
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+          description: Operational status
+      type: object
+      title: LocationUpdate
+      description: Model for updating locations.
+    LocationWithChildrenResponse:
+      properties:
+        location:
+          $ref: '#/components/schemas/LocationResponse'
+          description: Location details
+        children:
+          items:
+            $ref: '#/components/schemas/LocationResponse'
+          type: array
+          title: Children
+          description: Child locations
+        children_count:
+          type: integer
+          title: Children Count
+          description: Number of child locations
+          default: 0
+      type: object
+      required:
+      - location
+      title: LocationWithChildrenResponse
+      description: Model for location with children.
+    MaintenanceLog:
+      properties:
+        id:
+          type: string
+          title: Id
+        machine_id:
+          type: string
+          title: Machine Id
+        equipment_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Equipment Id
+        machine_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Machine Name
+        maintenance_type:
+          type: string
+          enum:
+          - Preventive
+          - Corrective
+          - Predictive
+          - Inspection
+          title: Maintenance Type
+        status:
+          type: string
+          enum:
+          - Scheduled
+          - In Progress
+          - Completed
+          - Cancelled
+          - Delayed
+          title: Status
+        severity:
+          anyOf:
+          - type: string
+            enum:
+            - Low
+            - Medium
+            - High
+            - Critical
+          - type: 'null'
+          title: Severity
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        issue_reported:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Issue Reported
+        resolution:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution
+        scheduled_start:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Scheduled Start
+        scheduled_end:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Scheduled End
+        actual_start:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actual Start
+        actual_end:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actual End
+        next_due_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Due Date
+        maintenance_interval_days:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Maintenance Interval Days
+        performed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Performed By
+        reviewed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reviewed By
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        downtime:
+          anyOf:
+          - $ref: '#/components/schemas/Downtime'
+          - type: 'null'
+        parts_used:
+          items:
+            $ref: '#/components/schemas/PartUsed'
+          type: array
+          title: Parts Used
+          default: []
+        work_order_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Work Order Id
+        created_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created At
+        updated_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated At
+      type: object
+      required:
+      - id
+      - machine_id
+      - maintenance_type
+      - status
+      title: MaintenanceLog
+    PaginatedLineResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/IndustrialLineResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedLineResponse
+    PaginatedLocationResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+          description: Total number of locations
+        page:
+          type: integer
+          title: Page
+          description: Current page
+        page_size:
+          type: integer
+          title: Page Size
+          description: Items per page
+        results:
+          items:
+            $ref: '#/components/schemas/LocationResponse'
+          type: array
+          title: Results
+          description: Location results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedLocationResponse
+      description: Paginated response model for locations.
+    PaginatedPlantResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/IndustrialPlantResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedPlantResponse
+    PaginatedStageResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/IndustrialStageResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedStageResponse
+    PaginatedWorkstationResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/WorkstationResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedWorkstationResponse
+    PartUsed:
+      properties:
+        part_id:
+          type: string
+          title: Part Id
+        name:
+          type: string
+          title: Name
+        quantity:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Quantity
+        cost_per_unit:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Cost Per Unit
+      type: object
+      required:
+      - part_id
+      - name
+      - quantity
+      - cost_per_unit
+      title: PartUsed
+    PharmaceuticalEquipmentResponse:
+      properties:
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        class_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Class Id
+        subclass_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subclass Id
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+        building_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Building Id
+        floor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Floor Id
+        room_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room Id
+        bay_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bay Id
+        workstation_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workstation Id
+        equipment_id:
+          type: string
+          title: Equipment Id
+        name:
+          type: string
+          title: Name
+        category:
+          type: string
+          enum:
+          - Glassware
+          - Instrument
+          - Storage
+          - Safety
+          - Filtration
+          - Dispensing
+          - Labware
+          - Documentation
+          - Machine
+          title: Category
+        manufacturer:
+          type: string
+          title: Manufacturer
+        model_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model Number
+        serial_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serial Number
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        purchase_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Purchase Date
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Expiry Date
+        status:
+          type: string
+          enum:
+          - active
+          - inactive
+          - maintenance
+          - retired
+          - calibration
+          title: Status
+        material:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material
+        capacity_or_range:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Capacity Or Range
+        accuracy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accuracy
+        sterility_grade:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sterility Grade
+        requires_calibration:
+          type: boolean
+          title: Requires Calibration
+        calibration_frequency_days:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Calibration Frequency Days
+        last_calibration_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Calibration Date
+        calibration_next_due_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Calibration Next Due Date
+        calibration_records:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/CalibrationRecord'
+            type: array
+          - type: 'null'
+          title: Calibration Records
+          default: []
+        maintenance_frequency_days:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Maintenance Frequency Days
+        last_maintenance_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Maintenance Date
+        maintenace_next_due_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Maintenace Next Due Date
+        maintenance_records:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/MaintenanceLog'
+            type: array
+          - type: 'null'
+          title: Maintenance Records
+          default: []
+        cleaning_frequency_days:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Cleaning Frequency Days
+        last_cleaning_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Cleaning Date
+        cleaning_next_due_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Cleaning Next Due Date
+        regulatory_info:
+          anyOf:
+          - $ref: '#/components/schemas/RegulatoryInfo'
+          - type: 'null'
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+        supplier:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier
+        purchase_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Purchase Cost
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+      type: object
+      required:
+      - equipment_id
+      - name
+      - category
+      - manufacturer
+      - status
+      - requires_calibration
+      title: PharmaceuticalEquipmentResponse
+    PharmaceuticalMachineResponse:
+      properties:
+        machine_id:
+          type: string
+          title: Machine Id
+        serial_no:
+          type: string
+          title: Serial No
+        model_no:
+          type: string
+          title: Model No
+        type_category:
+          type: string
+          enum:
+          - Mechanical Machine
+          - Electrical Machine
+          - Hydraulic Machine
+          - Pneumatic Machine
+          - CNC / Automated Machine
+          - Industrial Robot
+          - Autonomous System
+          - Embedded / Smart Machine
+          - Heavy Industrial Machine
+          - Other
+          title: Type Category
+        manufacturer:
+          type: string
+          title: Manufacturer
+        manufacturer_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Country
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+        building_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Building Id
+        floor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Floor Id
+        room_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room Id
+        bay_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bay Id
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        class_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Class Id
+        subclass_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subclass Id
+        area_classification:
+          type: string
+          enum:
+          - Grade A
+          - Grade B
+          - Grade C
+          - Grade D
+          - ISO 5
+          - ISO 6
+          - ISO 7
+          - ISO 8
+          - Unclassified
+          title: Area Classification
+          default: Unclassified
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        workstation_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workstation Id
+        purchase_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Purchase Date
+        installation_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Installation Date
+        warranty_expiry_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Warranty Expiry Date
+        mfg_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mfg Date
+        service_life_years:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Service Life Years
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        status:
+          type: string
+          enum:
+          - Operational
+          - Maintenance
+          - Idle
+          - Quarantined
+          - Decommissioned
+          title: Status
+          default: Idle
+        last_maintenance_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Maintenance Date
+        maintenance_frequency_days:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Maintenance Frequency Days
+        maintenance_next_due_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Maintenance Next Due Date
+      type: object
+      required:
+      - machine_id
+      - serial_no
+      - model_no
+      - type_category
+      - manufacturer
+      title: PharmaceuticalMachineResponse
+    RegulatoryInfo:
+      properties:
+        gmp_compliant:
+          type: boolean
+          title: Gmp Compliant
+          default: false
+        fda_registered:
+          type: boolean
+          title: Fda Registered
+          default: false
+        ce_marked:
+          type: boolean
+          title: Ce Marked
+          default: false
+        iso_certified:
+          type: boolean
+          title: Iso Certified
+          default: false
+        certification_numbers:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Certification Numbers
+        compliance_standards:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Compliance Standards
+          description: e.g., USP, BP, ISO 9001
+      type: object
+      title: RegulatoryInfo
+    ShiftSchedule:
+      properties:
+        shifts_per_day:
+          type: integer
+          maximum: 3.0
+          minimum: 1.0
+          title: Shifts Per Day
+        operating_days_per_week:
+          type: integer
+          maximum: 7.0
+          minimum: 1.0
+          title: Operating Days Per Week
+        hours_per_shift:
+          type: number
+          maximum: 12.0
+          minimum: 1.0
+          title: Hours Per Shift
+      type: object
+      required:
+      - shifts_per_day
+      - operating_days_per_week
+      - hours_per_shift
+      title: ShiftSchedule
+    UtilityInfo:
+      properties:
+        power_source:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Power Source
+        power_capacity_kw:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Power Capacity Kw
+        water_source:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Water Source
+        water_consumption_m3_day:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Water Consumption M3 Day
+        has_backup_generator:
+          type: boolean
+          title: Has Backup Generator
+          default: false
+      type: object
+      title: UtilityInfo
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WorkstationCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Line Id
+        stage_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Stage Id
+        mode:
+          type: string
+          enum:
+          - Robotic
+          - Manual
+          - Hybrid
+          title: Mode
+        status:
+          type: string
+          enum:
+          - Active
+          - Alert
+          - Idle
+          - Offline
+          title: Status
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        operator:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Operator
+          description: Required for Manual and Hybrid modes
+        cycle_time_actual:
+          type: number
+          minimum: 0.0
+          title: Cycle Time Actual
+          description: Actual cycle time in seconds
+        cycle_time_target:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Cycle Time Target
+          description: Target cycle time in seconds
+        is_bottleneck:
+          type: boolean
+          title: Is Bottleneck
+          description: True when cycle_time_actual exceeds cycle_time_target
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - mode
+      - status
+      - cycle_time_actual
+      - cycle_time_target
+      - is_bottleneck
+      title: WorkstationCreate
+    WorkstationResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Line Id
+        stage_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Stage Id
+        mode:
+          type: string
+          enum:
+          - Robotic
+          - Manual
+          - Hybrid
+          title: Mode
+        status:
+          type: string
+          enum:
+          - Active
+          - Alert
+          - Idle
+          - Offline
+          title: Status
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        operator:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Operator
+          description: Required for Manual and Hybrid modes
+        cycle_time_actual:
+          type: number
+          minimum: 0.0
+          title: Cycle Time Actual
+          description: Actual cycle time in seconds
+        cycle_time_target:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Cycle Time Target
+          description: Target cycle time in seconds
+        is_bottleneck:
+          type: boolean
+          title: Is Bottleneck
+          description: True when cycle_time_actual exceeds cycle_time_target
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      - mode
+      - status
+      - cycle_time_actual
+      - cycle_time_target
+      - is_bottleneck
+      title: WorkstationResponse
+    WorkstationUpdate:
+      properties:
+        name:
+          type: string
+          title: Name
+        line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Line Id
+        stage_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Stage Id
+        mode:
+          type: string
+          enum:
+          - Robotic
+          - Manual
+          - Hybrid
+          title: Mode
+        status:
+          type: string
+          enum:
+          - Active
+          - Alert
+          - Idle
+          - Offline
+          title: Status
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        operator:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Operator
+          description: Required for Manual and Hybrid modes
+        cycle_time_actual:
+          type: number
+          minimum: 0.0
+          title: Cycle Time Actual
+          description: Actual cycle time in seconds
+        cycle_time_target:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Cycle Time Target
+          description: Target cycle time in seconds
+        is_bottleneck:
+          type: boolean
+          title: Is Bottleneck
+          description: True when cycle_time_actual exceeds cycle_time_target
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - name
+      - mode
+      - status
+      - cycle_time_actual
+      - cycle_time_target
+      - is_bottleneck
+      title: WorkstationUpdate
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

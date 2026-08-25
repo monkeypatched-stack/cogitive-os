@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""Seed SOP data for workstations across Tablet Line A and Capsule Line B."""
+
+import asyncio
+import sys
+from datetime import datetime, timezone
+
+sys.path.insert(0, "/Users/prashunjaveri/Code/monkeypatched")
+
+from motor.motor_asyncio import AsyncIOMotorClient
+from services.common.config import settings
+
+NOW = datetime.now(timezone.utc)
+
+PLANT_ID = "PLANT-TBL-IN-001"
+TABLET_LINE = "LINE-TAB-001"
+CAPSULE_LINE = "LINE-CAP-001"
+
+
+def _sop(sop_id: str, title: str, purpose: str, scope: str, workstation_id: str, stage_id: str, line_id: str, tags: list[str] | None = None) -> dict:
+    pd_id = f"PD-{sop_id}"
+    def _step_sub(prefix: str, idx: int) -> dict:
+        sid = f"{pd_id}-step-{idx}"
+        pc_id = f"PRE-{sop_id}-s{idx}"
+        po_id = f"POST-{sop_id}-s{idx}"
+        co_id = f"CONST-{sop_id}-s{idx}"
+        ca_id = f"CA-{sop_id}-s{idx}"
+        return {
+            "prechecks": {"id": pc_id, "process_definition_id": pd_id, "process_step_id": sid, "conditions": [], "all_must_pass": True},
+            "postchecks": {"id": po_id, "process_definition_id": pd_id, "process_step_id": sid, "conditions": [], "all_must_pass": True},
+            "constraints": {"id": co_id, "process_definition_id": pd_id, "process_step_id": sid, "constraints": []},
+            "corrective_actions": {"id": ca_id, "process_definition_id": pd_id, "process_step_id": sid, "actions": []},
+        }
+
+    steps = [
+        {"id": f"{pd_id}-step-1", "sequence": 1, "name": "Preparation", "description": "Prepare workstation and materials", "action_type": "manual", "inputs": [], "outputs": [], "depends_on": [], "retry_count": 0, **_step_sub(pd_id, 1)},
+        {"id": f"{pd_id}-step-2", "sequence": 2, "name": "Execution", "description": "Execute the primary operation", "action_type": "manual", "inputs": [], "outputs": [], "depends_on": [f"{pd_id}-step-1"], "retry_count": 0, **_step_sub(pd_id, 2)},
+        {"id": f"{pd_id}-step-3", "sequence": 3, "name": "Verification", "description": "Verify output meets specifications", "action_type": "manual", "inputs": [], "outputs": [], "depends_on": [f"{pd_id}-step-2"], "retry_count": 0, **_step_sub(pd_id, 3)},
+    ]
+    empty_pre = {"id": f"PRE-{sop_id}", "process_definition_id": pd_id, "description": "Pre-operation checks", "conditions": [], "all_must_pass": True}
+    empty_post = {"id": f"POST-{sop_id}", "process_definition_id": pd_id, "description": "Post-operation checks", "conditions": [], "all_must_pass": True}
+    empty_const = {"id": f"CONST-{sop_id}", "process_definition_id": pd_id, "constraints": []}
+    empty_ca = {"id": f"CA-{sop_id}", "process_definition_id": pd_id, "process_step_id": f"{pd_id}-step-2", "description": "Corrective actions", "actions": []}
+
+    return {
+        "_id": sop_id,
+        "id": sop_id,
+        "title": title,
+        "purpose": purpose,
+        "scope": scope,
+        "version": "1.0.0",
+        "effective_date": NOW,
+        "review_date": datetime(2027, 6, 1, tzinfo=timezone.utc),
+        "approved_by": "Prashun Javeri",
+        "authored_by": "Quality Assurance",
+        "entity_id": workstation_id,
+        "entity_name": title.split(" - ")[0] if " - " in title else title,
+        "entity_type": "workstation",
+        "plant_id": PLANT_ID,
+        "line_id": line_id,
+        "stage_id": stage_id,
+        "workstation_id": workstation_id,
+        "process_definition": {
+            "process_definition_id": pd_id,
+            "name": title,
+            "description": purpose,
+            "version": "1.0.0",
+            "route_version": "1.0.0",
+            "revision": "A",
+            "process_type": "manufacturing",
+            "plant_id": PLANT_ID,
+            "line_id": line_id,
+            "tags": tags or [],
+            "status": "approved",
+            "approval_status": "approved",
+            "route_stage_ids": [stage_id],
+            "material_flow_edge_ids": [],
+            "ipc_checkpoints": [],
+            "cleaning_requirements": [],
+            "instruction_templates": [],
+            "metadata": {},
+            "steps": {"id": f"{pd_id}-steps", "process_definition_id": pd_id, "description": scope, "steps": steps, "allow_parallel_execution": False, "rollback_on_failure": False},
+        },
+        "prechecks": empty_pre,
+        "postchecks": empty_post,
+        "constraints": empty_const,
+        "corrective_actions": empty_ca,
+        "notes": f"Standard operating procedure for {title}",
+        "tags": tags or [],
+        "references": [],
+        "document_ids": [],
+    }
+
+
+SOPS = [
+    _sop("SOP-TAB-DISP-001", "Dispensing - Sampling Booth", "Ensure accurate sampling of raw materials before dispensing.", "Sampling operations on Tablet Line A", "WS-TAB-01-01", "STAGE-01", TABLET_LINE, ["dispensing", "sampling"]),
+    _sop("SOP-TAB-DISP-002", "Dispensing - Weighing Booth", "Controlled weighing of raw materials per batch formula.", "Weighing operations on Tablet Line A", "WS-TAB-01-02", "STAGE-01", TABLET_LINE, ["dispensing", "weighing"]),
+    _sop("SOP-TAB-DISP-003", "Dispensing - Material Staging", "Organize and stage dispensed materials.", "Material staging on Tablet Line A", "WS-TAB-01-03", "STAGE-01", TABLET_LINE, ["dispensing", "staging"]),
+    _sop("SOP-TAB-SIFT-001", "Sifting - Sifter Station", "Operate sifter for particle size reduction.", "Sifter station on Tablet Line A", "WS-TAB-02-01", "STAGE-03", TABLET_LINE, ["sifting"]),
+    _sop("SOP-TAB-SIFT-002", "Sifting - Co-Mill Station", "Operate co-mill for size reduction.", "Co-mill station on Tablet Line A", "WS-TAB-02-02", "STAGE-03", TABLET_LINE, ["milling"]),
+    _sop("SOP-TAB-SIFT-003", "Sifting - Vibro Sifter Station", "Operate vibro sifter for classification.", "Vibro sifter on Tablet Line A", "WS-TAB-02-03", "STAGE-03", TABLET_LINE, ["sifting", "vibro_sifter"]),
+    _sop("SOP-TAB-GRAN-001", "Granulation - RMG Station", "Operate rapid mixer granulator.", "RMG operations on Tablet Line A", "WS-TAB-03-01", "STAGE-02", TABLET_LINE, ["granulation", "rmg"]),
+    _sop("SOP-TAB-GRAN-002", "Granulation - Binder Prep", "Prepare binder solution for granulation.", "Binder prep on Tablet Line A", "WS-TAB-03-02", "STAGE-02", TABLET_LINE, ["granulation", "binder"]),
+    _sop("SOP-TAB-DRY-001", "Drying - FBD Loading", "Load wet granules into FBD.", "FBD loading on Tablet Line A", "WS-TAB-04-01", "STAGE-09", TABLET_LINE, ["drying", "fbd"]),
+    _sop("SOP-TAB-DRY-002", "Drying - FBD Unloading", "Unload dried granules from FBD.", "FBD unloading on Tablet Line A", "WS-TAB-04-02", "STAGE-09", TABLET_LINE, ["drying", "fbd"]),
+    _sop("SOP-TAB-SZ-001", "Sizing - Co-Mill (post-dry)", "Size reduction of dried granules.", "Co-mill post-drying on Tablet Line A", "WS-TAB-05-01", "STAGE-10", TABLET_LINE, ["milling"]),
+    _sop("SOP-TAB-SZ-002", "Sizing - Sieve Station", "Sieving of sized granules.", "Sieve station on Tablet Line A", "WS-TAB-05-02", "STAGE-10", TABLET_LINE, ["sizing"]),
+    _sop("SOP-TAB-BLD-001", "Blending - Blender Loading", "Load granules into blender.", "Blender loading on Tablet Line A", "WS-TAB-06-01", "STAGE-04", TABLET_LINE, ["blending"]),
+    _sop("SOP-TAB-BLD-002", "Blending - Blender Station", "Operate blender for uniform mixing.", "Blender station on Tablet Line A", "WS-TAB-06-02", "STAGE-04", TABLET_LINE, ["blending"]),
+    _sop("SOP-TAB-BLD-003", "Blending - Lubrication", "Add lubricant to blended granules.", "Lubrication on Tablet Line A", "WS-TAB-06-03", "STAGE-04", TABLET_LINE, ["blending", "lubrication"]),
+    _sop("SOP-TAB-COMP-001", "Compression - Tablet Press", "Operate tablet press for compression.", "Tablet press on Tablet Line A", "WS-TAB-07-01", "STAGE-05", TABLET_LINE, ["compression"]),
+    _sop("SOP-TAB-COMP-002", "Compression - In-Process QC", "Perform in-process quality checks.", "IPC station on Tablet Line A", "WS-TAB-07-02", "STAGE-05", TABLET_LINE, ["compression", "ipc"]),
+    _sop("SOP-TAB-COMP-003", "Compression - Deduster", "Operate deduster for tablets.", "Deduster on Tablet Line A", "WS-TAB-07-03", "STAGE-05", TABLET_LINE, ["compression", "deduster"]),
+    _sop("SOP-TAB-COAT-001", "Coating - Coating Pan", "Operate coating pan for film coating.", "Coating pan on Tablet Line A", "WS-TAB-08-01", "STAGE-06", TABLET_LINE, ["coating"]),
+    _sop("SOP-TAB-COAT-002", "Coating - Solution Prep", "Prepare coating solution.", "Solution prep on Tablet Line A", "WS-TAB-08-02", "STAGE-06", TABLET_LINE, ["coating"]),
+    _sop("SOP-TAB-COAT-003", "Coating - Air Handling", "Monitor air parameters during coating.", "Air handling on Tablet Line A", "WS-TAB-08-03", "STAGE-06", TABLET_LINE, ["coating", "hvac"]),
+    _sop("SOP-TAB-INSP-001", "Inspection - Visual Inspection", "Visual inspection of tablets.", "Visual inspection on Tablet Line A", "WS-TAB-09-01", "STAGE-07", TABLET_LINE, ["inspection"]),
+    _sop("SOP-TAB-INSP-002", "Inspection - Metal Detector", "Operate metal detector.", "Metal detector on Tablet Line A", "WS-TAB-09-02", "STAGE-07", TABLET_LINE, ["inspection"]),
+    _sop("SOP-TAB-INSP-003", "Inspection - Polishing", "Polish tablets for surface finish.", "Polishing on Tablet Line A", "WS-TAB-09-03", "STAGE-07", TABLET_LINE, ["inspection"]),
+    _sop("SOP-TAB-PKG-001", "Packaging - Blister/Strip", "Operate blister/strip machine.", "Blister station on Tablet Line A", "WS-TAB-10-01", "STAGE-08", TABLET_LINE, ["packaging"]),
+    _sop("SOP-TAB-PKG-002", "Packaging - Bottle Filling", "Operate bottle filling machine.", "Bottle filling on Tablet Line A", "WS-TAB-10-02", "STAGE-08", TABLET_LINE, ["packaging"]),
+    _sop("SOP-TAB-PKG-003", "Packaging - Labelling", "Apply labels to products.", "Labelling on Tablet Line A", "WS-TAB-10-03", "STAGE-08", TABLET_LINE, ["packaging"]),
+    _sop("SOP-TAB-PKG-004", "Packaging - Cartoning", "Operate cartoning machine.", "Cartoning on Tablet Line A", "WS-TAB-10-04", "STAGE-08", TABLET_LINE, ["packaging"]),
+    _sop("SOP-CAP-DISP-001", "Dispensing - Sampling Booth", "Ensure accurate sampling for capsule line.", "Sampling on Capsule Line B", "WS-CAP-01-01", "STAGE-CAP-01", CAPSULE_LINE, ["dispensing", "sampling"]),
+    _sop("SOP-CAP-DISP-002", "Dispensing - Weighing Booth", "Controlled weighing for capsule batch.", "Weighing on Capsule Line B", "WS-CAP-01-02", "STAGE-CAP-01", CAPSULE_LINE, ["dispensing", "weighing"]),
+    _sop("SOP-CAP-DISP-003", "Dispensing - Material Staging", "Stage dispensed materials for capsules.", "Staging on Capsule Line B", "WS-CAP-01-03", "STAGE-CAP-01", CAPSULE_LINE, ["dispensing", "staging"]),
+    _sop("SOP-CAP-SIFT-001", "Sifting - Sifter Station", "Operate sifter for capsule materials.", "Sifter on Capsule Line B", "WS-CAP-02-01", "STAGE-CAP-02", CAPSULE_LINE, ["sifting"]),
+    _sop("SOP-CAP-SIFT-002", "Sifting - Co-Mill Station", "Operate co-mill for capsules.", "Co-mill on Capsule Line B", "WS-CAP-02-02", "STAGE-CAP-02", CAPSULE_LINE, ["milling"]),
+    _sop("SOP-CAP-SIFT-003", "Sifting - Vibro Sifter Station", "Operate vibro sifter for capsules.", "Vibro sifter on Capsule Line B", "WS-CAP-02-03", "STAGE-CAP-02", CAPSULE_LINE, ["sifting", "vibro_sifter"]),
+    _sop("SOP-CAP-GRAN-001", "Granulation - RMG Station", "Operate RMG for capsule granulation.", "RMG on Capsule Line B", "WS-CAP-03-01", "STAGE-CAP-03", CAPSULE_LINE, ["granulation"]),
+    _sop("SOP-CAP-GRAN-002", "Granulation - Binder Prep", "Prepare binder for capsule granulation.", "Binder prep on Capsule Line B", "WS-CAP-03-02", "STAGE-CAP-03", CAPSULE_LINE, ["granulation"]),
+    _sop("SOP-CAP-DRY-001", "Drying - FBD Loading", "Load granules into FBD for capsules.", "FBD loading on Capsule Line B", "WS-CAP-04-01", "STAGE-CAP-04", CAPSULE_LINE, ["drying"]),
+    _sop("SOP-CAP-DRY-002", "Drying - FBD Unloading", "Unload dried granules for capsules.", "FBD unloading on Capsule Line B", "WS-CAP-04-02", "STAGE-CAP-04", CAPSULE_LINE, ["drying"]),
+    _sop("SOP-CAP-SZ-001", "Sizing - Co-Mill (post-dry)", "Size reduction for capsule filling.", "Co-mill on Capsule Line B", "WS-CAP-05-01", "STAGE-CAP-05", CAPSULE_LINE, ["milling"]),
+    _sop("SOP-CAP-SZ-002", "Sizing - Sieve Station", "Sieving for capsule filling.", "Sieve on Capsule Line B", "WS-CAP-05-02", "STAGE-CAP-05", CAPSULE_LINE, ["sizing"]),
+    _sop("SOP-CAP-BLD-001", "Blending - Blender Loading", "Load granules for capsule blend.", "Blender loading on Capsule Line B", "WS-CAP-06-01", "STAGE-CAP-06", CAPSULE_LINE, ["blending"]),
+    _sop("SOP-CAP-BLD-002", "Blending - Blender Station", "Operate blender for capsule fill.", "Blender on Capsule Line B", "WS-CAP-06-02", "STAGE-CAP-06", CAPSULE_LINE, ["blending"]),
+    _sop("SOP-CAP-BLD-003", "Blending - Lubrication", "Add lubricant for capsule fill.", "Lubrication on Capsule Line B", "WS-CAP-06-03", "STAGE-CAP-06", CAPSULE_LINE, ["blending"]),
+    _sop("SOP-CAP-FILL-001", "Capsule Filling - Main Station", "Operate capsule filling machine.", "Capsule filler on Capsule Line B", "WS-CAP-07-01", "STAGE-CAP-07", CAPSULE_LINE, ["capsule_filling"]),
+    _sop("SOP-CAP-FILL-002", "Capsule Filling - Empty Capsule Feed", "Load empty capsule feeding system.", "Capsule feed on Capsule Line B", "WS-CAP-07-02", "STAGE-CAP-07", CAPSULE_LINE, ["capsule_filling"]),
+    _sop("SOP-CAP-FILL-003", "Capsule Filling - In-Process QC", "Perform IPC during capsule filling.", "IPC on Capsule Line B", "WS-CAP-07-03", "STAGE-CAP-07", CAPSULE_LINE, ["capsule_filling", "ipc"]),
+    _sop("SOP-CAP-POL-001", "Polishing - Capsule Polisher", "Operate capsule polisher.", "Polisher on Capsule Line B", "WS-CAP-08-01", "STAGE-CAP-08", CAPSULE_LINE, ["polishing"]),
+    _sop("SOP-CAP-POL-002", "Dedusting - Deduster Station", "Operate deduster for capsules.", "Deduster on Capsule Line B", "WS-CAP-08-02", "STAGE-CAP-08", CAPSULE_LINE, ["dedusting"]),
+    _sop("SOP-CAP-INSP-001", "Inspection - Visual Inspection", "Visual inspection of capsules.", "Visual inspection on Capsule Line B", "WS-CAP-09-01", "STAGE-CAP-09", CAPSULE_LINE, ["inspection"]),
+    _sop("SOP-CAP-INSP-002", "Inspection - Metal Detector", "Operate metal detector for capsules.", "Metal detector on Capsule Line B", "WS-CAP-09-02", "STAGE-CAP-09", CAPSULE_LINE, ["inspection"]),
+]
+
+
+async def seed():
+    client = AsyncIOMotorClient(settings.MONGODB_URL)
+    db = client[settings.DB_NAME]
+
+    print("Clearing existing SOPs...")
+    await db["sops"].delete_many({})
+
+    print(f"Inserting {len(SOPS)} SOPs...")
+    for sop in SOPS:
+        await db["sops"].insert_one(dict(sop))
+    print(f"  + {len(SOPS)} SOPs inserted")
+
+    count = await db["sops"].count_documents({})
+    print(f"\nDone. {count} SOPs seeded.")
+
+    from services.pm.helpers import sop as crud
+    sops, total = await crud.get_all(db, page=1, page_size=2)
+    print(f"Validation check: {total} SOPs, first={sops[0]['title'] if sops else 'N/A'}")
+
+    client.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(seed())

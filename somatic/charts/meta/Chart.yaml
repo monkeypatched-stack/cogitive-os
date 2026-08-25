@@ -1,0 +1,7 @@
+apiVersion: v2
+name: meta
+description: |
+  Constitutional preamble. Injected before every module prompt.
+  Encodes the OS analogy, authority hierarchy, universal decision rules.
+type: application
+version: 1.0.0

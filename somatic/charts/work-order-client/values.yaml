@@ -1,0 +1,91 @@
+capability:
+  name: work-order-client
+  id: cap-work-order-client-001
+  platform: HTTP/REST
+  description: "Typed work-order API client capability"
+  version: "1.0.0"
+  status: active
+  authored_by: ClientCharterAgent
+  approved_by: CingulateAgent
+  effective_date: '2026-07-05'
+  review_date: '2027-07-05'
+  module_id: work_order
+  module_name: Work Order
+  tags:
+    - api-client
+    - work-order
+    - capability
+
+auth:
+  type: bearer
+  header_name: Authorization
+  format_template: "Bearer {{token}}"
+  scopes: []
+  refresh_endpoint: ""
+  ttl_seconds: 3600
+
+endpoint:
+  base_url: "http://localhost:8090"
+  protocol: http
+  version: "1.0.0"
+  tls_verify: false
+  timeout_seconds: 30
+
+operations:
+  - name: create_work_order
+    method: POST
+    path: /work-orders/
+    description: "Create work order"
+    auth_required: true
+  - name: get_work_order
+    method: GET
+    path: /work-orders/{id}
+    description: "Get work order"
+    auth_required: false
+
+rate_limit:
+  requests_per_hour: 1000
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status: [429, 500, 502, 503]
+
+error_handling:
+  transient_statuses: [500, 502, 503, 504]
+  permanent_statuses: [400, 401, 403, 404, 422]
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+
+preamble:
+  statement: >
+    The work-order-client capability wraps the Work-Order REST API as a registered
+    MonkeyBrain ICapability. It provides typed operations for interacting with
+    work-order resources. Authentication is via JWT Bearer token injected at registration.
+    Errors are mapped to domain exceptions. Retries on 429/5xx with exponential backoff.
+
+invariants:
+  - id: WORKORDE-CAP-001
+    rule: typed_parameters
+    statement: All operation parameters must be fully typed.
+    severity: critical
+    rejection: "REJECTED — Untyped parameter in operation."
+  - id: WORKORDE-CAP-002
+    rule: auth_at_registration
+    statement: JWT token injected at capability registration, not per operation.
+    severity: high
+    rejection: "REJECTED — Auth credential passed per operation call."
+  - id: WORKORDE-CAP-003
+    rule: error_mapping
+    statement: HTTP errors must map to domain exceptions.
+    severity: high
+    rejection: "REJECTED — Raw HTTP error exposed to caller."
+
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED — work-order-client capability conforms to all API client invariants."
+    rejected:
+      - "REJECTED — Untyped parameter in operation."
+      - "REJECTED — Auth credential passed per operation call."
+      - "REJECTED — Raw HTTP error exposed to caller."

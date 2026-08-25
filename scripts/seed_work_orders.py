@@ -1,0 +1,292 @@
+#!/usr/bin/env python3
+"""Seed work order data: Maintenance, Calibration, and Production work orders."""
+
+import asyncio
+import sys
+from datetime import datetime, timezone, timedelta
+
+sys.path.insert(0, "/Users/prashunjaveri/Code/monkeypatched")
+
+from motor.motor_asyncio import AsyncIOMotorClient
+from services.common.config import settings
+
+NOW = datetime.now(timezone.utc)
+
+PLANT_ID = "PLANT-TBL-IN-001"
+TABLET_LINE = "LINE-TAB-001"
+CAPSULE_LINE = "LINE-CAP-001"
+
+STAGE_IDS = {
+    "Dispensing": "STAGE-01",
+    "Sifting / Milling": "STAGE-03",
+    "Granulation": "STAGE-02",
+    "Drying (FBD)": "STAGE-09",
+    "Sizing / Milling (post-dry)": "STAGE-10",
+    "Blending": "STAGE-04",
+    "Compression": "STAGE-05",
+    "Film Coating": "STAGE-06",
+    "Inspection / Dedust / Polish": "STAGE-07",
+    "Packaging": "STAGE-08",
+    "Capsule Filling": "STAGE-CAP-07",
+    "Polishing / Dedust": "STAGE-CAP-08",
+    "Inspection": "STAGE-CAP-09",
+}
+
+WS_IDS = {
+    "Sampling Booth": ["WS-TAB-01-01", "WS-CAP-01-01"],
+    "Weighing Booth": ["WS-TAB-01-02", "WS-CAP-01-02"],
+    "Sifter Station": ["WS-TAB-02-01", "WS-CAP-02-01"],
+    "Co-Mill Station": ["WS-TAB-02-02", "WS-CAP-02-02"],
+    "Vibro Sifter Station": ["WS-TAB-02-03", "WS-CAP-02-03"],
+    "RMG Station": ["WS-TAB-03-01", "WS-CAP-03-01"],
+    "Binder Prep Station": ["WS-TAB-03-02", "WS-CAP-03-02"],
+    "FBD Loading Station": ["WS-TAB-04-01", "WS-CAP-04-01"],
+    "FBD Unloading Station": ["WS-TAB-04-02", "WS-CAP-04-02"],
+    "Blender Loading Station": ["WS-TAB-06-01", "WS-CAP-06-01"],
+    "Blender Station": ["WS-TAB-06-02", "WS-CAP-06-02"],
+    "Lubrication Station": ["WS-TAB-06-03", "WS-CAP-06-03"],
+    "Tablet Press Station": ["WS-TAB-07-01"],
+    "In-Process QC Station": ["WS-TAB-07-02", "WS-CAP-07-03"],
+    "Deduster Station": ["WS-TAB-07-03", "WS-CAP-08-02"],
+    "Coating Pan Station": ["WS-TAB-08-01"],
+    "Solution Prep Station": ["WS-TAB-08-02"],
+    "Inlet/Outlet Air Station": ["WS-TAB-08-03"],
+    "Visual Inspection Station": ["WS-TAB-09-01", "WS-CAP-09-01"],
+    "Metal Detector Station": ["WS-TAB-09-02", "WS-CAP-09-02"],
+    "Polishing Station": ["WS-TAB-09-03"],
+    "Blister/Strip Station": ["WS-TAB-10-01"],
+    "Bottle Filling Station": ["WS-TAB-10-02"],
+    "Labelling Station": ["WS-TAB-10-03"],
+    "Cartoning Station": ["WS-TAB-10-04"],
+    "Capsule Filler Station": ["WS-CAP-07-01"],
+    "Capsule Polisher Station": ["WS-CAP-08-01"],
+}
+
+MACHINE_IDS = {
+    "Rapid Mixer Granulator": "MACH-GRAN-001",
+    "Fluid Bed Dryer": "MACH-DRY-001",
+    "Octagonal Blender": "MACH-BLEND-001",
+    "Rotary Tablet Press": "MACH-COMP-001",
+    "Auto Coater": "MACH-COAT-001",
+    "Capsule Filling Machine": "MACH-FILL-001",
+    "Blister Packing Machine": "MACH-PACK-001",
+    "Cartoning Machine": "MACH-PACK-002",
+    "Analytical Balance (Weighing Booth)": "MACH-QC-001",
+    "Analytical Balance (IPQC Station)": "MACH-QC-002",
+    "Moisture Analyzer": "MACH-QC-003",
+    "LOD Moisture Analyzer (FBD)": "MACH-QC-004",
+    "Thermometer (Binder Prep)": "MACH-QC-005",
+    "Thermometer (Solution Prep)": "MACH-QC-006",
+    "Inlet Air Temp Sensor (FBD)": "MACH-QC-007",
+    "Exhaust Temp Sensor (FBD)": "MACH-QC-008",
+    "Inlet Temp Sensor (Auto Coater)": "MACH-QC-009",
+    "Exhaust Temp Sensor (Auto Coater)": "MACH-QC-010",
+    "RH Sensor (AHU)": "MACH-QC-011",
+    "RH Sensor (Coating Pan)": "MACH-QC-012",
+    "Compression Force Sensor": "MACH-QC-013",
+    "Hardness Tester": "MACH-QC-014",
+    "Friability Tester": "MACH-QC-015",
+    "Disintegration Tester": "MACH-QC-016",
+    "Viscometer (Solution Prep)": "MACH-QC-017",
+    "Differential Pressure Gauge (AHU)": "MACH-QC-018",
+    "Differential Pressure Gauge (LAF)": "MACH-QC-019",
+    "Fill Weight Sensor (Bottle Filler)": "MACH-QC-020",
+    "Fill Weight Sensor (Capsule Filler)": "MACH-QC-021",
+    "Checkweigher (Cartoning)": "MACH-QC-022",
+    "Checkweigher (Bottle Line)": "MACH-QC-023",
+    "Vision Inspection System (Blister)": "MACH-QC-024",
+    "Vision Inspection System (Labelling)": "MACH-QC-025",
+    "Tachometer (portable)": "MACH-QC-026",
+    "Torque Wrench Set": "MACH-QC-027",
+    "Clamp Meter": "MACH-QC-028",
+    "Multimeter": "MACH-QC-029",
+    "Loop Calibrator": "MACH-QC-030",
+    "AHU": "MACH-HVAC-001",
+    "LAF Sampling/Weighing Booth": "MACH-HVAC-002",
+    "Dust Collection System": "MACH-HVAC-003",
+    "Bin Blender": "MACH-BLEND-002",
+}
+
+
+def _wo(wo_id, title, wo_type, status, priority, machine=None, workstation=None, stage=None, line=TABLET_LINE, assigned=None, message=None):
+    return {
+        "_id": wo_id,
+        "work_order_id": wo_id,
+        "title": title,
+        "message": message or "",
+        "work_order_type": wo_type,
+        "status": status,
+        "priority": priority,
+        "machine_id": machine,
+        "line_id": line,
+        "workstation_id": workstation,
+        "assigned_to": assigned,
+        "created_at": NOW,
+        "updated_at": NOW,
+        "remarks": "",
+        "attachments": [],
+    }
+
+
+MAINTENANCE_WOS = [
+    _wo("PM-RMG-001", "RMG Quarterly PM", "Maintenance", "Todo", "High", machine="MACH-GRAN-001", workstation="WS-TAB-03-01", stage="STAGE-02", assigned="Mechanical Technician",
+        message="Inspect impeller/chopper blades, replace mechanical seal kit, check gearbox oil, inspect binder spray nozzle, clean discharge valve, verify RPM indicator"),
+    _wo("PM-FBD-001", "FBD Monthly PM", "Maintenance", "Todo", "High", machine="MACH-DRY-001", workstation="WS-TAB-04-01", stage="STAGE-09", assigned="Mechanical Technician",
+        message="Replace finger bag set, inspect inflatable seal, check inlet/exhaust filters, inspect blower belt, verify temp sensors, clean product bowl gasket"),
+    _wo("PM-BLD-001", "Blender Quarterly PM", "Maintenance", "Todo", "High", machine="MACH-BLEND-001", workstation="WS-TAB-06-02", stage="STAGE-04", assigned="Mechanical Technician",
+        message="Inspect butterfly valve seal, check shaft seal kit, verify drive belt, inspect shell gasket, lubricate bearings, test RPM counter"),
+    _wo("PM-TBP-001", "Tablet Press Weekly PM", "Maintenance", "In Progress", "Critical", machine="MACH-COMP-001", workstation="WS-TAB-07-01", stage="STAGE-05", assigned="Mechanical Technician",
+        message="Inspect punch/die set, clean cam track, check force feeder paddle/scraper, lubricate compression rolls, verify rejection gate, inspect turret bearing"),
+    _wo("PM-TBP-002", "Tablet Press Monthly PM", "Maintenance", "Todo", "High", machine="MACH-COMP-001", workstation="WS-TAB-07-01", stage="STAGE-05", assigned="Mechanical Technician",
+        message="Replace punch seal rings, inspect ejection cam, check pre-compression roll, full lubrication circuit check, turret runout check with dial gauge"),
+    _wo("PM-ACT-001", "Auto Coater Monthly PM", "Maintenance", "Todo", "High", machine="MACH-COAT-001", workstation="WS-TAB-08-01", stage="STAGE-06", assigned="Mechanical Technician",
+        message="Replace spray gun nozzle/needle, inspect pan drive belt/bearing, replace peristaltic pump tubing, check baffle set, inspect inlet/outlet duct seal"),
+    _wo("PM-CFM-001", "Capsule Filler Monthly PM", "Maintenance", "Todo", "High", machine="MACH-FILL-001", workstation="WS-CAP-07-01", stage="STAGE-CAP-07", assigned="Mechanical Technician", line=CAPSULE_LINE,
+        message="Inspect dosing disc set, check tamping pin set, inspect closing ring/ejection finger, verify vacuum pump seal, check cam track, lubricate bearing set"),
+    _wo("PM-BPM-001", "Blister Machine Monthly PM", "Maintenance", "Todo", "High", machine="MACH-PACK-001", workstation="WS-TAB-10-01", stage="STAGE-08", assigned="Mechanical Technician",
+        message="Inspect forming/sealing die set, replace heating element if worn, check thermocouple, inspect conveyor chain, check cam follower/timing belt"),
+    _wo("PM-AHU-001", "AHU Monthly PM", "Maintenance", "Todo", "High", machine="MACH-HVAC-001", workstation="WS-TAB-08-03", stage="STAGE-06", assigned="HVAC Technician",
+        message="Replace pre-filter (G4), inspect fine filter (F7), check fan belt/blower bearing, test damper actuator, verify control valve, check heating/cooling coil"),
+    _wo("PM-AHU-002", "AHU HEPA Annual Replacement", "Maintenance", "Todo", "Medium", machine="MACH-HVAC-001", workstation="WS-TAB-08-03", stage="STAGE-06", assigned="HVAC Technician",
+        message="Replace HEPA filter (H14), perform DOP/PAO integrity test post replacement, update filter change log"),
+    _wo("PM-LAF-001", "LAF Booth Monthly PM", "Maintenance", "Todo", "High", machine="MACH-HVAC-002", workstation="WS-TAB-01-01", stage="STAGE-01", assigned="HVAC Technician",
+        message="Replace pre-filter, check HEPA DP, inspect UV lamp, verify blower motor, test airflow alarm"),
+    _wo("PM-DCU-001", "Dust Collector Monthly PM", "Maintenance", "Todo", "High", machine="MACH-HVAC-003", workstation="WS-TAB-02-01", stage="STAGE-03", assigned="Mechanical Technician",
+        message="Replace filter bag/cartridge, test pulse jet solenoid valve, check blower motor/impeller, verify hopper discharge valve, check DP across filter"),
+    _wo("PM-CTM-001", "Cartoning Machine Monthly PM", "Maintenance", "Todo", "High", machine="MACH-PACK-002", workstation="WS-TAB-10-04", stage="STAGE-08", assigned="Mechanical Technician",
+        message="Inspect carton suction cups, check timing belt/cam follower, inspect tucking blade, clean glue nozzle, check drive chain/photocell"),
+    _wo("CM-001", "Breakdown — RMG", "Repair", "Todo", "Critical", machine="MACH-GRAN-001", workstation="WS-TAB-03-01", stage="STAGE-02", assigned="Maintenance Engineer",
+        message="Fault identification, root cause analysis, part replacement, functional test, sign-off"),
+    _wo("CM-002", "Emergency Repair — Tablet Press", "Repair", "Todo", "Critical", machine="MACH-COMP-001", workstation="WS-TAB-07-01", stage="STAGE-05", assigned="Maintenance Engineer",
+        message="Isolate (LOTO), diagnose, repair, functional verification, GMP impact assessment, batch record notation"),
+]
+
+CALIBRATION_WOS = [
+    _wo("CAL-BAL-001", "Analytical Balance (Weighing Booth) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-001", workstation="WS-TAB-01-02", stage="STAGE-01", assigned="QC Lab Technician",
+        message="Linearity check, repeatability test, eccentricity test, tare function verify. Standard: OIML R 76"),
+    _wo("CAL-BAL-002", "Analytical Balance (IPQC Station) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-002", workstation="WS-TAB-07-02", stage="STAGE-05", assigned="QC Lab Technician",
+        message="Linearity, repeatability, eccentricity. Standard: OIML R 76"),
+    _wo("CAL-MOI-001", "Moisture Analyzer Annual Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-003", workstation="WS-TAB-01-01", stage="STAGE-01", assigned="QC Lab Technician",
+        message="Verify against reference standard weights, temperature calibration check. Standard: USP"),
+    _wo("CAL-LOD-001", "LOD Moisture Analyzer (FBD) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-004", workstation="WS-TAB-04-02", stage="STAGE-09", assigned="QC Lab Technician",
+        message="Verify against NIST traceable reference, repeatability at 3 points. Standard: USP"),
+    _wo("CAL-THM-001", "Thermometer (Binder Prep) Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-005", workstation="WS-TAB-03-02", stage="STAGE-02", assigned="QC Lab Technician",
+        message="3-point calibration (ambient, 50°C, 100°C) against reference thermometer. Standard: NIST traceable"),
+    _wo("CAL-THM-002", "Thermometer (Solution Prep) Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-006", workstation="WS-TAB-08-02", stage="STAGE-06", assigned="QC Lab Technician",
+        message="3-point calibration. Standard: NIST traceable"),
+    _wo("CAL-TMP-001", "Inlet Air Temp Sensor (FBD) Annual Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-007", workstation="WS-TAB-04-01", stage="STAGE-09", assigned="QC Lab Technician",
+        message="Calibrate at 3 points, verify against reference RTD. Standard: NIST traceable"),
+    _wo("CAL-TMP-002", "Exhaust Temp Sensor (FBD) Annual Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-008", workstation="WS-TAB-04-02", stage="STAGE-09", assigned="QC Lab Technician",
+        message="Calibrate at 3 points. Standard: NIST traceable"),
+    _wo("CAL-TMP-003", "Inlet Temp Sensor (Auto Coater) Annual Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-009", workstation="WS-TAB-08-01", stage="STAGE-06", assigned="QC Lab Technician",
+        message="Calibrate at 3 points. Standard: NIST traceable"),
+    _wo("CAL-TMP-004", "Exhaust Temp Sensor (Auto Coater) Annual Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-010", workstation="WS-TAB-08-01", stage="STAGE-06", assigned="QC Lab Technician",
+        message="Calibrate at 3 points. Standard: NIST traceable"),
+    _wo("CAL-RH-001", "RH Sensor (AHU) Annual Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-011", workstation="WS-TAB-08-03", stage="STAGE-06", assigned="QC Lab Technician",
+        message="Calibrate at 2 points (33% RH, 75% RH) using salt solutions. Standard: NIST traceable"),
+    _wo("CAL-RH-002", "RH Sensor (Coating Pan) Annual Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-012", workstation="WS-TAB-08-01", stage="STAGE-06", assigned="QC Lab Technician",
+        message="Calibrate at 2 points (33% RH, 75% RH) using salt solutions. Standard: NIST traceable"),
+    _wo("CAL-PRE-001", "Compression Force Sensor 6-monthly Calibration", "Calibration", "Todo", "High", machine="MACH-QC-013", workstation="WS-TAB-07-01", stage="STAGE-05", assigned="QC Lab Technician",
+        message="Static calibration at 0%, 25%, 50%, 75%, 100% range using certified weights. Standard: OEM / NIST"),
+    _wo("CAL-HRD-001", "Hardness Tester 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-014", workstation="WS-TAB-07-02", stage="STAGE-05", assigned="QC Lab Technician",
+        message="Verify using certified reference tablets at 3 hardness levels. Standard: OEM standard"),
+    _wo("CAL-FRB-001", "Friability Tester Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-015", workstation="WS-TAB-07-02", stage="STAGE-05", assigned="QC Lab Technician",
+        message="Verify RPM against tachometer, verify drum dimensions. Standard: USP"),
+    _wo("CAL-DIS-001", "Disintegration Tester Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-016", workstation="WS-TAB-07-02", stage="STAGE-05", assigned="QC Lab Technician",
+        message="Verify stroke rate, temperature probe calibration. Standard: USP"),
+    _wo("CAL-VIS-001", "Viscometer (Solution Prep) Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-017", workstation="WS-TAB-08-02", stage="STAGE-06", assigned="QC Lab Technician",
+        message="Calibrate using certified viscosity standard fluids. Standard: ISO 17025"),
+    _wo("CAL-DPG-001", "Differential Pressure Gauge (AHU) Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-018", workstation="WS-TAB-08-03", stage="STAGE-06", assigned="QC Lab Technician",
+        message="Zero check, span check against reference manometer. Standard: NIST traceable"),
+    _wo("CAL-DPG-002", "Differential Pressure Gauge (LAF) Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-019", workstation="WS-TAB-01-01", stage="STAGE-01", assigned="QC Lab Technician",
+        message="Zero and span check. Standard: NIST traceable"),
+    _wo("CAL-WGT-001", "Fill Weight Sensor (Bottle Filler) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-020", workstation="WS-TAB-10-02", stage="STAGE-08", assigned="QC Lab Technician",
+        message="Calibrate at 3 points, verify reject threshold. Standard: OEM / NIST"),
+    _wo("CAL-WGT-002", "Fill Weight Sensor (Capsule Filler) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-021", workstation="WS-CAP-07-01", stage="STAGE-CAP-07", assigned="QC Lab Technician", line=CAPSULE_LINE,
+        message="Calibrate at 3 points. Standard: OEM / NIST"),
+    _wo("CAL-CWG-001", "Checkweigher (Cartoning) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-022", workstation="WS-TAB-10-04", stage="STAGE-08", assigned="QC Lab Technician",
+        message="Static calibration, verify reject gate trigger accuracy. Standard: OIML"),
+    _wo("CAL-CWG-002", "Checkweigher (Bottle Line) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-023", workstation="WS-TAB-10-02", stage="STAGE-08", assigned="QC Lab Technician",
+        message="Static calibration. Standard: OIML"),
+    _wo("CAL-VIS-001B", "Vision Inspection System (Blister) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-024", workstation="WS-TAB-10-01", stage="STAGE-08", assigned="QC Lab Technician",
+        message="Verify detection rate using reference defect samples (missing tablet, seal defect). Standard: OEM SOP"),
+    _wo("CAL-VIS-002B", "Vision Inspection System (Labelling) 6-monthly Calibration", "Calibration", "Todo", "Medium", machine="MACH-QC-025", workstation="WS-TAB-10-03", stage="STAGE-08", assigned="QC Lab Technician",
+        message="Verify label placement detection, barcode read rate. Standard: OEM SOP"),
+    _wo("CAL-TAC-001", "Tachometer (portable) Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-026", assigned="QC Lab Technician",
+        message="Verify against NIST traceable reference tachometer. Standard: NIST"),
+    _wo("CAL-TWR-001", "Torque Wrench Set Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-027", assigned="QC Lab Technician",
+        message="Calibrate at 25%, 50%, 75%, 100% rated torque. Standard: ISO 6789"),
+    _wo("CAL-CLM-001", "Clamp Meter Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-028", assigned="QC Lab Technician",
+        message="AC/DC current calibration at 3 points. Standard: NIST traceable"),
+    _wo("CAL-MMT-001", "Multimeter Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-029", assigned="QC Lab Technician",
+        message="Voltage, resistance, continuity calibration. Standard: NIST traceable"),
+    _wo("CAL-LPC-001", "Loop Calibrator Annual Calibration", "Calibration", "Todo", "Low", machine="MACH-QC-030", assigned="QC Lab Technician",
+        message="4mA, 12mA, 20mA point calibration. Standard: NIST traceable"),
+]
+
+PRODUCTION_WOS = [
+    _wo("PRD-001", "Material Dispensing", "Other", "Completed", "High", workstation="WS-TAB-01-02", stage="STAGE-01", assigned="Dispensing Operator",
+        message="Verify GRN, sample raw material, weigh per BOM, label dispensed containers, update batch record"),
+    _wo("PRD-002", "Sifting / Pre-milling", "Other", "Completed", "High", workstation="WS-TAB-02-01", stage="STAGE-03", assigned="Milling Operator",
+        message="Set mesh size, run vibro sifter, collect sifted material, co-mill oversized fraction, record yield"),
+    _wo("PRD-003", "Granulation", "Other", "Completed", "Critical", workstation="WS-TAB-03-01", stage="STAGE-02", assigned="Granulation Operator",
+        message="Prepare binder solution, charge RMG with dry mix, granulate, endpoint check (power consumption / torque), discharge"),
+    _wo("PRD-004", "Drying (FBD)", "Other", "In Progress", "Critical", workstation="WS-TAB-04-01", stage="STAGE-09", assigned="Drying Operator",
+        message="Load wet granules into FBD bowl, set inlet temp/airflow/time, monitor exhaust temp, check LOD at intervals, discharge on LOD pass"),
+    _wo("PRD-005", "Sizing / Post-dry Milling", "Other", "Todo", "High", workstation="WS-TAB-05-01", stage="STAGE-10", assigned="Milling Operator",
+        message="Set co-mill screen size, mill dried granules, sieve, record yield"),
+    _wo("PRD-006", "Blending", "Other", "Todo", "High", workstation="WS-TAB-06-02", stage="STAGE-04", assigned="Blending Operator",
+        message="Load granules into blender via bin lifter, set RPM and revolutions, blend, collect blend uniformity sample"),
+    _wo("PRD-007", "Lubrication", "Other", "Todo", "High", workstation="WS-TAB-06-03", stage="STAGE-04", assigned="Blending Operator",
+        message="Add lubricant (magnesium stearate), blend for defined revolutions, collect final blend sample, transfer to compression bin"),
+    _wo("PRD-008", "Compression", "Other", "Todo", "Critical", workstation="WS-TAB-07-01", stage="STAGE-05", assigned="Compression Operator",
+        message="Set punch/die, set compression force, start press, IPQC checks every 30 min (weight, hardness, thickness, friability, DT), dedust, metal detect, collect yield"),
+    _wo("PRD-009", "Coating", "Other", "Todo", "High", workstation="WS-TAB-08-01", stage="STAGE-06", assigned="Coating Operator",
+        message="Prepare coating solution, load tablets, set pan RPM/inlet temp/spray rate, coat to target weight gain, sample for appearance/dissolution"),
+    _wo("PRD-010", "Tablet Inspection", "Other", "Todo", "High", workstation="WS-TAB-09-01", stage="STAGE-07", assigned="Inspection Operator",
+        message="100% visual inspection or AQL sampling, metal detect, polish, record defect count, yield reconciliation"),
+    _wo("PRD-011", "Capsule Filling", "Other", "Todo", "Critical", workstation="WS-CAP-07-01", stage="STAGE-CAP-07", assigned="Capsule Filling Operator", line=CAPSULE_LINE,
+        message="Set dosing disc/tamping pins for capsule size, run filling machine, IPQC checks every 30 min, reject non-conforming"),
+    _wo("PRD-012", "Capsule Polishing / Dedust", "Other", "Todo", "High", workstation="WS-CAP-08-01", stage="STAGE-CAP-08", assigned="Capsule Operator", line=CAPSULE_LINE,
+        message="Polish capsules, dedust, metal detect, yield reconciliation"),
+    _wo("PRD-013", "Capsule Inspection", "Other", "Todo", "High", workstation="WS-CAP-09-01", stage="STAGE-CAP-09", assigned="Inspection Operator", line=CAPSULE_LINE,
+        message="AQL visual inspection, metal detect, defect classification, yield reconciliation"),
+    _wo("PRD-014", "Primary Packaging — Blister", "Other", "Todo", "High", workstation="WS-TAB-10-01", stage="STAGE-08", assigned="Packaging Operator",
+        message="Set forming/sealing temp, run blister machine, online leak test, vision check (fill + seal), batch code verify, AQL sampling"),
+    _wo("PRD-015", "Primary Packaging — Bottle", "Other", "Todo", "High", workstation="WS-TAB-10-02", stage="STAGE-08", assigned="Packaging Operator",
+        message="Set counter, fill bottles, insert desiccant, cap seal, checkweigh, label, vision check"),
+    _wo("PRD-016", "Secondary Packaging", "Other", "Todo", "High", workstation="WS-TAB-10-03", stage="STAGE-08", assigned="Packaging Operator",
+        message="Apply label, batch code print + verify, insert leaflet, carton, checkweigh carton, palletise, yield reconciliation, batch record closure"),
+]
+
+ALL_WOS = MAINTENANCE_WOS + CALIBRATION_WOS + PRODUCTION_WOS
+
+
+async def seed():
+    client = AsyncIOMotorClient(settings.MONGODB_URL)
+    db = client[settings.DB_NAME]
+
+    print("Clearing existing work orders...")
+    await db["work_orders"].delete_many({})
+
+    print(f"Inserting {len(ALL_WOS)} work orders...")
+    for wo in ALL_WOS:
+        await db["work_orders"].insert_one(dict(wo))
+    print(f"  + {len(ALL_WOS)} work orders inserted")
+
+    count = await db["work_orders"].count_documents({})
+    maint = await db["work_orders"].count_documents({"work_order_type": "Maintenance"})
+    repair = await db["work_orders"].count_documents({"work_order_type": "Repair"})
+    cal = await db["work_orders"].count_documents({"work_order_type": "Calibration"})
+    prod = await db["work_orders"].count_documents({"work_order_type": "Other"})
+    print(f"\nDone. {count} work orders seeded:")
+    print(f"  Maintenance: {maint}")
+    print(f"  Repair: {repair}")
+    print(f"  Calibration: {cal}")
+    print(f"  Production: {prod}")
+
+    client.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(seed())

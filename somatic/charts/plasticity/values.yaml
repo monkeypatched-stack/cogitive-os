@@ -1,0 +1,150 @@
+module:
+  name: plasticity
+  layer: 5
+  alias: Learning + Testing + Seeding
+  biologicalRole: Learning and adaptation
+  softwareRole: Tests, synthetic data, continuous learning, evaluation
+  source: soma/Artificial Intelligence/Reinforcement Learning.md
+  owns:
+  - seed_seeder
+  - seed_seed_data
+  - seed_scenario_builder
+  - seed_event_generator
+  - seed_benchmark_generator
+  - testing_runner
+  - testing_performance
+  - testing_profiler
+  - testing_reporter
+owns:
+- SyntheticDataGeneration
+- DeterministicSeeding
+- ScenarioGeneration
+- EventGeneration
+- PerformanceTesting
+- ContinuousLearning
+- FeedbackLoops
+- AutoEvaluation
+neverOwns:
+- RuntimeExecution
+- ProductionPipelines
+- CapabilityLogic
+- GovernancePolicy
+seedingContract:
+  rule: All entities created through FastAPI microservice APIs. No direct database
+    writes.
+  flow:
+  - POST /plants
+  - POST /lines
+  - POST /stages
+  - POST /workstations
+  - POST /machines
+  - POST /workers
+  - POST /sops
+  - POST /batches
+  - POST /work-orders
+  determinism: "Same configuration \u2192 identical datasets always."
+rlContract:
+  initialImplementation:
+  - Bellman
+  - TransitionTables
+  - RewardTables
+  evolutionPath:
+  - DeepQ
+  - ActorCritic
+  - PPO
+  constraint: Interfaces designed so RL implementation can evolve without changing
+    the kernel API.
+scenarioProfiles:
+- SmallFactory
+- MediumFactory
+- EnterpriseFactory
+- MultiplePlants
+- MultipleOrganizations
+- MultiTenant
+- FailureScenarios
+- MaintenanceScenarios
+- QualityIncidents
+- ProductionCampaigns
+principles:
+- id: 1
+  name: APIDrivernSeeding
+  statement: All seed data created via FastAPI APIs. Never direct database manipulation.
+- id: 2
+  name: DeterministicSeeding
+  statement: Same config always produces identical datasets.
+- id: 3
+  name: RLInterfaceStability
+  statement: "RL implementation can evolve (UCB \u2192 PPO) without changing kernel\
+    \ API."
+- id: 4
+  name: ModelDrivenSeeding
+  statement: Seed data generated from existing Pydantic domain models. Never redefine
+    schemas.
+invariants:
+- id: PLAST-INV-001
+  rule: no_direct_db_writes_in_seeding
+  statement: plasticity/seed never writes directly to databases. Only via APIs.
+  severity: critical
+  rejection: "REJECTED \u2014 Seeder writes directly to database."
+- id: PLAST-INV-002
+  rule: rl_interface_stable
+  statement: RL policy interface must not change the kernel API.
+  severity: critical
+  rejection: "REJECTED \u2014 RL change breaks kernel API."
+- id: PLAST-INV-003
+  rule: no_production_execution_in_testing
+  statement: plasticity/testing never executes production pipelines.
+  severity: high
+  rejection: "REJECTED \u2014 Testing module executes production pipelines."
+deliverables:
+  seeding:
+  - artifact: SeederFramework
+  - artifact: ScenarioBuilder
+  - artifact: RelationshipGenerator
+  - artifact: EventGenerator
+  - artifact: GroundTruthGenerator
+  - artifact: BenchmarkDatasetGenerator
+  - artifact: ValidationReports
+  - artifact: APIClientLibrary
+  - artifact: SeedingCLI
+  - artifact: ConfigurationProfiles
+  testing:
+  - artifact: PerformanceTestSuite
+  - artifact: ProfilerIntegration
+  - artifact: TestReporter
+  - artifact: CIReadyTestRunner
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: plasticity generates synthetic data and tests. It never
+      executes production.'
+    constraint: PLAST-INV-003
+    auditGate: true
+  - step: 2
+    instruction: Map plasticity/seed/ files to seeding pipeline stages.
+  - step: 3
+    instruction: Verify the seeder module calls FastAPI endpoints only. No direct DB access.
+    constraint: PLAST-INV-001
+    auditGate: true
+  - step: 4
+    instruction: Verify the seed_data module uses existing Pydantic models. No schema redefinition.
+  - step: 5
+    instruction: Verify the scenario_builder module covers all scenario profiles.
+  - step: 6
+    instruction: Design RL policy interface in alignment with the kernel's policy layer.
+    constraint: PLAST-INV-002
+    auditGate: true
+  - step: 7
+    instruction: Produce all seeding and testing deliverables.
+  - step: 8
+    instruction: Run constitutional review gate.
+    auditGate: true
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 plasticity conforms to Learning + Testing Constitution\
+      \ v1.0.0"
+    rejected:
+    - "REJECTED \u2014 Seeder writes directly to database."
+    - "REJECTED \u2014 RL change breaks kernel API."
+    - "REJECTED \u2014 Testing executes production pipelines."

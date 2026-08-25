@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: placeholder API
+  description: Placeholder capability
+  version: 1.0.0
+servers:
+- url: ''
+  description: Capability endpoint
+paths: {}
+components:
+  securitySchemes: {}

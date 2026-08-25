@@ -1,0 +1,35 @@
+name: software_engineering
+version: "0.1.0"
+description: "Software engineering bounded context — code generation, testing, deployment, CI/CD, code review"
+bounded_context:
+  name: software_engineering
+  aggregates:
+    - PullRequest
+    - TestSuite
+    - Deployment
+    - Pipeline
+    - CodeReview
+  entities:
+    - PullRequest
+    - TestSuite
+    - Deployment
+    - Pipeline
+    - CodeReview
+    - Commit
+    - Branch
+  value_objects:
+    - PRStatus
+    - TestResult
+    - DeploymentEnvironment
+    - PipelineStage
+  events:
+    - PRCreated
+    - PRMerged
+    - TestsPassed
+    - TestsFailed
+    - DeploymentStarted
+    - DeploymentCompleted
+    - PipelinePassed
+    - PipelineFailed
+    - ReviewApproved
+    - ReviewRejected

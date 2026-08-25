@@ -1,0 +1,307 @@
+module:
+  name: cerebellum
+  layer: 3
+  alias: Cerberus
+  biologicalRole: Learned motor skills
+  softwareRole: Capabilities, workflows, tools
+  source: soma/Artificial Intelligence/Capability.md
+  owns:
+  - adapter
+  - capabilities_agent_agents
+  - capabilities_ai_providers
+  - capabilities_api_graphql
+  - capabilities_api_rest_api
+  - capabilities_api_webhook
+  - capabilities_browser_browsers
+  - capabilities_cloud_cloud
+  - capabilities_communication_communication
+  - capabilities_database_elasticsearch
+  - capabilities_database_influxdb
+  - capabilities_database_mongodb
+  - capabilities_database_neo4j
+  - capabilities_database_redis
+  - capabilities_enterprise_opensource
+  - capabilities_enterprise_proprietary
+  - capabilities_event_streaming_streaming
+  - capabilities_infrastructure_infrastructure
+  - capabilities_pipeline_pipeline
+  - capabilities_productivity_productivity
+  - capabilities_robotics_robotics
+  - capabilities_runtime_runtimes
+  - capabilities_search_search
+  - capabilities_source_control_source_control
+  - capabilities_storage_storage
+  - capabilities_workflow_workflows
+  - capability
+  - config
+  - fallback
+  - fallback_engine
+  - key_manager
+  - keystore
+  - lifecycle
+  - metadata
+  - operator_base
+  - peripheral
+  - registry
+  - resolve_entity_capability
+owns:
+- CapabilityDiscovery
+- CapabilityRegistration
+- CapabilityLifecycle
+- CapabilityResolution
+- CapabilityMetadata
+- CapabilityHealth
+- DriverManagement
+- CapabilityContracts
+neverOwns:
+- Scheduling
+- WorkflowExecution
+- RuntimeState
+- Memory
+- Planning
+- IntentResolution
+- WorldModeling
+- capabilities/ai
+- capabilities/api
+- capabilities/agent
+- capabilities/browser
+- capabilities/cloud
+- capabilities/communication
+- capabilities/database
+- capabilities/enterprise
+- capabilities/event_streaming
+- capabilities/infrastructure
+- capabilities/productivity
+- capabilities/robotics
+- capabilities/runtime
+- capabilities/search
+- capabilities/source_control
+- capabilities/storage
+- capabilities/workflow
+capabilityCategories:
+  api:
+  - REST
+  - GraphQL
+  - gRPC
+  - MCP
+  - OpenAPI
+  - Webhooks
+  - WebSocket
+  ai:
+  - OpenAI
+  - Anthropic
+  - Gemini
+  - AzureOpenAI
+  - Bedrock
+  - Ollama
+  - HuggingFace
+  - OpenRouter
+  agent:
+  - OpenClaw
+  - ExternalAgents
+  - AgentToAgent
+  - RemoteAgentExecution
+  database:
+    relational:
+    - PostgreSQL
+    - MySQL
+    - SQLServer
+    - Oracle
+    - SQLite
+    document:
+    - MongoDB
+    - CouchDB
+    graph:
+    - Neo4j
+    keyvalue:
+    - Redis
+    timeseries:
+    - InfluxDB
+    search:
+    - Elasticsearch
+    - OpenSearch
+    vector:
+    - Qdrant
+    - Pinecone
+    - Milvus
+    - Weaviate
+    - Chroma
+    - FAISS
+  storage:
+  - LocalFS
+  - S3
+  - AzureBlob
+  - GCS
+  - MinIO
+  - SFTP
+  communication:
+  - Email
+  - SMS
+  - Slack
+  - Discord
+  - Telegram
+  - Teams
+  productivity:
+  - GoogleCalendar
+  - Outlook
+  - GDrive
+  - Notion
+  - Jira
+  - Confluence
+  sourceControl:
+  - GitHub
+  - GitLab
+  - Bitbucket
+  - AzureDevOps
+  infrastructure:
+  - Docker
+  - Kubernetes
+  - K3s
+  - Helm
+  - Nomad
+  cloud:
+  - AWS
+  - Azure
+  - GCP
+  - Cloudflare
+  - DigitalOcean
+  browser:
+  - Playwright
+  - Selenium
+  - Puppeteer
+  runtime:
+  - Python
+  - JVM
+  - DotNet
+  - NodeJS
+  - Shell
+  - WASM
+  robotics:
+  - ROS
+  - ROS2
+  - MQTT
+  - OPCUA
+  - Modbus
+  - CANBus
+  - EdgeX
+  eventStreaming:
+  - Kafka
+  - RabbitMQ
+  - NATS
+  - RedisStreams
+  - SQS
+  - SNS
+  - PubSub
+  search:
+  - WebSearch
+  - DocumentSearch
+  - SemanticSearch
+  - HybridSearch
+  workflow:
+  - n8n
+  - Temporal
+  - Airflow
+  - Prefect
+  - Argo
+lifecycle:
+- Initialize
+- Configure
+- Validate
+- Register
+- Discover
+- Execute
+- Observe
+- Shutdown
+principles:
+- id: 1
+  name: EverythingIsACapability
+  statement: Every external integration is a Capability. Runtime never knows implementation
+    details.
+- id: 2
+  name: CapabilitiesAreDrivers
+  statement: Capabilities are runtime drivers. Same contract as OS device drivers.
+- id: 3
+  name: UniformLifecycle
+  statement: "Every capability implements the common lifecycle: Initialize \u2192\
+    \ Configure \u2192 Validate \u2192 Register \u2192 Discover \u2192 Execute \u2192\
+    \ Observe \u2192 Shutdown."
+- id: 4
+  name: ExecutionByRuntime
+  statement: Capabilities never decide when they execute. Execution belongs to the runtime.
+- id: 5
+  name: StatelessExecution
+  statement: Capabilities remain stateless. State belongs to reducers and persistence
+    manager.
+- id: 6
+  name: DependencyInjection
+  statement: Capabilities never instantiate dependencies. All injected by runtime.
+invariants:
+- id: CER-INV-001
+  rule: no_scheduling_in_cerebellum
+  statement: cerebellum never schedules. Scheduling belongs to the runtime.
+  severity: critical
+  rejection: "REJECTED \u2014 Scheduling logic found in cerebellum."
+- id: CER-INV-002
+  rule: no_planning_in_cerebellum
+  statement: cerebellum never plans. Planning belongs to the kernel.
+  severity: critical
+  rejection: "REJECTED \u2014 Planning logic found in cerebellum."
+- id: CER-INV-003
+  rule: uniform_lifecycle
+  statement: Every capability must implement the 8-stage lifecycle contract.
+  severity: high
+  rejection: "REJECTED \u2014 Capability missing lifecycle contract."
+- id: CER-INV-004
+  rule: stateless_capabilities
+  statement: Capabilities must not own runtime state.
+  severity: high
+  rejection: "REJECTED \u2014 Capability owns runtime state."
+deliverables:
+- artifact: CapabilityBaseInterfaces
+- artifact: CapabilityMetadataModel
+- artifact: CapabilityLifecycleFramework
+- artifact: DriverRegistry
+- artifact: DriverResolver
+- artifact: DependencyInjectionSupport
+- artifact: DynamicCapabilityDiscovery
+- artifact: HotLoadingSupport
+- artifact: EventEmission
+- artifact: HealthMonitoring
+- artifact: VersionManagement
+- artifact: ContractValidation
+- artifact: TestingFramework
+- artifact: ExampleImplementations
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: cerebellum is the driver layer. Every external system is
+      a Capability.'
+  - step: 2
+    instruction: Every capability belongs to exactly one capability category.
+  - step: 3
+    instruction: Verify every capability in the tree implements the 8-stage lifecycle.
+    constraint: CER-INV-003
+    auditGate: true
+  - step: 4
+    instruction: Verify no capability contains scheduling or planning logic.
+    constraint: CER-INV-001
+    auditGate: true
+  - step: 5
+    instruction: Verify all dependencies are injected. No direct instantiation.
+  - step: 6
+    instruction: Verify all capabilities emit observability events to introspection
+      module.
+  - step: 7
+    instruction: Produce all 14 deliverables.
+  - step: 8
+    instruction: Run constitutional review gate.
+    auditGate: true
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 cerebellum conforms to Capability Constitution v1.0.0"
+    rejected:
+    - "REJECTED \u2014 Capability contains scheduling logic."
+    - "REJECTED \u2014 Capability contains planning logic."
+    - "REJECTED \u2014 Capability missing lifecycle contract."
+    - "REJECTED \u2014 Capability owns runtime state."

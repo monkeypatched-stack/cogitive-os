@@ -1,0 +1,32 @@
+name: construction
+version: "0.1.0"
+description: "Construction bounded context — project management, equipment scheduling, site safety"
+bounded_context:
+  name: construction
+  aggregates:
+    - Project
+    - Equipment
+    - SafetyInspection
+    - WorkOrder
+    - Site
+  entities:
+    - Project
+    - Equipment
+    - SafetyInspection
+    - WorkOrder
+    - Site
+    - Worker
+    - Material
+  value_objects:
+    - ProjectPhase
+    - EquipmentStatus
+    - SafetyLevel
+    - InspectionResult
+  events:
+    - ProjectStarted
+    - ProjectPhaseCompleted
+    - EquipmentScheduled
+    - SafetyInspectionPassed
+    - SafetyInspectionFailed
+    - WorkOrderCompleted
+    - MaterialDelivered

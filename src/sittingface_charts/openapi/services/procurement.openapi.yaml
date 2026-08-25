@@ -1,0 +1,6430 @@
+openapi: 3.1.0
+info:
+  title: procurement API
+  description: MonkeyBrain procurement service API
+  version: 1.0.0
+paths:
+  /api/v1/purchase-orders/:
+    get:
+      tags:
+      - Purchase Orders
+      summary: List Purchase Orders
+      operationId: list_purchase_orders_api_v1_purchase_orders__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPurchaseOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Purchase Orders
+      summary: Create Purchase Order
+      operationId: create_purchase_order_api_v1_purchase_orders__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrderCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/purchase-orders/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Purchase Orders
+      summary: List Purchase Orders By Supplier
+      operationId: list_purchase_orders_by_supplier_api_v1_purchase_orders_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PurchaseOrderResponse'
+                title: Response List Purchase Orders By Supplier Api V1 Purchase Orders
+                  By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/purchase-orders/by-buyer/{buyer_id}:
+    get:
+      tags:
+      - Purchase Orders
+      summary: List Purchase Orders By Buyer
+      operationId: list_purchase_orders_by_buyer_api_v1_purchase_orders_by_buyer__buyer_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: buyer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Buyer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PurchaseOrderResponse'
+                title: Response List Purchase Orders By Buyer Api V1 Purchase Orders
+                  By Buyer  Buyer Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/purchase-orders/{po_number}:
+    get:
+      tags:
+      - Purchase Orders
+      summary: Get Purchase Order
+      operationId: get_purchase_order_api_v1_purchase_orders__po_number__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: po_number
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Po Number
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Purchase Orders
+      summary: Update Purchase Order
+      operationId: update_purchase_order_api_v1_purchase_orders__po_number__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: po_number
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Po Number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrderUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Purchase Orders
+      summary: Delete Purchase Order
+      operationId: delete_purchase_order_api_v1_purchase_orders__po_number__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: po_number
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Po Number
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/purchase-order-shipping-information/:
+    get:
+      tags:
+      - Purchase Order Shipping Information
+      summary: List Purchase Order Shipping Information
+      operationId: list_purchase_order_shipping_information_api_v1_purchase_order_shipping_information__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPurchaseOrderShippingInformationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Purchase Order Shipping Information
+      summary: Create Purchase Order Shipping Information
+      operationId: create_purchase_order_shipping_information_api_v1_purchase_order_shipping_information__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrderShippingInformationCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderShippingInformationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/purchase-order-shipping-information/by-po/{po_number}:
+    get:
+      tags:
+      - Purchase Order Shipping Information
+      summary: List Purchase Order Shipping Information By Po
+      operationId: list_purchase_order_shipping_information_by_po_api_v1_purchase_order_shipping_information_by_po__po_number__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: po_number
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Po Number
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PurchaseOrderShippingInformationResponse'
+                title: Response List Purchase Order Shipping Information By Po Api
+                  V1 Purchase Order Shipping Information By Po  Po Number  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/purchase-order-shipping-information/{shipping_id}:
+    get:
+      tags:
+      - Purchase Order Shipping Information
+      summary: Get Purchase Order Shipping Information
+      operationId: get_purchase_order_shipping_information_api_v1_purchase_order_shipping_information__shipping_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: shipping_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Shipping Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderShippingInformationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Purchase Order Shipping Information
+      summary: Update Purchase Order Shipping Information
+      operationId: update_purchase_order_shipping_information_api_v1_purchase_order_shipping_information__shipping_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: shipping_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Shipping Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseOrderShippingInformationUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderShippingInformationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Purchase Order Shipping Information
+      summary: Delete Purchase Order Shipping Information
+      operationId: delete_purchase_order_shipping_information_api_v1_purchase_order_shipping_information__shipping_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: shipping_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Shipping Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/goods-receipts/:
+    get:
+      tags:
+      - Goods Receipts
+      summary: List Goods Receipts
+      operationId: list_goods_receipts_api_v1_goods_receipts__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGoodsReceiptResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Goods Receipts
+      summary: Create Goods Receipt
+      operationId: create_goods_receipt_api_v1_goods_receipts__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoodsReceiptCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsReceiptResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/goods-receipts/by-po/{po_number}:
+    get:
+      tags:
+      - Goods Receipts
+      summary: List Goods Receipts By Po
+      operationId: list_goods_receipts_by_po_api_v1_goods_receipts_by_po__po_number__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: po_number
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Po Number
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoodsReceiptResponse'
+                title: Response List Goods Receipts By Po Api V1 Goods Receipts By
+                  Po  Po Number  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/goods-receipts/by-status/{receipt_status}:
+    get:
+      tags:
+      - Goods Receipts
+      summary: List Goods Receipts By Status
+      operationId: list_goods_receipts_by_status_api_v1_goods_receipts_by_status__receipt_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: receipt_status
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/GoodsReceiptStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoodsReceiptResponse'
+                title: Response List Goods Receipts By Status Api V1 Goods Receipts
+                  By Status  Receipt Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/goods-receipts/quarantine-holds/:
+    get:
+      tags:
+      - Goods Receipts
+      summary: List Quarantine Holds
+      operationId: list_quarantine_holds_api_v1_goods_receipts_quarantine_holds__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuarantineHoldResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Goods Receipts
+      summary: Create Quarantine Hold
+      operationId: create_quarantine_hold_api_v1_goods_receipts_quarantine_holds__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuarantineHoldCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuarantineHoldResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/goods-receipts/quarantine-holds/active:
+    get:
+      tags:
+      - Goods Receipts
+      summary: List Active Quarantine Holds
+      operationId: list_active_quarantine_holds_api_v1_goods_receipts_quarantine_holds_active_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/QuarantineHoldResponse'
+                type: array
+                title: Response List Active Quarantine Holds Api V1 Goods Receipts
+                  Quarantine Holds Active Get
+      security:
+      - HTTPBearer: []
+  /api/v1/goods-receipts/quarantine-holds/by-gr/{gr_id}:
+    get:
+      tags:
+      - Goods Receipts
+      summary: List Quarantine Holds By Gr
+      operationId: list_quarantine_holds_by_gr_api_v1_goods_receipts_quarantine_holds_by_gr__gr_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: gr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Gr Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuarantineHoldResponse'
+                title: Response List Quarantine Holds By Gr Api V1 Goods Receipts
+                  Quarantine Holds By Gr  Gr Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/goods-receipts/quarantine-holds/{hold_id}:
+    get:
+      tags:
+      - Goods Receipts
+      summary: Get Quarantine Hold
+      operationId: get_quarantine_hold_api_v1_goods_receipts_quarantine_holds__hold_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: hold_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Hold Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuarantineHoldResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Goods Receipts
+      summary: Update Quarantine Hold
+      operationId: update_quarantine_hold_api_v1_goods_receipts_quarantine_holds__hold_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: hold_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Hold Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuarantineHoldUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuarantineHoldResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Goods Receipts
+      summary: Delete Quarantine Hold
+      operationId: delete_quarantine_hold_api_v1_goods_receipts_quarantine_holds__hold_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: hold_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Hold Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/goods-receipts/{gr_id}:
+    get:
+      tags:
+      - Goods Receipts
+      summary: Get Goods Receipt
+      operationId: get_goods_receipt_api_v1_goods_receipts__gr_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: gr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Gr Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsReceiptResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Goods Receipts
+      summary: Update Goods Receipt
+      operationId: update_goods_receipt_api_v1_goods_receipts__gr_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: gr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Gr Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoodsReceiptUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsReceiptResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Goods Receipts
+      summary: Delete Goods Receipt
+      operationId: delete_goods_receipt_api_v1_goods_receipts__gr_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: gr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Gr Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/plans:
+    get:
+      tags:
+      - Sampling
+      summary: List Sampling Plans
+      operationId: list_sampling_plans_api_v1_sampling_plans_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSamplingPlanResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Sampling
+      summary: Create Sampling Plan
+      operationId: create_sampling_plan_api_v1_sampling_plans_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SamplingPlanCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SamplingPlanResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/plans/by-material/{material_code}:
+    get:
+      tags:
+      - Sampling
+      summary: List Sampling Plans By Material
+      operationId: list_sampling_plans_by_material_api_v1_sampling_plans_by_material__material_code__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: material_code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Material Code
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SamplingPlanResponse'
+                title: Response List Sampling Plans By Material Api V1 Sampling Plans
+                  By Material  Material Code  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/plans/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Sampling
+      summary: List Sampling Plans By Supplier
+      operationId: list_sampling_plans_by_supplier_api_v1_sampling_plans_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SamplingPlanResponse'
+                title: Response List Sampling Plans By Supplier Api V1 Sampling Plans
+                  By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/plans/{plan_id}:
+    get:
+      tags:
+      - Sampling
+      summary: Get Sampling Plan
+      operationId: get_sampling_plan_api_v1_sampling_plans__plan_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plan Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SamplingPlanResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Sampling
+      summary: Update Sampling Plan
+      operationId: update_sampling_plan_api_v1_sampling_plans__plan_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plan Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SamplingPlanUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SamplingPlanResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Sampling
+      summary: Delete Sampling Plan
+      operationId: delete_sampling_plan_api_v1_sampling_plans__plan_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plan_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plan Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/samples:
+    get:
+      tags:
+      - Sampling
+      summary: List Samples
+      operationId: list_samples_api_v1_sampling_samples_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSampleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Sampling
+      summary: Create Sample
+      operationId: create_sample_api_v1_sampling_samples_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SampleCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/samples/by-gr/{gr_id}:
+    get:
+      tags:
+      - Sampling
+      summary: List Samples By Gr
+      operationId: list_samples_by_gr_api_v1_sampling_samples_by_gr__gr_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: gr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Gr Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SampleResponse'
+                title: Response List Samples By Gr Api V1 Sampling Samples By Gr  Gr
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/samples/by-status/{sample_status}:
+    get:
+      tags:
+      - Sampling
+      summary: List Samples By Status
+      operationId: list_samples_by_status_api_v1_sampling_samples_by_status__sample_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sample_status
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/SampleStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SampleResponse'
+                title: Response List Samples By Status Api V1 Sampling Samples By
+                  Status  Sample Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/samples/{sample_id}:
+    get:
+      tags:
+      - Sampling
+      summary: Get Sample
+      operationId: get_sample_api_v1_sampling_samples__sample_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sample Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Sampling
+      summary: Update Sample
+      operationId: update_sample_api_v1_sampling_samples__sample_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sample Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SampleUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Sampling
+      summary: Delete Sample
+      operationId: delete_sample_api_v1_sampling_samples__sample_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sample Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/samples/{sample_id}/custody:
+    post:
+      tags:
+      - Sampling
+      summary: Add Sample Custody Entry
+      operationId: add_sample_custody_entry_api_v1_sampling_samples__sample_id__custody_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sample Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChainOfCustodyEntry'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/resampling-records:
+    get:
+      tags:
+      - Sampling
+      summary: List Resampling Records
+      operationId: list_resampling_records_api_v1_sampling_resampling_records_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResamplingRecordResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Sampling
+      summary: Create Resampling Record
+      operationId: create_resampling_record_api_v1_sampling_resampling_records_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResamplingRecordCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResamplingRecordResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/resampling-records/by-original/{sample_id}:
+    get:
+      tags:
+      - Sampling
+      summary: List Resampling Records By Original Sample
+      operationId: list_resampling_records_by_original_sample_api_v1_sampling_resampling_records_by_original__sample_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sample Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResamplingRecordResponse'
+                title: Response List Resampling Records By Original Sample Api V1
+                  Sampling Resampling Records By Original  Sample Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sampling/resampling-records/{resample_id}:
+    get:
+      tags:
+      - Sampling
+      summary: Get Resampling Record
+      operationId: get_resampling_record_api_v1_sampling_resampling_records__resample_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: resample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Resample Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResamplingRecordResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Sampling
+      summary: Update Resampling Record
+      operationId: update_resampling_record_api_v1_sampling_resampling_records__resample_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: resample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Resample Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResamplingRecordUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResamplingRecordResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Sampling
+      summary: Delete Resampling Record
+      operationId: delete_resampling_record_api_v1_sampling_resampling_records__resample_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: resample_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Resample Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/specifications:
+    get:
+      tags:
+      - Quality Control
+      summary: List Material Specifications
+      operationId: list_material_specifications_api_v1_quality_control_specifications_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Quality Control
+      summary: Create Material Specification
+      operationId: create_material_specification_api_v1_quality_control_specifications_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialSpecificationCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialSpecificationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/specifications/by-material/{material_code}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Material Specifications By Material
+      operationId: list_material_specifications_by_material_api_v1_quality_control_specifications_by_material__material_code__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: material_code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Material Code
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaterialSpecificationResponse'
+                title: Response List Material Specifications By Material Api V1 Quality
+                  Control Specifications By Material  Material Code  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/specifications/{spec_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: Get Material Specification
+      operationId: get_material_specification_api_v1_quality_control_specifications__spec_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: spec_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Spec Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialSpecificationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Quality Control
+      summary: Update Material Specification
+      operationId: update_material_specification_api_v1_quality_control_specifications__spec_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: spec_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Spec Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialSpecificationUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialSpecificationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Quality Control
+      summary: Delete Material Specification
+      operationId: delete_material_specification_api_v1_quality_control_specifications__spec_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: spec_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Spec Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/checklists:
+    get:
+      tags:
+      - Quality Control
+      summary: List Inspection Checklists
+      operationId: list_inspection_checklists_api_v1_quality_control_checklists_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Quality Control
+      summary: Create Inspection Checklist
+      operationId: create_inspection_checklist_api_v1_quality_control_checklists_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InspectionChecklistCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionChecklistResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/checklists/by-material/{material_code}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Inspection Checklists By Material
+      operationId: list_inspection_checklists_by_material_api_v1_quality_control_checklists_by_material__material_code__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: material_code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Material Code
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InspectionChecklistResponse'
+                title: Response List Inspection Checklists By Material Api V1 Quality
+                  Control Checklists By Material  Material Code  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/checklists/by-type/{inspection_type}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Inspection Checklists By Type
+      operationId: list_inspection_checklists_by_type_api_v1_quality_control_checklists_by_type__inspection_type__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inspection_type
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/InspectionType'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InspectionChecklistResponse'
+                title: Response List Inspection Checklists By Type Api V1 Quality
+                  Control Checklists By Type  Inspection Type  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/checklists/{checklist_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: Get Inspection Checklist
+      operationId: get_inspection_checklist_api_v1_quality_control_checklists__checklist_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: checklist_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Checklist Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionChecklistResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Quality Control
+      summary: Update Inspection Checklist
+      operationId: update_inspection_checklist_api_v1_quality_control_checklists__checklist_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: checklist_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Checklist Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InspectionChecklistUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspectionChecklistResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Quality Control
+      summary: Delete Inspection Checklist
+      operationId: delete_inspection_checklist_api_v1_quality_control_checklists__checklist_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: checklist_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Checklist Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/inspections:
+    get:
+      tags:
+      - Quality Control
+      summary: List Qc Inspections
+      operationId: list_qc_inspections_api_v1_quality_control_inspections_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Quality Control
+      summary: Create Qc Inspection
+      operationId: create_qc_inspection_api_v1_quality_control_inspections_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QCInspectionCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QCInspectionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/inspections/by-gr/{gr_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Qc Inspections By Gr
+      operationId: list_qc_inspections_by_gr_api_v1_quality_control_inspections_by_gr__gr_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: gr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Gr Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QCInspectionResponse'
+                title: Response List Qc Inspections By Gr Api V1 Quality Control Inspections
+                  By Gr  Gr Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/inspections/by-status/{inspection_status}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Qc Inspections By Status
+      operationId: list_qc_inspections_by_status_api_v1_quality_control_inspections_by_status__inspection_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inspection_status
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/InspectionStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QCInspectionResponse'
+                title: Response List Qc Inspections By Status Api V1 Quality Control
+                  Inspections By Status  Inspection Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/inspections/{inspection_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: Get Qc Inspection
+      operationId: get_qc_inspection_api_v1_quality_control_inspections__inspection_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inspection_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Inspection Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QCInspectionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Quality Control
+      summary: Update Qc Inspection
+      operationId: update_qc_inspection_api_v1_quality_control_inspections__inspection_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inspection_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Inspection Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QCInspectionUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QCInspectionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Quality Control
+      summary: Delete Qc Inspection
+      operationId: delete_qc_inspection_api_v1_quality_control_inspections__inspection_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inspection_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Inspection Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/reinspections:
+    get:
+      tags:
+      - Quality Control
+      summary: List Reinspections
+      operationId: list_reinspections_api_v1_quality_control_reinspections_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Quality Control
+      summary: Create Reinspection
+      operationId: create_reinspection_api_v1_quality_control_reinspections_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReInspectionRecordCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReInspectionRecordResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/reinspections/by-original/{inspection_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Reinspections By Original
+      operationId: list_reinspections_by_original_api_v1_quality_control_reinspections_by_original__inspection_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inspection_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Inspection Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReInspectionRecordResponse'
+                title: Response List Reinspections By Original Api V1 Quality Control
+                  Reinspections By Original  Inspection Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/reinspections/{reinspection_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: Get Reinspection
+      operationId: get_reinspection_api_v1_quality_control_reinspections__reinspection_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: reinspection_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Reinspection Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReInspectionRecordResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Quality Control
+      summary: Update Reinspection
+      operationId: update_reinspection_api_v1_quality_control_reinspections__reinspection_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: reinspection_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Reinspection Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReInspectionRecordUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReInspectionRecordResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Quality Control
+      summary: Delete Reinspection
+      operationId: delete_reinspection_api_v1_quality_control_reinspections__reinspection_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: reinspection_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Reinspection Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/ncrs:
+    get:
+      tags:
+      - Quality Control
+      summary: List Ncrs
+      operationId: list_ncrs_api_v1_quality_control_ncrs_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Quality Control
+      summary: Create Ncr
+      operationId: create_ncr_api_v1_quality_control_ncrs_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NonConformanceReportCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformanceReportResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/ncrs/by-gr/{gr_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Ncrs By Gr
+      operationId: list_ncrs_by_gr_api_v1_quality_control_ncrs_by_gr__gr_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: gr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Gr Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NonConformanceReportResponse'
+                title: Response List Ncrs By Gr Api V1 Quality Control Ncrs By Gr  Gr
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/ncrs/by-status/{ncr_status}:
+    get:
+      tags:
+      - Quality Control
+      summary: List Ncrs By Status
+      operationId: list_ncrs_by_status_api_v1_quality_control_ncrs_by_status__ncr_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ncr_status
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/NCRStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NonConformanceReportResponse'
+                title: Response List Ncrs By Status Api V1 Quality Control Ncrs By
+                  Status  Ncr Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/quality-control/ncrs/{ncr_id}:
+    get:
+      tags:
+      - Quality Control
+      summary: Get Ncr
+      operationId: get_ncr_api_v1_quality_control_ncrs__ncr_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ncr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Ncr Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformanceReportResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Quality Control
+      summary: Update Ncr
+      operationId: update_ncr_api_v1_quality_control_ncrs__ncr_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ncr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Ncr Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NonConformanceReportUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformanceReportResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Quality Control
+      summary: Delete Ncr
+      operationId: delete_ncr_api_v1_quality_control_ncrs__ncr_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: ncr_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Ncr Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    AQLLevel:
+      type: string
+      enum:
+      - I
+      - II
+      - III
+      - S-1
+      - S-2
+      - S-3
+      - S-4
+      title: AQLLevel
+      description: Standard AQL inspection levels.
+    Attachment:
+      properties:
+        attachment_id:
+          type: string
+          format: uuid
+          title: Attachment Id
+        file_name:
+          type: string
+          title: File Name
+        file_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Url
+        content_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Content Type
+        uploaded_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uploaded By
+        uploaded_at:
+          type: string
+          format: date-time
+          title: Uploaded At
+      type: object
+      required:
+      - file_name
+      title: Attachment
+    AuditInfo:
+      properties:
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: AuditInfo
+    CAPARecord:
+      properties:
+        capa_id:
+          type: string
+          format: uuid
+          title: Capa Id
+        ncr_id:
+          type: string
+          format: uuid
+          title: Ncr Id
+        capa_type:
+          type: string
+          title: Capa Type
+        description:
+          type: string
+          title: Description
+        assigned_to:
+          type: string
+          title: Assigned To
+        due_date:
+          type: string
+          format: date-time
+          title: Due Date
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        effectiveness_verified:
+          type: boolean
+          title: Effectiveness Verified
+          default: false
+        verified_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Verified By
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - ncr_id
+      - capa_type
+      - description
+      - assigned_to
+      - due_date
+      title: CAPARecord
+      description: Corrective Action / Preventive Action record linked to an NCR.
+    ChainOfCustodyEntry:
+      properties:
+        entry_id:
+          type: string
+          format: uuid
+          title: Entry Id
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+        transferred_by:
+          type: string
+          title: Transferred By
+        transferred_to:
+          type: string
+          title: Transferred To
+        location:
+          type: string
+          title: Location
+        action:
+          type: string
+          title: Action
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - transferred_by
+      - transferred_to
+      - location
+      - action
+      title: ChainOfCustodyEntry
+      description: Single entry in a sample's chain of custody log.
+    DefectClassification:
+      type: string
+      enum:
+      - Critical
+      - Major
+      - Minor
+      title: DefectClassification
+    DocumentStatus:
+      type: string
+      enum:
+      - Draft
+      - Approved
+      - Obsolete
+      - Archived
+      title: DocumentStatus
+    GoodsReceiptCreate:
+      properties:
+        gr_number:
+          type: string
+          title: Gr Number
+        gr_id:
+          type: string
+          title: Gr Id
+        po:
+          $ref: '#/components/schemas/PurchaseOrder'
+        delivery_note_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Delivery Note No
+        carrier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Carrier Id
+        vehicle_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Vehicle Id
+        received_by:
+          type: string
+          title: Received By
+        received_at:
+          type: string
+          format: date-time
+          title: Received At
+        dock_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dock Location
+        status:
+          $ref: '#/components/schemas/GoodsReceiptStatus'
+          default: Draft
+        lines:
+          items:
+            $ref: '#/components/schemas/ReceivedLineItem-Input'
+          type: array
+          title: Lines
+        quarantine_label_printed:
+          type: boolean
+          title: Quarantine Label Printed
+          default: false
+        qc_notification_sent:
+          type: boolean
+          title: Qc Notification Sent
+          default: false
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Attachments
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - gr_number
+      - po
+      - received_by
+      - lines
+      title: GoodsReceiptCreate
+      description: Schema for creating goods receipts.
+    GoodsReceiptResponse:
+      properties:
+        gr_number:
+          type: string
+          title: Gr Number
+        gr_id:
+          type: string
+          title: Gr Id
+        po:
+          $ref: '#/components/schemas/PurchaseOrder'
+        delivery_note_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Delivery Note No
+        carrier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Carrier Id
+        vehicle_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Vehicle Id
+        received_by:
+          type: string
+          title: Received By
+        received_at:
+          type: string
+          format: date-time
+          title: Received At
+        dock_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dock Location
+        status:
+          $ref: '#/components/schemas/GoodsReceiptStatus'
+          default: Draft
+        lines:
+          items:
+            $ref: '#/components/schemas/ReceivedLineItem-Output'
+          type: array
+          title: Lines
+        quarantine_label_printed:
+          type: boolean
+          title: Quarantine Label Printed
+          default: false
+        qc_notification_sent:
+          type: boolean
+          title: Qc Notification Sent
+          default: false
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Attachments
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - gr_number
+      - po
+      - received_by
+      - lines
+      title: GoodsReceiptResponse
+    GoodsReceiptStatus:
+      type: string
+      enum:
+      - Draft
+      - Submitted
+      - QC Hold
+      - Released
+      - Rejected
+      - Partial
+      title: GoodsReceiptStatus
+    GoodsReceiptUpdate:
+      properties:
+        delivery_note_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Delivery Note No
+        carrier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Carrier Id
+        vehicle_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Vehicle Id
+        received_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Received By
+        received_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Received At
+        dock_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dock Location
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/GoodsReceiptStatus'
+          - type: 'null'
+        lines:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ReceivedLineItem-Input'
+            type: array
+          - type: 'null'
+          title: Lines
+        quarantine_label_printed:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Quarantine Label Printed
+        qc_notification_sent:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Qc Notification Sent
+        attachments:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Attachment'
+            type: array
+          - type: 'null'
+          title: Attachments
+        audit:
+          anyOf:
+          - $ref: '#/components/schemas/AuditInfo'
+          - type: 'null'
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      title: GoodsReceiptUpdate
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    InspectionChecklistCreate:
+      properties:
+        checklist_id:
+          type: string
+          format: uuid
+          title: Checklist Id
+        name:
+          type: string
+          title: Name
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        inspection_type:
+          $ref: '#/components/schemas/InspectionType'
+        version:
+          type: string
+          title: Version
+        items:
+          items:
+            $ref: '#/components/schemas/InspectionChecklistItem-Input'
+          type: array
+          title: Items
+        approved_by:
+          type: string
+          title: Approved By
+        effective_from:
+          type: string
+          format: date-time
+          title: Effective From
+        status:
+          $ref: '#/components/schemas/DocumentStatus'
+          default: Approved
+      type: object
+      required:
+      - name
+      - inspection_type
+      - version
+      - items
+      - approved_by
+      - effective_from
+      title: InspectionChecklistCreate
+      description: Schema for creating inspection checklists.
+    InspectionChecklistItem-Input:
+      properties:
+        item_id:
+          type: string
+          format: uuid
+          title: Item Id
+        sequence:
+          type: integer
+          title: Sequence
+        parameter_name:
+          type: string
+          title: Parameter Name
+        test_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Test Method
+        result_type:
+          $ref: '#/components/schemas/TestResultType'
+        spec_limit:
+          anyOf:
+          - $ref: '#/components/schemas/SpecificationLimit-Input'
+          - type: 'null'
+        mandatory:
+          type: boolean
+          title: Mandatory
+          default: true
+        instrument_required:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instrument Required
+      type: object
+      required:
+      - sequence
+      - parameter_name
+      - result_type
+      title: InspectionChecklistItem
+      description: Single test/check within an inspection checklist template.
+    InspectionChecklistItem-Output:
+      properties:
+        item_id:
+          type: string
+          format: uuid
+          title: Item Id
+        sequence:
+          type: integer
+          title: Sequence
+        parameter_name:
+          type: string
+          title: Parameter Name
+        test_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Test Method
+        result_type:
+          $ref: '#/components/schemas/TestResultType'
+        spec_limit:
+          anyOf:
+          - $ref: '#/components/schemas/SpecificationLimit-Output'
+          - type: 'null'
+        mandatory:
+          type: boolean
+          title: Mandatory
+          default: true
+        instrument_required:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instrument Required
+      type: object
+      required:
+      - sequence
+      - parameter_name
+      - result_type
+      title: InspectionChecklistItem
+      description: Single test/check within an inspection checklist template.
+    InspectionChecklistResponse:
+      properties:
+        checklist_id:
+          type: string
+          format: uuid
+          title: Checklist Id
+        name:
+          type: string
+          title: Name
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        inspection_type:
+          $ref: '#/components/schemas/InspectionType'
+        version:
+          type: string
+          title: Version
+        items:
+          items:
+            $ref: '#/components/schemas/InspectionChecklistItem-Output'
+          type: array
+          title: Items
+        approved_by:
+          type: string
+          title: Approved By
+        effective_from:
+          type: string
+          format: date-time
+          title: Effective From
+        status:
+          $ref: '#/components/schemas/DocumentStatus'
+          default: Approved
+      type: object
+      required:
+      - name
+      - inspection_type
+      - version
+      - items
+      - approved_by
+      - effective_from
+      title: InspectionChecklistResponse
+    InspectionChecklistUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        inspection_type:
+          anyOf:
+          - $ref: '#/components/schemas/InspectionType'
+          - type: 'null'
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        items:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/InspectionChecklistItem-Input'
+            type: array
+          - type: 'null'
+          title: Items
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        effective_from:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Effective From
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/DocumentStatus'
+          - type: 'null'
+      type: object
+      title: InspectionChecklistUpdate
+    InspectionStatus:
+      type: string
+      enum:
+      - Scheduled
+      - In Progress
+      - Completed
+      - Re-Inspection Required
+      title: InspectionStatus
+    InspectionType:
+      type: string
+      enum:
+      - Incoming
+      - In-Process
+      - Final
+      - Audit
+      title: InspectionType
+    MaterialSpecificationCreate:
+      properties:
+        spec_id:
+          type: string
+          format: uuid
+          title: Spec Id
+        spec_code:
+          type: string
+          title: Spec Code
+        material_code:
+          type: string
+          title: Material Code
+        version:
+          type: string
+          title: Version
+        effective_date:
+          type: string
+          format: date-time
+          title: Effective Date
+        approved_by:
+          type: string
+          title: Approved By
+        status:
+          $ref: '#/components/schemas/DocumentStatus'
+          default: Approved
+        parameters:
+          items:
+            $ref: '#/components/schemas/SpecificationLimit-Input'
+          type: array
+          title: Parameters
+        documents:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Documents
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - spec_code
+      - material_code
+      - version
+      - effective_date
+      - approved_by
+      - parameters
+      title: MaterialSpecificationCreate
+      description: Schema for creating material specifications.
+    MaterialSpecificationResponse:
+      properties:
+        spec_id:
+          type: string
+          format: uuid
+          title: Spec Id
+        spec_code:
+          type: string
+          title: Spec Code
+        material_code:
+          type: string
+          title: Material Code
+        version:
+          type: string
+          title: Version
+        effective_date:
+          type: string
+          format: date-time
+          title: Effective Date
+        approved_by:
+          type: string
+          title: Approved By
+        status:
+          $ref: '#/components/schemas/DocumentStatus'
+          default: Approved
+        parameters:
+          items:
+            $ref: '#/components/schemas/SpecificationLimit-Output'
+          type: array
+          title: Parameters
+        documents:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Documents
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - spec_code
+      - material_code
+      - version
+      - effective_date
+      - approved_by
+      - parameters
+      title: MaterialSpecificationResponse
+    MaterialSpecificationUpdate:
+      properties:
+        spec_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Spec Code
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        effective_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Effective Date
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/DocumentStatus'
+          - type: 'null'
+        parameters:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/SpecificationLimit-Input'
+            type: array
+          - type: 'null'
+          title: Parameters
+        documents:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Attachment'
+            type: array
+          - type: 'null'
+          title: Documents
+        audit:
+          anyOf:
+          - $ref: '#/components/schemas/AuditInfo'
+          - type: 'null'
+      type: object
+      title: MaterialSpecificationUpdate
+    NCRDisposition:
+      type: string
+      enum:
+      - Return to Supplier
+      - Rework
+      - Scrap
+      - Use As Is
+      - Re-inspect
+      title: NCRDisposition
+    NCRStatus:
+      type: string
+      enum:
+      - Open
+      - In Review
+      - Pending Supplier Response
+      - Closed
+      title: NCRStatus
+    NonConformanceReportCreate:
+      properties:
+        ncr_id:
+          type: string
+          format: uuid
+          title: Ncr Id
+        ncr_number:
+          type: string
+          title: Ncr Number
+        inspection_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Inspection Id
+        gr_id:
+          type: string
+          format: uuid
+          title: Gr Id
+        material_code:
+          type: string
+          title: Material Code
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        supplier_id:
+          type: string
+          title: Supplier Id
+        defect_description:
+          type: string
+          title: Defect Description
+        defect_classification:
+          $ref: '#/components/schemas/DefectClassification'
+        root_cause_category:
+          $ref: '#/components/schemas/RootCauseCategory'
+          default: Unknown
+        qty_affected:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Qty Affected
+        uom:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Uom
+        financial_value:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Financial Value
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+          - type: 'null'
+          title: Currency
+        status:
+          $ref: '#/components/schemas/NCRStatus'
+          default: Open
+        disposition:
+          anyOf:
+          - $ref: '#/components/schemas/NCRDisposition'
+          - type: 'null'
+        disposition_approver:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition Approver
+        disposition_approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposition Approved At
+        opened_at:
+          type: string
+          format: date-time
+          title: Opened At
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+        escalated_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Escalated To
+        escalated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Escalated At
+        supplier_notified_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Supplier Notified At
+        closed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Closed At
+        closed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Closed By
+        capas:
+          items:
+            $ref: '#/components/schemas/CAPARecord'
+          type: array
+          title: Capas
+        debit_notes:
+          items:
+            $ref: '#/components/schemas/SupplierDebitNote-Input'
+          type: array
+          title: Debit Notes
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Attachments
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - ncr_number
+      - gr_id
+      - material_code
+      - supplier_id
+      - defect_description
+      - defect_classification
+      - qty_affected
+      - uom
+      title: NonConformanceReportCreate
+      description: Schema for creating NCRs.
+    NonConformanceReportResponse:
+      properties:
+        ncr_id:
+          type: string
+          format: uuid
+          title: Ncr Id
+        ncr_number:
+          type: string
+          title: Ncr Number
+        inspection_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Inspection Id
+        gr_id:
+          type: string
+          format: uuid
+          title: Gr Id
+        material_code:
+          type: string
+          title: Material Code
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        supplier_id:
+          type: string
+          title: Supplier Id
+        defect_description:
+          type: string
+          title: Defect Description
+        defect_classification:
+          $ref: '#/components/schemas/DefectClassification'
+        root_cause_category:
+          $ref: '#/components/schemas/RootCauseCategory'
+          default: Unknown
+        qty_affected:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Qty Affected
+        uom:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Uom
+        financial_value:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Financial Value
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+          - type: 'null'
+          title: Currency
+        status:
+          $ref: '#/components/schemas/NCRStatus'
+          default: Open
+        disposition:
+          anyOf:
+          - $ref: '#/components/schemas/NCRDisposition'
+          - type: 'null'
+        disposition_approver:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition Approver
+        disposition_approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposition Approved At
+        opened_at:
+          type: string
+          format: date-time
+          title: Opened At
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+        escalated_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Escalated To
+        escalated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Escalated At
+        supplier_notified_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Supplier Notified At
+        closed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Closed At
+        closed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Closed By
+        capas:
+          items:
+            $ref: '#/components/schemas/CAPARecord'
+          type: array
+          title: Capas
+        debit_notes:
+          items:
+            $ref: '#/components/schemas/SupplierDebitNote-Output'
+          type: array
+          title: Debit Notes
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Attachments
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+        age_days:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Age Days
+          description: Days the NCR has been open.
+          readOnly: true
+      type: object
+      required:
+      - ncr_number
+      - gr_id
+      - material_code
+      - supplier_id
+      - defect_description
+      - defect_classification
+      - qty_affected
+      - uom
+      - age_days
+      title: NonConformanceReportResponse
+    NonConformanceReportUpdate:
+      properties:
+        inspection_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Inspection Id
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        defect_description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Defect Description
+        defect_classification:
+          anyOf:
+          - $ref: '#/components/schemas/DefectClassification'
+          - type: 'null'
+        root_cause_category:
+          anyOf:
+          - $ref: '#/components/schemas/RootCauseCategory'
+          - type: 'null'
+        qty_affected:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Qty Affected
+        uom:
+          anyOf:
+          - type: string
+            enum:
+            - Each
+            - Case
+            - Pallet
+            - Kg
+            - L
+            - M
+            - Box
+            - Roll
+            - Custom
+          - type: 'null'
+          title: Uom
+        financial_value:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Financial Value
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+          - type: 'null'
+          title: Currency
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/NCRStatus'
+          - type: 'null'
+        disposition:
+          anyOf:
+          - $ref: '#/components/schemas/NCRDisposition'
+          - type: 'null'
+        disposition_approver:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition Approver
+        disposition_approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposition Approved At
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+        escalated_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Escalated To
+        escalated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Escalated At
+        supplier_notified_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Supplier Notified At
+        closed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Closed At
+        closed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Closed By
+        capas:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/CAPARecord'
+            type: array
+          - type: 'null'
+          title: Capas
+        debit_notes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/SupplierDebitNote-Input'
+            type: array
+          - type: 'null'
+          title: Debit Notes
+        attachments:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Attachment'
+            type: array
+          - type: 'null'
+          title: Attachments
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          anyOf:
+          - $ref: '#/components/schemas/AuditInfo'
+          - type: 'null'
+      type: object
+      title: NonConformanceReportUpdate
+    PaginatedGoodsReceiptResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/GoodsReceiptResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedGoodsReceiptResponse
+    PaginatedPurchaseOrderResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/PurchaseOrderResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedPurchaseOrderResponse
+    PaginatedPurchaseOrderShippingInformationResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/PurchaseOrderShippingInformationResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedPurchaseOrderShippingInformationResponse
+    PaginatedQuarantineHoldResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/QuarantineHoldResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedQuarantineHoldResponse
+    PaginatedResamplingRecordResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ResamplingRecordResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedResamplingRecordResponse
+    PaginatedSampleResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SampleResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSampleResponse
+    PaginatedSamplingPlanResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SamplingPlanResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSamplingPlanResponse
+    PurchaseOrder:
+      properties:
+        po_number:
+          type: string
+          title: Po Number
+          description: Unique identifier for the purchase order.
+        po_date:
+          type: string
+          title: Po Date
+          description: The date when the purchase order was created.
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier associated with the PO.
+        supplier_name:
+          type: string
+          title: Supplier Name
+          description: Name of the supplier.
+        buyer_id:
+          type: string
+          title: Buyer Id
+          description: Unique identifier for the buyer organization.
+        buyer_name:
+          type: string
+          title: Buyer Name
+          description: Name of the buyer organization.
+        total_amount:
+          type: number
+          title: Total Amount
+          description: The total monetary value of the purchase order.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which the transaction is conducted.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Terms of payment agreed upon with the supplier.
+        delivery_date:
+          type: string
+          title: Delivery Date
+          description: The expected delivery date for the items in the order.
+        shipping_address:
+          type: string
+          title: Shipping Address
+          description: The address where the items should be delivered.
+        billing_address:
+          type: string
+          title: Billing Address
+          description: The address where the invoice will be sent.
+        status:
+          type: string
+          title: Status
+          description: The current status of the PO, for example Open, Approved, or
+            Closed.
+        approval_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Date
+          description: The date when the PO was approved, null if not yet approved.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional comments or notes about the purchase order.
+      type: object
+      required:
+      - po_number
+      - po_date
+      - supplier_id
+      - supplier_name
+      - buyer_id
+      - buyer_name
+      - total_amount
+      - currency
+      - payment_terms
+      - delivery_date
+      - shipping_address
+      - billing_address
+      - status
+      title: PurchaseOrder
+    PurchaseOrderCreate:
+      properties:
+        po_number:
+          type: string
+          title: Po Number
+          description: Unique identifier for the purchase order.
+        po_date:
+          type: string
+          title: Po Date
+          description: The date when the purchase order was created.
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier associated with the PO.
+        supplier_name:
+          type: string
+          title: Supplier Name
+          description: Name of the supplier.
+        buyer_id:
+          type: string
+          title: Buyer Id
+          description: Unique identifier for the buyer organization.
+        buyer_name:
+          type: string
+          title: Buyer Name
+          description: Name of the buyer organization.
+        total_amount:
+          type: number
+          title: Total Amount
+          description: The total monetary value of the purchase order.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which the transaction is conducted.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Terms of payment agreed upon with the supplier.
+        delivery_date:
+          type: string
+          title: Delivery Date
+          description: The expected delivery date for the items in the order.
+        shipping_address:
+          type: string
+          title: Shipping Address
+          description: The address where the items should be delivered.
+        billing_address:
+          type: string
+          title: Billing Address
+          description: The address where the invoice will be sent.
+        status:
+          type: string
+          title: Status
+          description: The current status of the PO, for example Open, Approved, or
+            Closed.
+        approval_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Date
+          description: The date when the PO was approved, null if not yet approved.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional comments or notes about the purchase order.
+      type: object
+      required:
+      - po_number
+      - po_date
+      - supplier_id
+      - supplier_name
+      - buyer_id
+      - buyer_name
+      - total_amount
+      - currency
+      - payment_terms
+      - delivery_date
+      - shipping_address
+      - billing_address
+      - status
+      title: PurchaseOrderCreate
+    PurchaseOrderResponse:
+      properties:
+        po_number:
+          type: string
+          title: Po Number
+          description: Unique identifier for the purchase order.
+        po_date:
+          type: string
+          title: Po Date
+          description: The date when the purchase order was created.
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier associated with the PO.
+        supplier_name:
+          type: string
+          title: Supplier Name
+          description: Name of the supplier.
+        buyer_id:
+          type: string
+          title: Buyer Id
+          description: Unique identifier for the buyer organization.
+        buyer_name:
+          type: string
+          title: Buyer Name
+          description: Name of the buyer organization.
+        total_amount:
+          type: number
+          title: Total Amount
+          description: The total monetary value of the purchase order.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which the transaction is conducted.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Terms of payment agreed upon with the supplier.
+        delivery_date:
+          type: string
+          title: Delivery Date
+          description: The expected delivery date for the items in the order.
+        shipping_address:
+          type: string
+          title: Shipping Address
+          description: The address where the items should be delivered.
+        billing_address:
+          type: string
+          title: Billing Address
+          description: The address where the invoice will be sent.
+        status:
+          type: string
+          title: Status
+          description: The current status of the PO, for example Open, Approved, or
+            Closed.
+        approval_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Date
+          description: The date when the PO was approved, null if not yet approved.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional comments or notes about the purchase order.
+      type: object
+      required:
+      - po_number
+      - po_date
+      - supplier_id
+      - supplier_name
+      - buyer_id
+      - buyer_name
+      - total_amount
+      - currency
+      - payment_terms
+      - delivery_date
+      - shipping_address
+      - billing_address
+      - status
+      title: PurchaseOrderResponse
+    PurchaseOrderShippingInformationCreate:
+      properties:
+        po_number:
+          type: string
+          title: Po Number
+          description: Unique identifier for the purchase order.
+        shipping_id:
+          type: string
+          title: Shipping Id
+          description: Unique identifier for the shipping record
+        shipping_address:
+          type: string
+          title: Shipping Address
+          description: Address where the component is being shipped to
+        shipping_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Shipping Date
+          description: Date when the component was shipped
+        expected_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expected Delivery Date
+          description: Date when the shipment is expected to arrive
+        shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Method
+          description: Method of shipment, for example Air, Sea, or Ground
+        tracking_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tracking Number
+          description: Tracking number provided by the shipping carrier
+        carrier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Carrier Name
+          description: Name of the shipping carrier or service
+        shipment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipment Status
+          description: Current status of the shipment
+        weight:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Weight
+          description: Weight of the shipment in kilograms
+        shipping_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Shipping Cost
+          description: Cost of shipping the component
+        insurance_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Insurance Details
+          description: Details about any insurance coverage for the shipment
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or comments related to the shipment
+      type: object
+      required:
+      - po_number
+      - shipping_id
+      - shipping_address
+      title: PurchaseOrderShippingInformationCreate
+    PurchaseOrderShippingInformationResponse:
+      properties:
+        po_number:
+          type: string
+          title: Po Number
+          description: Unique identifier for the purchase order.
+        shipping_id:
+          type: string
+          title: Shipping Id
+          description: Unique identifier for the shipping record
+        shipping_address:
+          type: string
+          title: Shipping Address
+          description: Address where the component is being shipped to
+        shipping_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Shipping Date
+          description: Date when the component was shipped
+        expected_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expected Delivery Date
+          description: Date when the shipment is expected to arrive
+        shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Method
+          description: Method of shipment, for example Air, Sea, or Ground
+        tracking_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tracking Number
+          description: Tracking number provided by the shipping carrier
+        carrier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Carrier Name
+          description: Name of the shipping carrier or service
+        shipment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipment Status
+          description: Current status of the shipment
+        weight:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Weight
+          description: Weight of the shipment in kilograms
+        shipping_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Shipping Cost
+          description: Cost of shipping the component
+        insurance_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Insurance Details
+          description: Details about any insurance coverage for the shipment
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or comments related to the shipment
+      type: object
+      required:
+      - po_number
+      - shipping_id
+      - shipping_address
+      title: PurchaseOrderShippingInformationResponse
+    PurchaseOrderShippingInformationUpdate:
+      properties:
+        po_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Po Number
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+        shipping_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Shipping Date
+        expected_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expected Delivery Date
+        shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Method
+        tracking_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tracking Number
+        carrier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Carrier Name
+        shipment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipment Status
+        weight:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Weight
+        shipping_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Shipping Cost
+        insurance_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Insurance Details
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: PurchaseOrderShippingInformationUpdate
+    PurchaseOrderUpdate:
+      properties:
+        po_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Po Date
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Name
+        buyer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Buyer Id
+        buyer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Buyer Name
+        total_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Total Amount
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        delivery_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Delivery Date
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+        approval_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Date
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: PurchaseOrderUpdate
+    QCDisposition:
+      type: string
+      enum:
+      - Accept
+      - Reject
+      - Conditional Accept
+      - Pending
+      title: QCDisposition
+    QCInspectionCreate:
+      properties:
+        inspection_id:
+          type: string
+          format: uuid
+          title: Inspection Id
+        inspection_code:
+          type: string
+          title: Inspection Code
+        inspection_type:
+          $ref: '#/components/schemas/InspectionType'
+        gr_id:
+          type: string
+          format: uuid
+          title: Gr Id
+        sample_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Sample Id
+        material_code:
+          type: string
+          title: Material Code
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        spec_id:
+          type: string
+          format: uuid
+          title: Spec Id
+        checklist_id:
+          type: string
+          format: uuid
+          title: Checklist Id
+        inspector_id:
+          type: string
+          title: Inspector Id
+        inspector_name:
+          type: string
+          title: Inspector Name
+        inspected_at:
+          type: string
+          format: date-time
+          title: Inspected At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        status:
+          $ref: '#/components/schemas/InspectionStatus'
+          default: In Progress
+        results:
+          items:
+            $ref: '#/components/schemas/TestResult-Input'
+          type: array
+          title: Results
+        oos_count:
+          type: integer
+          title: Oos Count
+          default: 0
+        disposition:
+          $ref: '#/components/schemas/QCDisposition'
+          default: Pending
+        disposition_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition Reason
+        disposition_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition By
+        disposition_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposition At
+        digital_signature:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Digital Signature
+          description: 21 CFR Part 11 compliant e-signature token
+        supporting_docs:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Supporting Docs
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - inspection_code
+      - inspection_type
+      - gr_id
+      - material_code
+      - spec_id
+      - checklist_id
+      - inspector_id
+      - inspector_name
+      title: QCInspectionCreate
+      description: Schema for creating QC inspections.
+    QCInspectionResponse:
+      properties:
+        inspection_id:
+          type: string
+          format: uuid
+          title: Inspection Id
+        inspection_code:
+          type: string
+          title: Inspection Code
+        inspection_type:
+          $ref: '#/components/schemas/InspectionType'
+        gr_id:
+          type: string
+          format: uuid
+          title: Gr Id
+        sample_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Sample Id
+        material_code:
+          type: string
+          title: Material Code
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        spec_id:
+          type: string
+          format: uuid
+          title: Spec Id
+        checklist_id:
+          type: string
+          format: uuid
+          title: Checklist Id
+        inspector_id:
+          type: string
+          title: Inspector Id
+        inspector_name:
+          type: string
+          title: Inspector Name
+        inspected_at:
+          type: string
+          format: date-time
+          title: Inspected At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        status:
+          $ref: '#/components/schemas/InspectionStatus'
+          default: In Progress
+        results:
+          items:
+            $ref: '#/components/schemas/TestResult-Output'
+          type: array
+          title: Results
+        oos_count:
+          type: integer
+          title: Oos Count
+          default: 0
+        disposition:
+          $ref: '#/components/schemas/QCDisposition'
+          default: Pending
+        disposition_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition Reason
+        disposition_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition By
+        disposition_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposition At
+        digital_signature:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Digital Signature
+          description: 21 CFR Part 11 compliant e-signature token
+        supporting_docs:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Supporting Docs
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - inspection_code
+      - inspection_type
+      - gr_id
+      - material_code
+      - spec_id
+      - checklist_id
+      - inspector_id
+      - inspector_name
+      title: QCInspectionResponse
+    QCInspectionUpdate:
+      properties:
+        inspection_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inspection Code
+        inspection_type:
+          anyOf:
+          - $ref: '#/components/schemas/InspectionType'
+          - type: 'null'
+        sample_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Sample Id
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        spec_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Spec Id
+        checklist_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Checklist Id
+        inspector_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inspector Id
+        inspector_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inspector Name
+        inspected_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Inspected At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/InspectionStatus'
+          - type: 'null'
+        results:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/TestResult-Input'
+            type: array
+          - type: 'null'
+          title: Results
+        disposition:
+          anyOf:
+          - $ref: '#/components/schemas/QCDisposition'
+          - type: 'null'
+        disposition_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition Reason
+        disposition_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposition By
+        disposition_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposition At
+        digital_signature:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Digital Signature
+        supporting_docs:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Attachment'
+            type: array
+          - type: 'null'
+          title: Supporting Docs
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          anyOf:
+          - $ref: '#/components/schemas/AuditInfo'
+          - type: 'null'
+      type: object
+      title: QCInspectionUpdate
+    QuarantineHoldCreate:
+      properties:
+        hold_id:
+          type: string
+          format: uuid
+          title: Hold Id
+        gr_id:
+          type: string
+          format: uuid
+          title: Gr Id
+        material_code:
+          type: string
+          title: Material Code
+        batch_lot_no:
+          type: string
+          title: Batch Lot No
+        qty_on_hold:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Qty On Hold
+        uom:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Uom
+        hold_location:
+          type: string
+          title: Hold Location
+        held_at:
+          type: string
+          format: date-time
+          title: Held At
+        released_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Released At
+        released_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Released By
+        release_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Release Reason
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+      type: object
+      required:
+      - gr_id
+      - material_code
+      - batch_lot_no
+      - qty_on_hold
+      - uom
+      - hold_location
+      title: QuarantineHoldCreate
+      description: Schema for creating quarantine holds.
+    QuarantineHoldResponse:
+      properties:
+        hold_id:
+          type: string
+          format: uuid
+          title: Hold Id
+        gr_id:
+          type: string
+          format: uuid
+          title: Gr Id
+        material_code:
+          type: string
+          title: Material Code
+        batch_lot_no:
+          type: string
+          title: Batch Lot No
+        qty_on_hold:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Qty On Hold
+        uom:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Uom
+        hold_location:
+          type: string
+          title: Hold Location
+        held_at:
+          type: string
+          format: date-time
+          title: Held At
+        released_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Released At
+        released_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Released By
+        release_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Release Reason
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+      type: object
+      required:
+      - gr_id
+      - material_code
+      - batch_lot_no
+      - qty_on_hold
+      - uom
+      - hold_location
+      title: QuarantineHoldResponse
+    QuarantineHoldUpdate:
+      properties:
+        qty_on_hold:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Qty On Hold
+        uom:
+          anyOf:
+          - type: string
+            enum:
+            - Each
+            - Case
+            - Pallet
+            - Kg
+            - L
+            - M
+            - Box
+            - Roll
+            - Custom
+          - type: 'null'
+          title: Uom
+        hold_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Hold Location
+        released_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Released At
+        released_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Released By
+        release_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Release Reason
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Active
+      type: object
+      title: QuarantineHoldUpdate
+    ReInspectionRecordCreate:
+      properties:
+        reinspection_id:
+          type: string
+          format: uuid
+          title: Reinspection Id
+        original_inspection_id:
+          type: string
+          format: uuid
+          title: Original Inspection Id
+        new_inspection_id:
+          type: string
+          format: uuid
+          title: New Inspection Id
+        reason:
+          type: string
+          title: Reason
+        authorised_by:
+          type: string
+          title: Authorised By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - original_inspection_id
+      - new_inspection_id
+      - reason
+      - authorised_by
+      title: ReInspectionRecordCreate
+      description: Schema for creating re-inspection links.
+    ReInspectionRecordResponse:
+      properties:
+        reinspection_id:
+          type: string
+          format: uuid
+          title: Reinspection Id
+        original_inspection_id:
+          type: string
+          format: uuid
+          title: Original Inspection Id
+        new_inspection_id:
+          type: string
+          format: uuid
+          title: New Inspection Id
+        reason:
+          type: string
+          title: Reason
+        authorised_by:
+          type: string
+          title: Authorised By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - original_inspection_id
+      - new_inspection_id
+      - reason
+      - authorised_by
+      title: ReInspectionRecordResponse
+    ReInspectionRecordUpdate:
+      properties:
+        new_inspection_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: New Inspection Id
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+        authorised_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorised By
+      type: object
+      title: ReInspectionRecordUpdate
+    ReceivedLineItem-Input:
+      properties:
+        gr_line_id:
+          type: string
+          title: Gr Line Id
+        po_line_id:
+          type: string
+          title: Po Line Id
+        material_code:
+          type: string
+          title: Material Code
+        received_qty:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Received Qty
+        unit_of_measure:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Unit Of Measure
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+        manufacture_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Manufacture Date
+        storage_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Location
+        pallet_ids:
+          items:
+            type: string
+          type: array
+          title: Pallet Ids
+        barcode_scanned:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode Scanned
+        qty_discrepancy:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Qty Discrepancy
+        damage_noted:
+          type: boolean
+          title: Damage Noted
+          default: false
+        damage_photos:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Damage Photos
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - po_line_id
+      - material_code
+      - received_qty
+      - unit_of_measure
+      title: ReceivedLineItem
+      description: One line of a Goods Receipt, linked to a PO line.
+    ReceivedLineItem-Output:
+      properties:
+        gr_line_id:
+          type: string
+          title: Gr Line Id
+        po_line_id:
+          type: string
+          title: Po Line Id
+        material_code:
+          type: string
+          title: Material Code
+        received_qty:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Received Qty
+        unit_of_measure:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Unit Of Measure
+        batch_lot_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Lot Number
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+        manufacture_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Manufacture Date
+        storage_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Location
+        pallet_ids:
+          items:
+            type: string
+          type: array
+          title: Pallet Ids
+        barcode_scanned:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode Scanned
+        qty_discrepancy:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Qty Discrepancy
+        damage_noted:
+          type: boolean
+          title: Damage Noted
+          default: false
+        damage_photos:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Damage Photos
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - po_line_id
+      - material_code
+      - received_qty
+      - unit_of_measure
+      title: ReceivedLineItem
+      description: One line of a Goods Receipt, linked to a PO line.
+    ResamplingRecordCreate:
+      properties:
+        resample_id:
+          type: string
+          title: Resample Id
+        original_sample_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Original Sample Id
+        new_sample_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: New Sample Id
+        reason_code:
+          type: string
+          title: Reason Code
+          default: Resampling
+        reason_detail:
+          type: string
+          title: Reason Detail
+          default: Resampling requested
+        requested_by:
+          type: string
+          title: Requested By
+          default: System
+        approved_by:
+          type: string
+          title: Approved By
+          default: System
+        approved_at:
+          type: string
+          format: date-time
+          title: Approved At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      title: ResamplingRecordCreate
+      description: Schema for creating resampling records.
+    ResamplingRecordResponse:
+      properties:
+        resample_id:
+          type: string
+          title: Resample Id
+        original_sample_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Original Sample Id
+        new_sample_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: New Sample Id
+        reason_code:
+          type: string
+          title: Reason Code
+          default: Resampling
+        reason_detail:
+          type: string
+          title: Reason Detail
+          default: Resampling requested
+        requested_by:
+          type: string
+          title: Requested By
+          default: System
+        approved_by:
+          type: string
+          title: Approved By
+          default: System
+        approved_at:
+          type: string
+          format: date-time
+          title: Approved At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      title: ResamplingRecordResponse
+    ResamplingRecordUpdate:
+      properties:
+        new_sample_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: New Sample Id
+        reason_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason Code
+        reason_detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason Detail
+        requested_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requested By
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      title: ResamplingRecordUpdate
+    RiskClassification:
+      type: string
+      enum:
+      - High
+      - Medium
+      - Low
+      title: RiskClassification
+    RootCauseCategory:
+      type: string
+      enum:
+      - Supplier Process
+      - Transport / Damage
+      - Storage Condition
+      - Documentation Error
+      - Measurement / Instrument
+      - Specification Error
+      - Unknown
+      title: RootCauseCategory
+    SampleCreate:
+      properties:
+        sample_id:
+          type: string
+          title: Sample Id
+        sample_code:
+          type: string
+          title: Sample Code
+          description: Human-readable unique Sample ID
+        gr_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gr Id
+        gr_line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gr Line Id
+        sampling_plan_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sampling Plan Id
+        sample_type:
+          $ref: '#/components/schemas/SampleType'
+          default: In-House Test Sample
+        status:
+          $ref: '#/components/schemas/SampleStatus'
+          default: Pending Collection
+        collected_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Collected By
+        collected_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Collected At
+        collection_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Collection Location
+        container_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Container Details
+        sample_qty:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Sample Qty
+        uom:
+          anyOf:
+          - type: string
+            enum:
+            - Each
+            - Case
+            - Pallet
+            - Kg
+            - L
+            - M
+            - Box
+            - Roll
+            - Custom
+          - type: 'null'
+          title: Uom
+        lims_request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lims Request Id
+        lims_result_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lims Result Id
+        lab_received_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lab Received At
+        results_received_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Results Received At
+        disposed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposed At
+        disposed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposed By
+        disposal_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposal Method
+        chain_of_custody:
+          items:
+            $ref: '#/components/schemas/ChainOfCustodyEntry'
+          type: array
+          title: Chain Of Custody
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Attachments
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - sample_code
+      title: SampleCreate
+      description: Schema for creating samples.
+    SampleResponse:
+      properties:
+        sample_id:
+          type: string
+          title: Sample Id
+        sample_code:
+          type: string
+          title: Sample Code
+          description: Human-readable unique Sample ID
+        gr_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gr Id
+        gr_line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gr Line Id
+        sampling_plan_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sampling Plan Id
+        sample_type:
+          $ref: '#/components/schemas/SampleType'
+          default: In-House Test Sample
+        status:
+          $ref: '#/components/schemas/SampleStatus'
+          default: Pending Collection
+        collected_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Collected By
+        collected_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Collected At
+        collection_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Collection Location
+        container_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Container Details
+        sample_qty:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Sample Qty
+        uom:
+          anyOf:
+          - type: string
+            enum:
+            - Each
+            - Case
+            - Pallet
+            - Kg
+            - L
+            - M
+            - Box
+            - Roll
+            - Custom
+          - type: 'null'
+          title: Uom
+        lims_request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lims Request Id
+        lims_result_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lims Result Id
+        lab_received_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lab Received At
+        results_received_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Results Received At
+        disposed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposed At
+        disposed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposed By
+        disposal_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposal Method
+        chain_of_custody:
+          items:
+            $ref: '#/components/schemas/ChainOfCustodyEntry'
+          type: array
+          title: Chain Of Custody
+        attachments:
+          items:
+            $ref: '#/components/schemas/Attachment'
+          type: array
+          title: Attachments
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          $ref: '#/components/schemas/AuditInfo'
+      type: object
+      required:
+      - sample_code
+      title: SampleResponse
+    SampleStatus:
+      type: string
+      enum:
+      - Pending Collection
+      - Collected
+      - In Transit to Lab
+      - In Testing
+      - Results Received
+      - Disposed
+      title: SampleStatus
+    SampleType:
+      type: string
+      enum:
+      - Retain Sample
+      - Send-to-Lab Sample
+      - In-House Test Sample
+      title: SampleType
+    SampleUpdate:
+      properties:
+        sample_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sample Code
+        sample_type:
+          anyOf:
+          - $ref: '#/components/schemas/SampleType'
+          - type: 'null'
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/SampleStatus'
+          - type: 'null'
+        collected_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Collected By
+        collected_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Collected At
+        collection_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Collection Location
+        container_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Container Details
+        sample_qty:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Sample Qty
+        uom:
+          anyOf:
+          - type: string
+            enum:
+            - Each
+            - Case
+            - Pallet
+            - Kg
+            - L
+            - M
+            - Box
+            - Roll
+            - Custom
+          - type: 'null'
+          title: Uom
+        lims_request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lims Request Id
+        lims_result_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lims Result Id
+        lab_received_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lab Received At
+        results_received_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Results Received At
+        disposed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Disposed At
+        disposed_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposed By
+        disposal_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Disposal Method
+        chain_of_custody:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ChainOfCustodyEntry'
+            type: array
+          - type: 'null'
+          title: Chain Of Custody
+        attachments:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Attachment'
+            type: array
+          - type: 'null'
+          title: Attachments
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        audit:
+          anyOf:
+          - $ref: '#/components/schemas/AuditInfo'
+          - type: 'null'
+      type: object
+      title: SampleUpdate
+    SamplingMethod:
+      type: string
+      enum:
+      - AQL Standard
+      - Fixed Quantity
+      - Percentage Based
+      - Skip Lot
+      - Zero Defect
+      title: SamplingMethod
+    SamplingPlanCreate:
+      properties:
+        plan_id:
+          type: string
+          title: Plan Id
+        plan_code:
+          type: string
+          title: Plan Code
+        name:
+          type: string
+          title: Name
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        risk_classification:
+          $ref: '#/components/schemas/RiskClassification'
+          default: Medium
+        sampling_method:
+          $ref: '#/components/schemas/SamplingMethod'
+        aql_level:
+          anyOf:
+          - $ref: '#/components/schemas/AQLLevel'
+          - type: 'null'
+        fixed_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Fixed Sample Qty
+        percentage:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Percentage
+        skip_lot_frequency:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Skip Lot Frequency
+          description: Inspect every Nth lot; only valid when method is SKIP_LOT
+        min_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Min Sample Qty
+        max_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max Sample Qty
+        current_version:
+          $ref: '#/components/schemas/SamplingPlanVersion'
+        history:
+          items:
+            $ref: '#/components/schemas/SamplingPlanVersion'
+          type: array
+          title: History
+      type: object
+      required:
+      - plan_code
+      - name
+      - sampling_method
+      - current_version
+      title: SamplingPlanCreate
+      description: Schema for creating sampling plans.
+    SamplingPlanResponse:
+      properties:
+        plan_id:
+          type: string
+          title: Plan Id
+        plan_code:
+          type: string
+          title: Plan Code
+        name:
+          type: string
+          title: Name
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        risk_classification:
+          $ref: '#/components/schemas/RiskClassification'
+          default: Medium
+        sampling_method:
+          $ref: '#/components/schemas/SamplingMethod'
+        aql_level:
+          anyOf:
+          - $ref: '#/components/schemas/AQLLevel'
+          - type: 'null'
+        fixed_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Fixed Sample Qty
+        percentage:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Percentage
+        skip_lot_frequency:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Skip Lot Frequency
+          description: Inspect every Nth lot; only valid when method is SKIP_LOT
+        min_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Min Sample Qty
+        max_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max Sample Qty
+        current_version:
+          $ref: '#/components/schemas/SamplingPlanVersion'
+        history:
+          items:
+            $ref: '#/components/schemas/SamplingPlanVersion'
+          type: array
+          title: History
+      type: object
+      required:
+      - plan_code
+      - name
+      - sampling_method
+      - current_version
+      title: SamplingPlanResponse
+    SamplingPlanUpdate:
+      properties:
+        plan_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plan Code
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        material_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material Code
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        risk_classification:
+          anyOf:
+          - $ref: '#/components/schemas/RiskClassification'
+          - type: 'null'
+        sampling_method:
+          anyOf:
+          - $ref: '#/components/schemas/SamplingMethod'
+          - type: 'null'
+        aql_level:
+          anyOf:
+          - $ref: '#/components/schemas/AQLLevel'
+          - type: 'null'
+        fixed_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Fixed Sample Qty
+        percentage:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Percentage
+        skip_lot_frequency:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Skip Lot Frequency
+        min_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Min Sample Qty
+        max_sample_qty:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max Sample Qty
+        current_version:
+          anyOf:
+          - $ref: '#/components/schemas/SamplingPlanVersion'
+          - type: 'null'
+        history:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/SamplingPlanVersion'
+            type: array
+          - type: 'null'
+          title: History
+      type: object
+      title: SamplingPlanUpdate
+    SamplingPlanVersion:
+      properties:
+        version_number:
+          type: string
+          title: Version Number
+        effective_date:
+          type: string
+          format: date-time
+          title: Effective Date
+        change_summary:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Change Summary
+        approved_by:
+          type: string
+          title: Approved By
+        status:
+          $ref: '#/components/schemas/DocumentStatus'
+          default: Approved
+      type: object
+      required:
+      - version_number
+      - effective_date
+      - approved_by
+      title: SamplingPlanVersion
+    SpecificationLimit-Input:
+      properties:
+        parameter_name:
+          type: string
+          title: Parameter Name
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        lower_spec_limit:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Lower Spec Limit
+        upper_spec_limit:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Upper Spec Limit
+        target:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Target
+        acceptable_values:
+          items:
+            type: string
+          type: array
+          title: Acceptable Values
+          description: For qualitative/enumerated parameters, e.g. ['Green', 'Yellow']
+      type: object
+      required:
+      - parameter_name
+      title: SpecificationLimit
+      description: Acceptance limits for a single test parameter.
+    SpecificationLimit-Output:
+      properties:
+        parameter_name:
+          type: string
+          title: Parameter Name
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        lower_spec_limit:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Lower Spec Limit
+        upper_spec_limit:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Upper Spec Limit
+        target:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Target
+        acceptable_values:
+          items:
+            type: string
+          type: array
+          title: Acceptable Values
+          description: For qualitative/enumerated parameters, e.g. ['Green', 'Yellow']
+      type: object
+      required:
+      - parameter_name
+      title: SpecificationLimit
+      description: Acceptance limits for a single test parameter.
+    SupplierDebitNote-Input:
+      properties:
+        debit_note_id:
+          type: string
+          format: uuid
+          title: Debit Note Id
+        ncr_id:
+          type: string
+          format: uuid
+          title: Ncr Id
+        supplier_id:
+          type: string
+          title: Supplier Id
+        amount:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Amount
+        currency:
+          type: string
+          maxLength: 3
+          title: Currency
+        reason:
+          type: string
+          title: Reason
+        issued_at:
+          type: string
+          format: date-time
+          title: Issued At
+        issued_by:
+          type: string
+          title: Issued By
+        acknowledged_by_supplier:
+          type: boolean
+          title: Acknowledged By Supplier
+          default: false
+        acknowledged_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Acknowledged At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - ncr_id
+      - supplier_id
+      - amount
+      - currency
+      - reason
+      - issued_by
+      title: SupplierDebitNote
+      description: Formal debit note issued to supplier for attributable non-conformance.
+    SupplierDebitNote-Output:
+      properties:
+        debit_note_id:
+          type: string
+          format: uuid
+          title: Debit Note Id
+        ncr_id:
+          type: string
+          format: uuid
+          title: Ncr Id
+        supplier_id:
+          type: string
+          title: Supplier Id
+        amount:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Amount
+        currency:
+          type: string
+          maxLength: 3
+          title: Currency
+        reason:
+          type: string
+          title: Reason
+        issued_at:
+          type: string
+          format: date-time
+          title: Issued At
+        issued_by:
+          type: string
+          title: Issued By
+        acknowledged_by_supplier:
+          type: boolean
+          title: Acknowledged By Supplier
+          default: false
+        acknowledged_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Acknowledged At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - ncr_id
+      - supplier_id
+      - amount
+      - currency
+      - reason
+      - issued_by
+      title: SupplierDebitNote
+      description: Formal debit note issued to supplier for attributable non-conformance.
+    TestResult-Input:
+      properties:
+        result_id:
+          type: string
+          format: uuid
+          title: Result Id
+        checklist_item_id:
+          type: string
+          format: uuid
+          title: Checklist Item Id
+        parameter_name:
+          type: string
+          title: Parameter Name
+        result_type:
+          $ref: '#/components/schemas/TestResultType'
+        numeric_value:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Numeric Value
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        lower_spec_limit:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Lower Spec Limit
+        upper_spec_limit:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Upper Spec Limit
+        text_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Text Value
+        is_oos:
+          type: boolean
+          title: Is Oos
+          default: false
+        instrument_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instrument Id
+        calibration_due:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Calibration Due
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - checklist_item_id
+      - parameter_name
+      - result_type
+      title: TestResult
+      description: Result recorded for one checklist item during a QC inspection.
+    TestResult-Output:
+      properties:
+        result_id:
+          type: string
+          format: uuid
+          title: Result Id
+        checklist_item_id:
+          type: string
+          format: uuid
+          title: Checklist Item Id
+        parameter_name:
+          type: string
+          title: Parameter Name
+        result_type:
+          $ref: '#/components/schemas/TestResultType'
+        numeric_value:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Numeric Value
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+        lower_spec_limit:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Lower Spec Limit
+        upper_spec_limit:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Upper Spec Limit
+        text_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Text Value
+        is_oos:
+          type: boolean
+          title: Is Oos
+          default: false
+        instrument_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Instrument Id
+        calibration_due:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Calibration Due
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - checklist_item_id
+      - parameter_name
+      - result_type
+      title: TestResult
+      description: Result recorded for one checklist item during a QC inspection.
+    TestResultType:
+      type: string
+      enum:
+      - Quantitative
+      - Qualitative
+      - Visual
+      - Dimensional
+      title: TestResultType
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

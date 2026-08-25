@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: proprietary API
+  description: Proprietary enterprise system integrations (SAP, Oracle, etc.)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/proprietary
+  description: Capability endpoint
+paths:
+  /systems:
+    read:
+      summary: List available systems
+      operationId: proprietary_list_systems
+      parameters: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /connect:
+    create:
+      summary: Connect to an enterprise system
+      operationId: proprietary_connect
+      parameters:
+      - name: system
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: config
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

@@ -1,0 +1,128 @@
+capability:
+  name: insurance
+  id: cap-ins-001
+  platform: Insurance
+  description: Insurance integrations (Claims Processing, Policy Management, Underwriting)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - insurance
+  - claims
+  - policies
+  - underwriting
+  references:
+  - src/cerebellum/capabilities/insurance.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/insurance
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: file_claim
+  method: CREATE
+  path: /claims
+  description: File an insurance claim
+  required_params:
+  - policy_id
+  - incident_date
+  - description
+  optional_params:
+  - photos
+  - witnesses
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_claims
+  method: READ
+  path: /claims
+  description: List claims
+  required_params: []
+  optional_params:
+  - policy_id
+  - status
+  paginated: true
+  pagination_cursor_field: cursor
+- name: manage_policy
+  method: UPDATE
+  path: /policies/{policy_id}
+  description: Manage policy
+  required_params:
+  - policy_id
+  - action
+  optional_params:
+  - coverage_changes
+  paginated: false
+  pagination_cursor_field: ''
+- name: perform_underwriting
+  method: CREATE
+  path: /underwriting
+  description: Perform underwriting assessment
+  required_params:
+  - applicant_id
+  - asset_type
+  optional_params:
+  - risk_factors
+  paginated: false
+  pagination_cursor_field: ''
+- name: get_adjuster_notes
+  method: READ
+  path: /adjuster/notes
+  description: Get adjuster notes for a claim
+  required_params:
+  - claim_id
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_insurance_connect
+  - test_insurance_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

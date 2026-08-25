@@ -1,0 +1,61 @@
+module:
+  name: homeostasis
+  layer: 5
+  alias: Control Plane
+  biologicalRole: Maintaining equilibrium
+  softwareRole: Fleet management, health, orchestration
+  owns:
+  - control_plane
+owns:
+- Deployment
+- Configuration
+- Updates
+- Monitoring
+- FleetManagement
+- CapabilityDistribution
+- PolicyDistribution
+neverOwns:
+- Cognition
+- Execution
+- CapabilityLogic
+- WorldModel
+principles:
+- id: 1
+  name: ControlPlaneNeverExecutesCognition
+  statement: homeostasis never executes cognition. It manages the fleet.
+- id: 2
+  name: ControlPlaneNeverExecutesPipelines
+  statement: homeostasis never executes pipelines. It deploys and configures.
+invariants:
+- id: HOME-INV-001
+  rule: no_cognition_in_homeostasis
+  statement: homeostasis never performs cognition or execution.
+  severity: critical
+  rejection: "REJECTED \u2014 homeostasis contains cognition or pipeline execution."
+deliverables:
+- artifact: ControlPlaneAPIs
+- artifact: DeploymentWorkflows
+- artifact: ManagementArchitecture
+- artifact: FleetMonitoringDashboard
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: homeostasis manages the fleet. It never reasons or executes
+      pipelines.'
+    constraint: HOME-INV-001
+    auditGate: true
+  - step: 2
+    instruction: Map the control_plane module to fleet management responsibilities exclusively.
+  - step: 3
+    instruction: Design deployment, update, configuration, and policy distribution
+      APIs.
+  - step: 4
+    instruction: Produce ControlPlaneAPIs, DeploymentWorkflows, ManagementArchitecture.
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 homeostasis conforms to Control Plane Constitution\
+      \ v1.0.0"
+    rejected:
+    - "REJECTED \u2014 homeostasis contains cognition."
+    - "REJECTED \u2014 homeostasis executes pipelines."

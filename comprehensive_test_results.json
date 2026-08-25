@@ -1,0 +1,244 @@
+{
+  "total_questions": 720,
+  "successful_routes": 720,
+  "failed_routes": 0,
+  "successful_executions": 625,
+  "failed_executions": 95,
+  "routing_success_rate": 1.0,
+  "execution_success_rate": 0.8680555555555556,
+  "overall_success_rate": 0.8680555555555556,
+  "questions_per_second": 79504.49873631002,
+  "by_capability": {
+    "Broca": 26,
+    "Security": 25,
+    "Cingulate": 30,
+    "Chaos Engineering": 23,
+    "Deployment Validation": 26,
+    "Constitution Validation": 22,
+    "Unit Testing": 21,
+    "Motor Cortex": 29,
+    "Prompt Compiler": 22,
+    "Static Analysis": 24,
+    "Simulation": 18,
+    "Source Control": 23,
+    "Planner": 32,
+    "Registry": 19,
+    "Physics Validation": 20,
+    "World Model": 25,
+    "Operational Evidence": 28,
+    "Chart Evolution": 25,
+    "Release Manager": 22,
+    "Introspection": 31,
+    "ETASS Orchestrator": 28,
+    "Architecture Review": 32,
+    "SRE": 31,
+    "Performance": 26,
+    "Integration Testing": 17,
+    "Pull Request": 24,
+    "Chart Loader": 22,
+    "Knowledge Base": 27,
+    "Human Review": 22
+  },
+  "by_layer": {
+    "Layer 2 \u2014 Engineering": 186,
+    "Layer 3 \u2014 Verification": 224,
+    "Layer 4 \u2014 Runtime Intelligence": 145,
+    "Layer 1 \u2014 Specification": 85,
+    "Layer 5 \u2014 Evolution": 80
+  },
+  "routing_failures": 0,
+  "execution_failures": 95,
+  "total_edge_cases": 9,
+  "passed_edge_cases": 9,
+  "failed_edge_cases": []
+    {
+      "question": "work orders are open",
+      "expected": "work_order_query"
+    },
+    {
+      "question": "PM-FBD-001 status",
+      "expected": "work_order_query"
+    },
+    {
+      "question": "suspended batch analysis",
+      "expected": "batch_hold"
+    },
+    {
+      "question": "drug research protocol review",
+      "expected": "drug_research"
+    },
+    {
+      "question": "clinical trial data analysis",
+      "expected": "drug_research"
+    },
+    {
+      "question": "audit log retrieval",
+      "expected": "audit_log"
+    },
+    {
+      "question": "system access history",
+      "expected": "audit_log"
+    },
+    {
+      "question": "decision intelligence report",
+      "expected": "decision_intelligence"
+    },
+    {
+      "question": "strategic analysis request",
+      "expected": "decision_intelligence"
+    }
+  ],
+  "edge_case_details": [
+    {
+      "question": "work orders are open",
+      "expected": "work_order_query",
+      "result": "PASS",
+      "agent": "Work Order Query"
+    },
+    {
+      "question": "PM-FBD-001 status",
+      "expected": "work_order_query",
+      "result": "PASS",
+      "agent": "Work Order Query"
+    },
+    {
+      "question": "suspended batch analysis",
+      "expected": "batch_hold",
+      "result": "PASS",
+      "agent": "Batch Hold"
+    },
+    {
+      "question": "drug research protocol review",
+      "expected": "drug_research",
+      "result": "PASS",
+      "agent": "Drug Research"
+    },
+    {
+      "question": "clinical trial data analysis",
+      "expected": "drug_research",
+      "result": "PASS",
+      "agent": "Drug Research"
+    },
+    {
+      "question": "audit log retrieval",
+      "expected": "audit_log",
+      "result": "PASS",
+      "agent": "Audit Log"
+    },
+    {
+      "question": "system access history",
+      "expected": "audit_log",
+      "result": "PASS",
+      "agent": "Audit Log"
+    },
+    {
+      "question": "decision intelligence report",
+      "expected": "decision_intelligence",
+      "result": "PASS",
+      "agent": "Decision Intelligence"
+    },
+    {
+      "question": "strategic analysis request",
+      "expected": "decision_intelligence",
+      "result": "PASS",
+      "agent": "Decision Intelligence"
+    }
+  ],
+  "performance_metrics": {
+    "routing_avg_ms": 0.0003600120544433594,
+    "routing_max_ms": 0.0011920928955078125,
+    "execution_avg_ms": 0.013689994812011719,
+    "execution_max_ms": 0.0247955322265625,
+    "lookup_avg_ms": 0.00026226043701171875,
+    "lookup_max_ms": 0.0011920928955078125
+  },
+  "benchmark_results": [],
+  "test_questions": [
+    {
+      "question": "user guides question 3",
+      "expected_capability": "user.guides",
+      "context": {
+        "test": "comprehensive"
+      }
+    },
+    {
+      "question": "policy compliance question 1",
+      "expected_capability": "policy.compliance",
+      "context": {
+        "test": "comprehensive"
+      }
+    },
+    {
+      "question": "Mixed capability question 187 requiring policy.validation, specification.improvement",
+      "expected_capabilities": [
+        "policy.validation",
+        "specification.improvement"
+      ],
+      "context": {
+        "test": "mixed"
+      }
+    },
+    {
+      "question": "failure simulation question 4",
+      "expected_capability": "failure.simulation",
+      "context": {
+        "test": "comprehensive"
+      }
+    },
+    {
+      "question": "Edge case question 93 with unusual input",
+      "expected_capability": "rollout.preparation",
+      "context": {
+        "edge_case": true,
+        "unusual_input": "test"
+      }
+    },
+    {
+      "question": "Mixed capability question 131 requiring policy.adherence, chart.updating, workflow.coordination",
+      "expected_capabilities": [
+        "policy.adherence",
+        "chart.updating",
+        "workflow.coordination"
+      ],
+      "context": {
+        "test": "mixed"
+      }
+    },
+    {
+      "question": "Mixed capability question 86 requiring test.result.reporting, thermodynamic.checking, test.coverage.analysis",
+      "expected_capabilities": [
+        "test.result.reporting",
+        "thermodynamic.checking",
+        "test.coverage.analysis"
+      ],
+      "context": {
+        "test": "mixed"
+      }
+    },
+    {
+      "question": "code refactoring question 4",
+      "expected_capability": "code.refactoring",
+      "context": {
+        "test": "comprehensive"
+      }
+    },
+    {
+      "question": "prompt compilation question 3",
+      "expected_capability": "prompt.compilation",
+      "context": {
+        "test": "comprehensive"
+      }
+    },
+    {
+      "question": "Mixed capability question 38 requiring code.quality, operational.readiness",
+      "expected_capabilities": [
+        "code.quality",
+        "operational.readiness"
+      ],
+      "context": {
+        "test": "mixed"
+      }
+    }
+  ],
+  "test_duration_seconds": 0.009871959686279297
+}

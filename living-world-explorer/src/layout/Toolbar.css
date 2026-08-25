@@ -1,0 +1,151 @@
+.lwe-toolbar {
+  flex: none;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 12px;
+  background: var(--lwe-surface);
+  border-bottom: 1px solid var(--lwe-border);
+}
+
+.lwe-toolbar-brand {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.lwe-toolbar-status {
+  display: flex;
+  gap: 10px;
+}
+
+.lwe-toolbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lwe-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--lwe-text-muted);
+}
+
+.lwe-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lwe-text-muted);
+}
+
+.lwe-badge-ok .lwe-badge-dot {
+  background: var(--lwe-success);
+}
+
+.lwe-badge-down .lwe-badge-dot {
+  background: var(--lwe-danger);
+}
+
+.lwe-badge-pending .lwe-badge-dot {
+  background: var(--lwe-text-muted);
+  animation: lwe-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes lwe-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.lwe-theme-toggle {
+  border: 1px solid var(--lwe-border);
+  background: var(--lwe-surface-alt);
+  color: var(--lwe-text);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.lwe-theme-toggle:hover {
+  border-color: var(--lwe-accent);
+}
+
+.lwe-tick-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lwe-tick-button {
+  position: relative;
+  border: 1px solid var(--lwe-border);
+  background: var(--lwe-surface-alt);
+  color: var(--lwe-text);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.lwe-tick-button:hover:not(:disabled) {
+  border-color: var(--lwe-accent);
+}
+
+.lwe-tick-button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.lwe-tick-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.lwe-tick-pulse-active {
+  animation: lwe-tick-heartbeat 0.9s ease-in-out infinite;
+}
+
+@keyframes lwe-tick-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(51, 99, 255, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(51, 99, 255, 0);
+  }
+}
+
+.lwe-tick-pulse:not(.lwe-tick-pulse-active) {
+  animation: lwe-tick-ring 0.7s ease-out;
+}
+
+@keyframes lwe-tick-heartbeat {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(51, 99, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(51, 99, 255, 0.15);
+  }
+}
+
+.lwe-tick-summary {
+  font-size: 11px;
+  color: var(--lwe-text-muted);
+  white-space: nowrap;
+}
+
+.lwe-tick-error {
+  font-size: 11px;
+  color: var(--lwe-danger);
+}

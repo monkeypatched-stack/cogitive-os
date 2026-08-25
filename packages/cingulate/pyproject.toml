@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monkeybrain-cingulate"
+version = "1.0.0"
+description = "MonkeyBrain Cingulate — Governance, benchmarking, and RL policy"
+readme = "README.md"
+license = { text = "Proprietary" }
+requires-python = ">=3.11"
+authors = [{ name = "Prashun Javeri" }]
+keywords = ["governance", "benchmark", "compliance", "policy", "architecture"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+dependencies = []
+
+[tool.setuptools]
+packages = ["cingulate", "cingulate.governance", "cingulate.benchmark"]
+
+[tool.setuptools.package-dir]
+cingulate = "."

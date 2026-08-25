@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: agentos API
+  description: MonkeyBrain agentos service API
+  version: 2.0.0
+paths:
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /state:
+    get:
+      tags:
+      - State
+      summary: Get State
+      description: Get current runtime state.
+      operationId: get_state_state_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /metrics:
+    get:
+      tags:
+      - Metrics
+      summary: Get Metrics
+      description: Get all metrics for dashboards.
+      operationId: get_metrics_metrics_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /somatic/charts:
+    get:
+      tags:
+      - SittingFace
+      summary: List Somatic Charts
+      description: List all loaded somatic charts.
+      operationId: list_somatic_charts_somatic_charts_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /somatic/prompts:
+    get:
+      tags:
+      - SittingFace
+      summary: List Somatic Prompts
+      description: List compiled prompts from somatic charts.
+      operationId: list_somatic_prompts_somatic_prompts_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /somatic/capabilities:
+    get:
+      tags:
+      - SittingFace
+      summary: List Somatic Capabilities
+      description: List capabilities registered from somatic charts.
+      operationId: list_somatic_capabilities_somatic_capabilities_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /somatic/recompile:
+    post:
+      tags:
+      - SittingFace
+      summary: Recompile Somatic
+      description: Recompile somatic charts and re-register into Runtime.
+      operationId: recompile_somatic_somatic_recompile_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}

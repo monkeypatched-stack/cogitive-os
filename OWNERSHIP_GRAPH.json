@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "verification": "static_ast_and_source_ownership",
+  "owners": {
+    "Kernel": {
+      "path": "src/monkey_brain/kernel/kernel.py",
+      "symbols": ["Kernel", "RuntimeRegistry", "RuntimeSelector", "AgentRegistry", "CapabilityRegistry"],
+      "responsibilities": ["runtime construction and registration", "runtime selection", "boot validation", "shutdown lifecycle"]
+    },
+    "ActorRuntime": {
+      "path": "src/monkey_brain/kernel/compile/actor_runtime.py",
+      "symbol": "ActorRuntime",
+      "owned_attributes": ["context", "identity", "memory", "belief", "goal_queue", "resources", "authorization", "capabilities", "agents"],
+      "responsibilities": ["actor state", "actor-local belief", "authorization views"]
+    },
+    "PlanetaryRuntime": {
+      "path": "src/monkey_brain/kernel/society/integration.py",
+      "symbol": "PlanetaryRuntime",
+      "owned_attributes": ["_world", "_world_model", "_society_runtime"],
+      "responsibilities": ["global world", "world update routing", "learning integration"]
+    },
+    "CognitiveOS": {
+      "path": "src/monkey_brain/kernel/cognitive_os/cognitive_os.py",
+      "symbol": "CognitiveOS",
+      "owned_methods": ["evaluate_goals", "match_capabilities", "synthesize", "tick"],
+      "responsibilities": ["observe", "believe", "plan", "predict", "learn boundary"]
+    },
+    "AgentRuntime": {
+      "path": "src/monkey_brain/runtime/agent_runtime.py",
+      "symbol": "AgentRuntime",
+      "implementation": "AgentMiddleware",
+      "owned_attributes": ["classifier", "router", "resolver"],
+      "responsibilities": ["orchestration", "routing", "resolution", "middleware lifecycle"]
+    },
+    "CapabilityRuntime": {
+      "path": "src/monkey_brain/kernel/pipeline/capability_runtime.py",
+      "symbol": "CapabilityRuntime",
+      "implementation": "ActionExecutor",
+      "owned_attributes": ["_capability_bus"],
+      "owned_methods": ["execute", "_execute_action"],
+      "responsibilities": ["capability discovery", "capability invocation", "execution outcomes"]
+    }
+  }
+}

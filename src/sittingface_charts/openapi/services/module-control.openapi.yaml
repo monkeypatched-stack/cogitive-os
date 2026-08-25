@@ -1,0 +1,688 @@
+openapi: 3.1.0
+info:
+  title: module-control API
+  description: MonkeyBrain module-control service API
+  version: 1.0.0
+paths:
+  /api/v1/module-control/status:
+    get:
+      tags:
+      - Module Control
+      summary: Status
+      operationId: status_api_v1_module_control_status_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Status Api V1 Module Control Status Get
+  /api/v1/module-control/activation/challenge:
+    post:
+      tags:
+      - Module Control
+      summary: Activation Challenge
+      operationId: activation_challenge_api_v1_module_control_activation_challenge_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationChallengeResponse'
+  /api/v1/module-control/activation/verify:
+    post:
+      tags:
+      - Module Control
+      summary: Activation Verify
+      operationId: activation_verify_api_v1_module_control_activation_verify_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationVerifyRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationVerifyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/policy:
+    get:
+      tags:
+      - Module Control
+      summary: Read Policy
+      operationId: read_policy_api_v1_module_control_policy_get
+      parameters:
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleControlPolicyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Module Control
+      summary: Patch Policy
+      operationId: patch_policy_api_v1_module_control_policy_patch
+      parameters:
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyPatchRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleControlPolicyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/modules/{module_id}:
+    patch:
+      tags:
+      - Module Control
+      summary: Set Module State
+      operationId: set_module_state_api_v1_module_control_modules__module_id__patch
+      parameters:
+      - name: module_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Module Id
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleStateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleControlPolicyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/integrations/{integration_id}:
+    patch:
+      tags:
+      - Module Control
+      summary: Set Integration State
+      operationId: set_integration_state_api_v1_module_control_integrations__integration_id__patch
+      parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Integration Id
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleStateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleControlPolicyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/integration-config:
+    get:
+      tags:
+      - Module Control
+      summary: Read Integration Configs
+      operationId: read_integration_configs_api_v1_module_control_integration_config_get
+      parameters:
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Read Integration Configs Api V1 Module Control Integration
+                  Config Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Module Control
+      summary: Upsert Integration Config
+      operationId: upsert_integration_config_api_v1_module_control_integration_config_post
+      parameters:
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationManifestRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Upsert Integration Config Api V1 Module Control Integration
+                  Config Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/integration-config/{adapter_id}:
+    get:
+      tags:
+      - Module Control
+      summary: Read Integration Config
+      operationId: read_integration_config_api_v1_module_control_integration_config__adapter_id__get
+      parameters:
+      - name: adapter_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Adapter Id
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Read Integration Config Api V1 Module Control Integration
+                  Config  Adapter Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/integration-config/upload:
+    post:
+      tags:
+      - Module Control
+      summary: Upload Integration Config
+      operationId: upload_integration_config_api_v1_module_control_integration_config_upload_post
+      parameters:
+      - name: X-Module-Control-Session
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Session
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_integration_config_api_v1_module_control_integration_config_upload_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Upload Integration Config Api V1 Module Control Integration
+                  Config Upload Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/integration-webhooks/{adapter_id}/{webhook_key}:
+    post:
+      tags:
+      - Module Control
+      summary: Receive Integration Webhook
+      operationId: receive_integration_webhook_api_v1_module_control_integration_webhooks__adapter_id___webhook_key__post
+      parameters:
+      - name: adapter_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Adapter Id
+      - name: webhook_key
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Webhook Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Receive Integration Webhook Api V1 Module Control
+                  Integration Webhooks  Adapter Id   Webhook Key  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/module-control/evaluate:
+    post:
+      tags:
+      - Module Control
+      summary: Evaluate
+      operationId: evaluate_api_v1_module_control_evaluate_post
+      parameters:
+      - name: X-Module-Control-Internal-Secret
+        in: header
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: X-Module-Control-Internal-Secret
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Evaluate Api V1 Module Control Evaluate Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    ActivationChallengeResponse:
+      properties:
+        challenge_id:
+          type: string
+          title: Challenge Id
+        expires_at:
+          type: string
+          title: Expires At
+        delivery_mode:
+          type: string
+          title: Delivery Mode
+        otp_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Otp Code
+      type: object
+      required:
+      - challenge_id
+      - expires_at
+      - delivery_mode
+      title: ActivationChallengeResponse
+    ActivationVerifyRequest:
+      properties:
+        challenge_id:
+          type: string
+          minLength: 1
+          title: Challenge Id
+        otp_code:
+          type: string
+          maxLength: 12
+          minLength: 4
+          title: Otp Code
+        password:
+          type: string
+          minLength: 1
+          title: Password
+      type: object
+      required:
+      - challenge_id
+      - otp_code
+      - password
+      title: ActivationVerifyRequest
+    ActivationVerifyResponse:
+      properties:
+        activation_token:
+          type: string
+          title: Activation Token
+        expires_at:
+          type: string
+          title: Expires At
+      type: object
+      required:
+      - activation_token
+      - expires_at
+      title: ActivationVerifyResponse
+    Body_upload_integration_config_api_v1_module_control_integration_config_upload_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_integration_config_api_v1_module_control_integration_config_upload_post
+    EvaluationRequest:
+      properties:
+        module_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Module Id
+        path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Path
+        integration_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Integration Id
+        limit_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Limit Key
+        collection:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Collection
+      type: object
+      title: EvaluationRequest
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    IntegrationManifestRequest:
+      properties:
+        manifest:
+          additionalProperties: true
+          type: object
+          minProperties: 1
+          title: Manifest
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - manifest
+      - reason
+      title: IntegrationManifestRequest
+    ModuleControlPolicyResponse:
+      properties:
+        policy_id:
+          type: string
+          title: Policy Id
+        version:
+          type: integer
+          title: Version
+        modules:
+          additionalProperties:
+            type: boolean
+          type: object
+          title: Modules
+        integrations:
+          additionalProperties:
+            type: boolean
+          type: object
+          title: Integrations
+        integration_catalog:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Integration Catalog
+        module_catalog:
+          additionalProperties:
+            additionalProperties: true
+            type: object
+          type: object
+          title: Module Catalog
+        limits:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Limits
+        endpoint_module_prefixes:
+          additionalProperties:
+            type: string
+          type: object
+          title: Endpoint Module Prefixes
+        limit_collections:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          type: object
+          title: Limit Collections
+        created_at:
+          title: Created At
+        updated_at:
+          title: Updated At
+        updated_by:
+          type: string
+          title: Updated By
+      type: object
+      required:
+      - policy_id
+      - version
+      - modules
+      - integrations
+      - integration_catalog
+      - module_catalog
+      - limits
+      - endpoint_module_prefixes
+      - limit_collections
+      - created_at
+      - updated_at
+      - updated_by
+      title: ModuleControlPolicyResponse
+    ModuleStateRequest:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - enabled
+      - reason
+      title: ModuleStateRequest
+    PolicyPatchRequest:
+      properties:
+        modules:
+          additionalProperties:
+            type: boolean
+          type: object
+          title: Modules
+        integrations:
+          additionalProperties:
+            type: boolean
+          type: object
+          title: Integrations
+        limits:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Limits
+        endpoint_module_prefixes:
+          additionalProperties:
+            type: string
+          type: object
+          title: Endpoint Module Prefixes
+        limit_collections:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          type: object
+          title: Limit Collections
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - reason
+      title: PolicyPatchRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

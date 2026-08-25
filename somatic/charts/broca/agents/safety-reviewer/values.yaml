@@ -1,0 +1,98 @@
+agent:
+  name: safety-reviewer
+  id: agent-cing-safe-001
+  kind: ReviewerAgent
+  version: "1.0.0"
+  status: active
+  description: "Reviews code for operational safety, error handling, and graceful degradation"
+  authored_by: "Prashun Javeri"
+  approved_by: "Prashun Javeri"
+
+identity:
+  role: "Safety Reviewer"
+  system_prompt: "You are a safety reviewer for MonkeyBrain. You validate that error handling is comprehensive, timeouts are configured, circuit breakers are in place, and graceful degradation is implemented. Check that no operation can crash the system, that retries have backoff, and that health checks cover all critical paths."
+
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.0
+  max_tokens: 4096
+
+triggers:
+  - type: event
+    source: nats
+    subject: "cingulate.safety.review"
+
+workflow:
+  mode: sequential
+  steps:
+    - id: load_safety_rules
+      action: load
+      depends_on: []
+      on_failure: abort
+    - id: scan_error_handling
+      action: scan
+      depends_on: [load_safety_rules]
+      on_failure: abort
+    - id: check_resilience
+      action: llm_generate
+      depends_on: [scan_error_handling]
+      on_failure: abort
+    - id: emit_verdict
+      action: emit_event
+      depends_on: [check_resilience]
+      on_failure: abort
+
+fallback:
+  strategy: log_and_escalate
+  escalation_topic: "cingulate.safety.escalation"
+
+retrieval:
+  pipeline: []
+
+tools:
+  - name: file_reader
+    type: builtin
+    description: "Read source files from the repository"
+    schema: "schemas/tools/file_reader.json"
+  - name: grep
+    type: builtin
+    description: "Search codebase for patterns"
+    schema: "schemas/tools/grep.json"
+  - name: error_analyzer
+    type: builtin
+    description: "Analyze error handling patterns and timeout configurations"
+    schema: "schemas/tools/error_analyzer.json"
+
+orchestration:
+  mode: sequential
+  max_iterations: 1
+  parallel_tool_calls: false
+  tool_call_timeout_ms: 5000
+
+guardrails:
+  require_confirmation: []
+
+routing:
+  strategy: rule_based
+  fallback_agent: ""
+  agents: []
+
+aggregation:
+  strategy: concat
+  conflict_resolution: ""
+
+memory:
+  backend: redis
+  ttl_seconds: 7200
+  scope: session
+
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: "http://otel-collector:4317"
+
+retry:
+  max_attempts: 2
+  backoff_strategy: exponential
+  base_delay_ms: 1000

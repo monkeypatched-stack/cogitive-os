@@ -1,0 +1,9 @@
+apiVersion: v2
+name: monkey-brain
+description: |
+  monkey_brain — Cognitive Kernel + Execution Runtime.
+  Source: src/monkey_brain/
+  Submodules: kernel, runtime, dlm, persistence, api
+  Constitutional phases: 0 (reduction), 1 (kernel), 2 (runtime), persistence, DLM
+type: application
+version: 1.0.0

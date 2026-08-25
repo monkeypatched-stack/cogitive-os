@@ -1,0 +1,8 @@
+apiVersion: v2
+name: self_healing
+description: |
+  SelfHealingCapability — monitors runtime errors produced by each /prompt execution,
+  maps them back to source files, submits file + error to Claude, and writes the
+  LLM-generated fix in-place so the system continuously repairs itself.
+type: capability
+version: 1.0.0

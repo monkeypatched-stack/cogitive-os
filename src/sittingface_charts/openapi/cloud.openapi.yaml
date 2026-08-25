@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: cloud API
+  description: Multi-cloud resource management
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/cloud
+  description: Capability endpoint
+paths:
+  /resources:
+    read:
+      summary: List cloud resources
+      operationId: cloud_list_resources
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: region
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /provision:
+    create:
+      summary: Provision a resource
+      operationId: cloud_provision
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: config
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

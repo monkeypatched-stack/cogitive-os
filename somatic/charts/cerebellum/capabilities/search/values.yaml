@@ -1,0 +1,93 @@
+capability:
+  name: search
+  id: cap-search-001
+  platform: Search/Web
+  description: Web search and document search capabilities
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-27'
+  review_date: '2026-12-27'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - search
+  - web
+  - document
+  references:
+  - src/cerebellum/capabilities/search.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/search
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: web_search
+  method: READ
+  path: /web
+  description: Search the web
+  required_params:
+  - query
+  optional_params:
+  - max_results
+  paginated: false
+  pagination_cursor_field: ''
+- name: doc_search
+  method: READ
+  path: /docs
+  description: Search documents
+  required_params:
+  - query
+  - collection
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_search_connect
+  - test_search_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

@@ -1,0 +1,189 @@
+module:
+  name: ddd-api
+  description: >
+    Generates a production-grade FastAPI service structured around Domain-Driven Design:
+    bounded contexts, aggregates, entities, value objects, domain events, and repositories.
+    Includes JWT auth, structured logging via Lemon, Sentry error tracking, and
+    OpenTelemetry middleware tracing.
+
+preamble:
+  statement: >
+    You are a senior software architect generating production-grade FastAPI services
+    grounded in Domain-Driven Design. Every service you produce is organized around a
+    bounded context with explicit aggregates, entities, value objects, domain events,
+    and repositories. The application layer is thin — all business rules live in the
+    domain layer. Infrastructure (DB, cache, external APIs) is wired through ports and
+    adapters so the domain never imports from FastAPI, SQLAlchemy, or any framework.
+
+    Authentication uses JWT Bearer tokens validated in a FastAPI dependency. Every
+    request is structured-logged through the Lemon logger (component-tagged, correlation-ID
+    propagated). Errors are captured in Sentry with full context. All inbound and
+    outbound spans are emitted via OpenTelemetry middleware so traces appear in the
+    Lemon observability panel.
+
+invariants:
+  - id: DDD-INV-001
+    rule: domain_no_framework_imports
+    statement: Domain layer files (domain/) must never import from fastapi, sqlalchemy, httpx, or any infrastructure package.
+    severity: critical
+    rejection: "REJECTED — Domain layer contains framework import."
+  - id: DDD-INV-002
+    rule: aggregates_own_invariants
+    statement: All business invariants must be enforced inside the aggregate root, not in routers or services.
+    severity: critical
+    rejection: "REJECTED — Business rule enforced outside aggregate root."
+  - id: DDD-INV-003
+    rule: repositories_are_interfaces
+    statement: Domain layer defines repository interfaces (ABC). Infrastructure layer provides the concrete implementation.
+    severity: critical
+    rejection: "REJECTED — Repository concrete class in domain layer."
+  - id: DDD-INV-004
+    rule: auth_on_every_protected_route
+    statement: Every non-public route must declare the get_current_user dependency. No route may bypass auth silently.
+    severity: critical
+    rejection: "REJECTED — Protected route missing auth dependency."
+  - id: DDD-INV-005
+    rule: lemon_structured_logging
+    statement: Every request handler must emit at least one structured Lemon log entry with component, correlation_id, and user_id.
+    severity: high
+    rejection: "REJECTED — Handler missing Lemon structured log."
+  - id: DDD-INV-006
+    rule: sentry_error_capture
+    statement: All unhandled exceptions must be forwarded to Sentry via the exception handler middleware. sentry_sdk.capture_exception must never be called manually inside business logic.
+    severity: high
+    rejection: "REJECTED — Manual sentry_sdk.capture_exception in business logic."
+  - id: DDD-INV-007
+    rule: otel_middleware_registered
+    statement: OpenTelemetryMiddleware must be registered before any route-level middleware in app startup.
+    severity: high
+    rejection: "REJECTED — OpenTelemetry middleware not registered or registered out of order."
+  - id: DDD-INV-008
+    rule: domain_events_published
+    statement: Every state-changing operation on an aggregate must raise and publish at least one domain event.
+    severity: medium
+    rejection: "REJECTED — Aggregate mutation produces no domain event."
+
+cot:
+  steps:
+    - step: 1
+      title: Define the bounded context
+      description: >
+        Name the bounded context, identify its ubiquitous language, and list the aggregates
+        it owns. For each aggregate, name its root entity, subordinate entities, and value
+        objects. Document what this context never owns (anti-corruption boundary).
+
+    - step: 2
+      title: Model the domain layer
+      description: >
+        Implement domain/ with pure Python. No framework imports (DDD-INV-001).
+        - Aggregate root: enforces all invariants in mutating methods (DDD-INV-002).
+        - Value objects: immutable dataclasses with __eq__ based on value, not identity.
+        - Domain events: dataclasses emitted by the aggregate on every state change (DDD-INV-008).
+        - Repository interface: ABC with abstract methods for persistence (DDD-INV-003).
+        - Domain exceptions: ValueError subclasses with descriptive messages.
+
+    - step: 3
+      title: Design the application layer
+      description: >
+        Implement application/ with use-case command/query handlers.
+        - Commands mutate state via the aggregate root and persist via the repository.
+        - Queries read from the repository and return read models (not aggregate objects).
+        - Each handler receives injected dependencies (repository, event bus) — never imports them directly.
+        - Application layer may import from domain/ only.
+
+    - step: 4
+      title: Implement infrastructure layer
+      description: >
+        Implement infrastructure/ with concrete adapters.
+        - Concrete repository using SQLAlchemy async session.
+        - ORM models mapped to domain entities via a mapper function (no ORM base in domain).
+        - Alembic migration for the schema.
+        - Event publisher that dispatches domain events to an internal bus or message broker.
+
+    - step: 5
+      title: Wire JWT authentication
+      description: >
+        Create api/deps.py with a get_current_user FastAPI dependency.
+        - Decode and verify JWT Bearer token using python-jose or PyJWT.
+        - Return a CurrentUser value object (user_id, roles, correlation_id).
+        - Raise HTTP 401 on invalid/expired tokens, HTTP 403 on insufficient roles.
+        - All protected routes declare Depends(get_current_user) (DDD-INV-004).
+        - Public routes (health, docs) are explicitly allowlisted.
+
+    - step: 6
+      title: Add Lemon structured logging
+      description: >
+        Import lemon from src.monkey_brain.utils.lemon (or the project's logger path).
+        - In each handler, call lemon.info(..., component="<context>", correlation_id=current_user.correlation_id, user_id=current_user.user_id).
+        - Use lemon.warning for recoverable errors, lemon.error for unexpected failures.
+        - Every handler must emit at least one log entry (DDD-INV-005).
+        - Log the command/query name, outcome (success/failure), and latency_ms.
+
+    - step: 7
+      title: Integrate Sentry error tracking
+      description: >
+        In app startup (lifespan), call sentry_sdk.init with dsn from settings, environment,
+        release, and traces_sample_rate=0.2.
+        - Register a global exception handler middleware that calls sentry_sdk.capture_exception
+          and returns a structured JSON error response with a trace_id.
+        - Business logic must never call sentry_sdk directly (DDD-INV-006).
+        - Tag every Sentry event with bounded_context, user_id, and correlation_id via
+          sentry_sdk.set_tag inside the exception handler.
+
+    - step: 8
+      title: Add OpenTelemetry middleware tracing
+      description: >
+        Install opentelemetry-instrumentation-fastapi.
+        - Register FastAPIInstrumentor in app startup before any other middleware (DDD-INV-007).
+        - Configure OTLPSpanExporter pointing to the Lemon collector endpoint (OTEL_EXPORTER_OTLP_ENDPOINT).
+        - Add span attributes: bounded_context, user_id, correlation_id, command/query name.
+        - Every repository call must be wrapped in a child span using the tracer context manager.
+
+    - step: 9
+      title: Build the API layer
+      description: >
+        Implement api/routers/<context>.py with FastAPI APIRouter.
+        - One router per aggregate or use-case group.
+        - Request/response models are Pydantic v2 schemas in api/schemas/.
+        - Routers call application layer handlers only — no domain or infrastructure imports.
+        - Use HTTPException for user-facing errors, mapped from domain exceptions in a
+          centralized error handler so routers stay clean.
+        - Include OpenAPI tags, summary, and response_model on every endpoint.
+
+    - step: 10
+      title: Project structure and startup
+      description: >
+        Produce the canonical layout:
+          src/
+            <context>/
+              domain/        # aggregates, events, value objects, repo interfaces
+              application/   # command/query handlers
+              infrastructure/ # ORM, concrete repos, event publisher
+              api/           # routers, schemas, deps
+          main.py            # FastAPI app, lifespan, middleware stack, router registration
+          settings.py        # pydantic-settings BaseSettings
+          alembic/           # migrations
+
+        In main.py lifespan: init Sentry → init OTel → init DB pool → mount routers.
+        Health endpoint at GET /health returns {status, version, bounded_context}.
+
+    - step: 11
+      title: Review against all invariants
+      description: >
+        Check DDD-INV-001 through DDD-INV-008 in order.
+        For each invariant: locate the relevant file, confirm compliance, and emit
+        APPROVED or REJECTED with the invariant ID. Fix and re-check before finalising.
+
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED — Production DDD API conforms to all architectural, auth, observability, and tracing invariants."
+    rejected:
+      - "REJECTED — Domain layer contains framework import."
+      - "REJECTED — Business rule enforced outside aggregate root."
+      - "REJECTED — Repository concrete class in domain layer."
+      - "REJECTED — Protected route missing auth dependency."
+      - "REJECTED — Handler missing Lemon structured log."
+      - "REJECTED — Manual sentry_sdk.capture_exception in business logic."
+      - "REJECTED — OpenTelemetry middleware not registered or registered out of order."
+      - "REJECTED — Aggregate mutation produces no domain event."

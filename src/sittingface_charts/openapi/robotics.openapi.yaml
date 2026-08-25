@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: robotics API
+  description: Robotics and IoT protocol integrations (ROS, MQTT, OPC-UA)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/robotics
+  description: Capability endpoint
+paths:
+  /sensor:
+    create:
+      summary: Publish sensor data
+      operationId: robotics_publish_sensor
+      parameters:
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: value
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /sensor/subscribe:
+    read:
+      summary: Subscribe to sensor data
+      operationId: robotics_subscribe_sensor
+      parameters:
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

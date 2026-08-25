@@ -1,0 +1,930 @@
+openapi: 3.1.0
+info:
+  title: taxonomy API
+  description: MonkeyBrain taxonomy service API
+  version: 1.0.0
+paths:
+  /api/v1/families/:
+    get:
+      tags:
+      - Families
+      summary: List Families
+      operationId: list_families_api_v1_families__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: tag
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by tag
+          title: Tag
+        description: Filter by tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFamilyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Families
+      summary: Create Family
+      operationId: create_family_api_v1_families__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FamilyCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/families/{family_id}:
+    get:
+      tags:
+      - Families
+      summary: Get Family
+      operationId: get_family_api_v1_families__family_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: family_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Family Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Families
+      summary: Update Family
+      operationId: update_family_api_v1_families__family_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: family_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Family Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FamilyUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Families
+      summary: Delete Family
+      operationId: delete_family_api_v1_families__family_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: family_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Family Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/classes/:
+    get:
+      tags:
+      - Classes
+      summary: List Classes
+      operationId: list_classes_api_v1_classes__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEquipmentClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Classes
+      summary: Create Class
+      operationId: create_class_api_v1_classes__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentClassCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/classes/{class_id}:
+    get:
+      tags:
+      - Classes
+      summary: Get Class
+      operationId: get_class_api_v1_classes__class_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: class_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Class Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Classes
+      summary: Update Class
+      operationId: update_class_api_v1_classes__class_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: class_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Class Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentClassUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Classes
+      summary: Delete Class
+      operationId: delete_class_api_v1_classes__class_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: class_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Class Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/subclasses/:
+    get:
+      tags:
+      - Subclasses
+      summary: List Subclasses
+      operationId: list_subclasses_api_v1_subclasses__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: family_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by family ID
+          title: Family Id
+        description: Filter by family ID
+      - name: class_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by class ID
+          title: Class Id
+        description: Filter by class ID
+      - name: tag
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by tag
+          title: Tag
+        description: Filter by tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEquipmentSubClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Subclasses
+      summary: Create Subclass
+      operationId: create_subclass_api_v1_subclasses__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentSubClassCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentSubClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/subclasses/{subclass_id}:
+    get:
+      tags:
+      - Subclasses
+      summary: Get Subclass
+      operationId: get_subclass_api_v1_subclasses__subclass_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: subclass_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Subclass Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentSubClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Subclasses
+      summary: Update Subclass
+      operationId: update_subclass_api_v1_subclasses__subclass_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: subclass_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Subclass Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentSubClassUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EquipmentSubClassResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Subclasses
+      summary: Delete Subclass
+      operationId: delete_subclass_api_v1_subclasses__subclass_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: subclass_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Subclass Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    EquipmentClassCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      title: EquipmentClassCreate
+    EquipmentClassResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      title: EquipmentClassResponse
+    EquipmentClassUpdate:
+      properties:
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: EquipmentClassUpdate
+    EquipmentSubClassCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        class_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Class Id
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: EquipmentSubClassCreate
+    EquipmentSubClassResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        class_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Class Id
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: EquipmentSubClassResponse
+    EquipmentSubClassUpdate:
+      properties:
+        family_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Family Id
+        class_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Class Id
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: EquipmentSubClassUpdate
+    FamilyCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      title: FamilyCreate
+    FamilyResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - name
+      title: FamilyResponse
+    FamilyUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: FamilyUpdate
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PaginatedEquipmentClassResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/EquipmentClassResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedEquipmentClassResponse
+    PaginatedEquipmentSubClassResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/EquipmentSubClassResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedEquipmentSubClassResponse
+    PaginatedFamilyResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/FamilyResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedFamilyResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

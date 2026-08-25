@@ -1,0 +1,319 @@
+module:
+  name: monkey_brain
+  layer: 1
+  alias: "Deadpool (kernel) + Wolverine (runtime)"
+  biologicalRole: "Central nervous system"
+  softwareRole: "Kernel, scheduler, runtime"
+  source: soma/Computer\ Systems/Operating\ Systems/MonkeyBrain.md
+
+# ─── KERNEL CONSTITUTION ─────────────────────────────────────────────────────
+kernel:
+  owns:
+    - Intent
+    - Goal
+    - Planner
+    - Policy
+    - ExecutionState
+    - Observer
+    - Loss
+    - Learning
+    - LLMExplorer
+    - DAG
+    - Pipeline (definition only)
+  neverOwns:
+    - capability execution
+    - thread management
+    - integrations
+    - persistence writes
+    - world model
+  principles:
+    - id: 1
+      name: CognitionOnly
+      statement: "The Kernel owns cognition only. It never executes capabilities."
+      source: soma/Computer Systems/Operating Systems/MonkeyBrain.md
+    - id: 2
+      name: PipelineProduction
+      statement: "The Kernel only produces executable capability pipelines. Execution belongs to runtime."
+    - id: 3
+      name: SingleResponsibility
+      statement: "Every abstraction in the kernel must have exactly one responsibility."
+    - id: 4
+      name: LLMAsExplorer
+      statement: "The LLM is an exploration mechanism. It is not the execution policy."
+    - id: 5
+      name: RLConvergence
+      statement: "As experience increases, execution converges toward reinforcement learning."
+
+  invariants:
+    - id: KERNEL-INV-001
+      rule: no_execution_in_kernel
+      statement: "the kernel never executes capabilities."
+      severity: critical
+      rejection: "REJECTED — Kernel contains capability execution logic."
+    - id: KERNEL-INV-002
+      rule: no_threads_in_kernel
+      statement: "the kernel never manages threads."
+      severity: critical
+      rejection: "REJECTED — Kernel contains thread management."
+    - id: KERNEL-INV-003
+      rule: no_integrations_in_kernel
+      statement: "the kernel never performs integrations."
+      severity: critical
+      rejection: "REJECTED — Kernel contains integration code."
+    - id: KERNEL-INV-004
+      rule: policy_in_rl_only
+      statement: "Execution policy lives only in the kernel's policy layer."
+      severity: critical
+      rejection: "REJECTED — Execution policy found outside kernel/rl."
+
+  deliverables:
+    - artifact: KernelArchitecture
+      description: "Complete cognitive kernel architecture document"
+      acceptanceCriteria:
+        - "All cognition contained within kernel"
+        - "No execution logic present"
+        - "Every class has single responsibility"
+    - artifact: KernelAPIs
+      description: "Typed FastAPI interfaces for all kernel operations"
+    - artifact: ExecutionLoop
+      description: "Intent → Goal → Plan → Policy → Pipeline loop"
+    - artifact: ClassDiagram
+      description: "UML class diagram of all kernel abstractions"
+
+  cot:
+    steps:
+      - step: 1
+        instruction: "Assert: this module is the cognitive kernel. It reasons. It does not execute."
+        constraint: KERNEL-INV-001
+        auditGate: true
+      - step: 2
+        instruction: "Map each file in the kernel/ to exactly one cognitive responsibility."
+      - step: 3
+        instruction: "Verify goal_planner, goal_router, planner produce pipelines — never execute them."
+        constraint: KERNEL-INV-001
+        auditGate: true
+      - step: 4
+        instruction: "Verify the kernel's policy layer owns all policy selection. No policy elsewhere."
+        constraint: KERNEL-INV-004
+        auditGate: true
+      - step: 5
+        instruction: "Verify the observer module computes loss only. Never modifies state."
+      - step: 6
+        instruction: "Verify the llm_explorer module is an exploration tool. Not the decision maker."
+        constraint: KERNEL-INV-004
+      - step: 7
+        instruction: "Produce KernelArchitecture, KernelAPIs, ExecutionLoop, ClassDiagram."
+      - step: 8
+        instruction: "Run constitutional review gate. APPROVED only if all INV-* pass."
+        auditGate: true
+
+# ─── RUNTIME CONSTITUTION ─────────────────────────────────────────────────────
+runtime:
+  owns:
+    - PipelineExecution
+    - ThreadPools
+    - WorkerPools
+    - Memory (working)
+    - Streaming
+    - AsyncExecution
+    - ResourceManagement
+    - SchedulingInfrastructure
+    - MessageBus
+    - Supervisor
+  neverOwns:
+    - planning
+    - learning
+    - execution policy
+    - capability logic
+    - world model
+    - cognition
+
+  principles:
+    - id: 1
+      name: ExecutionOnly
+      statement: "The Runtime owns execution only. It never performs planning."
+    - id: 2
+      name: NoPolicyOwnership
+      statement: "The Runtime never owns execution policy."
+    - id: 3
+      name: NoCognition
+      statement: "The Runtime never performs learning or cognition."
+    - id: 4
+      name: PipelineConsumer
+      statement: "The Runtime executes pipelines. It never defines them."
+
+  invariants:
+    - id: RUNTIME-INV-001
+      rule: no_planning_in_runtime
+      statement: "the runtime never performs planning."
+      severity: critical
+      rejection: "REJECTED — Runtime contains planning logic."
+    - id: RUNTIME-INV-002
+      rule: no_policy_in_runtime
+      statement: "the runtime never owns execution policy."
+      severity: critical
+      rejection: "REJECTED — Runtime contains policy logic."
+    - id: RUNTIME-INV-003
+      rule: no_cognition_in_runtime
+      statement: "the runtime never performs learning or cognition."
+      severity: critical
+      rejection: "REJECTED — Runtime contains cognition."
+
+  deliverables:
+    - artifact: RuntimeArchitecture
+      description: "Execution runtime design"
+      acceptanceCriteria:
+        - "No planning logic present"
+        - "No policy logic present"
+        - "Thread/worker pools correctly abstracted"
+    - artifact: RuntimeAPIs
+      description: "FastAPI execution endpoints"
+    - artifact: ExecutionLifecycle
+      description: "Pipeline receive → schedule → execute → result flow"
+
+  cot:
+    steps:
+      - step: 1
+        instruction: "Assert: the runtime executes pipelines. It never plans."
+        constraint: RUNTIME-INV-001
+        auditGate: true
+      - step: 2
+        instruction: "Map the engine module, the executor module, the scheduler module to execution responsibilities only."
+      - step: 3
+        instruction: "Verify the worker_pool module and the thread_pool module manage concurrency — no cognitive logic."
+      - step: 4
+        instruction: "Verify the message_bus module is transport only. No routing decisions."
+      - step: 5
+        instruction: "Verify the supervisor module manages process lifecycle. Never execution policy."
+        constraint: RUNTIME-INV-002
+        auditGate: true
+      - step: 6
+        instruction: "Produce RuntimeArchitecture, RuntimeAPIs, ExecutionLifecycle."
+      - step: 7
+        instruction: "Run constitutional review gate."
+        auditGate: true
+
+# ─── PERSISTENCE CONSTITUTION ─────────────────────────────────────────────────
+persistence:
+  stores:
+    mongodb:
+      role: "Master Data — canonical source of truth"
+      owns: [Agents, Users, Organizations, Workflows, Pipelines, Capabilities, Documents]
+      neverStores: [execution history, runtime events]
+    neo4j:
+      role: "Relationship Engine"
+      owns: [CapabilityGraph, WorkflowGraph, KnowledgeGraph, DependencyGraph]
+      neverOwns: [master data]
+    influxdb:
+      role: "Event Store — immutable append-only"
+      owns: [WorkflowEvents, PipelineEvents, CapabilityEvents, Metrics, LLMCalls]
+    redis:
+      role: "Runtime Working Memory — ephemeral"
+      owns: [ActiveSessions, ConversationState, ActiveWorkflowState, SchedulerQueues, Locks]
+    elasticsearch:
+      role: "Search & Observability — derived indexes"
+      owns: [FullTextSearch, AuditLogs, ErrorLogs, RuntimeTraces]
+      neverOwns: [canonical data]
+    mem0:
+      role: "Cognitive Memory — long-term"
+      owns: [UserMemory, AgentMemory, EpisodicMemory, SemanticMemory, ConversationSummaries]
+
+  architecture:
+    reducers:
+      rule: "All state changes occur through reducers. Reducers never perform I/O."
+    persistenceManager:
+      rule: "Single gateway to all storage. No module writes directly to a database."
+    executionFlow: >
+      Intent → Workflow → Execution Runtime → Execution Result
+      → Reducer → Persistence Manager
+      → [MongoDB | Neo4j | InfluxDB | Redis | Elasticsearch | mem0]
+
+  invariants:
+    - id: PERSIST-INV-001
+      rule: no_direct_db_writes
+      statement: "No runtime component writes directly to a database. Only PersistenceManager does."
+      severity: critical
+      rejection: "REJECTED — Direct database write found outside PersistenceManager."
+    - id: PERSIST-INV-002
+      rule: reducers_are_pure
+      statement: "Reducers are pure functions. They emit persistence commands. They never perform I/O."
+      severity: critical
+      rejection: "REJECTED — Reducer contains I/O."
+    - id: PERSIST-INV-003
+      rule: no_responsibility_overlap
+      statement: "No two stores own the same data class."
+      severity: critical
+      rejection: "REJECTED — Duplicate data ownership detected across stores."
+
+  cot:
+    steps:
+      - step: 1
+        instruction: "Assert: persistence is a runtime subsystem, not a database abstraction."
+      - step: 2
+        instruction: "Map each store to exactly one responsibility. Verify no overlap."
+        constraint: PERSIST-INV-003
+        auditGate: true
+      - step: 3
+        instruction: "Verify PersistenceManager is the single write gateway."
+        constraint: PERSIST-INV-001
+        auditGate: true
+      - step: 4
+        instruction: "Verify all reducers are pure — current state + event → new state + commands."
+        constraint: PERSIST-INV-002
+        auditGate: true
+      - step: 5
+        instruction: "Implement: PersistenceManager, Reducer framework, store adapters, persistence events."
+
+# ─── DLM CONSTITUTION ─────────────────────────────────────────────────────────
+dlm:
+  storageClasses:
+    permanent:
+      description: "Never automatically deleted"
+      examples: [DomainOntology, Configuration, Users, Capabilities, Workflows, Policies]
+    longTerm:
+      description: "Retained for configurable periods"
+      examples: [mem0Memory, AuditRecords, BatchHistory, ProductionHistory]
+    operational:
+      description: "Retained for operational analysis"
+      examples: [Metrics, PerformanceData, RuntimeStatistics, Logs]
+    ephemeral:
+      description: "Automatically removed"
+      examples: [Sessions, Cache, TemporaryFiles, RuntimeState, SchedulerQueues]
+
+  principles:
+    - id: 1
+      name: EveryDataTypeHasLifecycle
+      statement: "Every persisted object must define creation, retention, expiration, archival, deletion policies."
+    - id: 2
+      name: GCNeverDeletesCanonicalData
+      statement: "Garbage collection shall never remove canonical business data."
+    - id: 3
+      name: ArchiveBeforeDelete
+      statement: "Move → Archive → Compress → Delete."
+    - id: 4
+      name: EdgeOptimization
+      statement: "Edge deployments enforce configurable storage quotas."
+
+  cot:
+    steps:
+      - step: 1
+        instruction: "Map every data type in the system to one of: permanent, longTerm, operational, ephemeral."
+      - step: 2
+        instruction: "Implement TTL per data class. Configurable, not hardcoded."
+      - step: 3
+        instruction: "Implement GC jobs. Verify they never touch permanent storage class."
+      - step: 4
+        instruction: "Implement archive-before-delete pipeline."
+      - step: 5
+        instruction: "Emit lifecycle telemetry events to introspection module."
+
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED — Conforms to monkey_brain Constitution v1.0.0"
+    rejected:
+      - "REJECTED — Kernel contains execution logic."
+      - "REJECTED — Runtime contains planning logic."
+      - "REJECTED — Direct database write found outside PersistenceManager."
+      - "REJECTED — Reducer contains I/O."
+      - "REJECTED — Policy found outside kernel/rl."

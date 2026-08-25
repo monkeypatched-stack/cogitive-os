@@ -1,0 +1,132 @@
+---
+apiVersion: agent.monkeypatched.io/v1
+kind: Agent
+metadata:
+  name: {{ values.agent.name }}
+  namespace: default
+  labels:
+    app.kubernetes.io/name: {{ values.agent.name }}
+    app.kubernetes.io/version: {{ values.agent.version }}
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/managed-by: Soma
+spec:
+  id: {{ values.agent.id }}
+  name: {{ values.agent.name }}
+  kind: {{ values.agent.kind }}
+  description: {{ values.agent.description }}
+
+  identity:
+    role: {{ values.identity.role }}
+    system_prompt: {{ values.identity.system_prompt }}
+
+  model:
+    provider: {{ values.model.provider }}
+    name: {{ values.model.name }}
+    temperature: {{ values.model.temperature }}
+    max_tokens: {{ values.model.max_tokens }}
+
+  triggers:
+    {% for trigger in values.triggers %}
+    - type: {{ trigger.type }}
+      {% if trigger.source %}source: {{ trigger.source }}{% endif %}
+      {% if trigger.subject %}subject: {{ trigger.subject }}{% endif %}
+      {% if trigger.cron %}cron: {{ trigger.cron }}{% endif %}
+    {% endfor %}
+
+  workflow:
+    mode: {{ values.workflow.mode }}
+    steps:
+      {% for step in values.workflow.steps %}
+      - id: {{ step.id }}
+        action: {{ step.action }}
+        {% if step.tool %}tool: {{ step.tool }}{% endif %}
+        {% if step.depends_on %}depends_on: {{ step.depends_on }}{% endif %}
+        on_failure: {{ step.on_failure }}
+      {% endfor %}
+
+  fallback:
+    strategy: {{ values.fallback.strategy }}
+    {% if values.fallback.escalation_topic %}escalation_topic: {{ values.fallback.escalation_topic }}{% endif %}
+
+  retrieval:
+    pipeline:
+      {% for stage in values.retrieval.pipeline %}
+      - stage: {{ stage.stage }}
+        {% if stage.model %}model: {{ stage.model }}{% endif %}
+        {% if stage.provider %}provider: {{ stage.provider }}{% endif %}
+        {% if stage.top_k %}top_k: {{ stage.top_k }}{% endif %}
+        {% if stage.score_threshold %}score_threshold: {{ stage.score_threshold }}{% endif %}
+      {% endfor %}
+
+  tools:
+    {% for tool in values.tools %}
+    - name: {{ tool.name }}
+      type: {{ tool.type }}
+      description: {{ tool.description }}
+      {% if tool.schema %}schema: {{ tool.schema }}{% endif %}
+      {% if tool.timeout_ms %}timeout_ms: {{ tool.timeout_ms }}{% endif %}
+      {% if tool.server_url %}server_url: {{ tool.server_url }}{% endif %}
+      {% if tool.endpoint %}endpoint: {{ tool.endpoint }}{% endif %}
+    {% endfor %}
+
+  orchestration:
+    mode: {{ values.orchestration.mode }}
+    max_iterations: {{ values.orchestration.max_iterations }}
+    parallel_tool_calls: {{ values.orchestration.parallel_tool_calls }}
+    tool_call_timeout_ms: {{ values.orchestration.tool_call_timeout_ms }}
+
+  guardrails:
+    require_confirmation:
+      {% for tool in values.guardrails.require_confirmation %}
+      - {{ tool }}
+      {% endfor %}
+
+  routing:
+    strategy: {{ values.routing.strategy }}
+    fallback_agent: {{ values.routing.fallback_agent }}
+    agents:
+      {% for agent in values.routing.agents %}
+      - name: {{ agent.name }}
+        handles: {{ agent.handles }}
+        priority: {{ agent.priority }}
+      {% endfor %}
+
+  aggregation:
+    strategy: {{ values.aggregation.strategy }}
+    conflict_resolution: {{ values.aggregation.conflict_resolution }}
+
+  memory:
+    backend: {{ values.memory.backend }}
+    ttl_seconds: {{ values.memory.ttl_seconds }}
+    scope: {{ values.memory.scope }}
+
+  observability:
+    tracing: {{ values.observability.tracing }}
+    log_level: {{ values.observability.log_level }}
+    metrics_endpoint: {{ values.observability.metrics_endpoint }}
+
+  retry:
+    max_attempts: {{ values.retry.max_attempts }}
+    backoff_strategy: {{ values.retry.backoff_strategy }}
+    base_delay_ms: {{ values.retry.base_delay_ms }}
+
+---
+apiVersion: agent.monkeypatched.io/v1
+kind: AgentCodeGenJob
+metadata:
+  name: {{ values.agent.name }}-codegen
+  namespace: default
+spec:
+  agent_id: {{ values.agent.id }}
+  target_language: python
+  base_class: Agent
+  include_tests: true
+  include_docs: true
+  output_format: module
+  codegen_config:
+    model_module: "models.agent"
+    runtime_module: "src.broca.agents.{{ values.agent.name }}"
+    registry_auto_register: true
+  approval_chain:
+    - reviewer: {{ values.agent.approved_by }}
+      stage: cingulate-review

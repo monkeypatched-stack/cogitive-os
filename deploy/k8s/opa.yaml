@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  namespace: monkeybrain
+  labels:
+    app: opa
+    component: policy-engine
+spec:
+  # Stateless policy evaluator, no persistent state of its own — safe to
+  # run more than one replica for availability; agentos' require_opa()
+  # calls already fail open on an unreachable OPA (evaluate_full()'s
+  # documented default_allow=True), so an OPA outage degrades to
+  # "authz not enforced," not "requests fail" — reducing HOW OFTEN that
+  # degraded state happens is the actual value of a second replica here.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+    spec:
+      containers:
+        - name: opa
+          image: openpolicyagent/opa:latest
+          args: ["run", "--server", "--addr=0.0.0.0:8181", "--bundle", "/policies"]
+          ports:
+            - containerPort: 8181
+              name: http
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          volumeMounts:
+            - name: policies
+              mountPath: /policies
+            - name: policies-compliance
+              mountPath: /policies/compliance
+      volumes:
+        - name: policies
+          configMap:
+            # Base name — kustomization.yaml's configMapGenerator rewrites
+            # this to the real, content-hashed name at apply time.
+            name: opa-policies
+        - name: policies-compliance
+          configMap:
+            name: opa-policies-compliance
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opa
+  namespace: monkeybrain
+  labels:
+    app: opa
+spec:
+  selector:
+    app: opa
+  ports:
+    - port: 8181
+      targetPort: 8181
+      protocol: TCP
+      name: http
+  type: ClusterIP

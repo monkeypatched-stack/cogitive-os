@@ -1,0 +1,5955 @@
+{
+	"info": {
+		"name": "MonkeyBrain 2.0 Runtime Gateway",
+		"description": "Complete API collection for the MonkeyBrain Cognitive OS Runtime Gateway.\n\nBase URL: http://localhost:8031/api/v1/agentos\n\nAuthentication: Disabled in dev (AGENTOS_AUTH_REQUIRED=false). Enable in production.\n\nAll endpoints delegate to existing runtime components \u2014 no business logic in the gateway.\n\nNew endpoints added:\n- Knowledge Graph: GET /api/v1/knowledge-graph/{person_id}\n- Actor Profile: GET /api/v1/actors/{actor_id}/profile\n- Actor Account: GET /api/v1/actors/{actor_id}/account\n- Login: POST /api/v1/actors/{actor_id}/login\n- Prompt: POST /api/v1/agentos/prompt\n\nWorld Graph Builder / Cognitive Reasoning separation (added in this pass):\n- Commerce: POST /merchants, /wallets, /products, /cart/{actor_id}/items, /inventory/*\n- Orders: POST /orders, /orders/{id}/payment, /cancel, /confirm-receipt, /return, /return/approve, /refund\n- Fulfillment: POST /fulfillment/pick, /pack, /shipments, /shipments/{id}/transit|deliver|lost|replace|delay\n- Events: POST /events (fire, flood, promotion, flash_sale, ...) \u2014 populates ContextStream\n- Presence: GET /presence, /presence/actors/{id}, /presence/spaces/{id}, /presence/history/*\n- Verify: POST /verify, GET /verify/invariants \u2014 world invariant checks\n\nPrinciple: REST APIs build/mutate the world graph deterministically. /prompt, /plan, /execute reason over it \u2014 never used to create entities.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8031/api/v1/agentos"
+		},
+		{
+			"key": "health_url",
+			"value": "http://localhost:8031"
+		},
+		{
+			"key": "user_id",
+			"value": "test-user"
+		},
+		{
+			"key": "auth_token",
+			"value": ""
+		},
+		{
+			"key": "society_id",
+			"value": "",
+			"description": "Set after creating a society"
+		},
+		{
+			"key": "actor_id",
+			"value": "",
+			"description": "Set after creating an actor"
+		},
+		{
+			"key": "entity_id",
+			"value": "",
+			"description": "Set after creating an entity"
+		},
+		{
+			"key": "relationship_id",
+			"value": "",
+			"description": "Set after creating a relationship"
+		},
+		{
+			"key": "event_id",
+			"value": "",
+			"description": "Set after creating an event"
+		},
+		{
+			"key": "resource_id",
+			"value": "",
+			"description": "Set after creating a resource"
+		},
+		{
+			"key": "goal_index",
+			"value": "0",
+			"description": "Index of goal to delete"
+		},
+		{
+			"key": "policy_index",
+			"value": "0",
+			"description": "Index of policy to delete"
+		},
+		{
+			"key": "merchant_id",
+			"value": "merchant_bob",
+			"description": "Set after creating a merchant"
+		},
+		{
+			"key": "store_id",
+			"value": "",
+			"description": "Set after creating a merchant (their store)"
+		},
+		{
+			"key": "product_id",
+			"value": "",
+			"description": "Set after creating a product"
+		},
+		{
+			"key": "order_id",
+			"value": "",
+			"description": "Set after creating an order"
+		},
+		{
+			"key": "shipment_id",
+			"value": "",
+			"description": "Set after creating a shipment"
+		},
+		{
+			"key": "wallet_id",
+			"value": "",
+			"description": "Set after creating a wallet"
+		},
+		{
+			"key": "space_id",
+			"value": "",
+			"description": "Set after querying an actor's presence"
+		},
+		{
+			"key": "plan_response",
+			"value": ""
+		},
+		{
+			"key": "address_id",
+			"value": ""
+		},
+		{
+			"key": "agent_name",
+			"value": ""
+		},
+		{
+			"key": "agent_type",
+			"value": ""
+		},
+		{
+			"key": "cap_name",
+			"value": ""
+		},
+		{
+			"key": "capability",
+			"value": ""
+		},
+		{
+			"key": "checkpoint_id",
+			"value": ""
+		},
+		{
+			"key": "city_id",
+			"value": ""
+		},
+		{
+			"key": "country_id",
+			"value": ""
+		},
+		{
+			"key": "delegation_id",
+			"value": ""
+		},
+		{
+			"key": "entity",
+			"value": ""
+		},
+		{
+			"key": "graph_key",
+			"value": ""
+		},
+		{
+			"key": "key_id",
+			"value": ""
+		},
+		{
+			"key": "location_id",
+			"value": ""
+		},
+		{
+			"key": "panel",
+			"value": ""
+		},
+		{
+			"key": "person_id",
+			"value": ""
+		},
+		{
+			"key": "policy_id",
+			"value": ""
+		},
+		{
+			"key": "role",
+			"value": ""
+		},
+		{
+			"key": "run_id",
+			"value": ""
+		},
+		{
+			"key": "runtime_id",
+			"value": ""
+		},
+		{
+			"key": "service",
+			"value": ""
+		},
+		{
+			"key": "source_id",
+			"value": ""
+		},
+		{
+			"key": "target_id",
+			"value": ""
+		},
+		{
+			"key": "team_id",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Planet",
+			"description": "Top-level view of the Cognitive OS \u2014 societies, actors, statistics.",
+			"item": [
+				{
+					"name": "Get Planet",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/planet",
+						"description": "Full planet state \u2014 society_id, actor_count, world_version, etc.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Planet Status",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/planet/status",
+						"description": "Health/status summary \u2014 uptime, cycle_count, societies, actors.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Planet Societies",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/planet/societies",
+						"description": "List all registered societies with actor counts.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Planet Actors",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/planet/actors",
+						"description": "List all actors across all societies.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Planet Statistics",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/planet/statistics",
+						"description": "Aggregate statistics \u2014 total actors, societies, reputations, etc.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Planet Tick",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/planet/tick",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Execute one complete planetary cycle \u2014 tick all societies."
+					}
+				},
+				{
+					"name": "Create City",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/cities",
+						"description": "Create a new city under an existing country."
+					},
+					"response": []
+				},
+				{
+					"name": "List Cities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/planet/cities"
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Society To City",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/cities/{{city_id}}/societies",
+						"description": "Assign an existing society to a city (strict: a society belongs to\nat most one city \u2014 reassigning removes it from any prior city)."
+					},
+					"response": []
+				},
+				{
+					"name": "Tick City",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/cities/{{city_id}}/tick",
+						"description": "Tick every society registered under a city, cascading to every\nactor in each of those societies."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Country",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/countries",
+						"description": "Create a new country."
+					},
+					"response": []
+				},
+				{
+					"name": "List Countries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/planet/countries"
+					},
+					"response": []
+				},
+				{
+					"name": "Tick Country",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/countries/{{country_id}}/tick",
+						"description": "Tick every city under a country, cascading to every society and\nactor beneath each city."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Federation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/federations",
+						"description": "Create a new federation."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Geographic Entity",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/geo",
+						"description": "Create a geographic entity at any tier. Body: entity_type (planet,\ncountry, state, county, city, street, building, space), name, parent_id\n(required for every tier except planet), description, and \u2014 for\nbuilding/space \u2014 building_type/space_type."
+					},
+					"response": []
+				},
+				{
+					"name": "List Geographic Entities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/planet/geo"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Geographic Entity",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/planet/geo/{{entity_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Space Contents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/planet/geo/{{entity_id}}/contents",
+						"description": "What's attached to a Space: its current actor occupants and its\nhosted societies, as siblings (see kernel/geography/entity.py module\ndocstring \u2014 Actors are not children of Societies)."
+					},
+					"response": []
+				},
+				{
+					"name": "Host Society At Entity",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/geo/{{entity_id}}/host",
+						"description": "Host an existing society at a geographic entity, any tier. Strict\nsingle-host: a society hosted elsewhere is moved, not duplicated."
+					},
+					"response": []
+				},
+				{
+					"name": "Tick Geographic Entity",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/geo/{{entity_id}}/tick",
+						"description": "Tick a geographic entity: every society hosted there, then every\nchild entity recursively, all the way down to their actors."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Interaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/interactions",
+						"description": "Create an interaction between actors."
+					},
+					"response": []
+				},
+				{
+					"name": "Planet Refresh",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/planet/refresh",
+						"description": "Reload world state from Redis into in-memory SharedWorld.\nRequired after Redis world mutations to sync in-memory state."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Societies",
+			"description": "CRUD and introspection for societies.",
+			"item": [
+				{
+					"name": "List Societies",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies",
+						"description": "List all societies with actor counts and status.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Create Society",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/societies",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Delivery Society\",\n  \"description\": \"Coordinates delivery operations\"\n}"
+						},
+						"description": "Create a new society."
+					}
+				},
+				{
+					"name": "Get Society",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}",
+						"description": "Get society details \u2014 actors, interactions, policies.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Update Society",
+					"request": {
+						"method": "PATCH",
+						"url": "{{base_url}}/societies/{{society_id}}",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Name\",\n  \"description\": \"Updated description\"\n}"
+						},
+						"description": "Update society metadata."
+					}
+				},
+				{
+					"name": "Delete Society",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/societies/{{society_id}}",
+						"description": "Remove a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Society Status",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}/status",
+						"description": "Society health/status \u2014 actors, ticks, world version.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Society Actors",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}/actors",
+						"description": "List actors in a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Society Context",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}/context",
+						"description": "Context stream events for a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Society Beliefs",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}/beliefs",
+						"description": "Actor beliefs in a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Society Resources",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}/resources",
+						"description": "World resources visible to a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Tick Society",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/societies/{{society_id}}/tick",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Execute one society tick \u2014 tick all actors in the society."
+					}
+				},
+				{
+					"name": "Get Shared Goals",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}/goals",
+						"description": "List shared goals for a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Add Shared Goal",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/societies/{{society_id}}/goals",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"goal\": \"Optimize delivery routes\"\n}"
+						},
+						"description": "Add a shared goal to a society."
+					}
+				},
+				{
+					"name": "Delete Shared Goal",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/societies/{{society_id}}/goals/{{goal_index}}",
+						"description": "Remove a shared goal by index.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Policies",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/societies/{{society_id}}/policies",
+						"description": "List policies for a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Add Policy",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/societies/{{society_id}}/policies",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"policy\": \"Max 3 deliveries per hour\"\n}"
+						},
+						"description": "Add a policy to a society."
+					}
+				},
+				{
+					"name": "Delete Policy",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/societies/{{society_id}}/policies/{{policy_index}}",
+						"description": "Remove a policy by index.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Activate Societies For Goal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/societies/activate",
+						"description": "Society Activation Engine (Society as Organizational Context\nrefactor): given an actor and a goal, dynamically select which of the\nactor's societies are relevant and return their merged policy bundle.\nRegistered before GET /societies/{society_id} for the same path-\nordering reason as /societies/search above (distinct HTTP method, but\nkept alongside for discoverability).",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"Actor Id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Societies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/societies/search",
+						"description": "Society discovery (Society as Organizational Context refactor):\nfilter by activation_tags match and/or exact society_type. Registered\nbefore GET /societies/{society_id} so the literal \"search\" segment\nisn't swallowed by that route's path parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Society",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/societies/{{society_id}}/activate",
+						"description": "Activate a society so it participates in planetary cycles."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Permissions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/societies/{{society_id}}/actors/{{actor_id}}/permissions",
+						"description": "Real, per-actor Permission grants (kernel/society/governance.py) \u2014\nwhat Membership.resolve_permissions() actually reads."
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Society",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/societies/{{society_id}}/deactivate",
+						"description": "Deactivate a society so it's skipped during planetary cycles."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Society Governance Policies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/societies/{{society_id}}/governance-policies",
+						"description": "Real GovernancePolicy objects (kernel/society/governance.py) \u2014\ndistinct from GET /societies/{id}/policies, which reads the plain\nstring list Society.policies. This is what PlanningContext.\nactive_policies (and the planner's prompt) actually reads."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Society Governance Policy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/societies/{{society_id}}/governance-policies",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Society Governance Policy",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/societies/{{society_id}}/governance-policies/{{policy_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Grant Actor Permission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/societies/{{society_id}}/permissions",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"Actor Id\",\n  \"resource\": \"Resource\",\n  \"action\": \"Action\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke Actor Permission",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/societies/{{society_id}}/permissions"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Actors",
+			"description": "CRUD and cognitive operations for actors.",
+			"item": [
+				{
+					"name": "List Actors",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/actors",
+						"description": "List all actors with status and type.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Create Actor",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/actors",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"DeliveryBot\",\n  \"actor_type\": \"robot\",\n  \"description\": \"Automated delivery robot\",\n  \"capabilities\": [{\"name\": \"navigation\"}, {\"name\": \"delivery\"}],\n  \"goals\": [\"deliver_package\"],\n  \"policies\": [],\n  \"trust_level\": 0.8\n}"
+						},
+						"description": "Create a new actor with CognitiveActor backend."
+					}
+				},
+				{
+					"name": "Get Actor",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/actors/{{actor_id}}",
+						"description": "Get actor details \u2014 type, status, cycle_count.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Update Actor",
+					"request": {
+						"method": "PATCH",
+						"url": "{{base_url}}/actors/{{actor_id}}",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Name\"\n}"
+						},
+						"description": "Update actor metadata."
+					}
+				},
+				{
+					"name": "Delete Actor",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/actors/{{actor_id}}",
+						"description": "Remove an actor.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Beliefs",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/actors/{{actor_id}}/beliefs",
+						"description": "Actor's belief state.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Memory",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/actors/{{actor_id}}/memory",
+						"description": "Actor's episodic memory.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Goals",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/actors/{{actor_id}}/goals",
+						"description": "Actor's current goals.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Capabilities",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/actors/{{actor_id}}/capabilities",
+						"description": "Actor's registered capabilities.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Status",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/actors/{{actor_id}}/status",
+						"description": "Actor status \u2014 tick_count, enabled.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Tick Actor",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/actors/{{actor_id}}/tick",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"start\": \"warehouse\",\n  \"goal\": \"customer_door\",\n  \"reward\": 1.0\n}"
+						},
+						"description": "Execute one complete cognitive tick \u2014 Observe\u2192Believe\u2192Plan\u2192Execute\u2192Learn\u2192Commit."
+					}
+				},
+				{
+					"name": "Observe Actor",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/actors/{{actor_id}}/observe",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Trigger observation only (no full tick)."
+					}
+				},
+				{
+					"name": "Plan Actor",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/actors/{{actor_id}}/plan",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Trigger planning only (no full tick)."
+					}
+				},
+				{
+					"name": "Execute Actor",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/actors/{{actor_id}}/execute",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Trigger execution only (no full tick)."
+					}
+				},
+				{
+					"name": "Delete Actor Relationship",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/actors/relationships/{{source_id}}/{{target_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Team",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/actors/teams",
+						"description": "Create a team within a society."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Team Member",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/actors/teams/{{team_id}}/members",
+						"description": "Add an actor to a team. Strict membership: an actor belongs to at\nmost one team per society \u2014 adding to a new team removes it from any\nprior one in the same society."
+					},
+					"response": []
+				},
+				{
+					"name": "Tick Team",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/actors/teams/{{team_id}}/tick",
+						"description": "Tick every member actor of a team."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Memberships",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/active-memberships"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Activity Timeline",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/activities"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Addresses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/addresses"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Actor Address",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/actors/{{actor_id}}/addresses",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"Actor Id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Actor Address",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/addresses/{{address_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Belief Timeline",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/beliefs_timeline",
+						"description": "Named beliefs_timeline (not /beliefs, already taken by the existing\ncurrent-belief-state route below) \u2014 full BeliefRecord history."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Effective Permissions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/effective-permissions",
+						"description": "Effective permissions across every active membership, deduped."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Effective Policies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/effective-policies",
+						"description": "Effective policies across every active membership \u2014 union of each\nmembership's society's resolved policies (kernel/society/membership.py::\nSocietyMembershipRegistry.resolve_policies)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Execution Timeline",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/executions"
+					},
+					"response": []
+				},
+				{
+					"name": "Record Actor Experience",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/actors/{{actor_id}}/experiences",
+						"description": "Record a completed experience for this actor into the shared\nCognitiveMemory/KnowledgeGraph (MemoryManager.record_experience) \u2014 the\nmechanism other actors' goal-driven knowledge search can later surface,\nvia PlanningContext.relevant_knowledge, when they share real keywords.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"kind\": \"\",\n  \"text\": \"\",\n  \"metadata\": {},\n  \"visibility\": \"private\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Shared Experiences",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/experiences/shared",
+						"description": "Cognitive Network (CCB-600): other actors' `visibility=\"shared\"`\nexperiences this actor may currently receive (co-membership in at\nleast one Society \u2014 ContextConstructionEngine._may_receive_shared_\nexperience). Thin wrapper for demoing/verifying retrieval directly,\nindependent of running a full planning cycle."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Goal Timeline",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/goals_timeline",
+						"description": "Named goals_timeline (not /goals, already taken by the existing\ncurrent-goals route below) \u2014 full GoalRecord history."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Membership Timeline",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/memberships_timeline",
+						"description": "Named memberships_timeline (not /memberships, a separate router in\napi/routes/memberships.py) \u2014 full MembershipRecord history, including\nclosed/past memberships (kernel/society/membership.py::\nSocietyMembershipRegistry.history_for_actor)."
+					},
+					"response": []
+				},
+				{
+					"name": "Move Actor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/move",
+						"description": "Record a Presence change \u2014 body: {space_id, activity, confidence,\nsource}. The write path PresenceTimeline enforces (no overlap, exactly\none open interval) is on PlanetaryRuntime.move_actor()/PresenceTimeline\nitself, not this route."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Planning Context Memberships",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/planning-context/memberships",
+						"description": "Membership context for planning \u2014 supports the Context Construction\nEngine/Contextual Planner (kernel/pipeline/planning/context_engine.py),\nsame information it reads internally via PlanningContext.metadata[\n\"active_memberships\"], exposed here for direct inspection/debugging."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Presence",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/presence",
+						"description": "Presence history, or (with ?at=) the Presence valid at a single\npoint in time \u2014 \"where was Alice yesterday at 3pm.\"."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Relationships",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/relationships"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Actor Relationship",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/actors/{{actor_id}}/relationships",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"source_actor_id\": \"Source Actor Id\",\n  \"target_actor_id\": \"Target Actor Id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Societies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/societies",
+						"description": "Every society actor_id is a member of (Society as Organizational\nContext refactor) \u2014 the real, single source of truth via\nPlanetaryRuntime.societies_for_actor(), replacing the ad-hoc per-route\nscans this file used before real multi-membership existed."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actor Timeline",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/actors/{{actor_id}}/timeline",
+						"description": "Replay every timeline entry (all 7 kinds) for actor_id, merged and\ntime-ordered \u2014 \"replay Alice's day.\"."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Memberships",
+			"description": "Manage actor-society relationships.",
+			"item": [
+				{
+					"name": "List Memberships",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/memberships",
+						"description": "List all memberships.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Create Membership",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/memberships",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"society_id\": \"{{society_id}}\",\n  \"role\": \"worker\",\n  \"permissions\": [\"read\", \"write\"],\n  \"metadata\": {}\n}"
+						},
+						"description": "Create a membership (actor \u2194 society)."
+					}
+				},
+				{
+					"name": "Get Membership",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/memberships/{{membership_id}}",
+						"description": "Get membership details.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Update Membership",
+					"request": {
+						"method": "PATCH",
+						"url": "{{base_url}}/memberships/{{membership_id}}",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\": \"manager\",\n  \"permissions\": [\"read\", \"write\", \"admin\"]\n}"
+						},
+						"description": "Update membership role/permissions."
+					}
+				},
+				{
+					"name": "Delete Membership",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/memberships/{{membership_id}}",
+						"description": "Remove a membership.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Memberships",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/memberships/actor/{{actor_id}}",
+						"description": "List all memberships for an actor.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Society Memberships",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/memberships/society/{{society_id}}",
+						"description": "List all memberships in a society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Revoke Delegation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/delegations/{{delegation_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Memberships",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/active"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Membership History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/history/{{actor_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Memberships By Role",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/role/{{role}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Team Memberships",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/team/{{team_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Membership",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/activate"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Effective Capabilities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/capabilities"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Effective Constraints",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/constraints"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Delegation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/memberships/{{membership_id}}/delegations",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"delegate_actor_id\": \"Delegate Actor Id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Delegations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/delegations"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Effective Permissions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/permissions"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Effective Policies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/policies"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reputation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/reputation"
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Membership",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/resume"
+					},
+					"response": []
+				},
+				{
+					"name": "List Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/roles"
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/memberships/{{membership_id}}/roles",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\": \"Role\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Role",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/roles/{{role}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Suspend Membership",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/suspend"
+					},
+					"response": []
+				},
+				{
+					"name": "Terminate Membership",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/terminate"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trust",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/memberships/{{membership_id}}/trust"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Trust",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/memberships/{{membership_id}}/trust",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"trust_score\": 0.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Runtime",
+			"description": "Introspect the runtime system \u2014 health, status, configuration.",
+			"item": [
+				{
+					"name": "Get Runtime",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/runtime",
+						"description": "Runtime overview \u2014 name, status, components.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Runtime Status",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/runtime/status",
+						"description": "Health status of all runtimes \u2014 cognitive, simulation, comparator, society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Runtime Health",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/runtime/health",
+						"description": "Detailed component health \u2014 wolverine, policy, society.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Runtime Configuration",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/runtime/configuration",
+						"description": "Runtime configuration \u2014 auth, rate limits, CORS.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Runtime Metrics",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/runtime/metrics",
+						"description": "Performance metrics \u2014 requests, cycles, latency.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Simulation",
+			"description": "Delegate to existing SimulationRuntime.",
+			"item": [
+				{
+					"name": "Plan (prerequisite for Simulate)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Captures the full PlanResponse so the next request",
+									"// (Simulate/Compare) can reuse it verbatim \u2014 those routes",
+									"// require the exact graph /plan produced, not a hand-built body.",
+									"pm.collectionVariables.set('plan_response', pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"What happens if we double production capacity?\",\n  \"target\": \"simulate\"\n}"
+						},
+						"url": "{{base_url}}/plan"
+					},
+					"response": []
+				},
+				{
+					"name": "Simulate",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/simulate",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{plan_response}}"
+						},
+						"description": "Requires the 'Plan (prerequisite for Simulate)' request to run first in the same session \u2014 /simulate takes the full PlanResponse (graph + run_id + question + ...) from a prior POST /plan {target: simulate} call, not a hand-built body. The graph IS the request; there's no separate 'question' shorthand."
+					}
+				},
+				{
+					"name": "Simulate Step",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/simulate/step",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Step simulation\",\n  \"steps\": 1\n}"
+						},
+						"description": "Run a single simulation step."
+					}
+				},
+				{
+					"name": "Simulate Scenario",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/simulate/scenario",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"capacity_doubling\",\n  \"description\": \"Double production capacity scenario\",\n  \"parameters\": {}\n}"
+						},
+						"description": "Run a named simulation scenario."
+					}
+				},
+				{
+					"name": "Get Simulation Status",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/simulate/status",
+						"description": "Simulation runtime status.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Compare Sim Vs Query",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/compare",
+						"description": "Run Cognitive Workload (ComparatorRuntime): validate payload.intent_ir\n(compiled by a prior /plan?target=compare call) and diff the simulator's\npredicted state against the actual query answer. Never reclassifies\npayload.question.\n\nFlow (inside ComparatorRuntime.run):\n  1. Capture simulator's entity snapshot (predicted state)\n  2. Run query to get actual answer\n  3. Compare: does the query's answer agree with the simulator's data?\n  4. Store Bellman transition with the computed loss",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"graph\": {\n    \"graph_id\": \"\",\n    \"graph_type\": \"execution\",\n    \"timestamp\": \"\",\n    \"nodes\": [\n      {}\n    ],\n    \"edges\": [\n      {}\n    ],\n    \"execution_order\": [\n      [\n        \"string\"\n      ]\n    ],\n    \"annotations\": {},\n    \"state\": {}\n  },\n  \"run_id\": \"Run Id\",\n  \"question\": \"Question\",\n  \"elapsed_ms\": 0.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Learn",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/learn",
+						"description": "POST /learn \u2014 iterative learning loop.\n\nLoads the latest execution and simulation graphs from the run store,\ncomputes topological loss between them, updates the Q-table via\nBellman TD updates, and returns per-iteration metrics."
+					},
+					"response": []
+				},
+				{
+					"name": "Simulate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/simulate/run",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Bellman Cycle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/test-bellman-cycle",
+						"description": "Run a sample workload through the full Bellman cycle and return results.\n\nVerifies: simulate \u2192 query \u2192 loss \u2192 transition store \u2192 transition lookup."
+					},
+					"response": []
+				},
+				{
+					"name": "List Transition Values",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/transitions",
+						"description": "Retrieve Bellman transition values for the planner."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comparator",
+			"description": "Delegate to existing ComparatorRuntime.",
+			"item": [
+				{
+					"name": "Plan (prerequisite for Compare)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Captures the full PlanResponse so the next request",
+									"// (Simulate/Compare) can reuse it verbatim \u2014 those routes",
+									"// require the exact graph /plan produced, not a hand-built body.",
+									"pm.collectionVariables.set('plan_response', pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Compare predicted vs actual\",\n  \"target\": \"compare\"\n}"
+						},
+						"url": "{{base_url}}/plan"
+					},
+					"response": []
+				},
+				{
+					"name": "Compare",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/compare",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{plan_response}}"
+						},
+						"description": "Requires the 'Plan (prerequisite for Compare)' request to run first in the same session \u2014 /compare takes the full PlanResponse from a prior POST /plan {target: compare} call, same as /simulate."
+					}
+				},
+				{
+					"name": "Compare Epistemic Loss",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/compare/epistemic-loss",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"predicted\": {},\n  \"actual\": {}\n}"
+						},
+						"description": "Compute epistemic loss between predicted and actual."
+					}
+				},
+				{
+					"name": "Get Comparison History",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/compare/history",
+						"description": "Recent comparison results.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Compare",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/compare/run",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Learning",
+			"description": "Collective learning \u2014 share experiences, track statistics.",
+			"item": [
+				{
+					"name": "Share Experience",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/learn/experience",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"experience\": {\n    \"actor_id\": \"{{actor_id}}\",\n    \"description\": \"Successfully delivered package\",\n    \"outcome\": \"success\",\n    \"confidence\": 0.9,\n    \"lessons\": [\"route_optimized\", \"traffic_avoided\"]\n  }\n}"
+						},
+						"description": "Share and persist an experience. Updates world refinements and reputation."
+					}
+				},
+				{
+					"name": "Update Learning",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/learn/update",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"updates\": {}\n}"
+						},
+						"description": "Update an actor's learning state."
+					}
+				},
+				{
+					"name": "Train Learning",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/learn/train",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"data\": [],\n  \"epochs\": 5\n}"
+						},
+						"description": "Trigger training iteration."
+					}
+				},
+				{
+					"name": "Get Learning Statistics",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/learn/statistics",
+						"description": "Learning statistics \u2014 total_experiences, reputations, improvements.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "World",
+			"description": "Full CRUD for the shared world state \u2014 entities, relationships, events, resources.",
+			"item": [
+				{
+					"name": "Get World",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world",
+						"description": "Full world state \u2014 version, entities, relationships, events, resources.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get World Context",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world/context",
+						"description": "Context stream events.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get World Beliefs",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world/beliefs",
+						"description": "Actor beliefs across all societies.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get World Entities",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world/entities",
+						"description": "List all world entities.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Create World Entity",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/world/entities",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Warehouse A\",\n  \"entity_type\": \"entity\",\n  \"attributes\": { \"location\": \"downtown\", \"capacity\": 500 },\n  \"state\": { \"status\": \"active\" },\n  \"provenance\": \"seed\"\n}"
+						},
+						"description": "Create a new world entity."
+					}
+				},
+				{
+					"name": "Get World Entity by ID",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world/entities/{{entity_id}}",
+						"description": "Get a single world entity by ID.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Update World Entity",
+					"request": {
+						"method": "PUT",
+						"url": "{{base_url}}/world/entities/{{entity_id}}",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"attributes\": { \"location\": \"midtown\", \"capacity\": 300 }\n}"
+						},
+						"description": "Update a world entity's attributes."
+					}
+				},
+				{
+					"name": "Delete World Entity",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/world/entities/{{entity_id}}",
+						"description": "Delete a world entity.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get World Relationships",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world/relationships",
+						"description": "List all world relationships.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Create World Relationship",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/world/relationships",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"source_id\": \"entity-id-1\",\n  \"target_id\": \"entity-id-2\",\n  \"kind\": \"has\",\n  \"attributes\": {},\n  \"confidence\": 1.0\n}"
+						},
+						"description": "Create a relationship between two world entities. Kinds: is_a, has, located_in, depends_on, produces, consumes, governs, related_to."
+					}
+				},
+				{
+					"name": "Delete World Relationship",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/world/relationships/{{relationship_id}}",
+						"description": "Delete a world relationship.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get World Events",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world/events",
+						"description": "List world events.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Create World Event",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/world/events",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"event_type\": \"observation\",\n  \"entity_id\": \"\",\n  \"description\": \"Package arrived at warehouse\",\n  \"attributes\": {},\n  \"confidence\": 1.0,\n  \"source_actor_id\": \"\"\n}"
+						},
+						"description": "Record a world event. Types: observation, action, state_change, interaction, world_update."
+					}
+				},
+				{
+					"name": "Delete World Event",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/world/events/{{event_id}}",
+						"description": "Delete a world event.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get World Resources",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/world/resources",
+						"description": "List all world resources.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Create World Resource",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/world/resources",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Fuel\",\n  \"resource_type\": \"energy\",\n  \"quantity\": 50,\n  \"unit\": \"liters\",\n  \"location_id\": \"\",\n  \"owner_id\": \"\"\n}"
+						},
+						"description": "Create a world resource (fuel, energy, money, time, etc.)."
+					}
+				},
+				{
+					"name": "Delete World Resource",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/world/resources/{{resource_id}}",
+						"description": "Delete a world resource.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Query World",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/world/query",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"warehouse\",\n  \"filters\": { \"entity_type\": \"entity\" }\n}"
+						},
+						"description": "Query the world by name and entity_type filter."
+					}
+				},
+				{
+					"name": "Get World Locations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/world/locations"
+					},
+					"response": []
+				},
+				{
+					"name": "Create World Location",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/world/locations",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get World Location",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/world/locations/{{location_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update World Location",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/world/locations/{{location_id}}",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"address\": \"string\",\n  \"latitude\": 0.0,\n  \"longitude\": 0.0,\n  \"attributes\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete World Location",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/world/locations/{{location_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get World Resource",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/world/resources/{{resource_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update World Resource",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/world/resources/{{resource_id}}",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"resource_type\": \"string\",\n  \"quantity\": 0.0,\n  \"unit\": \"string\",\n  \"location_id\": \"string\",\n  \"owner_id\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Commerce",
+			"description": "World Graph Builder APIs for the commerce domain \u2014 merchants, products, wallets, cart, and inventory. Deterministic mutations of the KnowledgeGraph; no reasoning.",
+			"item": [
+				{
+					"name": "Create Merchant",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/merchants",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Onboards a merchant and creates their real, owned Store.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"store_name\": \"Bob's Store\",\n  \"delivery_fee\": 0.0,\n  \"address\": \"200 W 23rd St, New York, NY\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Create Wallet",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/wallets",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Creates a real payment ACCOUNT \u2014 the financial identity Payment/PaymentConfirmation need.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"owner\": \"{{actor_id}}\",\n  \"name\": \"Alice's Wallet\",\n  \"account_type\": \"debit\",\n  \"balance\": 500.0\n}"
+						}
+					}
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/products",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "A merchant lists a new product in their own store.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"store_id\": \"{{store_id}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"name\": \"Wireless Gaming Mouse\",\n  \"price\": 59.99,\n  \"quantity\": 25\n}"
+						}
+					}
+				},
+				{
+					"name": "Browse / Search Products",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/products?query=gaming mouse",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Browse the whole catalog, or search it by keyword (omit query to browse all)."
+					}
+				},
+				{
+					"name": "Get Product Detail",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/products/{{product_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Inventory, images, reviews, price, promotion status."
+					}
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PATCH",
+						"url": "{{base_url}}/products/{{product_id}}",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "A merchant edits their own listing \u2014 partial update, only owner may edit.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"price\": 54.99\n}"
+						}
+					}
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"url": "{{base_url}}/products/{{product_id}}?merchant_id={{merchant_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Soft-delists a product \u2014 excluded from the catalog, entity itself survives."
+					}
+				},
+				{
+					"name": "Create Promotion",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/products/{{product_id}}/promotions",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "A merchant runs a time-limited sale \u2014 applies automatically at checkout, no coupon code needed.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"sale_price\": 44.99\n}"
+						}
+					}
+				},
+				{
+					"name": "Leave Review",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/products/{{product_id}}/reviews",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Requires a verified purchase \u2014 a real completed order containing this product.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"rating\": 5,\n  \"comment\": \"Great mouse!\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Add To Cart",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/cart/{{actor_id}}/items",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"quantity\": 1\n}"
+						}
+					}
+				},
+				{
+					"name": "Get Cart",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/cart/{{actor_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Apply Coupon",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/cart/{{actor_id}}/coupon",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"SAVE10\",\n  \"store_id\": \"{{store_id}}\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Reserve Inventory",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/inventory/reserve",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "CAS-based hold \u2014 no-oversell, even under concurrent requests.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"actor_id\": \"{{actor_id}}\",\n  \"qty\": 1,\n  \"hold_seconds\": 30.0\n}"
+						}
+					}
+				},
+				{
+					"name": "Confirm Reservation",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/inventory/confirm",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Converts a held reservation into a real, permanent stock decrement.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"actor_id\": \"{{actor_id}}\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Place Backorder",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/inventory/backorder",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Queues a claim for out-of-stock inventory, fulfilled FIFO on restock.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"actor_id\": \"{{actor_id}}\",\n  \"qty\": 1\n}"
+						}
+					}
+				},
+				{
+					"name": "Fulfill Backorders",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/inventory/fulfill-backorders",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"{{product_id}}\"\n}"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"description": "World Graph Builder APIs for checkout, payment, cancellation, returns, and refunds.",
+			"item": [
+				{
+					"name": "Create Order (Checkout)",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/orders",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Real inventory reservation (try_reserve) + subtotal/tax/delivery-fee/total.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"items\": [\n    {\n      \"id\": \"{{product_id}}\",\n      \"name\": \"Wireless Gaming Mouse\",\n      \"price\": 59.99,\n      \"qty\": 1,\n      \"store_id\": \"{{store_id}}\",\n      \"store_name\": \"Bob's Store\"\n    }\n  ],\n  \"question\": \"deliver my order\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get Order",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/orders/{{order_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Pay For Order",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/orders/{{order_id}}/payment",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Authorizes + charges \u2014 converts the held reservation into a permanent stock decrement.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Cancel Order",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/orders/{{order_id}}/cancel",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Refunds + restocks \u2014 only before the order has shipped.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Confirm Receipt",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/orders/{{order_id}}/confirm-receipt",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Customer's own sign-off \u2014 closes the order lifecycle to 'completed'.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Request Return",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/orders/{{order_id}}/return",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Files a return request \u2014 does not refund yet, moves order to 'return_requested'.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"reason\": \"changed my mind\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Approve Return",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/orders/{{order_id}}/return/approve",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "The deliberate step that actually refunds + restocks a requested return.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"approved_by\": \"{{merchant_id}}\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Refund Order",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/orders/{{order_id}}/refund",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Standalone partial/goodwill refund \u2014 does not restock or change order status.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 10.0,\n  \"reason\": \"goodwill credit for damaged packaging\",\n  \"refunded_by\": \"{{merchant_id}}\"\n}"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Fulfillment",
+			"description": "World Graph Builder APIs for picking, packing, shipping, and delivery.",
+			"item": [
+				{
+					"name": "Assign Picker",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/fulfillment/pick",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "An autonomous cart if the store has one, else the fastest available human picker.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"store_id\": \"{{store_id}}\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Pack Order",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/fulfillment/pack",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Splits items into real packages \u2014 cold-chain items always segregated.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"items\": [\n    {\n      \"id\": \"{{product_id}}\",\n      \"name\": \"Wireless Gaming Mouse\",\n      \"qty\": 1\n    }\n  ],\n  \"box_capacity\": 12\n}"
+						}
+					}
+				},
+				{
+					"name": "Create Shipment",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/shipments",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"order_id\": \"{{order_id}}\",\n  \"packages\": [\n    {\n      \"box_type\": \"standard\",\n      \"items\": [\n        {\n          \"product_id\": \"{{product_id}}\",\n          \"name\": \"Wireless Gaming Mouse\",\n          \"qty\": 1\n        }\n      ],\n      \"qty\": 1\n    }\n  ],\n  \"rider_id\": \"\",\n  \"carrier\": \"InternalFleet\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get Shipment",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/shipments/{{shipment_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Mark Shipment In Transit",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/shipments/{{shipment_id}}/transit",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Mark Shipment Delivered",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/shipments/{{shipment_id}}/deliver",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Once every shipment for an order is delivered, the order itself moves to 'delivered'."
+					}
+				},
+				{
+					"name": "Mark Shipment Lost",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/shipments/{{shipment_id}}/lost",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Only valid from 'in_transit'.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reported_by\": \"carrier_agent\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Issue Replacement Shipment",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/shipments/{{shipment_id}}/replace",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Issues a brand-new shipment for the same order \u2014 only for a shipment marked 'lost'."
+					}
+				},
+				{
+					"name": "Report Shipment Delay",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/shipments/{{shipment_id}}/delay",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"severe weather\",\n  \"new_eta\": 1735776000\n}"
+						}
+					}
+				},
+				{
+					"name": "Track Order",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/orders/{{order_id}}/tracking",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Every shipment for an order, plus an overall status (least-advanced of them all)."
+					}
+				}
+			]
+		},
+		{
+			"name": "Events",
+			"description": "World Graph Builder APIs for populating the ContextStream \u2014 fire, flood, promotion, flash sale, power failure, traffic, weather, strike, ...",
+			"item": [
+				{
+					"name": "Create Event",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/events",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Publishes a real ContextEvent. Physical-disaster types with a space_id also genuinely evacuate every actor present.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"fire\",\n  \"space_id\": \"{{space_id}}\",\n  \"description\": \"Warehouse fire\"\n}"
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Presence",
+			"description": "Read-only queries over PresenceTimeline \u2014 where_is/history/who_is_in.",
+			"item": [
+				{
+					"name": "Current Occupancy (All Actors)",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/presence",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Where Is Actor",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/presence/actors/{{actor_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Who Is In Space",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/presence/spaces/{{space_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Actor Presence History",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/presence/history/{{actor_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Space Presence History",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/presence/history/space/{{space_id}}",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"description": "Every actor who has ever occupied this Space."
+					}
+				}
+			]
+		},
+		{
+			"name": "Verify",
+			"description": "World invariant checks \u2014 every Society has a Space, every Actor has exactly one open Presence, no orphaned geographic entities, no invalid Memberships. Read-only.",
+			"item": [
+				{
+					"name": "Verify World Invariants",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/verify",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Invariants (GET alias)",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/verify/invariants",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Verify World Canonical",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/verify/world"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Discovery",
+			"description": "Providers, capabilities, agents, models.",
+			"item": [
+				{
+					"name": "Get Providers",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/providers",
+						"description": "Available LLM providers.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Capabilities",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/capabilities",
+						"description": "Available capabilities.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Agents",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/agents",
+						"description": "Available agents.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Models",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/models",
+						"description": "Available models.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"description": "Boot, shutdown, reload, configuration.",
+			"item": [
+				{
+					"name": "Boot Runtime",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/boot",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"force\": false\n}"
+						},
+						"description": "Boot the runtime (or report current state)."
+					}
+				},
+				{
+					"name": "Shutdown Runtime",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/shutdown",
+						"description": "Request graceful shutdown.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Reload Modules",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/reload",
+						"description": "Reload runtime modules.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Logs",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/logs",
+						"description": "Recent system logs.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Configuration",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/configuration",
+						"description": "System configuration \u2014 auth, rate limits, CORS.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Version",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/version",
+						"description": "Runtime version info.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Backup World",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/backup"
+					},
+					"response": []
+				},
+				{
+					"name": "Restore World",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/restore",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"backup\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tuning",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/tuning"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Tuning",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/tuning"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"description": "Authentication and authorization endpoints.",
+			"item": [
+				{
+					"name": "Get Principal",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/auth/principal",
+						"description": "Return the resolved principal for the current Bearer token. Useful for debugging token content and SPIFFE identity.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Evaluate Policy",
+					"request": {
+						"method": "POST",
+						"url": "{{base_url}}/policy/evaluate",
+						"description": "Run AuthPolicyAgent decision for a given action + resource. Returns allowed/denied with obligations.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"action\": \"read\", \"resource\": \"world\", \"required_scopes\": [\"perm-view-world\"]}"
+						}
+					}
+				},
+				{
+					"name": "List Trust Domains",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/policy/trust-domains",
+						"description": "List federated trust domains (requires perm-view-policy).",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token"
+							}
+						]
+					}
+				},
+				{
+					"name": "List Roles",
+					"request": {
+						"method": "GET",
+						"url": "{{base_url}}/policy/roles",
+						"description": "List active roles from the Policy Control Plane (requires perm-view-policy).",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token"
+							}
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Health",
+			"description": "Liveness and readiness probes.",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": "{{health_url}}/health",
+						"description": "LIVENESS \u2014 is this process alive? No auth required.",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Readiness Check",
+					"request": {
+						"method": "GET",
+						"url": "{{health_url}}/ready",
+						"description": "READINESS \u2014 should this instance receive traffic?",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "JWT token (leave empty for dev mode with X-User-ID)"
+							}
+						]
+					}
+				},
+				{
+					"name": "Liveness Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{health_url}}/live",
+						"description": "LIVENESS, minimal \u2014 Gate 8 (Operations).\n\n/health already documents itself as \"LIVENESS \u2014 is this process\nalive?\" and deliberately avoids gating on external dependencies \u2014\nbut it still calls lemon.overall_health() and walks lemon.health.\n_checks, i.e. it depends on Lemon having booted correctly. This\nendpoint depends on nothing at all beyond the ASGI server itself\nbeing able to route a request to a handler and return \u2014 the truest\npossible liveness signal, and the correct one for a Kubernetes\nliv"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Knowledge Graph & Actor Profile",
+			"description": "New endpoints for KnowledgeGraph, Actor Profile, Account, and Login",
+			"item": [
+				{
+					"name": "Get Knowledge Graph",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8031/api/v1/knowledge-graph/{{person_id}}",
+							"host": [
+								"http://localhost:8031"
+							],
+							"path": [
+								"api",
+								"v1",
+								"knowledge-graph",
+								"{{person_id}}"
+							],
+							"variable": [
+								{
+									"key": "person_id",
+									"value": "alice"
+								}
+							]
+						},
+						"description": "Get person knowledge graph",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Profile",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8031/api/v1/actors/{{actor_id}}/profile",
+							"host": [
+								"http://localhost:8031"
+							],
+							"path": [
+								"api",
+								"v1",
+								"actors",
+								"{{actor_id}}",
+								"profile"
+							],
+							"variable": [
+								{
+									"key": "actor_id",
+									"value": "alice"
+								}
+							]
+						},
+						"description": "Get actor profile",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Get Actor Account",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8031/api/v1/actors/{{actor_id}}/account",
+							"host": [
+								"http://localhost:8031"
+							],
+							"path": [
+								"api",
+								"v1",
+								"actors",
+								"{{actor_id}}",
+								"account"
+							],
+							"variable": [
+								{
+									"key": "actor_id",
+									"value": "alice"
+								}
+							]
+						},
+						"description": "Get actor account",
+						"header": [
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							}
+						]
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "http://localhost:8031/api/v1/actors/{{actor_id}}/login",
+							"host": [
+								"http://localhost:8031"
+							],
+							"path": [
+								"api",
+								"v1",
+								"actors",
+								"{{actor_id}}",
+								"login"
+							],
+							"variable": [
+								{
+									"key": "actor_id",
+									"value": "alice"
+								}
+							]
+						},
+						"description": "Login and get access token",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\": \"alice@example.com\", \"password\": \"SecurePass123!\"}"
+						}
+					}
+				},
+				{
+					"name": "Send Prompt",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "http://localhost:8031/api/v1/agentos/prompt",
+							"host": [
+								"http://localhost:8031"
+							],
+							"path": [
+								"api",
+								"v1",
+								"agentos",
+								"prompt"
+							]
+						},
+						"description": "Send prompt to the system",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-User-ID",
+								"value": "{{user_id}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"prompt\": \"buy 1L of milk\"}"
+						}
+					}
+				},
+				{
+					"name": "Update Account",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/account",
+						"description": "Update actor account. A `password` in the request sets/replaces\nthis actor's login credentials via the real LoginInfo implementation\n(kernel/login_info.py) \u2014 hashed with PBKDF2-HMAC-SHA256, never stored\nor returned in plaintext.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"string\",\n  \"password\": \"string\",\n  \"subscription\": \"string\",\n  \"metadata\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/logout",
+						"description": "Logout \u2014 invalidates every active session for this actor."
+					},
+					"response": []
+				},
+				{
+					"name": "Request Otp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/otp/request",
+						"description": "Generate a real, time-limited OTP (kernel/login_info.py::\nLoginInfo.generate_otp()) \u2014 see module docstring for why the code\nitself is only returned in dev mode.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"destination\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Otp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/otp/verify",
+						"description": "Verify an OTP code (constant-time, max 3 attempts, 5-minute\nexpiry \u2014 all real, in kernel/login_info.py::OTPInfo.verify()) and,\non success, log in exactly like password login does: a real session\nplus a real signed JWT.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"Code\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/profile",
+						"description": "Update actor profile.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"email\": \"string\",\n  \"bio\": \"string\",\n  \"location\": \"string\",\n  \"preferred_language\": \"string\",\n  \"timezone\": \"string\",\n  \"metadata\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Sessions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/sessions",
+						"description": "List this actor's real active (non-expired) sessions."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/knowledge-graph/{{person_id}}/entities",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"entity_id\": \"\",\n  \"entity_type\": \"other\",\n  \"name\": \"\",\n  \"attributes\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Entities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{health_url}}/api/v1/knowledge-graph/{{person_id}}/entities"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Relationship",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/knowledge-graph/{{person_id}}/relationships",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"source_id\": \"Source Id\",\n  \"target_id\": \"Target Id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Relationships",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{health_url}}/api/v1/knowledge-graph/{{person_id}}/relationships"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Snapshot",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{health_url}}/api/v1/knowledge-graph/{{person_id}}/snapshot"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Plan",
+			"item": [
+				{
+					"name": "Acquire Knowledge Route",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/acquire",
+						"description": "POST /acquire \u2014 the remediation for a low-grounding /plan.\n\nWhen /plan returns metadata.grounding.remediation == \"acquire_knowledge_and_replan\",\ncall this with the same question, then re-plan. It queries every available knowledge\nsource, folds what it finds into the grounding knowledge pack, and returns the\ngrounding delta so the caller can decide whether re-planning is worthwhile.\n\nDeliberately separate from /plan: acquisition can incur web-search latency and MUST\nNOT block plan selection. Requ",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Plan Execution",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/plan",
+						"description": "POST /plan \u2014 select a workload for the question without executing it.\n\nReturns the workload_id, steps, and grounding_confidence the runtime computed.\nlow_grounding=True means the knowledge pack had insufficient coverage at plan\ntime \u2014 consider retrieving more data before committing to execution.\nRequires perm-execute-plan.\n\n1. Input validation via security module\n2. get the graph store from the request context; this is used to persist the execution graph and related data\n3. Governance check \u2014 va",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Agents",
+			"item": [
+				{
+					"name": "Resolve Agent For Capability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/agents/bus/resolve",
+						"description": "Resolve which agent serves a given capability via the CapabilityBus."
+					},
+					"response": []
+				},
+				{
+					"name": "Discover Agents",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/agents/discover",
+						"description": "Trigger a live NANDA discovery query and cache results in BrocaRegistry."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Agent",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/agents/{{agent_type}}",
+						"description": "Get a single agent by type. Checks local registry first, then NANDA."
+					},
+					"response": []
+				},
+				{
+					"name": "Execute Agent",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/agents/{{agent_type}}/execute",
+						"description": "Execute an agent with a question. Uses middleware for state, formatting, serialization."
+					},
+					"response": []
+				},
+				{
+					"name": "Execute Direct",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/execute-direct",
+						"description": "Execute directly via capability classification \u2014 no agent name needed.\n\nThe runtime classifies the capability, routes it, resolves implementation,\nand executes. Users never need to specify agent names."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Capabilities",
+			"item": [
+				{
+					"name": "Get Capability Graph",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/capabilities/bus/graph",
+						"description": "Get the agent\u2192capability\u2192preconditions/effects graph."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Capabilities Bus",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/capabilities/bus/search",
+						"description": "Search capabilities via CapabilityBus with modality and precondition filters."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Capability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/capabilities/{{cap_name}}",
+						"description": "Get a single capability by name."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Dashboard Current",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/dashboard/current",
+						"description": "Return the current cognitive state as a complete DashboardModel."
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard For Run",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/dashboard/{{run_id}}",
+						"description": "Return the cognitive state for a specific run_id."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Data Routing",
+			"item": [
+				{
+					"name": "Routing Entry",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/data-routing/entry/{{capability}}/{{entity}}",
+						"description": "Get routing entry for a specific capability+entity."
+					},
+					"response": []
+				},
+				{
+					"name": "Resolve Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/data-routing/resolve",
+						"description": "Resolve an entity query to the optimal data source.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"capability\": \"Capability\",\n  \"entity\": \"Entity\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Routing Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/data-routing/summary",
+						"description": "Return routing middleware summary."
+					},
+					"response": []
+				},
+				{
+					"name": "Routing Table",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/data-routing/table",
+						"description": "Return the full routing policy table."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Exchange",
+			"item": [
+				{
+					"name": "Receive Proposal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/exchange/proposal",
+						"description": "Receive a BeliefProposal from a remote runtime.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"proposal\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Exchange Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/exchange/stats",
+						"description": "Return exchange statistics."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Execute",
+			"item": [
+				{
+					"name": "Execute Action",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/execute",
+						"description": "POST /execute \u2014 full workload execution for action-oriented requests.\n\nRuns Intent IR \u2192 validation \u2192 preconditions \u2192 execution (GoalExecutor,\nthe runtime). /execute never classifies natural language \u2014 it requires\npayload.intent_ir from a prior /plan call and executes exactly that,\nrejecting outright (400) if it's missing, malformed, unsupported-version,\nor fails signature verification. Requires perm-execute-action.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"graph\": {\n    \"graph_id\": \"\",\n    \"graph_type\": \"execution\",\n    \"timestamp\": \"\",\n    \"nodes\": [\n      {}\n    ],\n    \"edges\": [\n      {}\n    ],\n    \"execution_order\": [\n      [\n        \"string\"\n      ]\n    ],\n    \"annotations\": {},\n    \"state\": {}\n  },\n  \"run_id\": \"Run Id\",\n  \"question\": \"Question\",\n  \"elapsed_ms\": 0.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute Stream",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/execute/stream",
+						"description": "POST /execute/stream \u2014 SSE streaming execution with live progress events.\n\nSame semantics as /execute but streams layer/step events as they happen.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"graph\": {\n    \"graph_id\": \"\",\n    \"graph_type\": \"execution\",\n    \"timestamp\": \"\",\n    \"nodes\": [\n      {}\n    ],\n    \"edges\": [\n      {}\n    ],\n    \"execution_order\": [\n      [\n        \"string\"\n      ]\n    ],\n    \"annotations\": {},\n    \"state\": {}\n  },\n  \"run_id\": \"Run Id\",\n  \"question\": \"Question\",\n  \"elapsed_ms\": 0.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Replay Action",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/replay/{{run_id}}",
+						"description": "POST /replay/{run_id} \u2014 shared across all three runtimes.\n\nLooks up which runtime (Cognitive/Simulation/Comparator) originally\ncompiled `run_id` and dispatches back to that runtime's Run stage with\nthe exact stored IntentIR \u2014 never re-classifies the original question.\n404 if no plan was stored for this run_id (process-local store \u2014 not\ndurable across restarts).\n\nResponse shape depends on which runtime compiled the run: target=\"execute\"\nreturns ExecuteResponse; target=\"simulate\"/\"compare\" return "
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Fleet",
+			"item": [
+				{
+					"name": "Discover Runtimes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/fleet/discover",
+						"description": "Discover all registered runtime instances and their health."
+					},
+					"response": []
+				},
+				{
+					"name": "Fleet Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/fleet/health",
+						"description": "Get fleet-wide health summary."
+					},
+					"response": []
+				},
+				{
+					"name": "Register Runtime",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/fleet/register",
+						"description": "Register a runtime instance with the fleet.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"runtime_id\": \"Runtime Id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Runtime",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/fleet/{{runtime_id}}",
+						"description": "Remove a runtime from the fleet."
+					},
+					"response": []
+				},
+				{
+					"name": "Heartbeat",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/fleet/{{runtime_id}}/heartbeat",
+						"description": "Send a heartbeat for a runtime instance."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Keys",
+			"item": [
+				{
+					"name": "Add Key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/keys",
+						"description": "Add a new API key (user-scoped, encrypted).",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"service\": \"Service\",\n  \"key_name\": \"Key Name\",\n  \"api_key\": \"Api Key\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Keys",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/keys",
+						"description": "List keys for current user only."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Config",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/keys/config/{{service}}",
+						"description": "Get config for a service (user-scoped)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/keys/summary",
+						"description": "Get keystore summary for current user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Key",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/keys/{{key_id}}",
+						"description": "Get key details (user-scoped)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Key",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/keys/{{key_id}}",
+						"description": "Remove a key (user-scoped)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Knowledge",
+			"item": [
+				{
+					"name": "Export Knowledge",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/knowledge/export",
+						"description": "Export the current world tensor, Q-table, and graph topology as a\nversioned, signed JSON bundle suitable for import into another runtime."
+					},
+					"response": []
+				},
+				{
+					"name": "Import Knowledge",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/knowledge/import",
+						"description": "Import a knowledge bundle. Verifies signature, checks trust and\nagreements, and merges with configurable conflict resolution.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"bundle\": {\n    \"version\": \"1.0\",\n    \"exported_at\": 0.0,\n    \"runtime_id\": \"\",\n    \"transitions\": [\n      {}\n    ],\n    \"q_table\": {},\n    \"graph_nodes\": [\n      {}\n    ],\n    \"graph_edges\": [\n      {}\n    ],\n    \"metadata\": {},\n    \"source_runtime_type\": \"\",\n    \"source_owner\": \"\",\n    \"source_jurisdiction\": \"\",\n    \"signature\": \"\",\n    \"signer_id\": \"\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Knowledge Version",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/knowledge/version",
+						"description": "Return the current knowledge schema version."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "State",
+			"item": [
+				{
+					"name": "Get Mesh",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/mesh",
+						"description": "Layer 1 view \u2014 the Execution Mesh: reusable ExecutionGraph nodes,\ntheir mesh-level edges (SIMILAR_TO/COMPOSES/...), plus the top-ranked\ncapabilities and workflows. Ranks refresh automatically after every\nexecuted run \u2014 see CognitiveRuntime._persist_execution_mesh. This view\nshows ONLY mesh nodes; drill into a workflow with /mesh/graph/{key} and\ninto an agent with /mesh/agent/{name}."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Agent Capabilities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/mesh/agent/{{agent_name}}",
+						"description": "Layer 3 view \u2014 one Agent's private Capability Graph: capabilities,\nthe Providers that resolve them, and the Tools those providers expose."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Mesh Graph",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/mesh/graph/{{graph_key}}",
+						"description": "Layer 2 view \u2014 one Execution Graph: its Agents and their DEPENDS_ON\nexecution ordering. Agents only; capabilities live one layer down."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Ontology",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/mesh/ontology",
+						"description": "Ontology view \u2014 OntologyConcept nodes and IS_A/PART_OF/SPECIALIZES/\nGENERALIZES relations, stored separately from all execution structure."
+					},
+					"response": []
+				},
+				{
+					"name": "Get State",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/state",
+						"description": "Current runtime state: runtime, policy, persistence, observability, epistemic."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Metadata",
+			"item": [
+				{
+					"name": "List Pipelines",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/metadata/pipelines",
+						"description": "List available execution pipelines from capabilities that enable others."
+					},
+					"response": []
+				},
+				{
+					"name": "List Predicates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/metadata/predicates",
+						"description": "List all unique preconditions across registered capabilities."
+					},
+					"response": []
+				},
+				{
+					"name": "List Workloads",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/metadata/workloads",
+						"description": "List workload-related capabilities."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Observability",
+			"item": [
+				{
+					"name": "Get Observability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/observability",
+						"description": "Full observability snapshot: metrics + dashboard + health + alerts.\n\nSingle entry point for all observability data. Replaces the former\nseparate /metrics and /observability endpoints."
+					},
+					"response": []
+				},
+				{
+					"name": "Trigger Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/observability/triggers",
+						"description": "Analytical trigger findings: shadow_capability, convergence_delay, context_drift.\n\nQuery params:\n  n \u2014 how many recent findings to return (default 20)"
+					},
+					"response": []
+				},
+				{
+					"name": "Cognitive Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/observability/{{panel}}",
+						"description": "Cognitive observability dashboard for a specific layer.\n\npanel: intent | agent | workload | world_model | governance | learning | all"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "OQL",
+			"item": [
+				{
+					"name": "Execute Oql",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/oql/execute",
+						"description": "Execute an OQL query.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"entity\": \"Entity\",\n  \"operation\": \"Operation\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Oql Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/oql/stats",
+						"description": "Return OQL engine statistics."
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Oql",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/oql/validate",
+						"description": "Validate an OQL query without executing.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"entity\": \"Entity\",\n  \"operation\": \"Operation\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Process",
+			"item": [
+				{
+					"name": "List Processes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/processes",
+						"description": "List all active runtime processes."
+					},
+					"response": []
+				},
+				{
+					"name": "Restore Process",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/processes/restore/{{checkpoint_id}}",
+						"description": "Restore a process from checkpoint. Returns the restored process in RESUMING state."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Process State",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/processes/{{run_id}}",
+						"description": "Get the current state of a runtime process."
+					},
+					"response": []
+				},
+				{
+					"name": "Checkpoint Process",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/processes/{{run_id}}/checkpoint",
+						"description": "Checkpoint a suspended process. Requires SUSPENDED state."
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Process",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/processes/{{run_id}}/resume",
+						"description": "Resume a suspended or checkpointed process."
+					},
+					"response": []
+				},
+				{
+					"name": "Suspend Process",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/processes/{{run_id}}/suspend",
+						"description": "Suspend a running process."
+					},
+					"response": []
+				},
+				{
+					"name": "Terminate Process",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/processes/{{run_id}}/terminate",
+						"description": "Terminate a process."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Prompt",
+			"item": [
+				{
+					"name": "Cicd Prompt",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/prompt/cicd",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\",\n  \"prompt\": \"Prompt\",\n  \"context\": {},\n  \"run_query\": true,\n  \"run_simulate\": true,\n  \"run_type\": \"full\",\n  \"meta\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Prompt Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/prompt/health"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Workload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/prompt/reset"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stability Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/prompt/stability"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Q&A",
+			"item": [
+				{
+					"name": "Quick Answer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/qa",
+						"description": "Immediate answer from KnowledgePack; fires background capability planning.\n\nReturns the best available knowledge-pack answer without waiting for full\nexecutor workload. A background task runs the executor and updates epistemic\nstate asynchronously.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Query",
+			"item": [
+				{
+					"name": "Process Query",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/query",
+						"description": "POST /query \u2014 Process query through hybrid router.\n\nSingle endpoint for end-to-end query handling:\n1. Classify query type (LLM or pattern-based)\n2. Route to appropriate handler\n3. Execute and return response\n\nRequires perm-query permission.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Query Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/query/health",
+						"description": "GET /query/health \u2014 Check hybrid router health status"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SDLC",
+			"item": [
+				{
+					"name": "Sdlc Run",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/sdlc/run",
+						"description": "Start a fresh SDLC pipeline run for `question` and return its run_id\nimmediately, before any stage has executed. The pipeline itself (a real\nLLM call at every stage, run serially) keeps going in the background \u2014\npoll GET /sdlc/{run_id} for progress, or use `sdlc discovery/requirements/\narchitecture/.../release <run_id>` (CLI) to inspect one stage at a time.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"question\": \"Question\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sdlc Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/sdlc/{{run_id}}",
+						"description": "Poll a Runtime Process's current state. 404 if run_id is unknown \u2014\nthe Process Table is process-local (not durable across restarts, same\nscope cut as run_store.RunStore) unless it was checkpointed."
+					},
+					"response": []
+				},
+				{
+					"name": "Sdlc Approve",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/sdlc/{{run_id}}/approve",
+						"description": "Grant or reject the run's pending approval gate. 409 if the run isn't\nactually WAITING on one \u2014 approving a gate that doesn't exist (already\ndecided, or the pipeline never reached one) is a caller error, not\nsomething to silently accept.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"decision\": \"approve\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SittingFace",
+			"item": [
+				{
+					"name": "List Somatic Capabilities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/somatic/capabilities",
+						"description": "List capabilities registered from somatic charts."
+					},
+					"response": []
+				},
+				{
+					"name": "List Somatic Charts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/somatic/charts",
+						"description": "List all loaded somatic charts."
+					},
+					"response": []
+				},
+				{
+					"name": "List Somatic Prompts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/somatic/prompts",
+						"description": "List compiled prompts from somatic charts."
+					},
+					"response": []
+				},
+				{
+					"name": "Recompile Somatic",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/somatic/recompile",
+						"description": "Recompile all somatic charts and re-register capabilities into the Runtime."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Workloads",
+			"item": [
+				{
+					"name": "Compose Workload",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/workloads/compose",
+						"description": "Compose a workload from step definitions and/or template names.\n\nTemplates: \"self-healing\"\nSteps: list of {step_id, capability_name, inputs, outputs, dependencies}\nauto_wire: chain steps linearly when no explicit dependencies",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steps\": [\n    {\n      \"step_id\": \"\",\n      \"capability_name\": \"\",\n      \"inputs\": [\n        \"string\"\n      ],\n      \"outputs\": [\n        \"string\"\n      ],\n      \"dependencies\": [\n        \"string\"\n      ],\n      \"metadata\": {}\n    }\n  ],\n  \"templates\": [\n    \"string\"\n  ],\n  \"workload_id\": \"\",\n  \"auto_wire\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Templates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/workloads/templates",
+						"description": "List available workload templates."
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Workload",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{base_url}}/workloads/validate",
+						"description": "Validate a workload's dependency graph without creating it.",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"steps\": [\n    {\n      \"step_id\": \"\",\n      \"capability_name\": \"\",\n      \"inputs\": [\n        \"string\"\n      ],\n      \"outputs\": [\n        \"string\"\n      ],\n      \"dependencies\": [\n        \"string\"\n      ],\n      \"metadata\": {}\n    }\n  ],\n  \"templates\": [\n    \"string\"\n  ],\n  \"workload_id\": \"\",\n  \"auto_wire\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Codegen",
+			"item": [
+				{
+					"name": "Generate microservice from spec",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/codegen/microservice",
+						"description": "Generate a complete, production-ready FastAPI microservice.\n\n**Input** \u2014 a MicroserviceSpec JSON object:\n\n```json\n{\n  \"name\": \"products\",\n  \"domain\": \"inventory\",\n  \"description\": \"Product catalog\",\n  \"db\": {\"type\": \"postgresql\"},\n  \"fields\": [\n    {\"name\": \"sku\",   \"type\": \"str\",   \"unique\": true, \"index\": true},\n    {\"name\": \"name\",  \"type\": \"str\"},\n    {\"name\": \"price\", \"type\": \"float\", \"gt\": 0},\n    {\"name\": \"stock\", \"type\": \"int\",   \"default\": 0},\n    {\"name\": \"status\",\"type\": \"str\",   \"enu",
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Example spec for a product catalog",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{health_url}}/api/v1/codegen/microservice/example",
+						"description": "Return a ready-to-use example spec."
+					},
+					"response": []
+				},
+				{
+					"name": "MicroserviceSpec JSON schema",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{health_url}}/api/v1/codegen/microservice/schema",
+						"description": "Return the full JSON schema for MicroserviceSpec.\n\nUse this to build a UI form or validate specs before submission."
+					},
+					"response": []
+				},
+				{
+					"name": "Validate spec without generating",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": "{{health_url}}/api/v1/codegen/microservice/validate",
+						"description": "Validate a MicroserviceSpec and return errors without generating code.",
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Metrics",
+			"item": [
+				{
+					"name": "Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{health_url}}/metrics",
+						"description": "Prometheus-compatible metrics endpoint."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

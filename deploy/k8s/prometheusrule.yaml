@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: agentos-alerts
+  namespace: monkeybrain
+  labels:
+    app: agentos
+spec:
+  groups:
+    - name: agentos
+      rules:
+        - alert: AgentOSDown
+          expr: up{job="agentos"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "AgentOS is down"
+            description: "AgentOS has been unreachable for more than 1 minute."
+
+        - alert: AgentOSHighLatency
+          expr: histogram_quantile(0.99, rate(agentos_request_duration_seconds_bucket[5m])) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "AgentOS high latency"
+            description: "99th percentile latency is above 5 seconds."
+
+        - alert: AgentOSHighErrorRate
+          expr: rate(agentos_request_errors_total[5m]) / rate(agentos_request_total[5m]) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "AgentOS high error rate"
+            description: "Error rate is above 5%."
+
+        - alert: AgentOSCheckpointStoreFull
+          expr: agentos_checkpoint_store_count > 10000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Checkpoint store growing"
+            description: "Checkpoint count exceeds 10000. Consider running cleanup."

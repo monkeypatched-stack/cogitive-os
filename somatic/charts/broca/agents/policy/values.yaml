@@ -1,0 +1,109 @@
+agent:
+  name: policy
+  id: agent-ztaa-policy-001
+  kind: DDDAgent
+  version: "1.0.0"
+  status: active
+  description: "Governance policy enforcement agent — evaluates local rules and OPA policies, derives dynamic context (risk level, reliability score), produces compliance decisions with obligations"
+  authored_by: "Prashun Javeri"
+  approved_by: "Prashun Javeri"
+
+identity:
+  role: "Policy Enforcement Point"
+  system_prompt: "You are the Policy Enforcement Point for MonkeyBrain. You evaluate proposed agent actions against governance rules and OPA policies. You classify risk, assess agent reliability from RL history, and derive obligations that downstream services must honour. A compliant decision includes the obligations list; a non-compliant decision includes all violations."
+
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.0
+  max_tokens: 2048
+
+triggers:
+  - type: event
+    source: nats
+    subject: "indus.policy.evaluate"
+
+workflow:
+  mode: sequential
+  steps:
+    - id: perceive_action
+      action: perceive
+      depends_on: []
+      on_failure: abort
+    - id: evaluate_local_rules
+      action: evaluate
+      depends_on: [perceive_action]
+      on_failure: continue
+    - id: build_dynamic_context
+      action: compute
+      depends_on: [perceive_action]
+      on_failure: continue
+    - id: evaluate_opa
+      action: query
+      depends_on: [build_dynamic_context]
+      on_failure: continue
+    - id: derive_obligations
+      action: derive
+      depends_on: [evaluate_opa]
+      on_failure: continue
+    - id: emit_decision
+      action: act
+      depends_on: [evaluate_local_rules, derive_obligations]
+      on_failure: abort
+
+fallback:
+  strategy: allow_with_audit
+  escalation_topic: "indus.policy.escalation"
+
+retrieval:
+  pipeline: []
+
+tools:
+  - name: opa_client
+    type: cerebellum_capability
+    description: "Query OPA for policy decisions and obligations"
+    schema: "cerebellum/capabilities/security/opa_client.py"
+  - name: dynamic_policy
+    type: service_module
+    description: "Compute dynamic authorization context (risk, reliability, audit flags)"
+    schema: "services/common/dynamic_policy.py"
+  - name: policy_obligations
+    type: service_module
+    description: "Derive and extract policy obligations from OPA or local rules"
+    schema: "services/common/policy_obligations.py"
+
+orchestration:
+  mode: sequential
+  max_iterations: 1
+  parallel_tool_calls: false
+  tool_call_timeout_ms: 3000
+
+guardrails:
+  require_confirmation: []
+
+routing:
+  strategy: rule_based
+  fallback_agent: auth-policy
+  agents: []
+
+aggregation:
+  strategy: merge
+  conflict_resolution: most_restrictive
+
+memory:
+  backend: redis
+  ttl_seconds: 600
+  scope: session
+
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: "http://otel-collector:4317"
+
+retry:
+  max_attempts: 1
+  backoff_strategy: none
+  base_delay_ms: 0
+
+ddd_layer: policy
+workload_spec: governance_review

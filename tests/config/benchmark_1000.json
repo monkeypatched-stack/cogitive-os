@@ -1,0 +1,4726 @@
+{
+  "version": "1.0.0",
+  "description": "944-question benchmark with disambiguation and adversarial questions.",
+  "questions": [
+    {
+      "id": "Q0001",
+      "question": "Show PB-2A625B29 traceability on Capsule Line B.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0002",
+      "question": "What workstations are in Drying (FBD)?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0003",
+      "question": "Who manufactured Capsule Hopper?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0004",
+      "question": "Is Rapid Mixer Granulator assigned to RMG Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0005",
+      "question": "What is MTTR?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0006",
+      "question": "How many planets are in the solar system?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0007",
+      "question": "What is the failure rate of Rapid Mixer Granulator?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0008",
+      "question": "What is a master formula?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0009",
+      "question": "Is Aarav Mehta trained on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0010",
+      "question": "What SOP governs the Blending process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0011",
+      "question": "When was the last service for Tablet Press?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0012",
+      "question": "Who does Devansh Kapoor report to?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0013",
+      "question": "Show PB-1239A463 traceability on Capsule Line B.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0014",
+      "question": "What if we increase V-Blender VB-01 speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0015",
+      "question": "What is the status of PM-AHU-002?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0016",
+      "question": "Explain quantum computing",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0017",
+      "question": "What if we increase Tablet Press speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0018",
+      "question": "What is the next PM date for V-Blender VB-01?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0019",
+      "question": "What is the status of PB-2A625B29?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0020",
+      "question": "What is the status of Compression?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0021",
+      "question": "What work orders are open for Fluid Bed Dryer?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0022",
+      "question": "Show details for LAF Weighing Booth.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0023",
+      "question": "Is Rohit Verma assigned to Packaging?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0024",
+      "question": "What SOP applies to Compression?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0025",
+      "question": "Does Rahul Deshmukh operate Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0026",
+      "question": "What is the status of Octagonal / Double Cone Blender?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0027",
+      "question": "What is cleaning validation?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0028",
+      "question": "What machines are at FBD Loading Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0029",
+      "question": "Does Priya Sharma work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0030",
+      "question": "What is the maintenance history of Conical Mill?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0031",
+      "question": "Does Karan Shah work on Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0032",
+      "question": "What is a certificate of analysis?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0033",
+      "question": "What SOP is SOP-CAP-DISP-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0034",
+      "question": "What SOP is SOP-CAP-SZ-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0035",
+      "question": "What change controls are open?",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0036",
+      "question": "Show details for V-Blender VB-01.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0037",
+      "question": "Is Priya Sharma trained on Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0038",
+      "question": "Which is more efficient, Film Coating or Granulation?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0039",
+      "question": "What is the efficiency of Packaging?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0040",
+      "question": "Is Karan Shah trained on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0041",
+      "question": "Is Devansh Kapoor trained on V-Blender VB-01?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0042",
+      "question": "What is the priority of the Vibro Sifter work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0043",
+      "question": "What is the takt time of Polishing / Dedust?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0044",
+      "question": "Which is more efficient, Dispensing or Inspection?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0045",
+      "question": "What process parameters are in SOP-TAB-COMP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0046",
+      "question": "What IoT sensors monitor Rapid Mixer Granulator?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0047",
+      "question": "Is Inspection currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0048",
+      "question": "Which machine has more maintenance events?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0049",
+      "question": "What is the availability of Film Coating?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0050",
+      "question": "Show the installation date of Fluid Bed Dryer.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0051",
+      "question": "What does SOP-TAB-GRAN-001 say about Granulation?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0052",
+      "question": "What workstations are in Sizing / Milling (post-dry)?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0053",
+      "question": "What is the status of Rapid Mixer Granulator at Dispensing?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0054",
+      "question": "What SOP is SOP-TAB-PKG-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0055",
+      "question": "What is the status of Tablet Press at Drying?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0056",
+      "question": "What is the next PM date for Conical Mill?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0057",
+      "question": "Who manufactured Octagonal / Double Cone Blender?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0058",
+      "question": "What SOP is SOP-CAP-DISP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0059",
+      "question": "What if Fluid Bed Dryer needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0060",
+      "question": "What is the status of PB-1D40FAD5?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0061",
+      "question": "What is the efficiency of Compression?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0062",
+      "question": "What is the batch release status for PB-339FBA28?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0063",
+      "question": "What batches are affected by CC-2026-0008?",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0064",
+      "question": "What is 5*5?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0065",
+      "question": "Is Tablet Press used in Drying?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0066",
+      "question": "What is the status of LAF Weighing Booth?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0067",
+      "question": "What is the takt time of Sizing / Milling (post-dry)?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0068",
+      "question": "Is Octagonal Blender assigned to Coating Pan Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0069",
+      "question": "What is the throughput of Film Coating on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0070",
+      "question": "What is the cycle time of Granulation?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0071",
+      "question": "Who manufactured Blister Packing Machine?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0072",
+      "question": "What is the status of Vibro Sifter at Blending?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0073",
+      "question": "What is the maintenance history of Vibro Sifter?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0074",
+      "question": "What is the difference between Vibro Sifter and Coating Pan?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0075",
+      "question": "What is the difference between Coating Pan and Octagonal Blender?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0076",
+      "question": "Which is more efficient, Blending or Packaging?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0077",
+      "question": "Who manufactured Auto Coater / Perforated Pan?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0078",
+      "question": "What is the throughput of Blending?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0079",
+      "question": "What is the status of Vibro Sifter?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0080",
+      "question": "What is the throughput of Dispensing on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0081",
+      "question": "Show the traceability chain for PB-339FBA28.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0082",
+      "question": "What happens if V-Blender VB-01 breaks down?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0083",
+      "question": "What happens if we run Fluid Bed Dryer above threshold?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0084",
+      "question": "What is the maintenance history of Coating Pan?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0085",
+      "question": "What is the defect rate for Tablet Line A?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0086",
+      "question": "What is the status of Binder Prep Vessel?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0087",
+      "question": "Is Fluid Bed Dryer on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0088",
+      "question": "Is Rajesh Patel assigned to Blending?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0089",
+      "question": "Who manufactured Conical Mill (Co-Mill)?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0090",
+      "question": "Does Karan Shah operate Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0091",
+      "question": "Who operates Coating Pan Station during Rahul's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0092",
+      "question": "What parameters are in SOP-TAB-GRAN-001 for Film Coating?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0093",
+      "question": "What work orders are open for Octagonal Blender?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0094",
+      "question": "What is the status of PM-ACT-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0095",
+      "question": "Compare the OEE of Tablet Line A and Capsule Line B.",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0096",
+      "question": "What is the status of CM-002?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0097",
+      "question": "Is V-Blender VB-01 assigned to Blender Loading Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0098",
+      "question": "What is the priority of the V-Blender VB-01 work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0099",
+      "question": "What is the OEE of the line with the most stages?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0100",
+      "question": "Does Devansh Kapoor operate V-Blender VB-01?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0101",
+      "question": "Can you translate this to Spanish?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0102",
+      "question": "Is V-Blender VB-01 used in Granulation?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0103",
+      "question": "What product is in PB-339FBA28?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0104",
+      "question": "What is a machine?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0105",
+      "question": "What change controls affect Film Coating?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0106",
+      "question": "Which is more efficient, Granulation or Inspection?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0107",
+      "question": "What is a work order?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0108",
+      "question": "What is blockchain?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0109",
+      "question": "Is Tablet Press assigned to FBD Loading Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0110",
+      "question": "What is the status of PB-29424FDB?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0111",
+      "question": "Who manufactured LAF Sampling Booth?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0112",
+      "question": "What is the difference between a batch and a work order?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0113",
+      "question": "Is Rohit Verma trained on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0114",
+      "question": "What does SOP-TAB-COMP-001 say about Packaging?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0115",
+      "question": "What work orders are open for Rapid Mixer Granulator?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0116",
+      "question": "Show details for Cartoning Machine.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0117",
+      "question": "Is Rapid Mixer Granulator on Capsule Line B?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0118",
+      "question": "What IoT sensors monitor Coating Pan?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0119",
+      "question": "Does Pallavi Joshi operate Coating Pan?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0120",
+      "question": "Which line does Granulation belong to?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0121",
+      "question": "Does Aarav Mehta work on Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0122",
+      "question": "Who operates Tablet Press Station during Priya's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0123",
+      "question": "What is the maintenance history of Octagonal Blender?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0124",
+      "question": "What SOP is SOP-CAP-FILL-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0125",
+      "question": "What are the approval requirements for Packaging SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0126",
+      "question": "What product is in PB-56D9F1A2?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0127",
+      "question": "What certifications does Aarav Mehta hold?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0128",
+      "question": "Does Rajesh Patel work on Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0129",
+      "question": "What is the maintenance frequency for Rapid Mixer Granulator?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0130",
+      "question": "What if we switch from wet to dry granulation?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0131",
+      "question": "Is Octagonal Blender used in Granulation?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0132",
+      "question": "What is the status of PB-56D9F1A2 on Tablet Line A?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0133",
+      "question": "What work orders are open for Conical Mill?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0134",
+      "question": "Who manufactured Fluid Bed Dryer?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0135",
+      "question": "What is the status of Coating Solution Vessel?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0136",
+      "question": "What if Tablet Press needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0137",
+      "question": "What is a control chart?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0138",
+      "question": "Does Karan Shah work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0139",
+      "question": "What is the status of Bottle Filler?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0140",
+      "question": "Show details for Bottle Filler.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0141",
+      "question": "What if we increase Vibro Sifter speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0142",
+      "question": "What workstations are on Capsule Line B?",
+      "intent_hint": "line_workstation"
+    },
+    {
+      "id": "Q0143",
+      "question": "Who does Karan Shah report to?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0144",
+      "question": "What is the batch size for PB-56D9F1A2?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0145",
+      "question": "What if Fluid Bed Dryer fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0146",
+      "question": "What IoT sensors monitor Fluid Bed Dryer?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0147",
+      "question": "Is Rajesh Patel trained on Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0148",
+      "question": "Show PB-56D9F1A2 traceability on Tablet Line A.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0149",
+      "question": "How many batches pass through Film Coating?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0150",
+      "question": "What is the status of PB-1239A463 on Capsule Line B?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0151",
+      "question": "What is the status of CAL-MOI-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0152",
+      "question": "What is the status of PM-DCU-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0153",
+      "question": "What is PM-BLD-001 for V-Blender VB-01?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0154",
+      "question": "What is the stock price of Apple?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0155",
+      "question": "What is the batch size for PB-2A625B29?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0156",
+      "question": "What is PM-TBP-001 for Fluid Bed Dryer?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0157",
+      "question": "Who manufactured LAF Weighing Booth?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0158",
+      "question": "What calibration is due for V-Blender VB-01?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0159",
+      "question": "What is the status of PB-7E4A813E?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0160",
+      "question": "Show PB-339FBA28 traceability on Tablet Line A.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0161",
+      "question": "What is the difference between a stage and a workstation?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0162",
+      "question": "What is 2+2?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0163",
+      "question": "Who manufactured V-Blender VB-01?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0164",
+      "question": "Who is Pallavi Joshi?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0165",
+      "question": "What is the difference between Coating Pan and Vibro Sifter?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0166",
+      "question": "What is the estimated completion time for PM-BLD-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0167",
+      "question": "Is Fluid Bed Dryer on Capsule Line B?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0168",
+      "question": "Show details for Binder Prep Vessel.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0169",
+      "question": "Is Rajesh Patel assigned to Dispensing?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0170",
+      "question": "Who manages the team at Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0171",
+      "question": "What is the status of V-Blender VB-01?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0172",
+      "question": "What is the typical cycle time for Film Coating?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0173",
+      "question": "What SOP is SOP-CAP-GRAN-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0174",
+      "question": "What is the difference between Vibro Sifter and Octagonal Blender?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0175",
+      "question": "What if we increase Coating Pan speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0176",
+      "question": "What SOP governs the machine at Sifter Station?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0177",
+      "question": "Who is the line manager for Capsule Line B?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0178",
+      "question": "Get the warranty status of Conical Mill.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0179",
+      "question": "What SOP is SOP-TAB-SZ-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0180",
+      "question": "What is the difference between V-Blender and Rapid Mixer Granulator?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0181",
+      "question": "What shift does Devansh Kapoor work on Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0182",
+      "question": "Which is more efficient, Packaging or Granulation?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0183",
+      "question": "What is the throughput of Blending on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0184",
+      "question": "What line is Aarav Mehta on?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0185",
+      "question": "What maintenance is due for Tablet Press?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0186",
+      "question": "What is the status of Blister Packing Machine?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0187",
+      "question": "What shift does Pallavi Joshi work on Coating Pan?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0188",
+      "question": "Is Priya Sharma assigned to Packaging?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0189",
+      "question": "What calibration records are due for Coating Pan?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0190",
+      "question": "What is a Standard Operating Procedure?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0191",
+      "question": "What workstations are in Film Coating?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0192",
+      "question": "What if Octagonal Blender fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0193",
+      "question": "What is the plan adherence for Tablet Line A?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0194",
+      "question": "What work orders are pending?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0195",
+      "question": "What if we skip the IPC re-check after Drying?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0196",
+      "question": "What is the yield at Inspection?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0197",
+      "question": "Who is the safety officer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0198",
+      "question": "Is Rapid Mixer Granulator used in Dispensing?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0199",
+      "question": "Is Rahul Deshmukh assigned to Packaging?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0200",
+      "question": "What workstations are in Granulation?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0201",
+      "question": "What if we increase Conical Mill speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0202",
+      "question": "What is the batch size for PB-B31DD5E6?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0203",
+      "question": "Which line has more stages?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0204",
+      "question": "Who manufactured Vibro Sifter?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0205",
+      "question": "Is Coating Pan on Capsule Line B?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0206",
+      "question": "What SOP is SOP-TAB-PKG-004?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0207",
+      "question": "What SOP is SOP-CAP-SIFT-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0208",
+      "question": "Show details for Fluid Bed Dryer.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0209",
+      "question": "What are the approval requirements for Blending SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0210",
+      "question": "What is the vibration reading of Vibro Sifter?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0211",
+      "question": "What happens if Conical Mill breaks down during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0212",
+      "question": "Show PM-BLD-001 details for Octagonal Blender.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0213",
+      "question": "What is the downtime percentage for Drying?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0214",
+      "question": "What happens if Conical Mill breaks down?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0215",
+      "question": "What SOP is SOP-CAP-BLD-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0216",
+      "question": "What is the difference between MTBF and MTTR?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0217",
+      "question": "Is Rajesh Patel assigned to Compression?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0218",
+      "question": "What certifications does Tablet Line A hold?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0219",
+      "question": "Does Aarav Mehta operate V-Blender VB-01?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0220",
+      "question": "Does Aarav Mehta work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0221",
+      "question": "What IoT sensors monitor Octagonal Blender?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0222",
+      "question": "What stages are in Capsule Line B?",
+      "intent_hint": "line_stage"
+    },
+    {
+      "id": "Q0223",
+      "question": "What happens if we skip PM for Conical Mill?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0224",
+      "question": "What happens if Rapid Mixer Granulator breaks down?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0225",
+      "question": "What is PM-ACT-001 for Coating Pan?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0226",
+      "question": "What shift does Priya Sharma work on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0227",
+      "question": "What is the throughput of Compression on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0228",
+      "question": "What SOP is SOP-TAB-COMP-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0229",
+      "question": "What workstations are in Inspection / Dedust / Polish?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0230",
+      "question": "Does Pallavi Joshi work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0231",
+      "question": "Which is more efficient, Dispensing or Packaging?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0232",
+      "question": "What machines are in Granulation?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0233",
+      "question": "What is the throughput of Blending on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0234",
+      "question": "What shift does Aarav Mehta work on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0235",
+      "question": "Who operates FBD Loading Station during Rajesh's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0236",
+      "question": "What if we increase Fluid Bed Dryer speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0237",
+      "question": "Does Rahul Deshmukh operate Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0238",
+      "question": "Who operates the FBD Loading Station on the Day Shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0239",
+      "question": "What is line clearance?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0240",
+      "question": "What is the impact of CC-2026-0008?",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0241",
+      "question": "Is Fluid Bed Dryer used in Blending?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0242",
+      "question": "Is Conical Mill on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0243",
+      "question": "What is the status of Octagonal Blender at Compression?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0244",
+      "question": "What is the vibration reading of Fluid Bed Dryer?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0245",
+      "question": "What is a quarantine hold?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0246",
+      "question": "What if we reduce Granulation cycle time by 20%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0247",
+      "question": "What is the OEE of the line with the most workstations?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0248",
+      "question": "Show details for Octagonal / Double Cone Blender.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0249",
+      "question": "What PPE is mandated by SOP-TAB-COMP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0250",
+      "question": "What is the status of PM-TBP-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0251",
+      "question": "What is the status of PB-170CD8CD?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0252",
+      "question": "What machines are in Capsule Filling?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0253",
+      "question": "What SOP is SOP-CAP-FILL-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0254",
+      "question": "Is Rajesh Patel trained on Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0255",
+      "question": "What product is in PB-2A625B29?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0256",
+      "question": "Is Rahul Deshmukh trained on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0257",
+      "question": "Who is Rajesh Patel?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0258",
+      "question": "What parameters are in SOP-TAB-COAT-001 for Film Coating?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0259",
+      "question": "What is the throughput of Granulation on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0260",
+      "question": "Is Tablet Press assigned to Tablet Press Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0261",
+      "question": "What is the next PM date for Tablet Press?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0262",
+      "question": "What is the defect rate DPMO for Tablet Line A?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0263",
+      "question": "Who is the shift supervisor?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0264",
+      "question": "Are there any rejected approvals for SOP-TAB-COMP-001?",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0265",
+      "question": "Does Rohit Verma work on Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0266",
+      "question": "What is the difference between V-Blender VB-01 and Rapid Mixer Granulator?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0267",
+      "question": "What is the difference between SOP and work order?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0268",
+      "question": "What approval steps are needed for a change control?",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0269",
+      "question": "What shift does Pallavi Joshi work on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0270",
+      "question": "What is the status of PB-1239A463?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0271",
+      "question": "Which is more efficient, Packaging or Film Coating?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0272",
+      "question": "Show PB-B31DD5E6 traceability on Tablet Line A.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0273",
+      "question": "What is the status of PM-TBP-002?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0274",
+      "question": "Is Rapid Mixer Granulator on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0275",
+      "question": "What is IQ/OQ/PQ?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0276",
+      "question": "What SOP is SOP-TAB-GRAN-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0277",
+      "question": "Which is more efficient, Compression or Blending?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0278",
+      "question": "What SOP is SOP-TAB-PKG-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0279",
+      "question": "What is the takt time of Dispensing?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0280",
+      "question": "What is a device?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0281",
+      "question": "What is the efficiency of Blending?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0282",
+      "question": "What machines are in Blending?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0283",
+      "question": "What is the maintenance history of Tablet Press?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0284",
+      "question": "What machines are in Dispensing?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0285",
+      "question": "Who manufactured Coating Solution Vessel?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0286",
+      "question": "What is the status of PB-C5F9F3C7?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0287",
+      "question": "Does Rahul Deshmukh work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0288",
+      "question": "What if we increase Rapid Mixer Granulator speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0289",
+      "question": "What does SOP-TAB-GRAN-001 say about Film Coating?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0290",
+      "question": "Does Devansh Kapoor work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0291",
+      "question": "Get the warranty status of V-Blender VB-01.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0292",
+      "question": "What is the difference between OEE and throughput?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0293",
+      "question": "How many stages are in Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0294",
+      "question": "What is the defect rate for Capsule Line B?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0295",
+      "question": "What is Priya Sharma's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0296",
+      "question": "What is the efficiency of Drying?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0297",
+      "question": "What is the takt time for Capsule Line B?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0298",
+      "question": "Is Karan Shah assigned to Granulation?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0299",
+      "question": "What is the MTBF for Octagonal Blender?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0300",
+      "question": "Compare the OEE of Capsule Line B and Tablet Line A.",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0301",
+      "question": "Show the event log for PM-ACT-001.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0302",
+      "question": "What machines are in Drying (FBD)?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0303",
+      "question": "What SOP is SOP-TAB-DRY-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0304",
+      "question": "What tasks are pending for Pallavi Joshi?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0305",
+      "question": "What certifications does Tablet Line A have?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0306",
+      "question": "What machines are in Packaging?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0307",
+      "question": "Is Tablet Press on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0308",
+      "question": "What is the efficiency of Film Coating?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0309",
+      "question": "What workstations are in Blending?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0310",
+      "question": "What shift does Rohit Verma work on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0311",
+      "question": "What shift does Rajesh Patel work on Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0312",
+      "question": "Is Rohit Verma assigned to Granulation?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0313",
+      "question": "What work orders are open for Coating Pan?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0314",
+      "question": "What parameters are in SOP-TAB-BLD-001 for Granulation?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0315",
+      "question": "Does Devansh Kapoor work on Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0316",
+      "question": "Is Pallavi Joshi trained on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0317",
+      "question": "Get the warranty status of Vibro Sifter.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0318",
+      "question": "What SOP is SOP-TAB-COMP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0319",
+      "question": "What if we increase Octagonal Blender speed by 10%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0320",
+      "question": "Is Rahul Deshmukh assigned to Granulation?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0321",
+      "question": "Get the calibration certificate for Vibro Sifter.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0322",
+      "question": "Who operates FBD Loading Station during Pallavi's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0323",
+      "question": "What is the batch size for PB-1239A463?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0324",
+      "question": "What is the OEE of Capsule Line B this quarter?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0325",
+      "question": "Is Devansh Kapoor trained on Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0326",
+      "question": "Which is more efficient, Dispensing or Drying?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0327",
+      "question": "What shift does Rajesh Patel work on Octagonal Blender?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0328",
+      "question": "What is the difference between Coating Pan and Rapid Mixer Granulator?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0329",
+      "question": "What is the maintenance history of V-Blender VB-01?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0330",
+      "question": "What parameters are in SOP-TAB-COMP-001 for Compression?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0331",
+      "question": "Who manufactured Self-Adhesive Labeller?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0332",
+      "question": "Tell me about the history of pharmaceutical manufacturing",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0333",
+      "question": "Which stage is more efficient?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0334",
+      "question": "Who won the last World Cup?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0335",
+      "question": "What is the status of PB-B31DD5E6?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0336",
+      "question": "Is Pallavi Joshi trained on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0337",
+      "question": "What is the yield at Dispensing?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0338",
+      "question": "What is the next PM date for Vibro Sifter?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0339",
+      "question": "What is the meaning of life?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0340",
+      "question": "What is the OEE of Tablet Line A?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0341",
+      "question": "What approvals are pending for batch release?",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0342",
+      "question": "What is the status of CAL-LOD-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0343",
+      "question": "Show batch details for PB-B31DD5E6.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0344",
+      "question": "Who manufactured Bottle Filler?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0345",
+      "question": "Show the full record for PB-B31DD5E6.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0346",
+      "question": "Show details for Vibro Sifter.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0347",
+      "question": "Does Aarav Mehta operate Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0348",
+      "question": "What does SOP-TAB-BLD-001 say about Granulation?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0349",
+      "question": "Is Octagonal Blender assigned to Sifter Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0350",
+      "question": "Is Packaging currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0351",
+      "question": "What shift does Rahul Deshmukh work on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0352",
+      "question": "Get the warranty status of Octagonal Blender.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0353",
+      "question": "What is the status of PB-143AACA6?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0354",
+      "question": "What is the failure rate of Octagonal Blender?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0355",
+      "question": "What SOP governs the machine at FBD Loading Station?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0356",
+      "question": "What SOP is SOP-CAP-BLD-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0357",
+      "question": "Does Karan Shah operate Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0358",
+      "question": "What is the MTBF for Rapid Mixer Granulator?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0359",
+      "question": "What is the throughput trend for Capsule Line B?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0360",
+      "question": "What SOP governs the Inspection process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0361",
+      "question": "What is the scrap rate at Granulation?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0362",
+      "question": "What SOP is SOP-CAP-POL-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0363",
+      "question": "Is Aarav Mehta assigned to Blending?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0364",
+      "question": "What is the status of LAF Sampling Booth?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0365",
+      "question": "What if we add a second V-Blender VB-01 to Granulation?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0366",
+      "question": "What is the maintenance compliance rate for Tablet Line A?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0367",
+      "question": "What is a Pareto chart?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0368",
+      "question": "What is the batch release status?",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0369",
+      "question": "What is the takt time for Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0370",
+      "question": "Show details for LAF Sampling Booth.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0371",
+      "question": "What workstations are in Polishing / Dedust?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0372",
+      "question": "What shift does Devansh Kapoor work on V-Blender VB-01?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0373",
+      "question": "What is the priority of the Conical Mill work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0374",
+      "question": "Which batch was completed first?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0375",
+      "question": "What is the priority of the Octagonal Blender work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0376",
+      "question": "Who manufactured Rapid Mixer Granulator RMG-01?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0377",
+      "question": "Show details for Conical Mill (Co-Mill).",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0378",
+      "question": "Which work orders are open?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0379",
+      "question": "What is the status of Rapid Mixer Granulator RMG-01?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0380",
+      "question": "Does Rahul Deshmukh operate Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0381",
+      "question": "What is Six Sigma in pharma?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0382",
+      "question": "What is the status of PB-FB7D2A13?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0383",
+      "question": "Show PM-ACT-001 details for Coating Pan.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0384",
+      "question": "Who is the supervisor for Inspection?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0385",
+      "question": "What SOP is SOP-CAP-SIFT-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0386",
+      "question": "What is the status of Fluid Bed Dryer at Blending?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0387",
+      "question": "What is process validation?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0388",
+      "question": "What is the yield reconciliation for PB-2A625B29?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0389",
+      "question": "Who is assigned to PM-BLD-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0390",
+      "question": "What IoT sensors monitor Conical Mill?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0391",
+      "question": "What is the difference between Conical Mill and Rapid Mixer Granulator?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0392",
+      "question": "What is the throughput of Dispensing on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0393",
+      "question": "What workstations are in Sifting / Milling?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0394",
+      "question": "What is the difference between preventive and corrective maintenance?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0395",
+      "question": "What happens if we skip Dispensing?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0396",
+      "question": "Who operates Sifter Station during Aarav's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0397",
+      "question": "What workstations are in Inspection?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0398",
+      "question": "What if Coating Pan fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0399",
+      "question": "Which batch was produced on the line with highest takt time?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0400",
+      "question": "Show audit logs for SOP-TAB-DISP-001.",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0401",
+      "question": "What is the priority of the Fluid Bed Dryer work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0402",
+      "question": "Compare Granulation and Blending efficiency.",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0403",
+      "question": "Is Karan Shah trained on Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0404",
+      "question": "What is the warranty status of Vibro Sifter?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0405",
+      "question": "Who needs to sign off on Inspection?",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0406",
+      "question": "What is the takt time of Granulation?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0407",
+      "question": "Which operator is assigned to Tablet Press Station?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0408",
+      "question": "What is the batch size limit at Compression?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0409",
+      "question": "What work orders are linked to PB-2A625B29?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0410",
+      "question": "What is the status of Octagonal Blender at Granulation?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0411",
+      "question": "What is the status of Fluid Bed Dryer?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0412",
+      "question": "What is the status of Rapid Mixer Granulator at Packaging?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0413",
+      "question": "What if Conical Mill needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0414",
+      "question": "Which stage is more efficient, Blending or Dispensing?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0415",
+      "question": "Is Rohit Verma trained on Octagonal Blender?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0416",
+      "question": "What is the description of Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0417",
+      "question": "What is the takt time of Packaging?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0418",
+      "question": "What change controls affect Packaging?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0419",
+      "question": "What is the difference between a plant and a line?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0420",
+      "question": "Which workstations belong to Drying?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0421",
+      "question": "What is the status of PB-7DC12B09?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0422",
+      "question": "What calibration is due for Vibro Sifter?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0423",
+      "question": "Is Vibro Sifter on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0424",
+      "question": "When was the last service for Conical Mill?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0425",
+      "question": "What workstations are in Dispensing?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0426",
+      "question": "Which is more efficient, Dispensing or Film Coating?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0427",
+      "question": "What machines are at RMG Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0428",
+      "question": "How many operators are trained on Octagonal Blender?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0429",
+      "question": "Which is more efficient, Inspection or Granulation?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0430",
+      "question": "How many batches are in Dispensing on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0431",
+      "question": "What is the status of Capsule Hopper?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0432",
+      "question": "What is the next PM date for Rapid Mixer Granulator?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0433",
+      "question": "What IPC results are linked to PB-B31DD5E6?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0434",
+      "question": "What happens if Coating Pan breaks down?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0435",
+      "question": "What SOP is SOP-TAB-INSP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0436",
+      "question": "What is the priority of the Rapid Mixer Granulator work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0437",
+      "question": "What stages are in Tablet Line A?",
+      "intent_hint": "line_stage"
+    },
+    {
+      "id": "Q0438",
+      "question": "What shift does Rahul Deshmukh work on Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0439",
+      "question": "How do I fix my car?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0440",
+      "question": "How many work orders exist?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0441",
+      "question": "What is the efficiency of Inspection?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0442",
+      "question": "What is the ROI of implementing MES?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0443",
+      "question": "What is the yield for PB-2A625B29?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0444",
+      "question": "Is Aarav Mehta assigned to Dispensing?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0445",
+      "question": "What is the best restaurant nearby?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0446",
+      "question": "Who operates the machine with the most maintenance events?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0447",
+      "question": "Is Fluid Bed Dryer used in Compression?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0448",
+      "question": "What equipment is at Sifter Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0449",
+      "question": "What is PM-RMG-001 for Tablet Press?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0450",
+      "question": "What SOP is SOP-CAP-GRAN-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0451",
+      "question": "What shift does Karan Shah work on Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0452",
+      "question": "What is the status of PM-CFM-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0453",
+      "question": "What is the takt time of Capsule Filling?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0454",
+      "question": "What shift does Priya Sharma work on Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0455",
+      "question": "Is Pallavi Joshi assigned to Drying?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0456",
+      "question": "What documentation is required by SOP-TAB-COAT-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0457",
+      "question": "Is Rapid Mixer Granulator assigned to Sifter Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0458",
+      "question": "What calibration is due for Tablet Press?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0459",
+      "question": "What is the status of PB-C4459A22?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0460",
+      "question": "What is the failure rate of V-Blender VB-01?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0461",
+      "question": "Is Tablet Press assigned to Blender Loading Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0462",
+      "question": "Which stage has the most workstations?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0463",
+      "question": "Who is Karan Shah?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0464",
+      "question": "What happens if we skip PM for Octagonal Blender?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0465",
+      "question": "What shift does Rahul Deshmukh work on Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0466",
+      "question": "Who manufactured Automatic Capsule Filling Machine?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0467",
+      "question": "Which work order has higher priority?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0468",
+      "question": "What is the takt time of Film Coating?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0469",
+      "question": "What shift does Pallavi Joshi work on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0470",
+      "question": "What is OEE?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0471",
+      "question": "What is the difference between Octagonal Blender and Tablet Press?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0472",
+      "question": "What is the takt time of Blending?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0473",
+      "question": "What SOP applies to Film Coating?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0474",
+      "question": "Does Rajesh Patel operate Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0475",
+      "question": "Does Pallavi Joshi operate Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0476",
+      "question": "What is the next PM date for Octagonal Blender?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0477",
+      "question": "What does SOP-TAB-COAT-001 say about Film Coating?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0478",
+      "question": "What parameters are in SOP-TAB-DISP-001 for Granulation?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0479",
+      "question": "Who is the Night Shift operator for Blender Loading Station?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0480",
+      "question": "What if Tablet Press fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0481",
+      "question": "What if Rapid Mixer Granulator needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0482",
+      "question": "Who manufactured Binder Prep Vessel?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0483",
+      "question": "What workstations are in Capsule Filling?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0484",
+      "question": "What happens if we skip PM for Coating Pan?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0485",
+      "question": "What machines are used in Blending?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0486",
+      "question": "What is Rahul Deshmukh's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0487",
+      "question": "Does Pallavi Joshi operate Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0488",
+      "question": "Is Drying currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0489",
+      "question": "Which machine needs the most maintenance?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0490",
+      "question": "Is Devansh Kapoor assigned to Packaging?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0491",
+      "question": "What is Karan Shah's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0492",
+      "question": "What workstations are in Compression?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0493",
+      "question": "What workstations are in Packaging?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0494",
+      "question": "What is the availability of Capsule Line B?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0495",
+      "question": "What is the location of Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0496",
+      "question": "What is the difference between Rapid Mixer Granulator and Tablet Press?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0497",
+      "question": "Is Coating Pan used in Drying?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0498",
+      "question": "What is PM-ACT-001 for Fluid Bed Dryer?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0499",
+      "question": "Show PM-RMG-001 details for Fluid Bed Dryer.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0500",
+      "question": "Show PM-FBD-001 details for Rapid Mixer Granulator.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0501",
+      "question": "Is Coating Pan used in Inspection?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0502",
+      "question": "What SOP is SOP-CAP-FILL-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0503",
+      "question": "Who manufactured Rapid Mixer Granulator?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0504",
+      "question": "Who operates Blender Loading Station during Pallavi's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0505",
+      "question": "What is the MTBF for Tablet Press?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0506",
+      "question": "What is the revision history of SOP-TAB-DISP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0507",
+      "question": "Tell me a joke",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0508",
+      "question": "What if Vibro Sifter fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0509",
+      "question": "What is the throughput of Compression on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0510",
+      "question": "What is Six Sigma in pharmaceutical context?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0511",
+      "question": "Who is Rahul Deshmukh?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0512",
+      "question": "What is the type of Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0513",
+      "question": "What is the MTTR for Fluid Bed Dryer?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0514",
+      "question": "What product is in PB-B31DD5E6?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0515",
+      "question": "What is the batch size for PB-339FBA28?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0516",
+      "question": "Is Tablet Press on Capsule Line B?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0517",
+      "question": "What shift does Rajesh Patel work on Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0518",
+      "question": "How do I implement lean manufacturing?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0519",
+      "question": "What are the latest FDA regulations?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0520",
+      "question": "What shift does Aarav Mehta work on V-Blender VB-01?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0521",
+      "question": "Show details for PM-ACT-001.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0522",
+      "question": "What SOP is SOP-CAP-DRY-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0523",
+      "question": "What machines are at Blender Loading Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0524",
+      "question": "What is a batch?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0525",
+      "question": "Who operates Tablet Press Station during Rohit's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0526",
+      "question": "What is the availability of Tablet Line A?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0527",
+      "question": "What is the failure rate of Tablet Press?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0528",
+      "question": "What is the shift schedule for Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0529",
+      "question": "What is the status of Cartoning Machine?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0530",
+      "question": "What is equipment?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0531",
+      "question": "What is the throughput of Compression?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0532",
+      "question": "What is the throughput of Granulation on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0533",
+      "question": "Is Tablet Press used in Packaging?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0534",
+      "question": "When was the last service for Rapid Mixer Granulator?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0535",
+      "question": "Is Aarav Mehta trained on V-Blender VB-01?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0536",
+      "question": "Which stage has the highest rejection rate?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0537",
+      "question": "What is the status of CAL-BAL-002?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0538",
+      "question": "How many batches are in Compression on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0539",
+      "question": "What is 7-3?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0540",
+      "question": "What happens if we skip PM for Vibro Sifter?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0541",
+      "question": "What machines are at Tablet Press Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0542",
+      "question": "What is the status of PM-CTM-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0543",
+      "question": "What SOP is SOP-TAB-INSP-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0544",
+      "question": "What work orders are linked to PB-56D9F1A2?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0545",
+      "question": "What is the capacity utilization of Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0546",
+      "question": "What SOP is SOP-TAB-BLD-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0547",
+      "question": "Show PM-BLD-001 details for V-Blender VB-01.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0548",
+      "question": "Which machine needs more maintenance?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0549",
+      "question": "What is PM-RMG-001 for Fluid Bed Dryer?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0550",
+      "question": "What is the vibration reading of Coating Pan?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0551",
+      "question": "Is V-Blender VB-01 on Capsule Line B?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0552",
+      "question": "What is the status of PM-AHU-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0553",
+      "question": "Get information about Tablet Press.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0554",
+      "question": "What machines are in Sifting / Milling?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0555",
+      "question": "What SOP is SOP-TAB-COAT-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0556",
+      "question": "What is the status of Conical Mill at Dispensing?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0557",
+      "question": "What is the status of Self-Adhesive Labeller?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0558",
+      "question": "What is the efficiency of Granulation?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0559",
+      "question": "Show the full record for PB-2A625B29.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0560",
+      "question": "What shift does Rohit Verma work on Octagonal Blender?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0561",
+      "question": "List workstations for Drying.",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0562",
+      "question": "How do I lose weight?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0563",
+      "question": "Which stage has more workstations?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0564",
+      "question": "What SOP is SOP-CAP-SIFT-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0565",
+      "question": "What is the future of Industry 4.0?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0566",
+      "question": "What approvals are pending?",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0567",
+      "question": "Get the purchase date of Vibro Sifter.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0568",
+      "question": "Who works at Blend Preparation Workstation?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0569",
+      "question": "What is the status of Fluid Bed Dryer at Compression?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0570",
+      "question": "What if Rapid Mixer Granulator fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0571",
+      "question": "What is a workstation?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0572",
+      "question": "Which is more efficient, Blending or Dispensing?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0573",
+      "question": "Is Priya Sharma trained on Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0574",
+      "question": "What is the next PM date for Coating Pan?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0575",
+      "question": "Show details for Rapid Mixer Granulator RMG-01.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0576",
+      "question": "What is the status of Conical Mill (Co-Mill)?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0577",
+      "question": "What is the status of V-Blender VB-01 at Granulation?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0578",
+      "question": "What shift does Priya Sharma work on Coating Pan?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0579",
+      "question": "What calibration is due for Conical Mill?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0580",
+      "question": "What is the capacity of Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0581",
+      "question": "Is Priya Sharma assigned to Compression?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0582",
+      "question": "Compare Capsule Line B and Tablet Line A.",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0583",
+      "question": "Is Compression currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0584",
+      "question": "What calibration is due for Rapid Mixer Granulator?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0585",
+      "question": "What if Octagonal Blender needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0586",
+      "question": "What machine is linked to PM-FBD-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0587",
+      "question": "Does Rohit Verma work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0588",
+      "question": "What SOP is SOP-TAB-COMP-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0589",
+      "question": "Show all open change controls.",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0590",
+      "question": "What is the fastest animal?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0591",
+      "question": "Is Karan Shah assigned to Drying?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0592",
+      "question": "Show details for Capsule Line B.",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0593",
+      "question": "Is Aarav Mehta trained on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0594",
+      "question": "How many operators are trained on V-Blender VB-01?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0595",
+      "question": "Who manufactured Rotary Tablet Press?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0596",
+      "question": "What does SOP-TAB-COAT-001 say about Granulation?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0597",
+      "question": "Is Octagonal Blender on Capsule Line B?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0598",
+      "question": "What happens if we skip PM for Rapid Mixer Granulator?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0599",
+      "question": "What shift does Karan Shah work on Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0600",
+      "question": "What is machine learning?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0601",
+      "question": "What is the difference between a machine and equipment?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0602",
+      "question": "What is the status of CAL-THM-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0603",
+      "question": "What does SOP-TAB-DISP-001 say about Granulation?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0604",
+      "question": "What is the status of PM-LAF-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0605",
+      "question": "What is the failure rate of Coating Pan?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0606",
+      "question": "Is Octagonal Blender on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0607",
+      "question": "Which batch was produced on Capsule Line B?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0608",
+      "question": "What is the process for Drying?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0609",
+      "question": "What is a plant?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0610",
+      "question": "Show PM-TBP-001 details for Fluid Bed Dryer.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0611",
+      "question": "What is the throughput rate of Capsule Line B?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0612",
+      "question": "Is Conical Mill assigned to Coating Pan Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0613",
+      "question": "What is the vibration reading of Octagonal Blender?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0614",
+      "question": "Who is Rohit Verma?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0615",
+      "question": "Who does Aarav Mehta report to?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0616",
+      "question": "What SOP is SOP-CAP-BLD-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0617",
+      "question": "Show the full record for PB-56D9F1A2.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0618",
+      "question": "What parameters are in SOP-TAB-COMP-001 for Packaging?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0619",
+      "question": "What is the priority of the Coating Pan work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0620",
+      "question": "Does Devansh Kapoor operate Octagonal Blender?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0621",
+      "question": "Is V-Blender VB-01 used in Packaging?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0622",
+      "question": "What is the failure rate of Fluid Bed Dryer?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0623",
+      "question": "What happens if we defer PM for V-Blender VB-01 by 2 weeks?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0624",
+      "question": "Show details for Rotary Tablet Press.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0625",
+      "question": "What is the role of Karan Shah?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0626",
+      "question": "What is a worker?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0627",
+      "question": "Who manufactured Cartoning Machine?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0628",
+      "question": "How many workstations are on Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0629",
+      "question": "What SOP is SOP-TAB-COAT-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0630",
+      "question": "Which worker is assigned to Film Coating?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0631",
+      "question": "What is the throughput of Drying on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0632",
+      "question": "How many batches are in Inspection on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0633",
+      "question": "Compare GMP and GLP standards",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0634",
+      "question": "Who operates RMG Station during Aarav's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0635",
+      "question": "What is Aarav Mehta's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0636",
+      "question": "What SOP is SOP-CAP-DRY-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0637",
+      "question": "What is the OEE of Tablet Line A this week?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0638",
+      "question": "What is the throughput of Packaging on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0639",
+      "question": "What is a CAPA?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0640",
+      "question": "What model is Octagonal Blender?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0641",
+      "question": "What cleaning records are linked to Blender Loading Station?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0642",
+      "question": "Which is more efficient, Inspection or Blending?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0643",
+      "question": "What happens if Octagonal Blender breaks down?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0644",
+      "question": "What are the approval requirements for Compression SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0645",
+      "question": "What is the next maintenance date for Tablet Press?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0646",
+      "question": "What is the MTBF for Coating Pan?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0647",
+      "question": "Is Dispensing currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0648",
+      "question": "What SOP governs the machine at the Blending workstation?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0649",
+      "question": "Does Karan Shah operate Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0650",
+      "question": "What is the status of PB-B31DD5E6 on Tablet Line A?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0651",
+      "question": "Show details for Blister Packing Machine.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0652",
+      "question": "What machines are in Sizing / Milling (post-dry)?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0653",
+      "question": "When was the last maintenance for Conical Mill?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0654",
+      "question": "What is the throughput of Film Coating on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0655",
+      "question": "Can you sing a song?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0656",
+      "question": "Does Priya Sharma operate Coating Pan?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0657",
+      "question": "Who does Rohit Verma report to?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0658",
+      "question": "What is PM-BLD-001 for Octagonal Blender?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0659",
+      "question": "Does Devansh Kapoor operate Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0660",
+      "question": "What is the status of PM-FBD-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0661",
+      "question": "Who operates RMG Station during Rahul's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0662",
+      "question": "What movies are playing tonight?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0663",
+      "question": "What SOP is SOP-TAB-DISP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0664",
+      "question": "What is the status of PB-C9819F91?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0665",
+      "question": "What is the status of Vibro Sifter at Granulation?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0666",
+      "question": "What is the next PM date for Fluid Bed Dryer?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0667",
+      "question": "Is Devansh Kapoor assigned to Film Coating?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0668",
+      "question": "What training does Devansh Kapoor have?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0669",
+      "question": "What is MTBF?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0670",
+      "question": "Is Granulation currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0671",
+      "question": "Is Karan Shah assigned to Inspection?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0672",
+      "question": "What approval steps are needed for CC-2026-0008?",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0673",
+      "question": "What machines are in Inspection?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0674",
+      "question": "What shift does Devansh Kapoor work on Octagonal Blender?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0675",
+      "question": "Who operates Tablet Press Station during Rajesh's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0676",
+      "question": "What machines are at Sifter Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0677",
+      "question": "What line is Rahul Deshmukh on?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0678",
+      "question": "How many operators work on Capsule Line B?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0679",
+      "question": "What is the plan adherence for Capsule Line B this shift?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0680",
+      "question": "What is the cycle time for Blending?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0681",
+      "question": "What if Conical Mill fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0682",
+      "question": "Which is more efficient, Film Coating or Compression?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0683",
+      "question": "Who does Rajesh Patel report to?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0684",
+      "question": "What is the vibration reading of V-Blender VB-01?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0685",
+      "question": "What is a batch record?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0686",
+      "question": "What shift does Karan Shah work on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0687",
+      "question": "Is Aarav Mehta assigned to Packaging?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0688",
+      "question": "What shift does Aarav Mehta work on Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0689",
+      "question": "Show details for Self-Adhesive Labeller.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0690",
+      "question": "What work orders are open for Tablet Press?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0691",
+      "question": "What is the takt time of Sifting / Milling?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0692",
+      "question": "What is the status of PB-5A1BC1C9?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0693",
+      "question": "What SOP governs the Compression process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0694",
+      "question": "How many batches are in Blending on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0695",
+      "question": "What is the vibration reading of Conical Mill?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0696",
+      "question": "What calibration is due for Coating Pan?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0697",
+      "question": "What is a deviation?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0698",
+      "question": "What is the difference between Coating Pan and Coating Pan?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0699",
+      "question": "What SOP is SOP-TAB-BLD-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0700",
+      "question": "Is Rahul Deshmukh trained on Tablet Press?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0701",
+      "question": "What is the status of Coating Pan at Drying?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0702",
+      "question": "What is 10/2?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0703",
+      "question": "Does Priya Sharma operate Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0704",
+      "question": "What is 3+3?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0705",
+      "question": "What is the priority of PM-RMG-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0706",
+      "question": "What is the difference between a work order and a change control?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0707",
+      "question": "What is a equipment?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0708",
+      "question": "What is the priority of the Tablet Press work order?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0709",
+      "question": "Is V-Blender VB-01 on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0710",
+      "question": "Get the warranty status of Tablet Press.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0711",
+      "question": "How do I bake a cake?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0712",
+      "question": "What is the weather today?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0713",
+      "question": "What IoT sensors monitor V-Blender VB-01?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0714",
+      "question": "Does Rohit Verma operate Rapid Mixer Granulator?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0715",
+      "question": "When was the last service for V-Blender VB-01?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0716",
+      "question": "What change controls are pending approval?",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0717",
+      "question": "What is the meaning of OEE in manufacturing?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0718",
+      "question": "What is the status of PB-ACEE882E?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0719",
+      "question": "Show details for Capsule Hopper.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0720",
+      "question": "Who operates the machine with the most maintenance?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0721",
+      "question": "How many batches are in Blending on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0722",
+      "question": "What is a stage?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0723",
+      "question": "What if Vibro Sifter needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0724",
+      "question": "What happens if Vibro Sifter breaks down?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0725",
+      "question": "What is the difference between Conical Mill and Vibro Sifter?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0726",
+      "question": "What is the difference between Blending and Granulation?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0727",
+      "question": "What work orders are open for Vibro Sifter?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0728",
+      "question": "Does Rajesh Patel operate Octagonal Blender?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0729",
+      "question": "What happens if demand increases by 30%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0730",
+      "question": "Is Priya Sharma assigned to Granulation?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0731",
+      "question": "Who is Aarav Mehta?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0732",
+      "question": "What is the changeover time for Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0733",
+      "question": "Show the maintenance schedule for Coating Pan.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0734",
+      "question": "What is PM-TBP-001 for Coating Pan?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0735",
+      "question": "Show the full record for PB-1239A463.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0736",
+      "question": "Show all work orders for V-Blender VB-01.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0737",
+      "question": "Is Rahul Deshmukh assigned to Inspection?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0738",
+      "question": "Who manages Tablet Line A?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0739",
+      "question": "What documentation is required for Film Coating?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0740",
+      "question": "What is the status of Auto Coater / Perforated Pan?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0741",
+      "question": "How many operators are trained on the machine with highest MTBF?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0742",
+      "question": "What machines are at Coating Pan Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0743",
+      "question": "What maintenance is due for the machine at the busiest workstation?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0744",
+      "question": "What SOP governs the Film Coating process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0745",
+      "question": "What SOP is SOP-CAP-INSP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0746",
+      "question": "What SOP governs the Drying process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0747",
+      "question": "What IoT sensors are on Vibro Sifter?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0748",
+      "question": "What is the difference between Coating Pan and Fluid Bed Dryer?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0749",
+      "question": "What SOP applies to Dispensing?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0750",
+      "question": "What SOP is SOP-TAB-SIFT-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0751",
+      "question": "What is PM-FBD-001 for Conical Mill?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0752",
+      "question": "What are the approval requirements for Film Coating SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0753",
+      "question": "Show details for Rapid Mixer Granulator.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0754",
+      "question": "What are the approval requirements for Drying SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0755",
+      "question": "Is Vibro Sifter used in Blending?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0756",
+      "question": "Who is the operator for Sifter Station?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0757",
+      "question": "What does SOP-TAB-COMP-001 say about Compression?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0758",
+      "question": "What happens if demand increases by 50%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0759",
+      "question": "What does SOP-TAB-DISP-001 say about Drying?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0760",
+      "question": "What is the OEE of Capsule Line B this week?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0761",
+      "question": "Is Rohit Verma trained on Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0762",
+      "question": "Does Aarav Mehta operate Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0763",
+      "question": "What is Rajesh Patel's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0764",
+      "question": "What is GMP?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0765",
+      "question": "What is a line?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0766",
+      "question": "What is the status of PB-2A625B29 on Capsule Line B?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0767",
+      "question": "What is Rohit Verma's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0768",
+      "question": "Does Priya Sharma operate Fluid Bed Dryer?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0769",
+      "question": "What maintenance is due for Coating Pan?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0770",
+      "question": "Show audit logs for SOP-TAB-BLD-001.",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0771",
+      "question": "What are the approval requirements for Inspection SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0772",
+      "question": "Tell me about the history of pharma",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0773",
+      "question": "What SOP is SOP-TAB-DRY-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0774",
+      "question": "What is the efficiency of Dispensing?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0775",
+      "question": "What is the status of PM-RMG-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0776",
+      "question": "Which line is more efficient?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0777",
+      "question": "Is Fluid Bed Dryer assigned to Tablet Press Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0778",
+      "question": "What parts were requisitioned for PM-ACT-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0779",
+      "question": "How does IoT work in manufacturing?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0780",
+      "question": "What IoT sensors monitor Vibro Sifter?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0781",
+      "question": "Who operates Coating Pan Station during Devansh's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0782",
+      "question": "What are the approval requirements for Granulation SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0783",
+      "question": "Show the timeline for PB-2A625B29.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0784",
+      "question": "Who does Pallavi Joshi report to?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0785",
+      "question": "Show PM-TBP-001 details for Coating Pan.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0786",
+      "question": "What SOP governs the Granulation process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0787",
+      "question": "What is the capital of France?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0788",
+      "question": "What is the MTBF for Vibro Sifter?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0789",
+      "question": "What equipment usage is in PB-339FBA28?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0790",
+      "question": "Which machine has the most breakdowns?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0791",
+      "question": "What happens if Fluid Bed Dryer breaks down?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0792",
+      "question": "Is Conical Mill used in Inspection?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0793",
+      "question": "What change controls affect the stage with lowest efficiency?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0794",
+      "question": "Which is more efficient, Inspection or Drying?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0795",
+      "question": "What is the takt time of Capsule Line B?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0796",
+      "question": "Does Rahul Deshmukh work on Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0797",
+      "question": "What is the MTBF for Fluid Bed Dryer?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0798",
+      "question": "When was the last service for Vibro Sifter?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0799",
+      "question": "What are the approval requirements for Dispensing SOP?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0800",
+      "question": "What is the plan adherence for Capsule Line B?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0801",
+      "question": "What workstations are on Tablet Line A?",
+      "intent_hint": "line_workstation"
+    },
+    {
+      "id": "Q0802",
+      "question": "What SOP is SOP-TAB-BLD-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0803",
+      "question": "What is the annual output of Capsule Line B?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0804",
+      "question": "What is the status of Coating Pan at Inspection?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0805",
+      "question": "Does Rohit Verma operate Octagonal Blender?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0806",
+      "question": "What is the vibration reading of Rapid Mixer Granulator?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0807",
+      "question": "What is the root cause of PM-ACT-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0808",
+      "question": "What calibration is due for Fluid Bed Dryer?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0809",
+      "question": "Show PM-ACT-001 details for Fluid Bed Dryer.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0810",
+      "question": "What if we increase Conical Mill speed by 15%?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0811",
+      "question": "What environmental limits are in SOP-TAB-DISP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0812",
+      "question": "Show PM-RMG-001 details for Tablet Press.",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0813",
+      "question": "What is a fishbone diagram?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0814",
+      "question": "Who needs to sign off before Octagonal Blender can resume?",
+      "intent_hint": "quality_approval"
+    },
+    {
+      "id": "Q0815",
+      "question": "Is Rahul Deshmukh trained on Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0816",
+      "question": "What happens if we skip PM for Tablet Press?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0817",
+      "question": "What is the lifecycle of Tablet Press?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0818",
+      "question": "Get the warranty status of Coating Pan.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0819",
+      "question": "Is Vibro Sifter used in Granulation?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0820",
+      "question": "What product is in PB-1239A463?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0821",
+      "question": "Is Rohit Verma assigned to Dispensing?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0822",
+      "question": "What is the status of V-Blender VB-01 at Packaging?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0823",
+      "question": "Who operates Blender Loading Station during Devansh's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0824",
+      "question": "What is the status of PB-339FBA28?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0825",
+      "question": "What SOP is SOP-CAP-POL-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0826",
+      "question": "What cleaning records are linked to Tablet Press Station?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0827",
+      "question": "What if we add a second Rapid Mixer Granulator?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0828",
+      "question": "What is the difference between a line and a stage?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0829",
+      "question": "What does SOP-TAB-BLD-001 say about Packaging?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0830",
+      "question": "Is Blending currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0831",
+      "question": "Is Conical Mill used in Dispensing?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0832",
+      "question": "Does Rohit Verma operate Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0833",
+      "question": "What happens if we skip PM for V-Blender VB-01?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0834",
+      "question": "What SOP applies to the stage with most work orders?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0835",
+      "question": "What is a root cause analysis?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0836",
+      "question": "When was the last service for Coating Pan?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0837",
+      "question": "Does Rajesh Patel operate Vibro Sifter?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0838",
+      "question": "What SOP is SOP-TAB-GRAN-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0839",
+      "question": "Can you write a poem?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0840",
+      "question": "What is a SOP?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0841",
+      "question": "Show the full record for PB-339FBA28.",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0842",
+      "question": "What are the cleaning requirements per SOP-TAB-GRAN-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0843",
+      "question": "What is the status of PM-BLD-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0844",
+      "question": "What SOP is SOP-CAP-INSP-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0845",
+      "question": "Describe V-Blender VB-01.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0846",
+      "question": "What is the MTBF for Conical Mill?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0847",
+      "question": "Is Coating Pan on Tablet Line A?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0848",
+      "question": "Is Vibro Sifter on Capsule Line B?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0849",
+      "question": "What if we increase the speed of Rapid Mixer Granulator?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0850",
+      "question": "What machines are in Inspection / Dedust / Polish?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0851",
+      "question": "What is the difference between Tablet Press and Coating Pan?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0852",
+      "question": "How many workstations are in Inspection?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0853",
+      "question": "When was the last service for Octagonal Blender?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0854",
+      "question": "What parameters are in SOP-TAB-GRAN-001 for Granulation?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0855",
+      "question": "What is the status of PB-56D9F1A2?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0856",
+      "question": "What is the difference between Rapid Mixer Granulator and Conical Mill?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0857",
+      "question": "What are the approved steps for Compression?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0858",
+      "question": "What is the status of PB-EFEC838C?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0859",
+      "question": "What is the difference between Octagonal Blender and Conical Mill?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0860",
+      "question": "What happens if we add a third shift?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0861",
+      "question": "How many batches are in Compression on Capsule Line B?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0862",
+      "question": "What calibration records are due for Octagonal Blender?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0863",
+      "question": "What is the maintenance history of Rapid Mixer Granulator?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0864",
+      "question": "Who manages the line with the most batches?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0865",
+      "question": "Who operates Coating Pan Station during Karan's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0866",
+      "question": "What machines are in Compression?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0867",
+      "question": "What is the maintenance history of Fluid Bed Dryer?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0868",
+      "question": "Who is Priya Sharma?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0869",
+      "question": "What is the status of Conical Mill at Inspection?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0870",
+      "question": "What if V-Blender VB-01 needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0871",
+      "question": "What work orders are open for V-Blender VB-01?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0872",
+      "question": "When was the last service for Fluid Bed Dryer?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0873",
+      "question": "What SOP is SOP-CAP-SZ-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0874",
+      "question": "What is the status of PB-339FBA28 on Tablet Line A?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0875",
+      "question": "What is the difference between Tablet Press and Vibro Sifter?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0876",
+      "question": "What is the difference between the Tablet Line A and Capsule Line B?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0877",
+      "question": "What SOP is SOP-TAB-SIFT-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0878",
+      "question": "Show me the details of Coating Pan.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0879",
+      "question": "What are the approval roles for SOP-TAB-DISP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0880",
+      "question": "What is the availability trend for Compression?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0881",
+      "question": "What is the takt time of Inspection / Dedust / Polish?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0882",
+      "question": "Is Rapid Mixer Granulator used in Packaging?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0883",
+      "question": "What shift does Rohit Verma work on Conical Mill?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0884",
+      "question": "What IPC results are for PB-56D9F1A2?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0885",
+      "question": "What is the scrap rate for Capsule Line B?",
+      "intent_hint": "production_kpi"
+    },
+    {
+      "id": "Q0886",
+      "question": "What is PM-FBD-001 for Rapid Mixer Granulator?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0887",
+      "question": "What work orders are linked to the batch currently in Compression?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0888",
+      "question": "What is Devansh Kapoor's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0889",
+      "question": "What is the throughput of Drying on Tablet Line A?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0890",
+      "question": "What is the vibration reading of Tablet Press?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0891",
+      "question": "Show details for Automatic Capsule Filling Machine.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0892",
+      "question": "Show details for Tablet Line A.",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0893",
+      "question": "What SOP is SOP-TAB-DISP-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0894",
+      "question": "What SOP is SOP-TAB-DISP-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0895",
+      "question": "Which is more efficient, Compression or Granulation?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0896",
+      "question": "Get the warranty status of Fluid Bed Dryer.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0897",
+      "question": "Is Film Coating currently active?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0898",
+      "question": "What is the failure rate of Vibro Sifter?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0899",
+      "question": "What deviations are recorded for PB-1239A463?",
+      "intent_hint": "batch_record"
+    },
+    {
+      "id": "Q0900",
+      "question": "What is the serial number of Conical Mill?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0901",
+      "question": "What is the calibration status of Rapid Mixer Granulator?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0902",
+      "question": "What is the dwell time at Inspection?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0903",
+      "question": "Does Rajesh Patel work on Tablet Line A?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0904",
+      "question": "What is the expected completion for PM-RMG-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0905",
+      "question": "Which line has higher takt time?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0906",
+      "question": "What is the average downtime per breakdown?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0907",
+      "question": "What SOP is SOP-TAB-PKG-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0908",
+      "question": "Does Pallavi Joshi work on Capsule Line B?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0909",
+      "question": "What is Pallavi Joshi's role?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0910",
+      "question": "What is the difference between a worker and an operator?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0911",
+      "question": "What version is SOP-TAB-DISP-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0912",
+      "question": "What is the status of PM-BPM-001?",
+      "intent_hint": "work_order_query"
+    },
+    {
+      "id": "Q0913",
+      "question": "What is the difference between Fluid Bed Dryer and Coating Pan?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0914",
+      "question": "Which line has higher throughput?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0915",
+      "question": "What SOP governs the Dispensing process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0916",
+      "question": "Show details for Auto Coater / Perforated Pan.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0917",
+      "question": "What if Coating Pan needs emergency repair?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0918",
+      "question": "What machines are in Polishing / Dedust?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0919",
+      "question": "What is the takt time of Inspection?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0920",
+      "question": "What is the takt time of Drying (FBD)?",
+      "intent_hint": "stage"
+    },
+    {
+      "id": "Q0921",
+      "question": "What is the status of Tablet Press at Packaging?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0922",
+      "question": "Is Priya Sharma trained on Coating Pan?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0923",
+      "question": "Which batch was produced on Tablet Line A?",
+      "intent_hint": "cross_cutting"
+    },
+    {
+      "id": "Q0924",
+      "question": "What if V-Blender VB-01 fails during production?",
+      "intent_hint": "simulation"
+    },
+    {
+      "id": "Q0925",
+      "question": "Who manages Capsule Line B?",
+      "intent_hint": "line"
+    },
+    {
+      "id": "Q0926",
+      "question": "Is Octagonal Blender used in Compression?",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0927",
+      "question": "Who is Devansh Kapoor?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0928",
+      "question": "What is a production line?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0929",
+      "question": "What SOP governs the Packaging process?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0930",
+      "question": "What is 21 CFR Part 11?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0931",
+      "question": "What is the difference between Drying and Compression?",
+      "intent_hint": "disambiguation"
+    },
+    {
+      "id": "Q0932",
+      "question": "What is the meaning of OEE in the context of manufacturing KPIs for Tablet Line A?",
+      "intent_hint": "adversarial"
+    },
+    {
+      "id": "Q0933",
+      "question": "Is Coating Pan assigned to RMG Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0934",
+      "question": "What is a production KPI?",
+      "intent_hint": "knowledge_base"
+    },
+    {
+      "id": "Q0935",
+      "question": "What SOP is SOP-TAB-SIFT-002?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0936",
+      "question": "What constraints are defined in SOP-TAB-GRAN-001?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0937",
+      "question": "What is the status of CC-2026-0008?",
+      "intent_hint": "change_control"
+    },
+    {
+      "id": "Q0938",
+      "question": "Who operates RMG Station during Priya's shift?",
+      "intent_hint": "worker"
+    },
+    {
+      "id": "Q0939",
+      "question": "What is the failure rate of Conical Mill?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0940",
+      "question": "Is Fluid Bed Dryer assigned to FBD Loading Station?",
+      "intent_hint": "stage_workstation"
+    },
+    {
+      "id": "Q0941",
+      "question": "What SOP is SOP-TAB-COAT-003?",
+      "intent_hint": "sop_compliance"
+    },
+    {
+      "id": "Q0942",
+      "question": "What is the MTBF for V-Blender VB-01?",
+      "intent_hint": "maintenance"
+    },
+    {
+      "id": "Q0943",
+      "question": "Get the warranty status of Rapid Mixer Granulator.",
+      "intent_hint": "asset_management"
+    },
+    {
+      "id": "Q0944",
+      "question": "Is Rajesh Patel trained on Octagonal Blender?",
+      "intent_hint": "worker"
+    }
+  ]
+}

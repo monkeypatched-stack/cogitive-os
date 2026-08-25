@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: mongodb API
+  description: MongoDB document database driver for CRUD operations and change streams
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/mongodb
+  description: Capability endpoint
+paths:
+  /{collection}/find:
+    read:
+      summary: Query documents
+      operationId: mongodb_find
+      parameters:
+      - name: collection
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: filter
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: projection
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /{collection}/insert:
+    create:
+      summary: Insert a document
+      operationId: mongodb_insert_one
+      parameters:
+      - name: collection
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: document
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /{collection}/update:
+    update:
+      summary: Update a document
+      operationId: mongodb_update_one
+      parameters:
+      - name: collection
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: filter
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: update
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: upsert
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /{collection}/delete:
+    delete:
+      summary: Delete a document
+      operationId: mongodb_delete_one
+      parameters:
+      - name: collection
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: filter
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

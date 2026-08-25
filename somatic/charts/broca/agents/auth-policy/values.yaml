@@ -1,0 +1,117 @@
+agent:
+  name: auth-policy
+  id: agent-ztaa-auth-001
+  kind: ETASSAgent
+  version: "1.0.0"
+  status: active
+  description: "Authentication and authorization enforcement agent — validates SPIFFE identity, enforces RBAC scopes, evaluates OPA policy, derives obligations, and emits audit events for every inter-agent interaction"
+  authored_by: "Prashun Javeri"
+  approved_by: "Prashun Javeri"
+
+identity:
+  role: "Auth Policy Enforcer"
+  system_prompt: "You are the authentication and authorization gatekeeper for MonkeyBrain. You implement Zero Trust Agent Architecture: every inter-agent request must be explicitly authenticated, authorized, and audited. Never trust implicitly. Validate SPIFFE identity, enforce RBAC scopes, consult OPA, and return obligations to the caller."
+
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.0
+  max_tokens: 1024
+
+triggers:
+  - type: event
+    source: nats
+    subject: "indus.auth.evaluate"
+
+workflow:
+  mode: sequential
+  steps:
+    - id: validate_principal
+      action: validate
+      depends_on: []
+      on_failure: abort
+    - id: check_spiffe_identity
+      action: verify
+      depends_on: [validate_principal]
+      on_failure: abort
+    - id: enforce_scopes
+      action: enforce
+      depends_on: [check_spiffe_identity]
+      on_failure: abort
+    - id: build_dynamic_context
+      action: compute
+      depends_on: [enforce_scopes]
+      on_failure: continue
+    - id: evaluate_opa
+      action: query
+      depends_on: [build_dynamic_context]
+      on_failure: continue
+    - id: derive_obligations
+      action: derive
+      depends_on: [evaluate_opa]
+      on_failure: continue
+    - id: emit_audit
+      action: emit_event
+      depends_on: [derive_obligations]
+      on_failure: continue
+
+fallback:
+  strategy: deny_and_log
+  escalation_topic: "indus.auth.escalation"
+
+retrieval:
+  pipeline: []
+
+tools:
+  - name: opa_client
+    type: cerebellum_capability
+    description: "Query OPA policy engine for authorization decisions"
+    schema: "cerebellum/capabilities/security/opa_client.py"
+  - name: nats_audit
+    type: cerebellum_capability
+    description: "Publish audit events to indus.audit.queue"
+    schema: "cerebellum/capabilities/security/nats_audit.py"
+  - name: spire_client
+    type: cerebellum_capability
+    description: "Verify SPIFFE workload identity via SPIRE"
+    schema: "cerebellum/capabilities/security/spire_client.py"
+
+orchestration:
+  mode: sequential
+  max_iterations: 1
+  parallel_tool_calls: false
+  tool_call_timeout_ms: 2000
+
+guardrails:
+  require_confirmation: []
+
+routing:
+  strategy: rule_based
+  fallback_agent: ""
+  agents: []
+
+aggregation:
+  strategy: merge
+  conflict_resolution: deny_on_conflict
+
+memory:
+  backend: redis
+  ttl_seconds: 300
+  scope: request
+
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: "http://otel-collector:4317"
+
+retry:
+  max_attempts: 1
+  backoff_strategy: none
+  base_delay_ms: 0
+
+security:
+  principal_required: true
+  audit_every_decision: true
+  opa_policy_path: "agent/mesh/allow"
+  spiffe_validation: true
+  mtls_preferred: true

@@ -1,0 +1,32 @@
+name: energy_utilities
+version: "0.1.0"
+description: "Energy and utilities bounded context — grid monitoring, asset management, outage response, maintenance"
+bounded_context:
+  name: energy_utilities
+  aggregates:
+    - GridAsset
+    - Outage
+    - MaintenanceSchedule
+    - EnergyMeter
+    - Substation
+  entities:
+    - GridAsset
+    - Outage
+    - MaintenanceSchedule
+    - EnergyMeter
+    - Substation
+    - Transformer
+    - PowerLine
+  value_objects:
+    - AssetStatus
+    - OutageSeverity
+    - MaintenanceType
+    - EnergyReading
+  events:
+    - OutageDetected
+    - OutageResolved
+    - MaintenanceScheduled
+    - MaintenanceCompleted
+    - AssetInspected
+    - EnergyMeterRead
+    - GridLoadBalanced

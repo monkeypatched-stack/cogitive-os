@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monkeybrain-sync"
+version = "1.0.0"
+description = "MonkeyBrain Sync — Edge/cloud synchronization"
+readme = "README.md"
+license = { text = "Proprietary" }
+requires-python = ">=3.11"
+authors = [{ name = "Prashun Javeri" }]
+keywords = ["edge", "cloud", "sync", "federation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+dependencies = []
+
+[tool.setuptools]
+packages = ["sync"]
+
+[tool.setuptools.package-dir]
+sync = "."

@@ -1,0 +1,50 @@
+workload: spec_lifecycle
+goal: Manage the full lifecycle of ETASS specifications in the monkeybrain-spec repository
+domain: software_engineering
+bounded_context: source_control
+aggregate: repository
+entity: commit
+value_object: branch_name
+reasoning: chain_of_thought
+
+constraints:
+  - Commit messages must follow Conventional Commits format (type(scope)!: description)
+  - Never commit credentials, API keys, or environment secrets
+  - Spec files must be valid YAML before staging
+  - Branch names must be kebab-case and prefixed with feat/, fix/, or chore/
+  - Pull before push to prevent non-fast-forward rejections
+  - Do not force-push to main or release branches
+  - Each commit must represent a single logical change to the spec set
+  - Stash uncommitted changes before branch operations
+
+evidence:
+  - soma status output shows current working-tree state
+  - soma diff shows exact line-level changes to YAML specs
+  - soma log shows commit history and message patterns
+  - CI/CD validates YAML schema on push
+  - ETASSSpec.from_yaml() confirms each spec is parseable before commit
+
+success_criteria:
+  - All staged files pass ETASSSpec schema validation
+  - Commit message is ≤72 characters and conventional-commit compliant
+  - Remote is up to date after push (exit code 0)
+  - No merge conflicts in the working tree
+  - Working tree is clean after sync
+
+outputs:
+  - commit_sha: the SHA of the created commit
+  - message: the generated or provided commit message
+  - branch: the active branch name
+  - sync_status: pushed | nothing_to_commit | conflict
+
+policies:
+  - POLICY_SPEC_VALID: all YAML files must parse as valid ETASSSpec before commit
+  - POLICY_NO_SECRETS: never stage .env files or files containing API keys
+  - "POLICY_CONVENTIONAL_COMMITS: message must match ^(feat|fix|chore|docs|refactor|test|ci)\\(?[a-z_]*\\)?!?: .+"
+  - POLICY_PULL_FIRST: always pull from remote before committing to avoid conflicts
+
+constitutions:
+  - SOMA spec repository is the source of truth for all ETASS workload definitions
+  - Spec changes drive agent behavior — treat spec commits with the same rigor as code commits
+  - Every reasoning strategy, constraint, and success criterion must be intentional and testable
+  - The spec lifecycle is itself an ETASS workload and must be governed by the same policies

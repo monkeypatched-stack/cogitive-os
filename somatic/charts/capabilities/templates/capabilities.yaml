@@ -1,0 +1,79 @@
+---
+apiVersion: capability.agentos.io/v1
+kind: Capability
+metadata:
+  name: {{ values.capability.name }}
+  namespace: default
+  labels:
+    app.kubernetes.io/name: {{ values.capability.name }}
+    app.kubernetes.io/version: {{ values.capability.version }}
+    app.kubernetes.io/component: capability
+    app.kubernetes.io/managed-by: Soma
+spec:
+  id: {{ values.capability.id }}
+  name: {{ values.capability.name }}
+  platform: {{ values.capability.platform }}
+  description: {{ values.capability.description }}
+  version: {{ values.capability.version }}
+  status: {{ values.capability.status }}
+
+  authored_by: {{ values.capability.authored_by }}
+  approved_by: {{ values.capability.approved_by }}
+  effective_date: {{ values.capability.effective_date }}
+  review_date: {{ values.capability.review_date }}
+
+  module_id: {{ values.capability.module_id }}
+  module_name: {{ values.capability.module_name }}
+  plant_id: {{ values.capability.plant_id }}
+  line_id: {{ values.capability.line_id }}
+  stage_id: {{ values.capability.stage_id }}
+
+  tags:
+    {% for tag in values.capability.tags %}
+    - {{ tag }}
+    {% endfor %}
+
+  definition:
+    auth:
+      type: {{ values.auth.type }}
+
+    endpoint:
+      base_url: {{ values.endpoint.base_url }}
+      protocol: {{ values.endpoint.protocol }}
+
+    operations:
+      {% for op in values.operations %}
+      - name: {{ op.name }}
+        method: {{ op.method }}
+        path: {{ op.path }}
+        description: {{ op.description }}
+        required_params: {{ op.required_params }}
+        optional_params: {{ op.optional_params }}
+      {% endfor %}
+
+    tests:
+      test_scenarios:
+        {% for s in values.tests.test_scenarios %}
+        - {{ s }}
+        {% endfor %}
+
+---
+apiVersion: capability.agentos.io/v1
+kind: CapabilityCodeGenJob
+metadata:
+  name: {{ values.capability.name }}-codegen
+  namespace: default
+spec:
+  capability_id: {{ values.capability.id }}
+  target_language: python
+  base_class: Capability
+  include_tests: true
+  include_docs: true
+  output_format: module
+  codegen_config:
+    model_module: "models.capability"
+    runtime_module: "src.cerebellum.capabilities.{{ values.capability.name }}"
+    registry_auto_register: true
+  approval_chain:
+    - reviewer: {{ values.capability.approved_by }}
+      stage: cingulate-review

@@ -1,0 +1,111 @@
+module:
+  name: work-order-api
+  description: Work order management for maintenance and operations
+preamble:
+  statement: You are a senior software architect generating a production-grade FastAPI
+    service for Work order management for maintenance and operations. The service
+    is structured around Domain-Driven Design with a WorkOrder aggregate root, entities
+    [Task, Assignment, Attachment], and value objects [WorkOrderNumber, Priority,
+    Status, Location, ScheduledWindow]. Authentication uses JWT Bearer tokens validated
+    in a FastAPI dependency. All requests are structured-logged through the Lemon
+    logger with correlation-ID propagation. Errors are captured in Sentry via a global
+    middleware. All inbound/outbound spans are emitted via OpenTelemetry middleware
+    to the Lemon collector.
+invariants:
+- id: WO-INV-001
+  rule: number_unique
+  statement: WorkOrderNumber must be globally unique and immutable after creation.
+  severity: critical
+  rejection: REJECTED — Duplicate or mutated WorkOrderNumber.
+- id: WO-INV-002
+  rule: must_be_assigned_before_start
+  statement: A WorkOrder must have at least one Assignment before transitioning to
+    In Progress.
+  severity: critical
+  rejection: REJECTED — WorkOrder started without assignment.
+- id: WO-INV-003
+  rule: completed_requires_all_tasks_done
+  statement: A WorkOrder may only be completed when all its Tasks are in a terminal
+    state.
+  severity: critical
+  rejection: REJECTED — WorkOrder completed with open tasks.
+- id: WO-INV-004
+  rule: cancelled_not_restartable
+  statement: A cancelled WorkOrder must never transition back to any active state.
+  severity: high
+  rejection: REJECTED — Cancelled WorkOrder reactivated.
+- id: WORK-O-AUTH-001
+  rule: auth_on_every_protected_route
+  statement: Every non-public route must declare the get_current_user dependency.
+  severity: critical
+  rejection: REJECTED — Protected route missing auth dependency.
+- id: WORK-O-LOG-001
+  rule: lemon_structured_logging
+  statement: Every request handler must emit at least one structured Lemon log entry
+    with component, correlation_id, and user_id.
+  severity: high
+  rejection: REJECTED — Handler missing Lemon structured log.
+- id: WORK-O-OBS-001
+  rule: sentry_middleware_only
+  statement: Sentry capture must only happen in the global exception middleware, never
+    inside business logic.
+  severity: high
+  rejection: REJECTED — Manual sentry_sdk.capture_exception in business logic.
+- id: WORK-O-OBS-002
+  rule: otel_middleware_first
+  statement: OpenTelemetryMiddleware must be registered before any route-level middleware.
+  severity: high
+  rejection: REJECTED — OpenTelemetry middleware out of order.
+- id: WORK-O-DDD-001
+  rule: domain_no_framework_imports
+  statement: domain/ files must never import from fastapi, motor, httpx, or any infrastructure
+    package.
+  severity: critical
+  rejection: REJECTED — Domain layer contains framework import.
+- id: WORK-O-DDD-002
+  rule: domain_events_on_mutation
+  statement: Every WorkOrder mutation must raise and publish at least one domain event.
+  severity: high
+  rejection: REJECTED — WorkOrder mutation produces no domain event.
+cot:
+  steps:
+  - step: 1
+    title: Domain layer — entities, value objects, aggregates, events, repository
+      ABC
+    description: 'Pure Python only. WorkOrder aggregate root enforces invariants,
+      emits WorkOrderCreated, WorkOrderAssigned, WorkOrderStarted, WorkOrderCompleted,
+      WorkOrderCancelled, TaskAdded. Subdirs: entities/, value_objects/, aggregates/,
+      repositories/, events/, services/, specifications/, exceptions/, policies/'
+  - step: 2
+    title: Application layer — commands, queries, handlers, dto
+    description: 'Handlers orchestrate: load aggregate → invoke behavior → persist
+      → emit events. No framework imports. Subdirs: commands/, queries/, handlers/,
+      dto/'
+  - step: 3
+    title: Infrastructure layer — Motor repository, database connection
+    description: MotorWorkOrderRepository in infrastructure/persistence/motor/. AsyncIOMotorClient
+      factory in infrastructure/database/. No SQLAlchemy.
+  - step: 4
+    title: API layer — FastAPI router, Pydantic schemas, JWT dependencies
+    description: router.py calls handlers ONLY. All protected routes use Depends(get_current_user)
+      from dependencies.py.
+  - step: 5
+    title: Main + settings — lifespan, Sentry, /health, structured logging
+    description: 'Lifespan: Sentry → Motor → yield → close. /health endpoint. Timing
+      middleware.'
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: APPROVED — work-order API conforms to all DDD, auth, and observability
+      invariants.
+    rejected:
+    - REJECTED — Duplicate or mutated WorkOrderNumber.
+    - REJECTED — WorkOrder started without assignment.
+    - REJECTED — WorkOrder completed with open tasks.
+    - REJECTED — Cancelled WorkOrder reactivated.
+    - REJECTED — Protected route missing auth dependency.
+    - REJECTED — Handler missing Lemon structured log.
+    - REJECTED — Manual sentry_sdk.capture_exception in business logic.
+    - REJECTED — OpenTelemetry middleware out of order.
+    - REJECTED — Domain layer contains framework import.
+    - REJECTED — WorkOrder mutation produces no domain event.

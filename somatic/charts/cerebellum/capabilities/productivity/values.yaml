@@ -1,0 +1,93 @@
+capability:
+  name: productivity
+  id: cap-prod-001
+  platform: Productivity/Office
+  description: Productivity tool integrations (Calendar, Drive, etc.)
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-27'
+  review_date: '2026-12-27'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - productivity
+  - calendar
+  - drive
+  references:
+  - src/cerebellum/capabilities/productivity.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/productivity
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: list_events
+  method: READ
+  path: /events
+  description: List calendar events
+  required_params:
+  - date_range
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: create_event
+  method: CREATE
+  path: /events
+  description: Create a calendar event
+  required_params:
+  - title
+  - start
+  - end
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_productivity_connect
+  - test_productivity_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

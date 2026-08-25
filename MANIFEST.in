@@ -1,0 +1,15 @@
+include README.md
+include requirements.txt
+include pyproject.toml
+include install_agentos.py
+include main.py
+include .env.example
+
+recursive-include services *.py
+recursive-include src *.py
+recursive-include scripts *.py
+recursive-include deploy *.sh
+
+global-exclude __pycache__
+global-exclude *.pyc
+global-exclude .DS_Store

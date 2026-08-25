@@ -1,0 +1,28 @@
+workload: governance_review
+goal: >
+  Review the provided artifact for constitutional compliance, architectural
+  correctness, security posture, and engineering policy adherence.
+  Produce a structured compliance decision.
+domain: software_engineering
+bounded_context: governance
+reasoning: debate
+constraints:
+  - All inter-service communication must use TLS 1.3 or higher
+  - No secrets, credentials, or API keys may appear in generated artifacts
+  - Components with compliance=[soc2] must have audit logging
+  - Components with compliance=[gdpr] must have data retention limits
+  - Breaking changes require explicit human approval
+policies:
+  - No auto-merge without at least 1 approval
+  - Security findings of severity HIGH or CRITICAL block the pipeline
+constitutions:
+  - etass/constitutions/coding-standards.yaml
+evidence:
+  - The artifact under review (provided in context)
+  - Prior governance decisions for this chart
+success_criteria:
+  - Compliance decision is binary (compliant / non-compliant)
+  - All issues are enumerated with severity and remediation
+  - Recommendation is actionable
+outputs:
+  - JSON only: {"compliant": bool, "issues": [{"severity": str, "description": str, "remediation": str}], "recommendation": str}

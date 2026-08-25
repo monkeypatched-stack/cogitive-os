@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: browsers API
+  description: Browser automation for web scraping and testing
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/browsers
+  description: Capability endpoint
+paths:
+  /navigate:
+    read:
+      summary: Navigate to a URL
+      operationId: browsers_navigate
+      parameters:
+      - name: url
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /screenshot:
+    read:
+      summary: Take a screenshot
+      operationId: browsers_screenshot
+      parameters:
+      - name: url
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /extract:
+    read:
+      summary: Extract text from a page
+      operationId: browsers_extract
+      parameters:
+      - name: url
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: selector
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

@@ -1,0 +1,175 @@
+.lwe-world-tree {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.lwe-world-tree-search {
+  flex: none;
+  padding: 8px;
+  border-bottom: 1px solid var(--lwe-border);
+}
+
+.lwe-world-tree-mode {
+  flex: none;
+  display: flex;
+  border-bottom: 1px solid var(--lwe-border);
+}
+
+.lwe-world-tree-mode button {
+  flex: 1 1 0;
+  padding: 6px 0;
+  border: none;
+  background: var(--lwe-surface);
+  color: var(--lwe-text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.lwe-world-tree-mode button.lwe-world-tree-mode-active {
+  color: var(--lwe-accent);
+  border-bottom-color: var(--lwe-accent);
+}
+
+.lwe-actor-tree-unlocated {
+  padding: 4px 6px;
+  font-size: 12px;
+  color: var(--lwe-text-muted);
+  font-style: italic;
+}
+
+.lwe-actor-tree-note {
+  padding: 4px 6px;
+  font-size: 11px;
+  color: var(--lwe-text-muted);
+  font-style: italic;
+}
+
+.lwe-world-tree-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid #d3d8df;
+  border-radius: 5px;
+  background: #fff;
+  color: #4b5563;
+  font-size: 12px;
+}
+
+.lwe-world-tree-search input:focus {
+  outline: none;
+  border-color: var(--lwe-accent);
+}
+
+.lwe-world-tree-status {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--lwe-text-muted);
+  font-style: italic;
+}
+
+.lwe-world-tree-error {
+  color: var(--lwe-danger);
+}
+
+.lwe-tree-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lwe-tree-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 0;
+}
+
+.lwe-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-right: 6px;
+  font-size: 12.5px;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.lwe-tree-row:hover {
+  background: var(--lwe-surface-alt);
+}
+
+.lwe-tree-row-selected,
+.lwe-tree-row-selected:hover {
+  background: #3d506d;
+  color: #fff;
+}
+
+.lwe-tree-row-highlighted:not(.lwe-tree-row-selected),
+.lwe-tree-row-highlighted:not(.lwe-tree-row-selected):hover {
+  background: color-mix(in srgb, #f59e0b 22%, var(--lwe-surface));
+}
+
+.lwe-tree-row-selected .lwe-tree-tier {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.lwe-tree-row:focus-visible {
+  outline: 2px solid var(--lwe-accent);
+  outline-offset: -2px;
+}
+
+.lwe-tree-chevron {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--lwe-text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.lwe-tree-row-selected .lwe-tree-chevron {
+  color: inherit;
+}
+
+.lwe-tree-chevron-empty {
+  cursor: default;
+}
+
+.lwe-tree-tier {
+  flex: none;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--lwe-text-muted);
+  border: 1px solid var(--lwe-border);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.lwe-tree-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lwe-tree-highlight {
+  background: color-mix(in srgb, var(--lwe-accent) 35%, transparent);
+  color: inherit;
+  border-radius: 2px;
+}
+

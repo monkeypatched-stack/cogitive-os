@@ -1,0 +1,94 @@
+capability:
+  name: agents
+  id: cap-agent-001
+  platform: Agent/Discovery
+  description: External agent discovery and communication
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-27'
+  review_date: '2026-12-27'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - agent
+  - discovery
+  - federation
+  references:
+  - src/cerebellum/capabilities/agents.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: client_credentials
+  header_name: Authorization
+  format_template: "Bearer {token}"
+  scopes:
+    - read:agents
+    - invoke:agents
+  token_endpoint: "/api/v1/agent/token"
+  refresh_endpoint: "/api/v1/agent/token"
+  ttl_seconds: 3600
+endpoint:
+  base_url: http://localhost:8000/agents
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: discover
+  method: READ
+  path: /discover
+  description: Discover available agents
+  required_params: []
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: invoke
+  method: CREATE
+  path: /invoke
+  description: Invoke an external agent
+  required_params:
+  - agent_id
+  - task
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_agents_connect
+  - test_agents_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

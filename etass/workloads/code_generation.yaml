@@ -1,0 +1,55 @@
+workload: code_generation
+goal: >
+  Generate a DDD-layered microservice from a compiled somatic prompt.
+  Produce all four canonical layers (domain, application, infrastructure, api)
+  plus main.py and settings.py. If the DDD compliance check fails, invalidate
+  the broken layers' cache and regenerate until all structural checks pass or
+  max_loops is exhausted.
+domain: software_engineering
+bounded_context: code_generation
+aggregate: pull_request
+reasoning: chain_of_thought
+constraints:
+  - Generated code must follow DDD layer boundaries — no framework imports in domain or application
+  - All files MUST be placed under the correct canonical layer directory:
+      domain/         — entities, value_objects, aggregates, repositories (ABC), events, exceptions
+      application/    — commands/, queries/, handlers/, dto/ — NEVER app/, apps/, svc/
+      infrastructure/ — Motor repository impl, database connection, persistence/
+      api/            — FastAPI router, Pydantic schemas, JWT dependencies
+  - domain layer must NOT import: fastapi, motor, pymongo, sqlalchemy, httpx
+  - application layer must NOT import: fastapi, motor, pymongo, sqlalchemy
+  - No hardcoded credentials or API keys in generated files
+  - Generated tests must use pytest, not unittest
+  - codegen must never run inside a simulation context (question_source=codegen required)
+policies:
+  - >
+    Canonical layer directory names are non-negotiable. The DDD compliance check
+    (ddd-check) enforces them structurally. Any deviation (app/ instead of application/,
+    src/domain/ instead of domain/) causes ddd-check to fail and triggers a retry.
+  - >
+    Self-healing retry loop (ddd-check → codegen → ddd-check):
+      1. ddd-check runs structural validation after every codegen.
+      2. If a layer is missing or has forbidden imports, its codegen cache entry is
+         deleted and ServiceGenAgent re-runs for that layer only (other layers use cache).
+      3. Loop repeats up to --max-loops times (default 2).
+      4. If issues remain after all retries, verdict is NEEDS_REVISION or REJECTED.
+      5. Only layer-level issues trigger retry. main.py / settings.py issues do not
+         bust the cache (they are regenerated as part of the "main" layer).
+  - seed must always run after codegen and before serve — never skip it
+  - etass/constitutions/coding-standards.yaml
+evidence:
+  - Compiled somatic prompt in somatic/compiled/<service>-api.prompt.md
+  - Existing agent implementations in packages/broca/broca/agents/
+  - ddd-check report from .monkeybrain/reports/ddd_check_<service>_*.json
+success_criteria:
+  - All four DDD layers present with correct canonical directory names
+  - domain/ has zero forbidden framework imports
+  - application/ has zero forbidden framework imports
+  - main.py and settings.py present at service root
+  - ddd-check structural score >= 80 (APPROVED or NEEDS_REVISION with no missing layers)
+  - Generated code imports cleanly (no ImportError at serve time)
+outputs:
+  - Service directory under generated/<service>/
+  - Layer files: domain/, application/, infrastructure/, api/, main.py, settings.py
+  - Codegen cache in generated/<service>/.codegen_cache/ (per-layer checkpoints)
+  - ddd-check report saved to .monkeybrain/reports/

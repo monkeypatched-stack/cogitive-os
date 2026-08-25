@@ -1,0 +1,126 @@
+capability:
+  name: banking
+  id: cap-bank-001
+  platform: Banking
+  description: Banking integrations (Account Opening, KYC, AML, Transaction Monitoring)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - banking
+  - kyc
+  - aml
+  - transactions
+  references:
+  - src/cerebellum/capabilities/banking.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/banking
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: open_account
+  method: CREATE
+  path: /accounts
+  description: Open a new bank account
+  required_params:
+  - customer_id
+  - account_type
+  optional_params:
+  - initial_deposit
+  - branch
+  paginated: false
+  pagination_cursor_field: ''
+- name: perform_kyc
+  method: CREATE
+  path: /kyc
+  description: Perform KYC verification
+  required_params:
+  - customer_id
+  - documents
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: monitor_aml
+  method: READ
+  path: /aml/monitor
+  description: Monitor for AML violations
+  required_params: []
+  optional_params:
+  - customer_id
+  - date_range
+  paginated: true
+  pagination_cursor_field: cursor
+- name: monitor_transactions
+  method: READ
+  path: /transactions/monitor
+  description: Monitor transactions
+  required_params: []
+  optional_params:
+  - account_id
+  - threshold
+  paginated: true
+  pagination_cursor_field: cursor
+- name: generate_sar
+  method: CREATE
+  path: /aml/sar
+  description: Generate Suspicious Activity Report
+  required_params:
+  - transaction_ids
+  - reason
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_banking_connect
+  - test_banking_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

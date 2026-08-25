@@ -1,0 +1,28 @@
+workload: compliance_review
+goal: >
+  Evaluate the provided system or operation against the applicable regulatory standard.
+  Identify specific rule violations, assign severity levels, cite the exact clause or
+  article breached, and produce actionable remediation guidance.
+domain: governance
+bounded_context: compliance
+reasoning: debate
+constraints:
+  - Every finding must cite a specific article, clause, or annex from the standard
+  - Severity must be one of: CRITICAL, HIGH, MEDIUM, LOW
+  - CRITICAL and HIGH findings block approval — they are not advisory
+  - Absence of a required control is itself a finding, not a gap to be noted
+  - Do not invent standards requirements; cite only what the standard actually mandates
+policies:
+  - CRITICAL findings must include an immediate containment action in the remediation
+  - Findings must be deduped — do not repeat the same violation under different labels
+  - If the standard has not been breached, return compliant=true with an empty findings list
+evidence:
+  - The data_signals and system_attributes provided in context
+  - The specific standard being evaluated (gdpr, iso27001, soc2, fda, gxp, iec61508, iso10218)
+  - Any additional context fields describing the system under review
+success_criteria:
+  - Compliance decision is binary (compliant / non_compliant)
+  - All findings enumerate severity, article, description, and remediation
+  - No regulatory clause is misquoted or fabricated
+outputs:
+  - JSON only: {"compliant": bool, "standard": str, "findings": [{"rule": str, "severity": str, "article": str, "description": str, "remediation": str}], "critical_count": int, "high_count": int}

@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: streaming API
+  description: Event streaming for Kafka, NATS, RabbitMQ
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/streaming
+  description: Capability endpoint
+paths:
+  /publish:
+    create:
+      summary: Publish an event
+      operationId: streaming_publish
+      parameters:
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: event
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /subscribe:
+    read:
+      summary: Subscribe to events
+      operationId: streaming_subscribe
+      parameters:
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: callback
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

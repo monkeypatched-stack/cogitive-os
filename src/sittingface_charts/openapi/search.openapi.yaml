@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: search API
+  description: Web search and document search capabilities
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/search
+  description: Capability endpoint
+paths:
+  /web:
+    read:
+      summary: Search the web
+      operationId: search_web_search
+      parameters:
+      - name: query
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: max_results
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /docs:
+    read:
+      summary: Search documents
+      operationId: search_doc_search
+      parameters:
+      - name: query
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: collection
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

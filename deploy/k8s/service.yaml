@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentos
+  namespace: monkeybrain
+  labels:
+    app: agentos
+spec:
+  selector:
+    app: agentos
+  ports:
+    - port: 8031
+      targetPort: 8031
+      protocol: TCP
+      name: http
+  type: ClusterIP

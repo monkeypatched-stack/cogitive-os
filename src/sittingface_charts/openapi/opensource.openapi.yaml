@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: opensource API
+  description: Open-source enterprise system integrations (ERPNext, Odoo, etc.)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/opensource
+  description: Capability endpoint
+paths:
+  /systems:
+    read:
+      summary: List available systems
+      operationId: opensource_list_systems
+      parameters: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /connect:
+    create:
+      summary: Connect to an enterprise system
+      operationId: opensource_connect
+      parameters:
+      - name: system
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: config
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

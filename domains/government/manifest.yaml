@@ -1,0 +1,32 @@
+name: government
+version: "0.1.0"
+description: "Government bounded context — permit processing, citizen services, case management"
+bounded_context:
+  name: government
+  aggregates:
+    - Permit
+    - CitizenRequest
+    - Case
+    - Agency
+    - Document
+  entities:
+    - Permit
+    - CitizenRequest
+    - Case
+    - Agency
+    - Document
+    - Officer
+    - Deadline
+  value_objects:
+    - PermitStatus
+    - RequestType
+    - CasePriority
+    - ApprovalLevel
+  events:
+    - PermitSubmitted
+    - PermitApproved
+    - PermitDenied
+    - CitizenRequestReceived
+    - CitizenRequestResolved
+    - CaseOpened
+    - CaseClosed

@@ -1,0 +1,131 @@
+capability:
+  name: aviation
+  id: cap-aviation-001
+  platform: Aviation
+  description: Aviation integrations (Flight Operations, Crew Scheduling, Aircraft Maintenance)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - aviation
+  - flights
+  - crew
+  - aircraft
+  references:
+  - src/cerebellum/capabilities/aviation.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/aviation
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: schedule_flight
+  method: CREATE
+  path: /flights
+  description: Schedule a flight
+  required_params:
+  - aircraft_id
+  - origin
+  - destination
+  - departure_time
+  optional_params:
+  - crew_ids
+  - gate
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_flights
+  method: READ
+  path: /flights
+  description: List flights
+  required_params: []
+  optional_params:
+  - status
+  - date
+  - airline
+  paginated: true
+  pagination_cursor_field: cursor
+- name: assign_crew
+  method: UPDATE
+  path: /crew/assign
+  description: Assign crew to flight
+  required_params:
+  - flight_id
+  - crew_ids
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: schedule_maintenance
+  method: CREATE
+  path: /maintenance
+  description: Schedule aircraft maintenance
+  required_params:
+  - aircraft_id
+  - maintenance_type
+  - scheduled_date
+  optional_params:
+  - facility
+  - estimated_duration
+  paginated: false
+  pagination_cursor_field: ''
+- name: get_aircraft_status
+  method: READ
+  path: /aircraft/{aircraft_id}
+  description: Get aircraft status
+  required_params:
+  - aircraft_id
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_aviation_connect
+  - test_aviation_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

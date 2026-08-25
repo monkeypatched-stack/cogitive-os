@@ -1,0 +1,137 @@
+# CognitiveOS Edge Actor — deployment template for ONE actor's
+# independently-deployable execution domain (src/sync/edge_server.py,
+# wrapping src/sync/edge_actor.py::EdgeActor).
+#
+# This is intentionally NOT a `replicas: N` Deployment the way
+# deployment.yaml (the shared cloud/society process) is. Each edge pod
+# owns exactly one actor's local belief (SparseTransitionTensor) and
+# local policy (PolicyStore, owner_id-enforced — see kernel/policy/
+# store.py's ownership hardening); N identical replicas behind one
+# Service would mean requests randomly land on N different actors'
+# state, which is not what "one actor, one edge node" means. Instead
+# this file is a template — render it once PER ACTOR by substituting
+# ${ACTOR_ID}, matching the EDGE_ACTOR_ID / EDGE_NODE_ID /
+# EDGE_CLOUD_URL / EDGE_PORT contract scripts/start_edge_actor.sh
+# already uses locally:
+#
+#   ACTOR_ID=alice envsubst '${ACTOR_ID}' \
+#     < deploy/k8s/edge-actor-deployment.yaml | kubectl apply -f -
+#
+# Uses the same monkeybrain/agentos image as deployment.yaml (no
+# separate edge image/build target exists, and none is needed — the
+# only difference is the uvicorn entrypoint, set via `command:` below).
+#
+# Repeat per actor (ACTOR_ID=bob, ACTOR_ID=carol, ...) to bring up as
+# many independent edge deployments as there are actors — each is its
+# own Deployment/Service pair, scaled and rolled out independently of
+# every other actor's and independently of the shared cloud layer.
+# `replicas: 1` per actor for the same reason deployment.yaml pins 1:
+# EdgeActor's belief/policy are in-process state with no shared
+# backing store (by design — that state is local-only until an
+# explicit /sync call folds it into the shared cloud world tensor).
+#
+# No PersistentVolumeClaim: unlike the cloud deployment, an edge pod's
+# local state is a disposable, resyncable cache — it is pushed to the
+# cloud via /sync (POST /api/v1/agentos/edge/{actor_id}/sync) and can
+# be rebuilt from a fresh /pull-world-update after any restart. Losing
+# an edge pod loses only unsynced-since-last-/sync local observations,
+# not the actor's durable state.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentos-edge-${ACTOR_ID}
+  namespace: monkeybrain
+  labels:
+    app: agentos-edge
+    component: cognitive-runtime-edge
+    actor-id: "${ACTOR_ID}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentos-edge
+      actor-id: "${ACTOR_ID}"
+  template:
+    metadata:
+      labels:
+        app: agentos-edge
+        actor-id: "${ACTOR_ID}"
+    spec:
+      # Edge boot is near-instant (no Mongo/Redis/Neo4j connections —
+      # just one EdgeActor object constructed in-process), so this
+      # needs none of the cloud deployment's 120s grace period /
+      # 30-attempt startupProbe accommodation for a slow multi-service
+      # boot.
+      terminationGracePeriodSeconds: 15
+      containers:
+        - name: agentos-edge
+          image: monkeybrain/agentos:latest
+          command:
+            - python
+            - -m
+            - uvicorn
+            - src.sync.edge_server:app
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "8041"
+          ports:
+            - containerPort: 8041
+              name: http
+          env:
+            - name: EDGE_ACTOR_ID
+              value: "${ACTOR_ID}"
+            - name: EDGE_NODE_ID
+              # Defaults to the pod name so multiple pods for the same
+              # actor_id (e.g. during a rolling update) are still
+              # individually identifiable in sync payloads.
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: EDGE_CLOUD_URL
+              # Same-namespace ClusterIP DNS name for the shared cloud
+              # Service (service.yaml) — matches EDGE_CLOUD_URL's
+              # documented "http://agentos.monkeybrain.svc:8031" example
+              # in edge_server.py.
+              value: "http://agentos.monkeybrain.svc:8031"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8041
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8041
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentos-edge-${ACTOR_ID}
+  namespace: monkeybrain
+  labels:
+    app: agentos-edge
+    actor-id: "${ACTOR_ID}"
+spec:
+  selector:
+    app: agentos-edge
+    actor-id: "${ACTOR_ID}"
+  ports:
+    - port: 8041
+      targetPort: 8041
+      protocol: TCP
+      name: http
+  type: ClusterIP

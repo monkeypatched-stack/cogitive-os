@@ -1,0 +1,94 @@
+agent:
+  name: multi-agent-coordinator
+  id: agent-coord-001
+  kind: CoordinatorAgent
+  version: 1.0.0
+  status: active
+  description: Routes tasks to specialist sub-agents and aggregates results
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+identity:
+  role: Multi-Agent Coordinator
+  system_prompt: You are an orchestrating coordinator.. Decompose complex goals into
+    sub-tasks.. Delegate each sub-task to the most appropriate specialist agent..
+    Aggregate and reconcile outputs into a single coherent response.
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.3
+  max_tokens: 4096
+triggers: []
+workflow:
+  mode: sequential
+  steps:
+  - id: decompose_goal
+    action: llm_generate
+    depends_on: []
+    on_failure: abort
+  - id: route_subtasks
+    action: route
+    depends_on:
+    - decompose_goal
+    on_failure: fallback
+  - id: execute_subtasks
+    action: parallel_execute
+    depends_on:
+    - route_subtasks
+    on_failure: fallback
+  - id: aggregate_results
+    action: llm_synthesize
+    depends_on:
+    - execute_subtasks
+    on_failure: fallback
+fallback:
+  strategy: human_escalation
+  escalation_topic: agent.escalation
+retrieval:
+  pipeline: []
+tools: []
+orchestration:
+  mode: parallel
+  max_iterations: 1
+  parallel_tool_calls: true
+  tool_call_timeout_ms: 30000
+guardrails:
+  require_confirmation: []
+routing:
+  strategy: llm_intent_classification
+  fallback_agent: workflow-automation-agent
+  agents:
+  - name: workflow-automation-agent
+    handles:
+    - task_execution
+    - scheduling
+    - data_pipeline
+    priority: 1
+  - name: rag-agent
+    handles:
+    - knowledge_query
+    - document_search
+    - fact_lookup
+    priority: 1
+  - name: tool-orchestration-agent
+    handles:
+    - web_lookup
+    - code_execution
+    - notification
+    - db_query
+    priority: 1
+aggregation:
+  strategy: llm_synthesize
+  conflict_resolution: highest_confidence
+memory:
+  backend: redis
+  ttl_seconds: 3600
+  scope: session
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: http://otel-collector:4317
+  trace_span_per_agent: true
+retry:
+  max_attempts: 3
+  backoff_strategy: exponential
+  base_delay_ms: 500

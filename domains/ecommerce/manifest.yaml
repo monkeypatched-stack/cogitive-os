@@ -1,0 +1,32 @@
+name: ecommerce
+version: "0.1.0"
+description: "Ecommerce bounded context — orders, inventory, warehouse, shipping, customer service"
+bounded_context:
+  name: ecommerce
+  aggregates:
+    - Order
+    - Product
+    - Inventory
+    - Shipment
+    - Customer
+  entities:
+    - Order
+    - Product
+    - Inventory
+    - Shipment
+    - Customer
+    - Cart
+    - Payment
+  value_objects:
+    - OrderStatus
+    - PaymentStatus
+    - ShippingMethod
+    - ProductCategory
+  events:
+    - OrderPlaced
+    - OrderConfirmed
+    - OrderShipped
+    - OrderDelivered
+    - InventoryUpdated
+    - PaymentProcessed
+    - RefundIssued

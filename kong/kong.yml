@@ -1,0 +1,409 @@
+_format_version: "3.0"
+_transform: true
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - http://localhost:3000
+        - http://localhost:5173
+        - http://127.0.0.1:3000
+        - http://127.0.0.1:5173
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - Origin
+        - X-Requested-With
+        - X-Request-Id
+        - X-Trace-Id
+      exposed_headers:
+        - X-Request-Id
+        - X-Trace-Id
+      credentials: true
+      max_age: 3600
+      preflight_continue: false
+
+services:
+  - name: auth-service
+    url: http://auth-service:8000
+    routes:
+      - name: auth-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/auth
+          - /api/v1/me
+          - /api/v1/users
+          - /api/v1/roles
+          - /api/v1/permissions
+          - /api/v1/departments
+          - /api/v1/teams
+          - /api/v1/members
+          - /api/v1/session
+          - /api/v1/ws
+          - /api/v1/integration-config
+          - /integration-config
+
+  - name: assets-service
+    url: http://assets-service:8000
+    routes:
+      - name: assets-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/devices
+          - /api/v1/equipment
+          - /api/v1/machines
+          - /api/v1/chemicals
+          - /api/v1/parts
+          - /api/v1/plcs
+          - /api/v1/rfid-tags
+          - /api/v1/tools
+          - /api/v1/equipment-groups
+          - /api/v1/machine-groups
+          - /api/v1/raw-material-groups
+
+  - name: customers-service
+    url: http://customers-service:8000
+    routes:
+      - name: customers-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/customer-details
+          - /api/v1/customer-metadata
+          - /api/v1/customer-order-metrics
+          - /api/v1/customer-payment-data
+
+  - name: documents-service
+    url: http://documents-service:8000
+    routes:
+      - name: documents-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/document-metadata
+          - /api/v1/documents
+          - /api/v1/document-process-definitions
+          - /api/v1/document-workflows
+          - /api/v1/report-templates
+
+  - name: events-service
+    url: http://events-service:8000
+    routes:
+      - name: events-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/events
+          - /api/v1/count-events
+          - /api/v1/cycle-count-events
+          - /api/v1/consumed-count-events
+          - /api/v1/machine-equipment-output-count-events
+          - /api/v1/machine-equipment-output-defect-count-events
+          - /api/v1/workstation-rejection-count-events
+          - /api/v1/product-count-events
+          - /api/v1/product-defect-count-events
+          - /api/v1/machine-part-count-events
+          - /api/v1/machine-part-defect-count-events
+          - /api/v1/raw-material-consumption-events
+          - /api/v1/raw-material-defect-count-events
+          - /api/v1/workstation-product-count-events
+          - /api/v1/workstation-product-defect-count-events
+          - /api/v1/workstation-machine-part-count-events
+          - /api/v1/workstation-machine-part-defect-count-events
+          - /api/v1/workstation-raw-material-consumption-events
+          - /api/v1/workstation-raw-material-defect-count-events
+          - /api/v1/workstation-component-count-events
+          - /api/v1/workstation-component-defect-count-events
+          - /api/v1/warehouse-product-count-events
+          - /api/v1/warehouse-product-defect-count-events
+          - /api/v1/warehouse-machine-part-count-events
+          - /api/v1/warehouse-machine-part-defect-count-events
+          - /api/v1/warehouse-raw-material-consumption-events
+          - /api/v1/warehouse-raw-material-defect-count-events
+          - /api/v1/warehouse-component-count-events
+          - /api/v1/warehouse-component-defect-count-events
+          - /api/v1/warehouse-cycle-count-events
+
+  - name: facilities-service
+    url: http://facilities-service:8000
+    routes:
+      - name: facilities-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/plants
+          - /api/v1/lines
+          - /api/v1/stages
+          - /api/v1/workstations
+
+  - name: floor-layout-service
+    url: http://floor_layout-service:8000
+    routes:
+      - name: floor-layout-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/buildings
+          - /api/v1/floors
+          - /api/v1/rooms
+          - /api/v1/bays
+          - /api/v1/locations
+
+  - name: inventory-service
+    url: http://inventory-service:8000
+    routes:
+      - name: inventory-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/inventory-allocations
+          - /api/v1/inventory-items
+          - /api/v1/inventory-item-counts
+          - /api/v1/inventory-item-quantities
+          - /api/v1/inventory-stage-outputs
+          - /api/v1/stock-adjustment-requests
+          - /api/v1/inventory-transactions
+          - /api/v1/warehouse-cycle-counts
+          - /api/v1/warehouse-locations
+          - /api/v1/warehouse
+
+  - name: iot-service
+    url: http://iot-service:8000
+    routes:
+      - name: iot-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/ble-devices
+          - /api/v1/sensors
+          - /api/v1/servers
+          - /api/v1/uwb-devices
+
+  - name: orders-service
+    url: http://orders-service:8000
+    routes:
+      - name: orders-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/orders
+          - /api/v1/invoices
+          - /api/v1/order-details
+          - /api/v1/order-customer-metrics
+          - /api/v1/order-metadata
+          - /api/v1/order-payment-metadata
+          - /api/v1/sales-orders
+
+  - name: pm-service
+    url: http://pm-service:8000
+    routes:
+      - name: pm-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/maintenance
+          - /api/v1/calibrations
+          - /api/v1/cleaning
+          - /api/v1/downtime
+          - /api/v1/checklists
+          - /api/v1/sops
+          - /api/v1/weekly-schedules
+          - /api/v1/calendar-bookings
+          - /api/v1/kanban-boards
+
+  - name: procurement-service
+    url: http://procurement-service:8000
+    routes:
+      - name: procurement-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/purchase-orders
+          - /api/v1/purchase-order-shipping-information
+          - /api/v1/goods-receipts
+          - /api/v1/sampling
+          - /api/v1/quality-control
+
+  - name: replenishment-service
+    url: http://replenishment-service:8000
+    routes:
+      - name: replenishment-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/replenishment
+
+  - name: products-service
+    url: http://products-service:8000
+    routes:
+      - name: products-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/products
+          - /api/v1/boms
+          - /api/v1/product-research
+          - /api/v1/tag-groups
+
+  - name: shipping-service
+    url: http://shipping-service:8000
+    routes:
+      - name: shipping-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/shipping-information
+          - /api/v1/carriers
+          - /api/v1/vehicles
+          - /api/v1/pallets
+          - /api/v1/packages
+          - /api/v1/delivery-notes
+          - /api/v1/routes
+          - /api/v1/customs-declarations
+          - /api/v1/shipping-providers
+          - /api/v1/shipping-provider-metadata
+          - /api/v1/waybills
+
+  - name: shifts-service
+    url: http://shifts-service:8000
+    routes:
+      - name: shifts-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/shift-templates
+          - /api/v1/shifts
+          - /api/v1/timesheets
+
+  - name: supply-allocation-service
+    url: http://supply-allocation-service:8000
+    routes:
+      - name: supply-allocation-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/supply-allocation
+
+  - name: suppliers-service
+    url: http://suppliers-service:8000
+    routes:
+      - name: suppliers-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/supplier-details
+          - /api/v1/supplier-capabilities
+          - /api/v1/supplier-certifications
+          - /api/v1/supplier-financials
+          - /api/v1/supplier-inventory
+          - /api/v1/supplier-locations
+          - /api/v1/supplier-pricing
+          - /api/v1/supplier-quality
+          - /api/v1/supplier-shipping
+
+  - name: taxonomy-service
+    url: http://taxonomy-service:8000
+    routes:
+      - name: taxonomy-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/families
+          - /api/v1/classes
+          - /api/v1/subclasses
+
+  - name: warehouse-execution-service
+    url: http://warehouse-execution-service:8000
+    routes:
+      - name: warehouse-execution-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/warehouse-execution
+
+  - name: process-definitions-service
+    url: http://process-definitions-service:8000
+    routes:
+      - name: process-definitions-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/process-definitions
+          - /api/v1/cpp-cqa-registry
+          - /api/v1/mbmr-templates
+          - /api/v1/packing-instructions
+          - /api/v1/process-steps
+          - /api/v1/process-prechecks
+          - /api/v1/process-postchecks
+          - /api/v1/process-constraints
+          - /api/v1/process-corrections
+
+  - name: workorders-service
+    url: http://workorders-service:8000
+    routes:
+      - name: workorders-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/workorders
+          - /api/v1/production-batches
+          - /api/v1/batch-execution-records
+          - /api/v1/executed-bmr-records
+          - /api/v1/executed-bpr-records
+          - /api/v1/executed-instruction-evidence
+          - /api/v1/ipc-result-records
+          - /api/v1/batch-release-workflows
+          - /api/v1/batch-step-executions
+          - /api/v1/equipment-usage-ledger
+          - /api/v1/area-room-usage-ledger
+          - /api/v1/yield-reconciliation-records
+
+  - name: changeover-service
+    url: http://changeover-service:8000
+    routes:
+      - name: changeover-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/changeovers
+
+  - name: file-service
+    url: http://file-service:8000
+    routes:
+      - name: file-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /files
+          - /upload
+          - /api/v1/convert
+          - /api/v1/cad
+          - /presigned-url
+
+  - name: module-control-service
+    url: http://module-control-service:8000
+    routes:
+      - name: module-control-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/module-control
+
+  - name: agentos-service
+    url: http://agentos-service:8000
+    routes:
+      - name: agentos-api
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /api/v1/agentos

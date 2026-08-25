@@ -1,0 +1,204 @@
+/* Communication workspace — real AffiliationCommunicationRouter decisions
+ * + real SocietyContextStream INTERACTION events, nothing fabricated. Own
+ * class prefix (lwe-cw-) to avoid collision with lwe-cm- (ContextMemoryPanel),
+ * lwe-gg- (GroundingGraphPanel), lwe-pa- (PlanAnalyzerPanel). Same visual
+ * language as every other graph workspace this session built. */
+
+.lwe-cw-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 14px;
+  padding: 20px 22px 22px;
+  box-sizing: border-box;
+  background: #F8FAFC;
+  color: #1E293B;
+  /* Page-level scroll stays — Raw Data / Architecture Verification are
+   * flex:none siblings below the graph section, and pinning this page
+   * (overflow: hidden) with no scroll left them with no way to ever be
+   * reached (measured 2px tall, clipped) on any viewport short enough
+   * that everything above didn't already fit. The graph section below
+   * has its own internal scrollbar for its content (see
+   * .lwe-cw-graph-card) so you don't need to scroll the *page* just to
+   * see more of the graph, but the page itself must still be able to
+   * scroll to reach what comes after it. */
+  overflow-y: auto;
+}
+
+.lwe-cw-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex: none; }
+.lwe-cw-heading h2 { margin: 0; font-size: 19px; font-weight: 600; }
+.lwe-cw-heading p { margin: 4px 0 0; font-size: 12.5px; color: #64748B; max-width: 680px; }
+.lwe-cw-heading-meta {
+  flex: none; padding: 6px 12px; border-radius: 999px; background: #FFFFFF;
+  border: 1px solid #E8EAF0; color: #475569; font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+
+.lwe-cw-error { flex: none; padding: 10px 14px; border-radius: 10px; background: #FEF2F2; color: #B91C1C; font-size: 12.5px; }
+
+/* ── Overview cards ──────────────────────────────────────────────────── */
+/* Flexbox-wrap, not CSS Grid: with a grid, a card count that doesn't
+ * divide evenly into the available columns (e.g. 8 cards, 7 fit per row)
+ * leaves the last row's lone card at its track's natural width, reading
+ * as an orphaned, awkward second row. Flex-wrap with flex-basis lets
+ * every row's cards redistribute the row's full width evenly, whether
+ * that row holds 8 cards or 1 — no card is ever visually stranded. */
+.lwe-cw-cards {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lwe-cw-card {
+  /* Line-breaking in a wrapping flex container is decided using each
+   * item's un-grown flex-basis, before any shrink/grow is applied — so
+   * a 150px basis left only 7 of 8 cards fitting the real ~1160px row
+   * at typical window widths (accounting for the sidebar), stranding
+   * the 8th. 130px comfortably fits all 8 on one row in that width. */
+  flex: 1 1 130px;
+  /* Cap how far flex-grow can stretch a card. Without this, a row left
+   * with fewer cards (e.g. a lone stranded one, or a narrower window
+   * that wraps to 4+4) grows to fill the *entire* row width — that
+   * full-width single card was the original "awkwardly isolated" look.
+   * Capped, a partial row just leaves trailing blank space instead. */
+  max-width: 200px;
+  /* Flex items default to min-width:auto (their own min-content size),
+   * which lets a card with a longer label (e.g. "Negotiations completed")
+   * refuse to shrink to the shared flex-basis and silently absorb extra
+   * grown space unevenly — that unevenness is what pushed a 7th/8th card
+   * off the row. min-width:0 + wrapping the label makes every card
+   * respect the same basis, so all 8 pack onto one row consistently. */
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #E8EAF0;
+  border-radius: 12px;
+  background: #FFFFFF;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.lwe-cw-card-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94A3B8; overflow-wrap: break-word; }
+.lwe-cw-card-value { font-size: 22px; font-weight: 700; color: #1E293B; }
+.lwe-cw-card-value.is-unavailable { font-size: 12.5px; font-weight: 500; color: #94A3B8; font-style: italic; }
+.lwe-cw-card-sub { font-size: 10.5px; color: #94A3B8; }
+
+/* ── Section chrome ──────────────────────────────────────────────────── */
+.lwe-cw-section {
+  flex: none;
+  border: 1px solid #E8EAF0;
+  border-radius: 14px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+/* The graph is the primary content of this page — it should consume
+ * whatever vertical space the header/summary/cards/message-stream don't
+ * need, rather than sitting at a small fixed height and getting clipped
+ * below the fold. Only this section grows; Message Stream and the cards
+ * stay at their natural, compact content height. */
+.lwe-cw-section-graph {
+  flex: 1 1 auto;
+  /* Same floor as .lwe-cw-canvas's own min-height below — this section
+   * is never squeezed shorter than the graph it wraps. Whatever this
+   * doesn't leave room for (Raw Data / Verification below) is reached
+   * by scrolling the page (.lwe-cw-page, overflow-y: auto); whatever
+   * doesn't fit *inside* this section's own box scrolls internally via
+   * .lwe-cw-graph-card, so you're not forced to scroll the whole page
+   * just to see more of the graph. */
+  min-height: clamp(320px, 42vh, 640px);
+  display: flex;
+  flex-direction: column;
+}
+.lwe-cw-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #F1F5F9;
+}
+.lwe-cw-section-head h3 { margin: 0; font-size: 13.5px; font-weight: 600; color: #1E293B; }
+.lwe-cw-badge {
+  padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 600;
+}
+.lwe-cw-badge-refreshed { background: #EEF2FF; color: #4338CA; }
+.lwe-cw-badge-historical { background: #F1F5F9; color: #64748B; }
+.lwe-cw-badge-live { background: #ECFDF5; color: #047857; }
+
+.lwe-cw-note { padding: 6px 16px; font-size: 11px; color: #94A3B8; border-bottom: 1px solid #F1F5F9; }
+
+.lwe-cw-toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #F1F5F9; flex-wrap: wrap; }
+.lwe-cw-search { flex: none; width: 220px; padding: 7px 11px; border: 1px solid #E8EAF0; border-radius: 8px; font-size: 12.5px; }
+.lwe-cw-btn {
+  padding: 6px 12px; border-radius: 8px; border: 1px solid #E8EAF0; background: #FFFFFF;
+  color: #4338CA; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.lwe-cw-btn:hover { background: #EEF2FF; }
+
+/* ── Message stream table ────────────────────────────────────────────── */
+.lwe-cw-table-wrap { max-height: 360px; overflow-y: auto; }
+.lwe-cw-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.lwe-cw-table th {
+  position: sticky; top: 0; background: #F8FAFC; text-align: left; padding: 8px 12px;
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94A3B8;
+  border-bottom: 1px solid #E8EAF0;
+}
+.lwe-cw-table td { padding: 8px 12px; border-bottom: 1px solid #F1F5F9; color: #334155; vertical-align: top; }
+.lwe-cw-table tr:hover td { background: #F8FAFC; }
+.lwe-cw-row-link { color: #4338CA; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; background: none; border: none; padding: 0; font: inherit; }
+.lwe-cw-chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 600; }
+.lwe-cw-chip-askactor { background: #EFF6FF; color: #1D4ED8; }
+.lwe-cw-chip-interaction { background: #F5F3FF; color: #6D28D9; }
+.lwe-cw-chip-negotiation { background: #FFFBEB; color: #92400E; }
+.lwe-cw-chip-generic { background: #F1F5F9; color: #475569; }
+.lwe-cw-chip-allowed { background: #ECFDF5; color: #047857; }
+.lwe-cw-chip-denied { background: #FEF2F2; color: #B91C1C; }
+.lwe-cw-empty { padding: 24px; text-align: center; color: #94A3B8; font-size: 12.5px; }
+.lwe-cw-id-chip {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px;
+  background: #F1F5F9; color: #475569; padding: 2px 6px; border-radius: 5px; cursor: help;
+}
+
+/* ── Graph ────────────────────────────────────────────────────────────── */
+/* Fills the remaining space .lwe-cw-section-graph grows into (see above);
+ * clamp() keeps a sane floor/ceiling so it's never crushed on a short
+ * viewport nor absurdly tall on a very long one. */
+/* The floor moved to .lwe-cw-canvas below — this element shrinks to
+ * whatever .lwe-cw-section-graph gives it (min-height: 0) and scrolls
+ * internally once the canvas's own floor no longer fits, so the graph
+ * itself gets the scrollbar rather than the whole page. */
+.lwe-cw-graph-card { display: flex; align-items: stretch; flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+.lwe-cw-canvas { position: relative; flex: 1 1 auto; min-width: 0; min-height: clamp(320px, 42vh, 640px); background: #F8FAFC; overflow: hidden; }
+.lwe-cw-svg { display: block; width: 100%; height: 100%; }
+.lwe-cw-edge { stroke: #C7CDD9; stroke-width: 1.4; transition: opacity 150ms ease, stroke 150ms ease; }
+.lwe-cw-edge.is-denied { stroke: #FCA5A5; stroke-dasharray: 4 3; }
+.lwe-cw-node { cursor: pointer; }
+.lwe-cw-node-circle { fill: #FFFFFF; stroke: #C7D2FE; stroke-width: 1.5; transition: stroke 150ms ease, transform 150ms ease; }
+.lwe-cw-node.is-selected .lwe-cw-node-circle { stroke: #4338CA; stroke-width: 2.5; }
+.lwe-cw-node-label { fill: #1E293B; font-size: 10.5px; font-weight: 600; }
+
+.lwe-cw-inspector { flex: none; width: 300px; min-width: 300px; border-left: 1px solid #E8EAF0; background: #FFFFFF; overflow-y: auto; padding: 14px 16px; }
+
+/* ── Raw data escape hatch (shared shape with other panels) ─────────────── */
+/* flex: none is load-bearing: this has overflow:hidden, and a flex item
+ * with overflow != visible gets an *automatic minimum size of 0* per
+ * spec — without flex:none, flex-shrink (default 1) crushes this to a
+ * ~2px sliver whenever the column's total content exceeds the page's
+ * box, instead of ever letting the page genuinely overflow and scroll
+ * (see .lwe-cw-page). Same reasoning applies to ArchitectureVerification
+ * Panel's root .lwe-av-panel (fixed in its own CSS file). */
+.lwe-cw-raw { flex: none; border: 1px solid #E8EAF0; border-radius: 8px; overflow: hidden; }
+.lwe-cw-raw summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px;
+  padding: 9px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #F8FAFC;
+}
+.lwe-cw-raw summary::-webkit-details-marker { display: none; }
+.lwe-cw-raw summary::before { content: '▸'; font-size: 10px; color: #94A3B8; transition: transform 0.15s ease; }
+.lwe-cw-raw[open] summary::before { transform: rotate(90deg); }
+.lwe-cw-raw[open] summary { border-bottom: 1px solid #E8EAF0; }
+.lwe-cw-raw pre {
+  margin: 0; padding: 10px 12px; background: #0F172A; color: #E2E8F0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto;
+}

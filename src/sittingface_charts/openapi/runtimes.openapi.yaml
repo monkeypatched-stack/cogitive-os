@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: runtimes API
+  description: Multi-language runtime execution (Python, Node, JVM)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/runtimes
+  description: Capability endpoint
+paths:
+  /execute:
+    create:
+      summary: Execute code in a runtime
+      operationId: runtimes_execute
+      parameters:
+      - name: language
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: timeout
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /runtimes:
+    read:
+      summary: List available runtimes
+      operationId: runtimes_list_runtimes
+      parameters: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: tool-orchestration-agent API
+  description: 'Selects and executes tools/functions to fulfill a goal
+
+
+    Role: Tool Orchestration Agent
+
+
+    Model: anthropic/claude-sonnet-4-6'
+  version: 1.0.0
+paths:
+  /query:
+    post:
+      summary: Send a query to tool-orchestration-agent
+      operationId: tool-orchestration-agent_query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - query
+              properties:
+                query:
+                  type: string
+                  maxLength: 4096
+                session_id:
+                  type: string
+                context:
+                  type: object
+      responses:
+        '200':
+          description: Agent response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                  confidence:
+                    type: number
+                  tools_used:
+                    type: array
+                    items:
+                      type: string
+  /health:
+    get:
+      summary: tool-orchestration-agent health check
+      responses:
+        '200':
+          description: Healthy
+  /tools:
+    get:
+      summary: List available tools for tool-orchestration-agent
+      responses:
+        '200':
+          description: Tool list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    description:
+                      type: string
+components:
+  schemas:
+    Tool:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string

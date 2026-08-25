@@ -1,0 +1,108 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monkeybrain-runtime"
+version = "1.0.5"
+description = "MonkeyBrain — Cognitive Operating System for industrial decision intelligence"
+readme = "README.md"
+license = { text = "Proprietary" }
+requires-python = ">=3.11"
+authors = [{ name = "Prashun Javeri" }]
+keywords = ["ai", "industrial", "decision-intelligence", "cognitive-os", "agent"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+# Gate 8 (production readiness) fix: this list previously declared
+# monkeybrain-cerebellum/broca/introspection/cortex/homeostasis/
+# deepdive/cingulate/plasticity/sync/sittingface/soma-cli as hard
+# PyPI-resolvable dependencies. None of them are published anywhere
+# (no [tool.pip]/index-url or private index configured in this repo)
+# — `pip install monkeybrain-runtime` would fail to resolve on that
+# alone. They're real, individually-buildable local packages
+# (packages/broca/pyproject.toml etc.) but this runtime reaches them
+# today via direct sys.path injection (see tests/conftest.py's
+# `packages/cerebellum`, `packages/broca`, `packages/soma-cli`
+# entries), not via `pip install`, so declaring them as dependencies
+# here was aspirational metadata disconnected from how the code
+# actually runs — not something removing them changes at runtime.
+# requirements.txt (the file the real Docker build installs from) never
+# listed them either. soma-cli is still available as the `soma` extra
+# below for anyone who does want a real pip-installable copy.
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "motor",
+    "pydantic",
+    "pydantic-settings",
+    "pymongo",
+    "python-jose[cryptography]",
+    "redis>=4.2.0",
+    "neo4j",
+    "nats-py",
+    "influxdb-client",
+    "paho-mqtt",
+    "python-multipart",
+    "bcrypt",
+    "boto3",
+    "httpx",
+    "PyYAML",
+    "aiohttp",
+    "numpy",
+    "scipy",
+    "typer",
+    "rich",
+    "lemon",
+    "watchfiles",
+    "networkx",
+    "phart",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff"]
+enterprise = ["elasticsearch[async]", "pyspark", "mem0ai", "spacy"]
+soma = ["soma-cli>=1.0.0"]
+
+[project.scripts]
+monkeybrain = "monkey_brain.cli.main:main"
+monkeybrain-status = "install_agentos:status_main"
+monkeypatch = "repl.__main__:main"
+
+[tool.setuptools]
+py-modules = ["install_agentos"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*", "scripts*", "deploy*", "docs*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.py", "*.json", "*.yaml", "*.yml", "*.toml"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.pytest.ini_options]
+# The project test suite lives in tests/. Without this, a bare `pytest` recurses the
+# whole repo and collects things that are NOT the suite: the `venv_test/` virtualenv
+# itself (its name isn't in pytest's default norecursedirs), LLM-generated placeholder
+# tests under generated/ (which reference packages that don't exist and even contain
+# SyntaxErrors), and sub-package/domain tests that are meant to run from their own
+# context. Scope the default run to the real suite; explicit paths (e.g.
+# `pytest packages/broca/...`) still override this.
+testpaths = ["tests"]
+# venv_test is a non-standard venv name, so add it to the dirs never recursed into.
+# "generated" closes the gap the comment above already described but this list
+# never actually enforced: testpaths=["tests"] still includes tests/generated,
+# so a bare `pytest` (or `pytest tests/`) would still try to collect it and hit
+# real collection-time SyntaxErrors before this line existed.
+norecursedirs = ["venv", "venv_test", ".venv", "build", "dist", "*.egg", "node_modules", ".git", "generated"]

@@ -1,0 +1,32 @@
+name: insurance
+version: "0.1.0"
+description: "Insurance bounded context — claims processing, policy management, underwriting"
+bounded_context:
+  name: insurance
+  aggregates:
+    - Claim
+    - Policy
+    - Underwriting
+    - InsuredAsset
+    - Adjuster
+  entities:
+    - Claim
+    - Policy
+    - Underwriting
+    - InsuredAsset
+    - Adjuster
+    - Document
+    - Assessment
+  value_objects:
+    - ClaimStatus
+    - PolicyType
+    - RiskCategory
+    - CoverageLevel
+  events:
+    - ClaimFiled
+    - ClaimApproved
+    - ClaimDenied
+    - PolicyRenewed
+    - PolicyCancelled
+    - UnderwritingCompleted
+    - AssessmentSubmitted

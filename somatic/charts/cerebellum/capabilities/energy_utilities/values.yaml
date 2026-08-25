@@ -1,0 +1,130 @@
+capability:
+  name: energy_utilities
+  id: cap-energy-001
+  platform: Energy & Utilities
+  description: Energy and utilities integrations (Grid Monitoring, Asset Management, Outage Response)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - energy
+  - utilities
+  - grid
+  - outage
+  - maintenance
+  references:
+  - src/cerebellum/capabilities/energy_utilities.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/energy
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: monitor_grid
+  method: READ
+  path: /grid/monitor
+  description: Monitor power grid status
+  required_params: []
+  optional_params:
+  - substation_id
+  - metric
+  paginated: true
+  pagination_cursor_field: cursor
+- name: manage_asset
+  method: UPDATE
+  path: /assets/{asset_id}
+  description: Manage grid asset
+  required_params:
+  - asset_id
+  - action
+  optional_params:
+  - maintenance_type
+  paginated: false
+  pagination_cursor_field: ''
+- name: respond_to_outage
+  method: CREATE
+  path: /outages/response
+  description: Respond to power outage
+  required_params:
+  - outage_id
+  - response_team
+  optional_params:
+  - estimated_restore_time
+  paginated: false
+  pagination_cursor_field: ''
+- name: schedule_maintenance
+  method: CREATE
+  path: /maintenance
+  description: Schedule preventive maintenance
+  required_params:
+  - asset_id
+  - maintenance_type
+  - scheduled_date
+  optional_params:
+  - crew
+  - duration
+  paginated: false
+  pagination_cursor_field: ''
+- name: read_meter
+  method: READ
+  path: /meters/{meter_id}
+  description: Read energy meter
+  required_params:
+  - meter_id
+  optional_params:
+  - date_range
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_energy_connect
+  - test_energy_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

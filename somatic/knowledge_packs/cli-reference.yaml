@@ -1,0 +1,53 @@
+pack:
+  name: cli-reference
+  description: >
+    The monkeypatched CLI's unix-analogy command reference — sourced from
+    src/monkeypatched/__init__.py's own module docstring, the canonical
+    definition of what each command does. Kept here as a KnowledgePack so a
+    QA agent can answer "how do I do X" questions without reading source.
+  version: "1.0.0"
+
+items:
+  - id: cli-ref-001
+    content: >
+      monkeypatched svc [like systemctl] — install|start|stop|status|configure|
+      seed|logs|uninstall a MonkeyBrain service.
+      monkeypatched make [like make/cc] — build|lint|run|prompts|capabilities|
+      reviews via the SOMA constitutional compiler.
+      monkeypatched proc [like ps/kill] — list|stop running processes.
+      monkeypatched cron [like crontab] — list|add|remove|run scheduled jobs.
+    modality: document
+    source: src/monkeypatched/__init__.py
+    provenance: 1.0
+    freshness: 1.0
+    completeness: 0.6
+    consistency: 1.0
+
+  - id: cli-ref-002
+    content: >
+      monkeypatched id [like useradd/id] — create|list|delete user identities.
+      monkeypatched acl [like chmod/acl] — grant|revoke|list access control
+      permissions.
+      monkeypatched serve [like init.d start] — launch all microservices.
+      monkeypatched stop [like shutdown] — stop all services and API processes.
+    modality: document
+    source: src/monkeypatched/__init__.py
+    provenance: 1.0
+    freshness: 1.0
+    completeness: 0.6
+    consistency: 1.0
+
+  - id: cli-ref-003
+    content: >
+      monkeypatched health [like ping] queries GET /health. monkeypatched query
+      [like exec r/o] POSTs to /agentos/query. monkeypatched agents [like ps]
+      queries GET /agentos/agents. monkeypatched codegen [like make/cc] POSTs
+      to /codegen/microservice for single-service generation — distinct from
+      the full SDLC pipeline (POST /api/v1/agentos/sdlc/run), which walks
+      Specification through Release via CodeGenRuntime.
+    modality: document
+    source: src/monkeypatched/__init__.py
+    provenance: 1.0
+    freshness: 1.0
+    completeness: 0.6
+    consistency: 1.0

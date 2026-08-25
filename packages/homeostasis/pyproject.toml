@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monkeybrain-homeostasis"
+version = "1.0.0"
+description = "MonkeyBrain Homeostasis — Control plane for fleet management"
+readme = "README.md"
+license = { text = "Proprietary" }
+requires-python = ">=3.11"
+authors = [{ name = "Prashun Javeri" }]
+keywords = ["control-plane", "fleet", "deployment", "node-management"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+dependencies = []
+
+[tool.setuptools]
+packages = ["homeostasis"]
+
+[tool.setuptools.package-dir]
+homeostasis = "."

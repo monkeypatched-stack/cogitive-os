@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Generate Dockerfiles for all MonkeyBrain services."""
+
+import os
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+DOCKER_DIR = ROOT / "docker" / "services"
+DOCKER_DIR.mkdir(parents=True, exist_ok=True)
+
+SERVICES = [
+    ("auth", "services.auth.main:app", 8010),
+    ("assets", "services.assets.main:app", 8011),
+    ("customers", "services.customers.main:app", 8012),
+    ("events", "services.events.main:app", 8013),
+    ("facilities", "services.facilities.main:app", 8014),
+    ("floor-layout", "services.floor_layout.main:app", 8015),
+    ("inventory", "services.inventory.main:app", 8016),
+    ("iot", "services.iot.main:app", 8017),
+    ("orders", "services.orders.main:app", 8018),
+    ("pm", "services.pm.main:app", 8019),
+    ("procurement", "services.procurement.main:app", 8020),
+    ("products", "services.products.main:app", 8021),
+    ("shipping", "services.shipping.main:app", 8022),
+    ("shifts", "services.shifts.main:app", 8023),
+    ("suppliers", "services.suppliers.main:app", 8024),
+    ("taxonomy", "services.taxonomy.main:app", 8025),
+    ("process-definition", "services.process_definitions.main:app", 8000),
+    ("workorders", "services.workorders.main:app", 8027),
+    ("changeover", "services.changeover.main:app", 8028),
+    ("documents", "services.documents.main:app", 8029),
+    ("file", "services.file.src.core.config:app", 8030),
+    ("module-control", "services.module_control.main:app", 8032),
+    ("agentos", "services.agentos.main:app", 8031),
+]
+
+DOCKERFILE_TEMPLATE = """\
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \\
+    PYTHONUNBUFFERED=1 \\
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+RUN apt-get update && \\
+    apt-get install -y --no-install-recommends curl && \\
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+COPY requirements.txt .
+RUN uv pip install --system -r requirements.txt
+
+COPY src/ ./src/
+COPY services/common/ ./services/common/
+COPY services/{service_dir}/ ./services/{service_dir}/
+
+EXPOSE {port}
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \\
+    CMD curl -f http://localhost:{port}/health || exit 1
+
+CMD ["python", "-m", "uvicorn", "{module}", "--host", "0.0.0.0", "--port", "{port}"]
+"""
+
+for name, module, port in SERVICES:
+    service_dir = name.replace("-", "_")
+    dockerfile = DOCKERFILE_TEMPLATE.format(
+        service_dir=service_dir,
+        module=module,
+        port=port,
+    )
+    svc_dir = DOCKER_DIR / name
+    svc_dir.mkdir(exist_ok=True)
+    (svc_dir / "Dockerfile").write_text(dockerfile)
+    print(f"  Created {name}/Dockerfile (port {port})")
+
+print(f"\nGenerated {len(SERVICES)} Dockerfiles in {DOCKER_DIR}")

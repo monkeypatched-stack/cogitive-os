@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: webhook API
+  description: Webhook receiver and dispatcher
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/webhook
+  description: Capability endpoint
+paths:
+  /register:
+    create:
+      summary: Register a webhook endpoint
+      operationId: webhook_register
+      parameters:
+      - name: url
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: events
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /dispatch:
+    create:
+      summary: Dispatch a webhook event
+      operationId: webhook_dispatch
+      parameters:
+      - name: event
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: payload
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

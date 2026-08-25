@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "monkeypatched-sdk"
+version = "1.0.0"
+description = "MonkeyBrain SDK - Python SDK for the Cognitive Operating System"
+readme = "README_SDK.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.10"
+authors = [
+    {name = "MonkeyBrain Team", email = "team@monkeybrain.dev"},
+]
+keywords = [
+    "cognitive-operating-system",
+    "sdk",
+    "reinforcement-learning",
+    "industrial-ai",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "httpx>=0.24.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+full = [
+    "monkeybrain>=1.0.0",
+    "fastapi>=0.100.0",
+    "motor>=3.3.0",
+    "redis>=5.0.0",
+    "neo4j>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://monkeybrain.dev"
+Documentation = "https://docs.monkeybrain.dev"
+Repository = "https://github.com/monkeybrain/monkeybrain-sdk"
+
+[tool.hatch.build.targets.wheel]
+packages = ["python/monkeypatched_sdk"]

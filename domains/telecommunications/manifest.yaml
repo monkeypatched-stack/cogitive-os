@@ -1,0 +1,32 @@
+name: telecommunications
+version: "0.1.0"
+description: "Telecommunications bounded context — network monitoring, fault management, service provisioning"
+bounded_context:
+  name: telecommunications
+  aggregates:
+    - NetworkNode
+    - Fault
+    - ServiceOrder
+    - Customer
+    - Ticket
+  entities:
+    - NetworkNode
+    - Fault
+    - ServiceOrder
+    - Customer
+    - Ticket
+    - Circuit
+    - SLA
+  value_objects:
+    - NodeStatus
+    - FaultSeverity
+    - ServiceType
+    - TicketPriority
+  events:
+    - FaultDetected
+    - FaultResolved
+    - ServiceOrdered
+    - ServiceActivated
+    - ServiceSuspended
+    - TicketCreated
+    - TicketClosed

@@ -1,0 +1,101 @@
+module:
+  name: todo-api
+  description: Todo task management application
+preamble:
+  statement: You are a senior software architect generating a production-grade FastAPI
+    service for Todo task management application. The service is structured around
+    Domain-Driven Design with a Todo aggregate root, entities [TodoItem], and value
+    objects [Title, DueDate, Priority, Status]. Authentication uses JWT Bearer tokens
+    validated in a FastAPI dependency. All requests are structured-logged through
+    the Lemon logger with correlation-ID propagation. Errors are captured in Sentry
+    via a global middleware. All inbound/outbound spans are emitted via OpenTelemetry
+    middleware to the Lemon collector.
+invariants:
+- id: TODO-INV-001
+  rule: title_not_empty
+  statement: A Todo must have a non-empty title of at most 200 characters.
+  severity: critical
+  rejection: REJECTED — Todo title is empty or exceeds 200 chars.
+- id: TODO-INV-002
+  rule: cannot_complete_deleted
+  statement: A deleted Todo must never transition to completed.
+  severity: critical
+  rejection: REJECTED — Deleted Todo marked completed.
+- id: TODO-INV-003
+  rule: due_date_not_past_on_create
+  statement: DueDate must not be set to a date in the past at creation time.
+  severity: high
+  rejection: REJECTED — DueDate is in the past.
+- id: TODO-AUTH-001
+  rule: auth_on_every_protected_route
+  statement: Every non-public route must declare the get_current_user dependency.
+  severity: critical
+  rejection: REJECTED — Protected route missing auth dependency.
+- id: TODO-LOG-001
+  rule: lemon_structured_logging
+  statement: Every request handler must emit at least one structured Lemon log entry
+    with component, correlation_id, and user_id.
+  severity: high
+  rejection: REJECTED — Handler missing Lemon structured log.
+- id: TODO-OBS-001
+  rule: sentry_middleware_only
+  statement: Sentry capture must only happen in the global exception middleware, never
+    inside business logic.
+  severity: high
+  rejection: REJECTED — Manual sentry_sdk.capture_exception in business logic.
+- id: TODO-OBS-002
+  rule: otel_middleware_first
+  statement: OpenTelemetryMiddleware must be registered before any route-level middleware.
+  severity: high
+  rejection: REJECTED — OpenTelemetry middleware out of order.
+- id: TODO-DDD-001
+  rule: domain_no_framework_imports
+  statement: domain/ files must never import from fastapi, motor, httpx, or any infrastructure
+    package.
+  severity: critical
+  rejection: REJECTED — Domain layer contains framework import.
+- id: TODO-DDD-002
+  rule: domain_events_on_mutation
+  statement: Every Todo mutation must raise and publish at least one domain event.
+  severity: high
+  rejection: REJECTED — Todo mutation produces no domain event.
+cot:
+  steps:
+  - step: 1
+    title: Domain layer — entities, value objects, aggregates, events, repository
+      ABC
+    description: 'Pure Python only. Todo aggregate root enforces invariants, emits
+      TodoCreated, TodoCompleted, TodoDeleted, TodoReassigned. Subdirs: entities/,
+      value_objects/, aggregates/, repositories/, events/, services/, specifications/,
+      exceptions/, policies/'
+  - step: 2
+    title: Application layer — commands, queries, handlers, dto
+    description: 'Handlers orchestrate: load aggregate → invoke behavior → persist
+      → emit events. No framework imports. Subdirs: commands/, queries/, handlers/,
+      dto/'
+  - step: 3
+    title: Infrastructure layer — Motor repository, database connection
+    description: MotorTodoRepository in infrastructure/persistence/motor/. AsyncIOMotorClient
+      factory in infrastructure/database/. No SQLAlchemy.
+  - step: 4
+    title: API layer — FastAPI router, Pydantic schemas, JWT dependencies
+    description: router.py calls handlers ONLY. All protected routes use Depends(get_current_user)
+      from dependencies.py.
+  - step: 5
+    title: Main + settings — lifespan, Sentry, /health, structured logging
+    description: 'Lifespan: Sentry → Motor → yield → close. /health endpoint. Timing
+      middleware.'
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: APPROVED — todo API conforms to all DDD, auth, and observability invariants.
+    rejected:
+    - REJECTED — Todo title is empty or exceeds 200 chars.
+    - REJECTED — Deleted Todo marked completed.
+    - REJECTED — DueDate is in the past.
+    - REJECTED — Protected route missing auth dependency.
+    - REJECTED — Handler missing Lemon structured log.
+    - REJECTED — Manual sentry_sdk.capture_exception in business logic.
+    - REJECTED — OpenTelemetry middleware out of order.
+    - REJECTED — Domain layer contains framework import.
+    - REJECTED — Todo mutation produces no domain event.

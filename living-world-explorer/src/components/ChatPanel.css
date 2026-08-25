@@ -1,0 +1,129 @@
+.lwe-chat {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.lwe-chat-actor-picker {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--lwe-border);
+  font-size: 12px;
+}
+
+.lwe-chat-actor-picker label {
+  color: var(--lwe-text-muted);
+  font-weight: 600;
+}
+
+.lwe-chat-actor-picker select {
+  flex: 1 1 auto;
+  padding: 4px 6px;
+  border: 1px solid var(--lwe-border);
+  border-radius: 6px;
+  background: var(--lwe-bg);
+  color: var(--lwe-text);
+  font-size: 12px;
+}
+
+.lwe-chat-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lwe-chat-empty {
+  color: var(--lwe-text-muted);
+  font-size: 12px;
+  font-style: italic;
+  padding: 8px;
+}
+
+.lwe-chat-message {
+  max-width: 85%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.lwe-chat-message-user {
+  align-self: flex-end;
+  background: var(--lwe-accent);
+  color: var(--lwe-accent-contrast);
+}
+
+.lwe-chat-message-actor {
+  align-self: flex-start;
+  background: var(--lwe-surface-alt);
+  color: var(--lwe-text);
+}
+
+.lwe-chat-message-error {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--lwe-danger) 15%, var(--lwe-surface));
+  border: 1px solid var(--lwe-danger);
+  color: var(--lwe-text);
+}
+
+.lwe-chat-message-pending {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.lwe-chat-message-meta {
+  margin-top: 4px;
+  font-size: 10.5px;
+  opacity: 0.75;
+}
+
+.lwe-chat-message-time {
+  margin-top: 2px;
+  font-size: 9.5px;
+  opacity: 0.6;
+}
+
+.lwe-chat-input {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--lwe-border);
+}
+
+.lwe-chat-input input {
+  flex: 1 1 auto;
+  padding: 6px 8px;
+  border: 1px solid var(--lwe-border);
+  border-radius: 6px;
+  background: var(--lwe-bg);
+  color: var(--lwe-text);
+  font-size: 12.5px;
+}
+
+.lwe-chat-input input:disabled {
+  opacity: 0.6;
+}
+
+.lwe-chat-input button {
+  border: 1px solid var(--lwe-border);
+  background: var(--lwe-accent);
+  color: var(--lwe-accent-contrast);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.lwe-chat-input button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

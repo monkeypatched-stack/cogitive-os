@@ -1,0 +1,65 @@
+---
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalModule
+metadata:
+  name: {{ .Values.module.name }}
+  layer: 0
+  description: "Constitutional preamble — injected before every module prompt"
+spec:
+  owns:
+    - constitutional-preamble
+    - os-analogy
+    - global-invariants
+    - decision-rules
+  neverOwns:
+    - module-implementation
+    - capability-logic
+    - execution
+
+---
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalPrompt
+metadata:
+  name: meta-preamble
+  module: meta
+  phase: global
+spec:
+  preamble: {{ .Values.preamble.statement | quote }}
+
+  cot:
+    steps:
+      {{- range .Values.cot.steps }}
+      - step: {{ .step }}
+        instruction: {{ .instruction | quote }}
+        auditGate: true
+      {{- end }}
+
+  reviewGate:
+    mode: constitutional
+    criteria:
+      - "All abstractions map to exactly one OS layer"
+      - "LLM role is explorer not policy"
+      - "All INV-* invariants satisfied"
+    outcomes:
+      approved: "Conforms to Constitution v{{ $.Values.global.constitution.version | default "1.0.0" }}"
+      rejected:
+        - "Cognition found outside monkey_brain/kernel"
+        - "Execution policy found outside monkey_brain/kernel/rl"
+        - "Integration found outside cerebellum"
+        - "World model found outside cortex"
+
+---
+{{- range .Values.global.invariants }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalInvariant
+metadata:
+  name: {{ .id }}
+  module: global
+  severity: {{ .severity }}
+spec:
+  rule: {{ .rule }}
+  rationale: {{ .statement | quote }}
+  auditCheck: {{ printf "Verify: %s" .statement | quote }}
+  rejection: {{ printf "REJECTED — %s" .statement | quote }}
+---
+{{- end }}

@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: productivity API
+  description: Productivity tool integrations (Calendar, Drive, etc.)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/productivity
+  description: Capability endpoint
+paths:
+  /events:
+    create:
+      summary: Create a calendar event
+      operationId: productivity_create_event
+      parameters:
+      - name: title
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: start
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: end
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

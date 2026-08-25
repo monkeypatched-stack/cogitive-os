@@ -1,0 +1,33 @@
+.lwe-conversation-timeline { height: 100%; display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.lwe-conversation-controls { display: flex; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--lwe-border); margin-bottom: 12px; }
+.lwe-conversation-controls select { min-width: 0; padding: 4px 8px; border: 1px solid var(--lwe-border); border-radius: 5px; background: var(--lwe-bg); color: var(--lwe-text); font-size: 11px; }
+.lwe-conversation-controls input { flex: 1; min-width: 0; padding: 7px 9px; border: 1px solid var(--lwe-border); border-radius: 5px; background: var(--lwe-bg); color: var(--lwe-text); font-size: 12px; }
+.lwe-conversation-list { overflow: auto; min-height: 0; margin-bottom: 12px; }
+.lwe-conversation-row { width: 100%; display: grid; grid-template-columns: 130px minmax(80px, .7fr) 20px minmax(80px, .7fr) minmax(80px, .7fr) minmax(120px, 2fr); gap: 7px; align-items: center; padding: 7px 0; border: 0; border-top: 1px solid color-mix(in srgb, var(--lwe-border) 65%, transparent); background: transparent; color: var(--lwe-text); text-align: left; font-size: 11px; cursor: pointer; }
+.lwe-conversation-row:hover, .lwe-conversation-row-selected { background: color-mix(in srgb, var(--lwe-accent) 12%, var(--lwe-surface)); padding: 7px 8px; border-radius: 4px; }
+.lwe-conversation-row time, .lwe-conversation-thread { color: var(--lwe-text-muted); font-size: 10px; }
+.lwe-conversation-sender, .lwe-conversation-recipient { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lwe-conversation-arrow { color: var(--lwe-accent); text-align: center; }
+.lwe-conversation-detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--lwe-text-muted); }
+.lwe-conversation-empty, .lwe-conversation-error, .lwe-conversation-hint { padding: 0; font-size: 11px; color: var(--lwe-text-muted); }
+.lwe-conversation-error { color: var(--lwe-danger); margin-bottom: 12px; }
+.lwe-conversation-hint { border-top: 1px solid var(--lwe-border); padding-top: 12px; font-style: italic; }
+
+.lwe-conversation-animation { padding: 12px 0; border-bottom: 1px solid var(--lwe-border); background: transparent; margin-bottom: 12px; }
+.lwe-conversation-animation-route { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 11px; font-weight: 700; }
+.lwe-conversation-animation-arrow { color: var(--lwe-accent); font-size: 18px; line-height: 1; animation: lwe-message-travel 1.8s ease-in-out infinite; }
+.lwe-conversation-bubbles { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; }
+.lwe-conversation-bubble { max-width: 46%; padding: 6px 9px; border-radius: 9px; font-size: 11px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.lwe-conversation-bubble-sender { background: var(--lwe-accent); color: var(--lwe-accent-contrast); }
+.lwe-conversation-bubble-recipient { background: var(--lwe-bg); border: 1px solid var(--lwe-border); }
+.lwe-conversation-bubble-typing { animation: lwe-bubble-pulse 1s ease-in-out infinite; }
+.lwe-conversation-bubble-reply { animation: lwe-bubble-in .25s ease-out; }
+.lwe-conversation-bubble-complete { color: #168044; border-color: #62b889; }
+.lwe-conversation-message-row { display: grid; grid-template-columns: 72px 58px minmax(70px, .7fr) 18px minmax(70px, .7fr) minmax(120px, 2fr); gap: 7px; align-items: center; padding: 6px 0; border-top: 1px dashed var(--lwe-border); font-size: 10px; background: transparent; }
+.lwe-conversation-message-row time, .lwe-conversation-message-label { color: var(--lwe-text-muted); }
+.lwe-conversation-message-label { text-transform: uppercase; font-size: 9px; }
+.lwe-conversation-message-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--lwe-text-muted); }
+
+@keyframes lwe-message-travel { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+@keyframes lwe-bubble-pulse { 50% { opacity: .55; transform: translateY(1px); } }
+@keyframes lwe-bubble-in { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }

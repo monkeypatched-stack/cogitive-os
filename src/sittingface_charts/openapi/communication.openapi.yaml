@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: communication API
+  description: Multi-channel communication (email, SMS, chat)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/communication
+  description: Capability endpoint
+paths:
+  /send:
+    create:
+      summary: Send a message
+      operationId: communication_send
+      parameters:
+      - name: channel
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: to
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: message
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: subject
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

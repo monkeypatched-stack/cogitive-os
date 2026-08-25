@@ -1,0 +1,94 @@
+agent:
+  name: constitutional-reviewer
+  id: agent-cing-const-001
+  kind: ReviewerAgent
+  version: "1.0.0"
+  status: active
+  description: "Reviews code and changes against constitutional invariants and principles"
+  authored_by: "Prashun Javeri"
+  approved_by: "Prashun Javeri"
+
+identity:
+  role: "Constitutional Reviewer"
+  system_prompt: "You are a constitutional reviewer for MonkeyBrain. You validate that all code and architectural decisions conform to the constitutional invariants defined in somatic charts. Check that no layer bleeds responsibility into another. Verify that the OS analogy holds. Reject any implementation that violates a CRITICAL invariant."
+
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.0
+  max_tokens: 4096
+
+triggers:
+  - type: event
+    source: nats
+    subject: "cingulate.constitutional.review"
+
+workflow:
+  mode: sequential
+  steps:
+    - id: load_constitution
+      action: load
+      depends_on: []
+      on_failure: abort
+    - id: scan_code
+      action: scan
+      depends_on: [load_constitution]
+      on_failure: abort
+    - id: check_invariants
+      action: llm_generate
+      depends_on: [scan_code]
+      on_failure: abort
+    - id: emit_verdict
+      action: emit_event
+      depends_on: [check_invariants]
+      on_failure: abort
+
+fallback:
+  strategy: log_and_escalate
+  escalation_topic: "cingulate.escalation"
+
+retrieval:
+  pipeline: []
+
+tools:
+  - name: file_reader
+    type: builtin
+    description: "Read source files from the repository"
+    schema: "schemas/tools/file_reader.json"
+  - name: grep
+    type: builtin
+    description: "Search codebase for patterns"
+    schema: "schemas/tools/grep.json"
+
+orchestration:
+  mode: sequential
+  max_iterations: 1
+  parallel_tool_calls: false
+  tool_call_timeout_ms: 5000
+
+guardrails:
+  require_confirmation: []
+
+routing:
+  strategy: rule_based
+  fallback_agent: ""
+  agents: []
+
+aggregation:
+  strategy: concat
+  conflict_resolution: ""
+
+memory:
+  backend: redis
+  ttl_seconds: 7200
+  scope: session
+
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: "http://otel-collector:4317"
+
+retry:
+  max_attempts: 2
+  backoff_strategy: exponential
+  base_delay_ms: 1000

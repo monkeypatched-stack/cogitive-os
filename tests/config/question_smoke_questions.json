@@ -1,0 +1,423 @@
+{
+  "version": "1.0.0",
+  "description": "Sentinel-X/GraphRAG question smoke bank for backend and UI automation.",
+  "defaults": {
+    "target_count": 200,
+    "endpoint": "/api/v1/agentos/query",
+    "top_k": 8,
+    "traversal_depth": 1,
+    "path_limit_per_hit": 5,
+    "role": "admin",
+    "user_id": "question-smoke-runner",
+    "use_retrieval": false,
+    "use_memory": false,
+    "bypass_cache": true
+  },
+  "questions": [
+    {
+      "id": "topology_plant_count",
+      "category": "shop_floor_topology",
+      "question": "How many plants are in the system?",
+      "expect_any": ["plant", "plants", "Ahmedabad", "Hyderabad"]
+    },
+    {
+      "id": "topology_line_count",
+      "category": "shop_floor_topology",
+      "question": "How many production lines are configured?",
+      "expect_any": ["line", "lines"]
+    },
+    {
+      "id": "topology_stage_count",
+      "category": "shop_floor_topology",
+      "question": "How many stages are configured across the production shop floor?",
+      "expect_any": ["stage", "stages"]
+    },
+    {
+      "id": "topology_workstation_count",
+      "category": "shop_floor_topology",
+      "question": "How many workstations are configured?",
+      "expect_any": ["workstation", "workstations"]
+    },
+    {
+      "id": "topology_line_stages",
+      "category": "shop_floor_topology",
+      "question": "Which stages are linked to Ahmedabad OSD Line 1?",
+      "expect_any": ["stage", "line", "Ahmedabad", "OSD"]
+    },
+    {
+      "id": "topology_stage_workstations",
+      "category": "shop_floor_topology",
+      "question": "Which workstations are linked to the blending stage?",
+      "expect_any": ["workstation", "blending", "stage"]
+    },
+    {
+      "id": "topology_plant_location",
+      "category": "shop_floor_topology",
+      "question": "Where is the Ahmedabad plant located?",
+      "expect_any": ["Ahmedabad", "location", "India", "plant"]
+    },
+    {
+      "id": "assets_machine_count",
+      "category": "assets",
+      "question": "How many machines are in the system?",
+      "expect_any": ["machine", "machines"]
+    },
+    {
+      "id": "assets_equipment_count",
+      "category": "assets",
+      "question": "How many equipment records are in the system?",
+      "expect_any": ["equipment"]
+    },
+    {
+      "id": "assets_device_count",
+      "category": "assets",
+      "question": "How many devices are in the system?",
+      "expect_any": ["device", "devices", "equipment"]
+    },
+    {
+      "id": "assets_blender_details",
+      "category": "assets",
+      "question": "Show details for Blender 1.",
+      "expect_any": ["Blender", "machine", "status", "workstation"]
+    },
+    {
+      "id": "assets_machine_workstation",
+      "category": "assets",
+      "question": "Which workstation is Blender 1 assigned to?",
+      "expect_any": ["Blender", "workstation"]
+    },
+    {
+      "id": "assets_workstation_machines",
+      "category": "assets",
+      "question": "Which machines are assigned to Blending Workstation 1?",
+      "expect_any": ["machine", "Blending Workstation"]
+    },
+    {
+      "id": "assets_workstation_equipment",
+      "category": "assets",
+      "question": "Which equipment is assigned to Blending Workstation 1?",
+      "expect_any": ["equipment", "Blending Workstation"]
+    },
+    {
+      "id": "assets_parts_low_stock",
+      "category": "assets",
+      "question": "Which machine parts are low stock?",
+      "expect_any": ["part", "stock", "machine"]
+    },
+    {
+      "id": "workorders_count",
+      "category": "workorders",
+      "question": "How many work orders are open?",
+      "expect_any": ["work order", "work orders", "open"]
+    },
+    {
+      "id": "workorders_for_machine",
+      "category": "workorders",
+      "question": "Show work orders for Blender 1.",
+      "expect_any": ["work order", "Blender"]
+    },
+    {
+      "id": "workorders_latest_for_machine",
+      "category": "workorders",
+      "question": "What is the latest work order for Blender 1?",
+      "expect_any": ["latest", "work order", "Blender"]
+    },
+    {
+      "id": "workorders_status",
+      "category": "workorders",
+      "question": "What is the status of work order WO-OSD-001?",
+      "expect_any": ["WO-OSD-001", "status", "work order"]
+    },
+    {
+      "id": "workorders_valid_status",
+      "category": "workorders",
+      "question": "What statuses are valid for a work order?",
+      "expect_any": ["status", "valid", "work order"]
+    },
+    {
+      "id": "workorders_events",
+      "category": "workorders",
+      "question": "What events were created for the latest work order?",
+      "expect_any": ["event", "work order"]
+    },
+    {
+      "id": "maintenance_machine_events",
+      "category": "maintenance",
+      "question": "Show maintenance events for Blender 1.",
+      "expect_any": ["maintenance", "Blender"]
+    },
+    {
+      "id": "maintenance_cleaning",
+      "category": "maintenance",
+      "question": "Which cleaning records are linked to process execution?",
+      "expect_any": ["cleaning", "process", "execution"]
+    },
+    {
+      "id": "maintenance_calibration",
+      "category": "maintenance",
+      "question": "Which calibration records are due or pending?",
+      "expect_any": ["calibration", "due", "pending"]
+    },
+    {
+      "id": "process_sop_for_workstation",
+      "category": "process_and_sop",
+      "question": "Which SOP applies to Blending Workstation 1?",
+      "expect_any": ["SOP", "Blending Workstation"]
+    },
+    {
+      "id": "process_constraints_workstation",
+      "category": "process_and_sop",
+      "question": "What constraints are there for execution at Blending Workstation 1?",
+      "expect_any": ["constraint", "Blending Workstation"]
+    },
+    {
+      "id": "process_prechecks",
+      "category": "process_and_sop",
+      "question": "What prechecks must pass before blender speed changes?",
+      "expect_any": ["precheck", "blender", "speed"]
+    },
+    {
+      "id": "process_postchecks",
+      "category": "process_and_sop",
+      "question": "What postchecks verify content uniformity after blending?",
+      "expect_any": ["postcheck", "content uniformity", "blending"]
+    },
+    {
+      "id": "process_corrective_actions",
+      "category": "process_and_sop",
+      "question": "What corrective actions are linked to failed content uniformity checks?",
+      "expect_any": ["corrective", "content uniformity"]
+    },
+    {
+      "id": "process_approval_chain",
+      "category": "process_and_sop",
+      "question": "What is the SOP approval reporting chain for the blender speed SOP?",
+      "expect_any": ["approval", "SOP", "blender"]
+    },
+    {
+      "id": "kpi_quality",
+      "category": "production_kpi",
+      "question": "Show Quality and Cost KPIs.",
+      "expect_any": ["Quality", "KPI", "Cost", "Yield"]
+    },
+    {
+      "id": "kpi_capacity",
+      "category": "production_kpi",
+      "question": "What is the capacity utilization of HYD-FRM-02?",
+      "expect_any": ["capacity", "utilization", "HYD-FRM-02"]
+    },
+    {
+      "id": "kpi_throughput",
+      "category": "production_kpi",
+      "question": "What is the throughput rate for Ahmedabad tablet production?",
+      "expect_any": ["throughput", "Ahmedabad", "production"]
+    },
+    {
+      "id": "kpi_yield",
+      "category": "production_kpi",
+      "question": "What is the yield rate for Ahmedabad OSD production?",
+      "expect_any": ["yield", "Ahmedabad", "OSD"]
+    },
+    {
+      "id": "batch_records_list",
+      "category": "batch_records",
+      "question": "List recent batch records.",
+      "expect_any": ["batch", "record"]
+    },
+    {
+      "id": "batch_execution",
+      "category": "batch_records",
+      "question": "Show batch execution records for the latest production batch.",
+      "expect_any": ["batch", "execution"]
+    },
+    {
+      "id": "batch_release",
+      "category": "batch_records",
+      "question": "Which batch release workflows are pending?",
+      "expect_any": ["batch", "release", "pending"]
+    },
+    {
+      "id": "batch_yield_reconciliation",
+      "category": "batch_records",
+      "question": "Show yield reconciliation for the latest batch.",
+      "expect_any": ["yield", "reconciliation", "batch"]
+    },
+    {
+      "id": "quality_ipc",
+      "category": "quality",
+      "question": "Show IPC result records for content uniformity.",
+      "expect_any": ["IPC", "content uniformity", "result"]
+    },
+    {
+      "id": "quality_deviation",
+      "category": "quality",
+      "question": "Are there quality deviations linked to blender speed changes?",
+      "expect_any": ["quality", "deviation", "blender"]
+    },
+    {
+      "id": "quality_cpp_cqa",
+      "category": "quality",
+      "question": "Which CPPs and CQAs are registered for blending?",
+      "expect_any": ["CPP", "CQA", "blending"]
+    },
+    {
+      "id": "documents_summary",
+      "category": "documents",
+      "question": "Summarize the indexed blender speed SOP document.",
+      "expect_any": ["SOP", "blender", "document"]
+    },
+    {
+      "id": "documents_deep_research",
+      "category": "documents",
+      "question": "What uploaded document evidence supports blender speed changes?",
+      "expect_any": ["document", "evidence", "blender"]
+    },
+    {
+      "id": "compliance_approvals_admin",
+      "category": "compliance",
+      "question": "Show pending approvals.",
+      "role": "admin",
+      "expect_any": ["approval", "pending"]
+    },
+    {
+      "id": "compliance_audit_admin",
+      "category": "compliance",
+      "question": "Show recent Part 11 audit events.",
+      "role": "admin",
+      "expect_any": ["audit", "Part 11"]
+    },
+    {
+      "id": "compliance_rbac_denial_operator",
+      "category": "compliance",
+      "question": "Show recent Part 11 audit events.",
+      "role": "operator",
+      "expect_any": ["permission", "escalat", "not allowed", "protected", "audit", "compliance"]
+    },
+    {
+      "id": "workers_by_stage",
+      "category": "workers",
+      "question": "Which workers are assigned to the blending stage?",
+      "expect_any": ["worker", "blending", "assigned"]
+    },
+    {
+      "id": "workers_reporting",
+      "category": "workers",
+      "question": "Who reports to the line manager?",
+      "expect_any": ["reports", "manager", "worker"]
+    },
+    {
+      "id": "workers_workstation_assignment",
+      "category": "workers",
+      "question": "Who is assigned to Blending Workstation 1?",
+      "expect_any": ["assigned", "Blending Workstation"]
+    },
+    {
+      "id": "sensor_latest",
+      "category": "telemetry_optional",
+      "question": "What is the latest sensor reading for the blender?",
+      "expect_any": ["sensor", "reading", "blender"]
+    },
+    {
+      "id": "sensor_workstation",
+      "category": "telemetry_optional",
+      "question": "Which sensors are linked to Blending Workstation 1?",
+      "expect_any": ["sensor", "Blending Workstation"]
+    },
+    {
+      "id": "sensor_impact_question",
+      "category": "telemetry_optional",
+      "question": "What happens if the blender temperature sensor jumps above threshold?",
+      "expect_any": ["temperature", "threshold", "risk", "quality"]
+    },
+    {
+      "id": "integration_wms_inventory",
+      "category": "integration_backed",
+      "question": "What warehouse inventory movements are visible from WMS integration?",
+      "expect_any": ["warehouse", "inventory", "WMS", "movement"]
+    },
+    {
+      "id": "integration_cmms_maintenance",
+      "category": "integration_backed",
+      "question": "What maintenance events came from CMMS integration?",
+      "expect_any": ["maintenance", "CMMS"]
+    },
+    {
+      "id": "integration_dms_documents",
+      "category": "integration_backed",
+      "question": "What controlled documents came from the document management integration?",
+      "expect_any": ["document", "integration"]
+    },
+    {
+      "id": "integration_lims_samples",
+      "category": "integration_backed",
+      "question": "What LIMS sample results are available for the latest batch?",
+      "expect_any": ["LIMS", "sample", "batch"]
+    },
+    {
+      "id": "world_model_speed_up",
+      "category": "world_model_reasoning",
+      "question": "If I increase blender speed by 10%, what impact will it have on content uniformity?",
+      "expect_any": ["Recommendation", "Throughput", "Quality", "Approval"]
+    },
+    {
+      "id": "world_model_speed_down",
+      "category": "world_model_reasoning",
+      "question": "If I decrease blender speed by 5%, what happens to throughput and quality?",
+      "expect_any": ["throughput", "quality", "Approval"]
+    },
+    {
+      "id": "world_model_sop_change",
+      "category": "world_model_reasoning",
+      "question": "What is the impact if we change the blender speed SOP?",
+      "expect_any": ["SOP", "impact", "approval"]
+    },
+    {
+      "id": "world_model_capacity_constraint",
+      "category": "world_model_reasoning",
+      "question": "What happens if event X creates a downstream capacity conflict on the blending line?",
+      "expect_any": ["capacity", "conflict", "simulation", "approval"]
+    },
+    {
+      "id": "world_model_preventive_workorder",
+      "category": "world_model_reasoning",
+      "question": "Can we add a preventive work order for a simulated high-temperature run once approved?",
+      "expect_any": ["preventive", "work order", "approval", "simulation"]
+    },
+    {
+      "id": "world_model_action_boundary",
+      "category": "world_model_reasoning",
+      "question": "Does the reasoning layer execute actions directly or only publish approved events for agents?",
+      "expect_any": ["reasoning", "approval", "agent", "execute"]
+    },
+    {
+      "id": "world_model_confidence",
+      "category": "world_model_reasoning",
+      "question": "Should the system require human approval until model confidence is high enough?",
+      "expect_any": ["confidence", "approval", "human"]
+    },
+    {
+      "id": "module_control_hidden_modules",
+      "category": "module_control_boundary",
+      "question": "Are warehouse, IoT, order, product, customer, supplier, shift, and changeover modules hidden unless enabled?",
+      "expect_any": ["hidden", "enabled", "Module Control", "integration"]
+    },
+    {
+      "id": "module_control_integrations",
+      "category": "module_control_boundary",
+      "question": "Which integrations can add nodes to the graph through direct transformations?",
+      "expect_any": ["SAP", "Oracle", "Veeva", "LIMS", "WMS", "CMMS", "document"]
+    },
+    {
+      "id": "unsupported_world_question",
+      "category": "negative_controls",
+      "question": "Who won a random football game yesterday?",
+      "expect_any": ["not have", "unsupported", "local system", "graph intent"]
+    },
+    {
+      "id": "short_followup_negative",
+      "category": "negative_controls",
+      "question": "yes",
+      "expect_any": ["full graph question", "ask the full"]
+    }
+  ]
+}

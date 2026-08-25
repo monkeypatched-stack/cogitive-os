@@ -1,0 +1,4509 @@
+openapi: 3.1.0
+info:
+  title: orders API
+  description: MonkeyBrain orders service API
+  version: 1.0.0
+paths:
+  /api/v1/orders/:
+    get:
+      tags:
+      - Orders
+      summary: List Orders
+      operationId: list_orders_api_v1_orders__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Orders
+      summary: Create Order
+      operationId: create_order_api_v1_orders__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/orders/{order_id}:
+    get:
+      tags:
+      - Orders
+      summary: Get Order
+      operationId: get_order_api_v1_orders__order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Orders
+      summary: Update Order
+      operationId: update_order_api_v1_orders__order_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Orders
+      summary: Delete Order
+      operationId: delete_order_api_v1_orders__order_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/invoices/:
+    get:
+      tags:
+      - Invoices
+      summary: List Invoices
+      operationId: list_invoices_api_v1_invoices__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoiceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Invoices
+      summary: Create Invoice
+      operationId: create_invoice_api_v1_invoices__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/invoices/by-number/{invoice_no}:
+    get:
+      tags:
+      - Invoices
+      summary: Get Invoice By Number
+      operationId: get_invoice_by_number_api_v1_invoices_by_number__invoice_no__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: invoice_no
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Invoice No
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/invoices/by-customer/{customer_id}:
+    get:
+      tags:
+      - Invoices
+      summary: List Invoices By Customer
+      operationId: list_invoices_by_customer_api_v1_invoices_by_customer__customer_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+                title: Response List Invoices By Customer Api V1 Invoices By Customer  Customer
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/invoices/by-status/{invoice_status}:
+    get:
+      tags:
+      - Invoices
+      summary: List Invoices By Status
+      operationId: list_invoices_by_status_api_v1_invoices_by_status__invoice_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: invoice_status
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/InvoiceStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+                title: Response List Invoices By Status Api V1 Invoices By Status  Invoice
+                  Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/invoices/{invoice_id}:
+    get:
+      tags:
+      - Invoices
+      summary: Get Invoice
+      operationId: get_invoice_api_v1_invoices__invoice_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Invoice Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Invoices
+      summary: Update Invoice
+      operationId: update_invoice_api_v1_invoices__invoice_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Invoice Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Invoices
+      summary: Delete Invoice
+      operationId: delete_invoice_api_v1_invoices__invoice_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Invoice Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-details/:
+    get:
+      tags:
+      - Order Details
+      summary: List Order Details
+      operationId: list_order_details_api_v1_order_details__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Order Details
+      summary: Create Order Details
+      operationId: create_order_details_api_v1_order_details__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderDetailsCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-details/{order_id}:
+    get:
+      tags:
+      - Order Details
+      summary: Get Order Details
+      operationId: get_order_details_api_v1_order_details__order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Order Details
+      summary: Update Order Details
+      operationId: update_order_details_api_v1_order_details__order_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderDetailsUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Order Details
+      summary: Delete Order Details
+      operationId: delete_order_details_api_v1_order_details__order_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-customer-metrics/:
+    get:
+      tags:
+      - Order Customer Metrics
+      summary: List Order Customer Metrics
+      operationId: list_order_customer_metrics_api_v1_order_customer_metrics__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Order Customer Metrics
+      summary: Create Order Customer Metrics
+      operationId: create_order_customer_metrics_api_v1_order_customer_metrics__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerOrderMetricsCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-customer-metrics/{order_id}:
+    get:
+      tags:
+      - Order Customer Metrics
+      summary: Get Order Customer Metrics
+      operationId: get_order_customer_metrics_api_v1_order_customer_metrics__order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Order Customer Metrics
+      summary: Update Order Customer Metrics
+      operationId: update_order_customer_metrics_api_v1_order_customer_metrics__order_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerOrderMetricsUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Order Customer Metrics
+      summary: Delete Order Customer Metrics
+      operationId: delete_order_customer_metrics_api_v1_order_customer_metrics__order_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-metadata/:
+    get:
+      tags:
+      - Order Metadata
+      summary: List Order Metadata
+      operationId: list_order_metadata_api_v1_order_metadata__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Order Metadata
+      summary: Create Order Metadata
+      operationId: create_order_metadata_api_v1_order_metadata__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderMetadataCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-metadata/{order_id}:
+    get:
+      tags:
+      - Order Metadata
+      summary: Get Order Metadata
+      operationId: get_order_metadata_api_v1_order_metadata__order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Order Metadata
+      summary: Update Order Metadata
+      operationId: update_order_metadata_api_v1_order_metadata__order_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderMetadataUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Order Metadata
+      summary: Delete Order Metadata
+      operationId: delete_order_metadata_api_v1_order_metadata__order_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-payment-metadata/:
+    get:
+      tags:
+      - Order Payment Metadata
+      summary: List Order Payment Metadata
+      operationId: list_order_payment_metadata_api_v1_order_payment_metadata__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderPaymentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Order Payment Metadata
+      summary: Create Order Payment Metadata
+      operationId: create_order_payment_metadata_api_v1_order_payment_metadata__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPaymentMetadataCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderPaymentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/order-payment-metadata/{order_id}:
+    get:
+      tags:
+      - Order Payment Metadata
+      summary: Get Order Payment Metadata
+      operationId: get_order_payment_metadata_api_v1_order_payment_metadata__order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderPaymentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Order Payment Metadata
+      summary: Update Order Payment Metadata
+      operationId: update_order_payment_metadata_api_v1_order_payment_metadata__order_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPaymentMetadataUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderPaymentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Order Payment Metadata
+      summary: Delete Order Payment Metadata
+      operationId: delete_order_payment_metadata_api_v1_order_payment_metadata__order_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Order Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sales-orders/:
+    get:
+      tags:
+      - Sales Orders
+      summary: List Sales Orders
+      operationId: list_sales_orders_api_v1_sales_orders__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalesOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Sales Orders
+      summary: Create Sales Order
+      operationId: create_sales_order_api_v1_sales_orders__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sales-orders/by-customer/{customer_id}:
+    get:
+      tags:
+      - Sales Orders
+      summary: List Sales Orders By Customer
+      operationId: list_sales_orders_by_customer_api_v1_sales_orders_by_customer__customer_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalesOrderResponse'
+                title: Response List Sales Orders By Customer Api V1 Sales Orders
+                  By Customer  Customer Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sales-orders/by-status/{sales_status}:
+    get:
+      tags:
+      - Sales Orders
+      summary: List Sales Orders By Status
+      operationId: list_sales_orders_by_status_api_v1_sales_orders_by_status__sales_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sales_status
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/SalesOrderStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalesOrderResponse'
+                title: Response List Sales Orders By Status Api V1 Sales Orders By
+                  Status  Sales Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sales-orders/by-sku/{sku}:
+    get:
+      tags:
+      - Sales Orders
+      summary: List Sales Orders By Sku
+      operationId: list_sales_orders_by_sku_api_v1_sales_orders_by_sku__sku__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sku
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SalesOrderResponse'
+                title: Response List Sales Orders By Sku Api V1 Sales Orders By Sku  Sku  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sales-orders/{sales_order_id}:
+    get:
+      tags:
+      - Sales Orders
+      summary: Get Sales Order
+      operationId: get_sales_order_api_v1_sales_orders__sales_order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sales_order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sales Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Sales Orders
+      summary: Update Sales Order
+      operationId: update_sales_order_api_v1_sales_orders__sales_order_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sales_order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sales Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalesOrderUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesOrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Sales Orders
+      summary: Delete Sales Order
+      operationId: delete_sales_order_api_v1_sales_orders__sales_order_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sales_order_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sales Order Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    BankDetails:
+      properties:
+        bank_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank Name
+        branch_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Name
+        account_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Account Number
+        ifsc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ifsc
+      additionalProperties: true
+      type: object
+      title: BankDetails
+    BulkImportInfo:
+      properties:
+        batch_id:
+          type: string
+          title: Batch Id
+        import_date:
+          type: string
+          format: date-time
+          title: Import Date
+        source_file:
+          type: string
+          title: Source File
+        row_number:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Row Number
+        validation_errors:
+          items:
+            type: string
+          type: array
+          title: Validation Errors
+      type: object
+      required:
+      - batch_id
+      - source_file
+      title: BulkImportInfo
+    Buyer:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address
+        gstin_uin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gstin Uin
+        gstin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gstin
+        state_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State Name
+        state_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State Code
+        email:
+          anyOf:
+          - type: string
+            format: email
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+      additionalProperties: true
+      type: object
+      title: Buyer
+    CustomerOrderMetricsCreate:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+          description: Unique identifier for the order
+          example: ORD123456
+        returns_exchanges_requested:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Returns Exchanges Requested
+          description: Number of items requested for return or exchange
+          example: 5
+        backordered_items:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Backordered Items
+          description: Number of items that were backordered in the order
+          example: 2
+        shipping_tracking_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Tracking Number
+          description: Tracking number provided by the shipping carrier
+          example: 12999AA10123456784
+        order_fulfillment_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Fulfillment Location
+          description: Location from which the order was fulfilled, for example Warehouse
+            A
+          example: Warehouse B
+        customs_clearance_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customs Clearance Status
+          description: Customs status for international shipments, if applicable
+          example: Cleared
+        order_handling_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Handling Time
+          description: Time taken to handle and prepare the order before shipment
+            in days
+          example: 1
+        shipping_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Status
+          description: Current status of the order's shipment, for example In Transit,
+            Delivered, or Pending
+          example: In Transit
+        order_delivery_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Delivery Time
+          description: Time taken for the order to be delivered from shipment in days
+          example: 3
+        customer_feedback_score:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Customer Feedback Score
+          description: Customer rating or feedback score for the order experience
+            from 1-10
+          example: 8
+        order_quality_rating:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Quality Rating
+          description: Rating based on the quality of the received items from 1-5
+          example: 4
+        failed_delivery_attempts:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Failed Delivery Attempts
+          description: Number of failed delivery attempts for the order
+          example: 1
+        damage_defect_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Damage Defect Rate
+          description: Percentage of orders with damage or defects reported by the
+            customer
+          example: 2.0
+        order_resolution_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Resolution Time
+          description: Time taken to resolve any issues in days
+          example: 1
+        customer_service_interaction_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Customer Service Interaction Count
+          description: Number of customer service interactions for the order
+          example: 2
+        order_accuracy_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Order Accuracy Rate
+          description: Percentage of orders that were fulfilled correctly
+          example: 98.0
+        late_shipment_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Late Shipment Rate
+          description: Percentage of orders shipped later than the expected date
+          example: 4.0
+        customer_loyalty_index:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Customer Loyalty Index
+          description: A score indicating the likelihood of the customer returning
+          example: 85.0
+        order_fulfillment_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Fulfillment Time
+          description: Total time taken to process an order from placement to delivery
+            in days
+          example: 10
+        lead_time_variability:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Time Variability
+          description: Consistency of lead times for fulfilling orders
+          example: "\xB12 days"
+        cycle_time_for_time_sensitive_orders:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Cycle Time For Time Sensitive Orders
+          description: Time taken to process and fulfill priority orders in days
+          example: 5
+        missed_priority_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Missed Priority Order Rate
+          description: Percentage of priority orders not fulfilled within the expected
+            timeframe
+          example: 3.0
+        backlogged_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Backlogged Order Rate
+          description: Percentage of orders delivered after the promised deadline
+          example: 4.0
+        critical_path_completion_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Critical Path Completion Rate
+          description: Percentage of critical path tasks completed on time
+          example: 95.0
+        order_cycle_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Cycle Time
+          description: Time from order placement to delivery in days
+          example: 12
+        order_fill_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Order Fill Rate
+          description: Percentage of customer orders fully fulfilled on the first
+            attempt
+          example: 99.0
+        perfect_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Perfect Order Rate
+          description: Percentage of orders delivered without issues
+          example: 96.0
+      type: object
+      required:
+      - order_id
+      title: CustomerOrderMetricsCreate
+    CustomerOrderMetricsResponse:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+          description: Unique identifier for the order
+          example: ORD123456
+        returns_exchanges_requested:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Returns Exchanges Requested
+          description: Number of items requested for return or exchange
+          example: 5
+        backordered_items:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Backordered Items
+          description: Number of items that were backordered in the order
+          example: 2
+        shipping_tracking_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Tracking Number
+          description: Tracking number provided by the shipping carrier
+          example: 12999AA10123456784
+        order_fulfillment_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Fulfillment Location
+          description: Location from which the order was fulfilled, for example Warehouse
+            A
+          example: Warehouse B
+        customs_clearance_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customs Clearance Status
+          description: Customs status for international shipments, if applicable
+          example: Cleared
+        order_handling_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Handling Time
+          description: Time taken to handle and prepare the order before shipment
+            in days
+          example: 1
+        shipping_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Status
+          description: Current status of the order's shipment, for example In Transit,
+            Delivered, or Pending
+          example: In Transit
+        order_delivery_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Delivery Time
+          description: Time taken for the order to be delivered from shipment in days
+          example: 3
+        customer_feedback_score:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Customer Feedback Score
+          description: Customer rating or feedback score for the order experience
+            from 1-10
+          example: 8
+        order_quality_rating:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Quality Rating
+          description: Rating based on the quality of the received items from 1-5
+          example: 4
+        failed_delivery_attempts:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Failed Delivery Attempts
+          description: Number of failed delivery attempts for the order
+          example: 1
+        damage_defect_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Damage Defect Rate
+          description: Percentage of orders with damage or defects reported by the
+            customer
+          example: 2.0
+        order_resolution_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Resolution Time
+          description: Time taken to resolve any issues in days
+          example: 1
+        customer_service_interaction_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Customer Service Interaction Count
+          description: Number of customer service interactions for the order
+          example: 2
+        order_accuracy_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Order Accuracy Rate
+          description: Percentage of orders that were fulfilled correctly
+          example: 98.0
+        late_shipment_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Late Shipment Rate
+          description: Percentage of orders shipped later than the expected date
+          example: 4.0
+        customer_loyalty_index:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Customer Loyalty Index
+          description: A score indicating the likelihood of the customer returning
+          example: 85.0
+        order_fulfillment_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Fulfillment Time
+          description: Total time taken to process an order from placement to delivery
+            in days
+          example: 10
+        lead_time_variability:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Time Variability
+          description: Consistency of lead times for fulfilling orders
+          example: "\xB12 days"
+        cycle_time_for_time_sensitive_orders:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Cycle Time For Time Sensitive Orders
+          description: Time taken to process and fulfill priority orders in days
+          example: 5
+        missed_priority_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Missed Priority Order Rate
+          description: Percentage of priority orders not fulfilled within the expected
+            timeframe
+          example: 3.0
+        backlogged_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Backlogged Order Rate
+          description: Percentage of orders delivered after the promised deadline
+          example: 4.0
+        critical_path_completion_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Critical Path Completion Rate
+          description: Percentage of critical path tasks completed on time
+          example: 95.0
+        order_cycle_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Cycle Time
+          description: Time from order placement to delivery in days
+          example: 12
+        order_fill_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Order Fill Rate
+          description: Percentage of customer orders fully fulfilled on the first
+            attempt
+          example: 99.0
+        perfect_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Perfect Order Rate
+          description: Percentage of orders delivered without issues
+          example: 96.0
+      type: object
+      required:
+      - order_id
+      title: CustomerOrderMetricsResponse
+    CustomerOrderMetricsUpdate:
+      properties:
+        returns_exchanges_requested:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Returns Exchanges Requested
+        backordered_items:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Backordered Items
+        shipping_tracking_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Tracking Number
+        order_fulfillment_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Fulfillment Location
+        customs_clearance_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customs Clearance Status
+        order_handling_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Handling Time
+        shipping_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Status
+        order_delivery_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Delivery Time
+        customer_feedback_score:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Customer Feedback Score
+        order_quality_rating:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Quality Rating
+        failed_delivery_attempts:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Failed Delivery Attempts
+        damage_defect_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Damage Defect Rate
+        order_resolution_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Resolution Time
+        customer_service_interaction_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Customer Service Interaction Count
+        order_accuracy_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Order Accuracy Rate
+        late_shipment_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Late Shipment Rate
+        customer_loyalty_index:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Customer Loyalty Index
+        order_fulfillment_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Fulfillment Time
+        lead_time_variability:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Time Variability
+        cycle_time_for_time_sensitive_orders:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Cycle Time For Time Sensitive Orders
+        missed_priority_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Missed Priority Order Rate
+        backlogged_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Backlogged Order Rate
+        critical_path_completion_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Critical Path Completion Rate
+        order_cycle_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Order Cycle Time
+        order_fill_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Order Fill Rate
+        perfect_order_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Perfect Order Rate
+      type: object
+      title: CustomerOrderMetricsUpdate
+    CustomerPortalAccess:
+      properties:
+        enabled:
+          type: boolean
+          title: Enabled
+          default: true
+        customer_user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer User Id
+        last_login:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Login
+        login_count:
+          type: integer
+          title: Login Count
+          default: 0
+      type: object
+      title: CustomerPortalAccess
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    InvoiceAttachment:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+        file_name:
+          type: string
+          title: File Name
+        file_url:
+          type: string
+          title: File Url
+        file_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Type
+        file_size:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: File Size
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        uploaded_at:
+          type: string
+          format: date-time
+          title: Uploaded At
+        uploaded_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uploaded By
+      type: object
+      required:
+      - file_name
+      - file_url
+      title: InvoiceAttachment
+    InvoiceCreate:
+      properties:
+        seller:
+          anyOf:
+          - $ref: '#/components/schemas/Seller'
+          - type: 'null'
+        buyer:
+          anyOf:
+          - $ref: '#/components/schemas/Buyer'
+          - type: 'null'
+        invoice_details:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceDetails'
+          - type: 'null'
+        items:
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+          type: array
+          title: Items
+        total:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceTotal'
+          - type: 'null'
+        bank_details:
+          anyOf:
+          - $ref: '#/components/schemas/BankDetails'
+          - type: 'null'
+        amount_in_words:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Amount In Words
+        tax_amount_in_words:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Amount In Words
+        declaration:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Declaration
+        status:
+          $ref: '#/components/schemas/InvoiceStatus'
+          default: draft
+        source_reference:
+          anyOf:
+          - $ref: '#/components/schemas/SourceReference'
+          - type: 'null'
+        recurring:
+          anyOf:
+          - $ref: '#/components/schemas/RecurringInvoiceConfig'
+          - type: 'null'
+        notes:
+          items:
+            $ref: '#/components/schemas/InvoiceNote'
+          type: array
+          title: Notes
+        attachments:
+          items:
+            $ref: '#/components/schemas/InvoiceAttachment'
+          type: array
+          title: Attachments
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+      additionalProperties: true
+      type: object
+      title: InvoiceCreate
+    InvoiceDetails:
+      properties:
+        invoice_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoice No
+        date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Date
+        due_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Due Date
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        ack_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ack No
+        ack_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ack Date
+        irn:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Irn
+        challan_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Challan No
+        challan_date:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Challan Date
+        reverse_charge:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reverse Charge
+        lr_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lr No
+        transport:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transport
+        transport_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transport Id
+        vehicle_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Vehicle Number
+        po_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Po Number
+      additionalProperties: true
+      type: object
+      title: InvoiceDetails
+    InvoiceItem:
+      properties:
+        sl_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sl No
+        si_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Si No
+        product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Id
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        hsn_sac:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Hsn Sac
+        quantity:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Quantity
+        rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rate
+        per:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Per
+        discount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Discount
+        taxable_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxable Value
+        amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Amount
+        cgst:
+          anyOf:
+          - $ref: '#/components/schemas/TaxDetail'
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Cgst
+        sgst:
+          anyOf:
+          - $ref: '#/components/schemas/TaxDetail'
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Sgst
+        igst:
+          anyOf:
+          - $ref: '#/components/schemas/TaxDetail'
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Igst
+        total:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Total
+      additionalProperties: true
+      type: object
+      title: InvoiceItem
+    InvoiceNote:
+      properties:
+        note_type:
+          $ref: '#/components/schemas/NoteType'
+        content:
+          type: string
+          title: Content
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        updated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updated At
+      type: object
+      required:
+      - note_type
+      - content
+      title: InvoiceNote
+    InvoiceResponse:
+      properties:
+        id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Id
+        seller:
+          anyOf:
+          - $ref: '#/components/schemas/Seller'
+          - type: 'null'
+        buyer:
+          anyOf:
+          - $ref: '#/components/schemas/Buyer'
+          - type: 'null'
+        invoice_details:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceDetails'
+          - type: 'null'
+        items:
+          items:
+            $ref: '#/components/schemas/InvoiceItem'
+          type: array
+          title: Items
+        total:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceTotal'
+          - type: 'null'
+        bank_details:
+          anyOf:
+          - $ref: '#/components/schemas/BankDetails'
+          - type: 'null'
+        amount_in_words:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Amount In Words
+        tax_amount_in_words:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Amount In Words
+        declaration:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Declaration
+        status:
+          $ref: '#/components/schemas/InvoiceStatus'
+          default: draft
+        source_reference:
+          anyOf:
+          - $ref: '#/components/schemas/SourceReference'
+          - type: 'null'
+        bulk_import_info:
+          anyOf:
+          - $ref: '#/components/schemas/BulkImportInfo'
+          - type: 'null'
+        attachments:
+          items:
+            $ref: '#/components/schemas/InvoiceAttachment'
+          type: array
+          title: Attachments
+        notes:
+          items:
+            $ref: '#/components/schemas/InvoiceNote'
+          type: array
+          title: Notes
+        versions:
+          items:
+            $ref: '#/components/schemas/InvoiceVersion'
+          type: array
+          title: Versions
+        current_version:
+          type: integer
+          title: Current Version
+          default: 1
+        send_logs:
+          items:
+            $ref: '#/components/schemas/InvoiceSendLog'
+          type: array
+          title: Send Logs
+        scheduled_sends:
+          items:
+            $ref: '#/components/schemas/ScheduledSend'
+          type: array
+          title: Scheduled Sends
+        share_links:
+          items:
+            $ref: '#/components/schemas/InvoiceShareLink'
+          type: array
+          title: Share Links
+        tracking_events:
+          items:
+            $ref: '#/components/schemas/InvoiceTrackingEvent'
+          type: array
+          title: Tracking Events
+        recurring:
+          anyOf:
+          - $ref: '#/components/schemas/RecurringInvoiceConfig'
+          - type: 'null'
+        parent_recurring_invoice_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Recurring Invoice Id
+        customer_portal_access:
+          anyOf:
+          - $ref: '#/components/schemas/CustomerPortalAccess'
+          - type: 'null'
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        sent_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Sent At
+        paid_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Paid At
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+      additionalProperties: true
+      type: object
+      title: InvoiceResponse
+    InvoiceSendLog:
+      properties:
+        sent_at:
+          type: string
+          format: date-time
+          title: Sent At
+        to:
+          items:
+            type: string
+            format: email
+          type: array
+          title: To
+        cc:
+          items:
+            type: string
+            format: email
+          type: array
+          title: Cc
+        bcc:
+          items:
+            type: string
+            format: email
+          type: array
+          title: Bcc
+        status:
+          $ref: '#/components/schemas/SendStatus'
+        provider_response:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Provider Response
+        opened_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Opened At
+        clicked_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Clicked At
+        downloaded_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Downloaded At
+        delivery_confirmed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Delivery Confirmed At
+        error_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error Message
+        sent_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sent By
+      type: object
+      required:
+      - to
+      - status
+      title: InvoiceSendLog
+    InvoiceShareLink:
+      properties:
+        token:
+          type: string
+          title: Token
+        expires_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expires At
+        password_protected:
+          type: boolean
+          title: Password Protected
+          default: false
+        password_hash:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Password Hash
+        view_count:
+          type: integer
+          title: View Count
+          default: 0
+        last_accessed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Accessed At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+      type: object
+      required:
+      - token
+      title: InvoiceShareLink
+    InvoiceStatus:
+      type: string
+      enum:
+      - draft
+      - pending
+      - sent
+      - viewed
+      - paid
+      - partially_paid
+      - overdue
+      - cancelled
+      - refunded
+      title: InvoiceStatus
+    InvoiceTotal:
+      properties:
+        taxable_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Taxable Value
+        cgst_amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cgst Amount
+        sgst_amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sgst Amount
+        igst_amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Igst Amount
+        total_tax_amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Total Tax Amount
+        grand_total:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Grand Total
+        total_amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Total Amount
+        total_quantity:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Total Quantity
+        amount_paid:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Amount Paid
+          default: '0'
+        balance_due:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Balance Due
+      additionalProperties: true
+      type: object
+      title: InvoiceTotal
+    InvoiceTrackingEvent:
+      properties:
+        event_type:
+          type: string
+          title: Event Type
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+        user_agent:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Agent
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - event_type
+      title: InvoiceTrackingEvent
+    InvoiceUpdate:
+      properties:
+        seller:
+          anyOf:
+          - $ref: '#/components/schemas/Seller'
+          - type: 'null'
+        buyer:
+          anyOf:
+          - $ref: '#/components/schemas/Buyer'
+          - type: 'null'
+        invoice_details:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceDetails'
+          - type: 'null'
+        items:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/InvoiceItem'
+            type: array
+          - type: 'null'
+          title: Items
+        total:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceTotal'
+          - type: 'null'
+        bank_details:
+          anyOf:
+          - $ref: '#/components/schemas/BankDetails'
+          - type: 'null'
+        amount_in_words:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Amount In Words
+        tax_amount_in_words:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Amount In Words
+        declaration:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Declaration
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceStatus'
+          - type: 'null'
+        attachments:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/InvoiceAttachment'
+            type: array
+          - type: 'null'
+          title: Attachments
+        notes:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/InvoiceNote'
+            type: array
+          - type: 'null'
+          title: Notes
+        recurring:
+          anyOf:
+          - $ref: '#/components/schemas/RecurringInvoiceConfig'
+          - type: 'null'
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+      additionalProperties: true
+      type: object
+      title: InvoiceUpdate
+    InvoiceVersion:
+      properties:
+        version:
+          type: integer
+          title: Version
+        data_snapshot:
+          additionalProperties: true
+          type: object
+          title: Data Snapshot
+        changes_summary:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Changes Summary
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+      type: object
+      required:
+      - version
+      - data_snapshot
+      title: InvoiceVersion
+    NoteType:
+      type: string
+      enum:
+      - internal
+      - customer
+      - terms
+      - payment_instructions
+      title: NoteType
+    OrderCreate:
+      properties:
+        details:
+          $ref: '#/components/schemas/OrderDetailsCreate'
+        metadata:
+          anyOf:
+          - $ref: '#/components/schemas/OrderMetadataCreate'
+          - type: 'null'
+        payment:
+          anyOf:
+          - $ref: '#/components/schemas/OrderPaymentMetadataCreate'
+          - type: 'null'
+        metrics:
+          anyOf:
+          - $ref: '#/components/schemas/CustomerOrderMetricsCreate'
+          - type: 'null'
+      type: object
+      required:
+      - details
+      title: OrderCreate
+    OrderDetailsCreate:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+          description: Unique identifier for the order
+        order_date:
+          type: string
+          format: date-time
+          title: Order Date
+        order_status:
+          type: string
+          title: Order Status
+          description: Current status of the order, for example Pending, Shipped,
+            Delivered, or Canceled
+        order_type:
+          type: string
+          title: Order Type
+          description: Type of order, for example Standard, Rush, or Backorder
+        priority_level:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Priority Level
+          description: Priority level of the order, for example High, Medium, or Low
+        shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Method
+          description: Shipping method used for the order, for example Ground or Air
+            Freight
+        payment_method:
+          type: string
+          title: Payment Method
+          description: Method used to pay for the order, for example Credit Card or
+            Bank Transfer
+      type: object
+      required:
+      - order_id
+      - order_status
+      - order_type
+      - payment_method
+      title: OrderDetailsCreate
+    OrderDetailsResponse:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+          description: Unique identifier for the order
+        order_date:
+          type: string
+          format: date-time
+          title: Order Date
+        order_status:
+          type: string
+          title: Order Status
+          description: Current status of the order, for example Pending, Shipped,
+            Delivered, or Canceled
+        order_type:
+          type: string
+          title: Order Type
+          description: Type of order, for example Standard, Rush, or Backorder
+        priority_level:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Priority Level
+          description: Priority level of the order, for example High, Medium, or Low
+        shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Method
+          description: Shipping method used for the order, for example Ground or Air
+            Freight
+        payment_method:
+          type: string
+          title: Payment Method
+          description: Method used to pay for the order, for example Credit Card or
+            Bank Transfer
+      type: object
+      required:
+      - order_id
+      - order_status
+      - order_type
+      - payment_method
+      title: OrderDetailsResponse
+    OrderDetailsUpdate:
+      properties:
+        order_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Order Date
+        order_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Status
+        order_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Type
+        priority_level:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Priority Level
+        shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Method
+        payment_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Method
+      type: object
+      title: OrderDetailsUpdate
+    OrderMetadataCreate:
+      properties:
+        order_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Id
+          description: Unique identifier for the order
+          example: ORD123456
+        customer_segment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Segment
+          description: Segment of the customer, for example Retail, Wholesale, or
+            VIP
+          example: VIP
+        sales_region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Region
+          description: Region where the sale occurred, for example North America,
+            Europe, or Asia
+          example: North America
+        salesperson:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesperson
+          description: Name or ID of the salesperson responsible for the sale
+          example: Jane Smith
+        sales_channel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Channel
+          description: The channel through which the sale occurred, for example Online,
+            In-Store, or Distributor
+          example: Online
+        customs_declaration_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customs Declaration Id
+          description: Customs declaration ID for the shipment
+          example: CD-98765432
+        total_sales_value:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Total Sales Value
+          description: Total revenue generated from the product
+          example: 200.0
+        discount_applied:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Discount Applied
+          description: Total discount applied to the product
+          default: 0.0
+          example: 20.0
+        net_sales_value:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Net Sales Value
+          description: Revenue after discounts
+          example: 180.0
+        tax_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Tax Amount
+          description: Tax amount applied to the product
+          default: 0.0
+          example: 18.0
+        shipping_charges:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Shipping Charges
+          description: Shipping charges for the product, if applicable
+          default: 0.0
+          example: 5.0
+        total_revenue:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Total Revenue
+          description: Total revenue including tax and shipping charges
+          example: 203.0
+        commission_rate:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Commission Rate
+          description: Commission rate as a percentage
+          default: 0.0
+          example: 5.0
+        commission_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Commission Amount
+          description: Total commission earned for the product
+          default: 0.0
+          example: 10.0
+        promo_code_used:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Promo Code Used
+          description: Indicates whether a promo code was applied
+          default: false
+          example: true
+        promo_code_value:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Promo Code Value
+          description: Value of the promo code discount
+          default: 0.0
+          example: 10.0
+        upsell_or_cross_sell:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upsell Or Cross Sell
+          description: Indicates if the product was part of an upsell or cross-sell
+            strategy
+          example: Upsell
+        refund_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Refund Amount
+          description: Refund amount issued for the product, if applicable
+          default: 0.0
+          example: 50.0
+      type: object
+      title: OrderMetadataCreate
+    OrderMetadataResponse:
+      properties:
+        order_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Id
+          description: Unique identifier for the order
+          example: ORD123456
+        customer_segment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Segment
+          description: Segment of the customer, for example Retail, Wholesale, or
+            VIP
+          example: VIP
+        sales_region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Region
+          description: Region where the sale occurred, for example North America,
+            Europe, or Asia
+          example: North America
+        salesperson:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesperson
+          description: Name or ID of the salesperson responsible for the sale
+          example: Jane Smith
+        sales_channel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Channel
+          description: The channel through which the sale occurred, for example Online,
+            In-Store, or Distributor
+          example: Online
+        customs_declaration_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customs Declaration Id
+          description: Customs declaration ID for the shipment
+          example: CD-98765432
+        total_sales_value:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Total Sales Value
+          description: Total revenue generated from the product
+          example: 200.0
+        discount_applied:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Discount Applied
+          description: Total discount applied to the product
+          default: 0.0
+          example: 20.0
+        net_sales_value:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Net Sales Value
+          description: Revenue after discounts
+          example: 180.0
+        tax_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Tax Amount
+          description: Tax amount applied to the product
+          default: 0.0
+          example: 18.0
+        shipping_charges:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Shipping Charges
+          description: Shipping charges for the product, if applicable
+          default: 0.0
+          example: 5.0
+        total_revenue:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Total Revenue
+          description: Total revenue including tax and shipping charges
+          example: 203.0
+        commission_rate:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Commission Rate
+          description: Commission rate as a percentage
+          default: 0.0
+          example: 5.0
+        commission_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Commission Amount
+          description: Total commission earned for the product
+          default: 0.0
+          example: 10.0
+        promo_code_used:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Promo Code Used
+          description: Indicates whether a promo code was applied
+          default: false
+          example: true
+        promo_code_value:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Promo Code Value
+          description: Value of the promo code discount
+          default: 0.0
+          example: 10.0
+        upsell_or_cross_sell:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upsell Or Cross Sell
+          description: Indicates if the product was part of an upsell or cross-sell
+            strategy
+          example: Upsell
+        refund_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Refund Amount
+          description: Refund amount issued for the product, if applicable
+          default: 0.0
+          example: 50.0
+      type: object
+      title: OrderMetadataResponse
+    OrderMetadataUpdate:
+      properties:
+        customer_segment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Segment
+        sales_region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Region
+        salesperson:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesperson
+        sales_channel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Channel
+        customs_declaration_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customs Declaration Id
+        total_sales_value:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Total Sales Value
+        discount_applied:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Discount Applied
+        net_sales_value:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Net Sales Value
+        tax_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Tax Amount
+        shipping_charges:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Shipping Charges
+        total_revenue:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Total Revenue
+        commission_rate:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Commission Rate
+        commission_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Commission Amount
+        promo_code_used:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Promo Code Used
+        promo_code_value:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Promo Code Value
+        upsell_or_cross_sell:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upsell Or Cross Sell
+        refund_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Refund Amount
+      type: object
+      title: OrderMetadataUpdate
+    OrderPaymentMetadataCreate:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+          description: Unique identifier for the order
+        order_payment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Payment Status
+          description: Current payment status of the order
+          example: Paid
+        payment_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Method
+          description: Method used by the customer to pay for the order
+          example: Credit Card
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+          description: Payment terms agreed upon with the customer
+          example: Net 30
+        order_payment_due_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Order Payment Due Date
+          description: Date by which payment is due for the order
+          example: '2025-01-20'
+        payment_received_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Payment Received Date
+          description: Actual date the payment was received
+          example: '2025-01-15'
+        payment_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Payment Amount
+          description: Total amount paid by the customer for the order
+          example: 1200.0
+        outstanding_payment_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Outstanding Payment Amount
+          description: Remaining balance to be paid on the order
+          example: 0.0
+        payment_overdue_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Payment Overdue Amount
+          description: Total amount that is overdue for payment
+          example: 150.0
+        early_payment_discount:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Early Payment Discount
+          description: Indicates whether an early payment discount has been applied
+          example: true
+        late_payment_penalty:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Late Payment Penalty
+          description: Indicates whether a late payment penalty has been applied
+          example: true
+        credit_limit_utilization:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Credit Limit Utilization
+          description: Percentage of the customer's available credit limit utilized
+          example: 80.0
+        customer_payment_history:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Payment History
+          description: Summary of historical payment behavior
+          example: Consistently Early
+        payment_dispute_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Dispute Status
+          description: Indicates whether there is any payment dispute
+          example: Resolved
+        payment_risk_rating:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Risk Rating
+          description: Risk level associated with the payment
+          example: Low
+        payment_processing_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Payment Processing Time
+          description: Time taken for payment to be processed and received in days
+          example: 3
+        payment_approval_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Approval Status
+          description: Status of payment approval
+          example: Approved
+      type: object
+      required:
+      - order_id
+      title: OrderPaymentMetadataCreate
+    OrderPaymentMetadataResponse:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+          description: Unique identifier for the order
+        order_payment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Payment Status
+          description: Current payment status of the order
+          example: Paid
+        payment_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Method
+          description: Method used by the customer to pay for the order
+          example: Credit Card
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+          description: Payment terms agreed upon with the customer
+          example: Net 30
+        order_payment_due_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Order Payment Due Date
+          description: Date by which payment is due for the order
+          example: '2025-01-20'
+        payment_received_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Payment Received Date
+          description: Actual date the payment was received
+          example: '2025-01-15'
+        payment_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Payment Amount
+          description: Total amount paid by the customer for the order
+          example: 1200.0
+        outstanding_payment_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Outstanding Payment Amount
+          description: Remaining balance to be paid on the order
+          example: 0.0
+        payment_overdue_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Payment Overdue Amount
+          description: Total amount that is overdue for payment
+          example: 150.0
+        early_payment_discount:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Early Payment Discount
+          description: Indicates whether an early payment discount has been applied
+          example: true
+        late_payment_penalty:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Late Payment Penalty
+          description: Indicates whether a late payment penalty has been applied
+          example: true
+        credit_limit_utilization:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Credit Limit Utilization
+          description: Percentage of the customer's available credit limit utilized
+          example: 80.0
+        customer_payment_history:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Payment History
+          description: Summary of historical payment behavior
+          example: Consistently Early
+        payment_dispute_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Dispute Status
+          description: Indicates whether there is any payment dispute
+          example: Resolved
+        payment_risk_rating:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Risk Rating
+          description: Risk level associated with the payment
+          example: Low
+        payment_processing_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Payment Processing Time
+          description: Time taken for payment to be processed and received in days
+          example: 3
+        payment_approval_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Approval Status
+          description: Status of payment approval
+          example: Approved
+      type: object
+      required:
+      - order_id
+      title: OrderPaymentMetadataResponse
+    OrderPaymentMetadataUpdate:
+      properties:
+        order_payment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Payment Status
+        payment_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Method
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        order_payment_due_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Order Payment Due Date
+        payment_received_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Payment Received Date
+        payment_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Payment Amount
+        outstanding_payment_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Outstanding Payment Amount
+        payment_overdue_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Payment Overdue Amount
+        early_payment_discount:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Early Payment Discount
+        late_payment_penalty:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Late Payment Penalty
+        credit_limit_utilization:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Credit Limit Utilization
+        customer_payment_history:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Payment History
+        payment_dispute_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Dispute Status
+        payment_risk_rating:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Risk Rating
+        payment_processing_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Payment Processing Time
+        payment_approval_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Approval Status
+      type: object
+      title: OrderPaymentMetadataUpdate
+    OrderResponse:
+      properties:
+        order_id:
+          type: string
+          title: Order Id
+        details:
+          $ref: '#/components/schemas/OrderDetailsResponse'
+        metadata:
+          anyOf:
+          - $ref: '#/components/schemas/OrderMetadataResponse'
+          - type: 'null'
+        payment:
+          anyOf:
+          - $ref: '#/components/schemas/OrderPaymentMetadataResponse'
+          - type: 'null'
+        metrics:
+          anyOf:
+          - $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+          - type: 'null'
+      type: object
+      required:
+      - order_id
+      - details
+      title: OrderResponse
+    OrderUpdate:
+      properties:
+        details:
+          anyOf:
+          - $ref: '#/components/schemas/OrderDetailsUpdate'
+          - type: 'null'
+        metadata:
+          anyOf:
+          - $ref: '#/components/schemas/OrderMetadataUpdate'
+          - type: 'null'
+        payment:
+          anyOf:
+          - $ref: '#/components/schemas/OrderPaymentMetadataUpdate'
+          - type: 'null'
+        metrics:
+          anyOf:
+          - $ref: '#/components/schemas/CustomerOrderMetricsUpdate'
+          - type: 'null'
+      type: object
+      title: OrderUpdate
+    PaginatedCustomerOrderMetricsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedCustomerOrderMetricsResponse
+    PaginatedInvoiceResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/InvoiceResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedInvoiceResponse
+    PaginatedOrderDetailsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/OrderDetailsResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedOrderDetailsResponse
+    PaginatedOrderMetadataResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/OrderMetadataResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedOrderMetadataResponse
+    PaginatedOrderPaymentMetadataResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/OrderPaymentMetadataResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedOrderPaymentMetadataResponse
+    PaginatedOrderResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/OrderResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedOrderResponse
+    PaginatedSalesOrderResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SalesOrderResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSalesOrderResponse
+    RecurringFrequency:
+      type: string
+      enum:
+      - daily
+      - weekly
+      - monthly
+      - quarterly
+      - yearly
+      title: RecurringFrequency
+    RecurringInvoiceConfig:
+      properties:
+        frequency:
+          $ref: '#/components/schemas/RecurringFrequency'
+        start_date:
+          type: string
+          format: date-time
+          title: Start Date
+        end_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Date
+        occurrences:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Occurrences
+        occurrences_completed:
+          type: integer
+          title: Occurrences Completed
+          default: 0
+        auto_send:
+          type: boolean
+          title: Auto Send
+          default: true
+        auto_apply_payment_terms:
+          type: boolean
+          title: Auto Apply Payment Terms
+          default: true
+        paused:
+          type: boolean
+          title: Paused
+          default: false
+        last_generated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Generated At
+        next_generation_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Next Generation Date
+        notify_before_generation:
+          type: boolean
+          title: Notify Before Generation
+          default: true
+        notification_days_before:
+          type: integer
+          title: Notification Days Before
+          default: 3
+        allow_preview:
+          type: boolean
+          title: Allow Preview
+          default: true
+        allow_edit_before_send:
+          type: boolean
+          title: Allow Edit Before Send
+          default: true
+      type: object
+      required:
+      - frequency
+      - start_date
+      title: RecurringInvoiceConfig
+    SalesOrderCreate:
+      properties:
+        sales_order_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Order Number
+        customer_id:
+          type: string
+          minLength: 1
+          title: Customer Id
+        customer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Name
+        order_date:
+          type: string
+          format: date-time
+          title: Order Date
+        requested_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Requested Delivery Date
+        promised_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Promised Delivery Date
+        status:
+          $ref: '#/components/schemas/SalesOrderStatus'
+          default: draft
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          default: USD
+        lines:
+          items:
+            $ref: '#/components/schemas/SalesOrderLine'
+          type: array
+          title: Lines
+        subtotal:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Subtotal
+        discount_total:
+          type: number
+          minimum: 0.0
+          title: Discount Total
+          default: 0
+        tax_total:
+          type: number
+          minimum: 0.0
+          title: Tax Total
+          default: 0
+        shipping_total:
+          type: number
+          minimum: 0.0
+          title: Shipping Total
+          default: 0
+        grand_total:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Grand Total
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        payment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Status
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        sales_channel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Channel
+        salesperson_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesperson Id
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - customer_id
+      title: SalesOrderCreate
+      description: Schema for creating a sales order.
+    SalesOrderLine:
+      properties:
+        line_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Line Id
+        product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Id
+        sku:
+          type: string
+          minLength: 1
+          title: Sku
+        product_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Name
+        workflow_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workflow Id
+        workflow_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workflow Name
+        quantity:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Quantity
+        unit_of_measure:
+          type: string
+          title: Unit Of Measure
+          default: piece
+        unit_price:
+          type: number
+          minimum: 0.0
+          title: Unit Price
+          default: 0
+        discount_amount:
+          type: number
+          minimum: 0.0
+          title: Discount Amount
+          default: 0
+        tax_amount:
+          type: number
+          minimum: 0.0
+          title: Tax Amount
+          default: 0
+        line_total:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Line Total
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - sku
+      - quantity
+      title: SalesOrderLine
+    SalesOrderResponse:
+      properties:
+        sales_order_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Order Number
+        customer_id:
+          type: string
+          minLength: 1
+          title: Customer Id
+        customer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Name
+        order_date:
+          type: string
+          format: date-time
+          title: Order Date
+        requested_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Requested Delivery Date
+        promised_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Promised Delivery Date
+        status:
+          $ref: '#/components/schemas/SalesOrderStatus'
+          default: draft
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          default: USD
+        lines:
+          items:
+            $ref: '#/components/schemas/SalesOrderLine'
+          type: array
+          title: Lines
+        subtotal:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Subtotal
+        discount_total:
+          type: number
+          minimum: 0.0
+          title: Discount Total
+          default: 0
+        tax_total:
+          type: number
+          minimum: 0.0
+          title: Tax Total
+          default: 0
+        shipping_total:
+          type: number
+          minimum: 0.0
+          title: Shipping Total
+          default: 0
+        grand_total:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Grand Total
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        payment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Status
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        sales_channel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Channel
+        salesperson_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesperson Id
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        id:
+          type: string
+          title: Id
+        sales_order_id:
+          type: string
+          title: Sales Order Id
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - customer_id
+      - id
+      - sales_order_id
+      - updated_at
+      title: SalesOrderResponse
+    SalesOrderStatus:
+      type: string
+      enum:
+      - draft
+      - confirmed
+      - allocated
+      - shipped
+      - delivered
+      - cancelled
+      title: SalesOrderStatus
+    SalesOrderUpdate:
+      properties:
+        sales_order_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Order Number
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+        customer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Name
+        order_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Order Date
+        requested_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Requested Delivery Date
+        promised_delivery_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Promised Delivery Date
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/SalesOrderStatus'
+          - type: 'null'
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+            minLength: 3
+          - type: 'null'
+          title: Currency
+        lines:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/SalesOrderLine'
+            type: array
+          - type: 'null'
+          title: Lines
+        discount_total:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Discount Total
+        tax_total:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Tax Total
+        shipping_total:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Shipping Total
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        payment_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Status
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        sales_channel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sales Channel
+        salesperson_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesperson Id
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      title: SalesOrderUpdate
+    ScheduledSend:
+      properties:
+        scheduled_for:
+          type: string
+          format: date-time
+          title: Scheduled For
+        timezone:
+          type: string
+          title: Timezone
+          default: UTC
+        to:
+          items:
+            type: string
+            format: email
+          type: array
+          title: To
+        cc:
+          items:
+            type: string
+            format: email
+          type: array
+          title: Cc
+        bcc:
+          items:
+            type: string
+            format: email
+          type: array
+          title: Bcc
+        status:
+          type: string
+          title: Status
+          default: queued
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        sent_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Sent At
+        cancelled_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Cancelled At
+      type: object
+      required:
+      - scheduled_for
+      - to
+      title: ScheduledSend
+    Seller:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address
+        gstin_uin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gstin Uin
+        gstin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gstin
+        state_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State Name
+        state_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State Code
+        email:
+          anyOf:
+          - type: string
+            format: email
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+      additionalProperties: true
+      type: object
+      title: Seller
+    SendStatus:
+      type: string
+      enum:
+      - queued
+      - sent
+      - delivered
+      - opened
+      - clicked
+      - downloaded
+      - failed
+      title: SendStatus
+    SourceReference:
+      properties:
+        source_type:
+          $ref: '#/components/schemas/SourceType'
+        source_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Id
+        source_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Number
+        conversion_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Conversion Date
+        converted_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Converted By
+      type: object
+      required:
+      - source_type
+      title: SourceReference
+    SourceType:
+      type: string
+      enum:
+      - manual
+      - quote
+      - estimate
+      - sales_order
+      - recurring
+      - bulk_import
+      title: SourceType
+    TaxDetail:
+      properties:
+        rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rate
+        amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Amount
+      additionalProperties: true
+      type: object
+      title: TaxDetail
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

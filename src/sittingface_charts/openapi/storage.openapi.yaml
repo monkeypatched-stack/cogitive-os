@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: storage API
+  description: Object storage (S3, MinIO, local filesystem)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/storage
+  description: Capability endpoint
+paths:
+  /upload:
+    create:
+      summary: Upload a file
+      operationId: storage_upload
+      parameters:
+      - name: bucket
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: data
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /download:
+    read:
+      summary: Download a file
+      operationId: storage_download
+      parameters:
+      - name: bucket
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /list:
+    read:
+      summary: List objects
+      operationId: storage_list
+      parameters:
+      - name: bucket
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: prefix
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

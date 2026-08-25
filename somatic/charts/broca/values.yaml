@@ -1,0 +1,52 @@
+module:
+  name: broca
+  layer: 2
+  alias: Broca
+  biologicalRole: Speech production
+  softwareRole: Natural language interface for humans and systems
+  source: soma/Artificial Intelligence/Agent.md
+  owns:
+  - agent
+owns:
+- NaturalLanguageInterface
+- AgentCommunication
+- HumanSystemInteraction
+neverOwns:
+- IntentClassification
+- Planning
+- Execution
+- Capabilities
+principles:
+- id: 1
+  name: SpeechProduction
+  statement: "broca is the natural language surface. It translates \u2014 never plans\
+    \ or executes."
+invariants:
+- id: BROCA-INV-001
+  rule: no_planning_in_broca
+  statement: broca never plans or classifies intent. It surfaces language only.
+  severity: critical
+  rejection: "REJECTED \u2014 broca contains planning or intent classification."
+deliverables:
+- artifact: NLInterface
+- artifact: AgentCommunicationProtocol
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: broca is the speech layer. It produces and consumes natural
+      language.'
+    constraint: BROCA-INV-001
+    auditGate: true
+  - step: 2
+    instruction: Verify the agent module delegates intent to the kernel. Never classifies
+      itself.
+    auditGate: true
+  - step: 3
+    instruction: Produce NLInterface and AgentCommunicationProtocol.
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 broca conforms to NL Interface Constitution v1.0.0"
+    rejected:
+    - "REJECTED \u2014 broca contains intent classification."
+    - "REJECTED \u2014 broca contains planning logic."

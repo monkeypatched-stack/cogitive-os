@@ -1,0 +1,6781 @@
+openapi: 3.1.0
+info:
+  title: products API
+  description: MonkeyBrain products service API
+  version: 1.0.0
+paths:
+  /api/v1/products/:
+    get:
+      tags:
+      - Products
+      summary: List Products
+      operationId: list_products_api_v1_products__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Products
+      summary: Create Product
+      operationId: create_product_api_v1_products__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/by-sku/{sku}:
+    get:
+      tags:
+      - Products
+      summary: Get Product By Sku
+      operationId: get_product_by_sku_api_v1_products_by_sku__sku__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sku
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/by-status/{status_value}:
+    get:
+      tags:
+      - Products
+      summary: List Products By Status
+      operationId: list_products_by_status_api_v1_products_by_status__status_value__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: status_value
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Status Value
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+                title: Response List Products By Status Api V1 Products By Status  Status
+                  Value  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/by-type/{product_type}:
+    get:
+      tags:
+      - Products
+      summary: List Products By Type
+      operationId: list_products_by_type_api_v1_products_by_type__product_type__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+                title: Response List Products By Type Api V1 Products By Type  Product
+                  Type  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/by-category/{category}:
+    get:
+      tags:
+      - Products
+      summary: List Products By Category
+      operationId: list_products_by_category_api_v1_products_by_category__category__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Category
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+                title: Response List Products By Category Api V1 Products By Category  Category  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Products
+      summary: List Products By Supplier
+      operationId: list_products_by_supplier_api_v1_products_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+                title: Response List Products By Supplier Api V1 Products By Supplier  Supplier
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/by-brand/{brand}:
+    get:
+      tags:
+      - Products
+      summary: List Products By Brand
+      operationId: list_products_by_brand_api_v1_products_by_brand__brand__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: brand
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Brand
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+                title: Response List Products By Brand Api V1 Products By Brand  Brand  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/{product_id}:
+    get:
+      tags:
+      - Products
+      summary: Get Product
+      operationId: get_product_api_v1_products__product_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Products
+      summary: Update Product
+      operationId: update_product_api_v1_products__product_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Products
+      summary: Delete Product
+      operationId: delete_product_api_v1_products__product_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/boms/:
+    get:
+      tags:
+      - BOMs
+      summary: List Boms
+      operationId: list_boms_api_v1_boms__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBOMResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - BOMs
+      summary: Create Bom
+      operationId: create_bom_api_v1_boms__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BOMCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BOMRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/boms/by-code/{bom_code}:
+    get:
+      tags:
+      - BOMs
+      summary: List Boms By Code
+      operationId: list_boms_by_code_api_v1_boms_by_code__bom_code__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: bom_code
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bom Code
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BOMRecord'
+                title: Response List Boms By Code Api V1 Boms By Code  Bom Code  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/boms/by-parent-product/{parent_product_id}:
+    get:
+      tags:
+      - BOMs
+      summary: List Boms By Parent Product
+      operationId: list_boms_by_parent_product_api_v1_boms_by_parent_product__parent_product_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: parent_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Parent Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BOMRecord'
+                title: Response List Boms By Parent Product Api V1 Boms By Parent
+                  Product  Parent Product Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/boms/by-parent-product/{parent_product_id}/current:
+    get:
+      tags:
+      - BOMs
+      summary: Get Current Bom By Parent Product
+      operationId: get_current_bom_by_parent_product_api_v1_boms_by_parent_product__parent_product_id__current_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: parent_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Parent Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BOMRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/boms/{bom_id}:
+    get:
+      tags:
+      - BOMs
+      summary: Get Bom
+      operationId: get_bom_api_v1_boms__bom_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: bom_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bom Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BOMRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - BOMs
+      summary: Update Bom
+      operationId: update_bom_api_v1_boms__bom_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: bom_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bom Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BOMUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BOMRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - BOMs
+      summary: Delete Bom
+      operationId: delete_bom_api_v1_boms__bom_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: bom_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Bom Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/components/by-product/{product_id}:
+    get:
+      tags:
+      - Product Components
+      summary: List Components By Product
+      operationId: list_components_by_product_api_v1_products_components_by_product__product_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductComponent'
+                title: Response List Components By Product Api V1 Products Components
+                  By Product  Product Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Product Components
+      summary: Delete Components By Product
+      operationId: delete_components_by_product_api_v1_products_components_by_product__product_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/components/by-type/{component_type}:
+    get:
+      tags:
+      - Product Components
+      summary: List Components By Type
+      operationId: list_components_by_type_api_v1_products_components_by_type__component_type__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: component_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Component Type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductComponent'
+                title: Response List Components By Type Api V1 Products Components
+                  By Type  Component Type  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/components/by-sku/{sku}:
+    get:
+      tags:
+      - Product Components
+      summary: List Components By Sku
+      operationId: list_components_by_sku_api_v1_products_components_by_sku__sku__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sku
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductComponent'
+                title: Response List Components By Sku Api V1 Products Components
+                  By Sku  Sku  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/components/substitutable:
+    get:
+      tags:
+      - Product Components
+      summary: List Substitutable Components
+      operationId: list_substitutable_components_api_v1_products_components_substitutable_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProductComponent'
+                type: array
+                title: Response List Substitutable Components Api V1 Products Components
+                  Substitutable Get
+      security:
+      - HTTPBearer: []
+  /api/v1/products/components/{component_id}:
+    get:
+      tags:
+      - Product Components
+      summary: Get Component
+      operationId: get_component_api_v1_products_components__component_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: component_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Component Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductComponent'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Product Components
+      summary: Update Component
+      operationId: update_component_api_v1_products_components__component_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: component_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Component Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductComponentUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductComponent'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Product Components
+      summary: Delete Component
+      operationId: delete_component_api_v1_products_components__component_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: component_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Component Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/components/:
+    post:
+      tags:
+      - Product Components
+      summary: Create Component
+      operationId: create_component_api_v1_products_components__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductComponentCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductComponent'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/products/inventory/:
+    get:
+      tags:
+      - Product Inventory
+      summary: List Inventory
+      operationId: list_inventory_api_v1_products_inventory__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductInventoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Product Inventory
+      summary: Create Inventory
+      operationId: create_inventory_api_v1_products_inventory__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInventoryCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInventoryRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/inventory/alerts/below-reorder:
+    get:
+      tags:
+      - Product Inventory
+      summary: List Below Reorder
+      operationId: list_below_reorder_api_v1_products_inventory_alerts_below_reorder_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProductInventoryRecord'
+                type: array
+                title: Response List Below Reorder Api V1 Products Inventory Alerts
+                  Below Reorder Get
+      security:
+      - HTTPBearer: []
+  /api/v1/products/inventory/alerts/overstocked:
+    get:
+      tags:
+      - Product Inventory
+      summary: List Overstocked
+      operationId: list_overstocked_api_v1_products_inventory_alerts_overstocked_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProductInventoryRecord'
+                type: array
+                title: Response List Overstocked Api V1 Products Inventory Alerts
+                  Overstocked Get
+      security:
+      - HTTPBearer: []
+  /api/v1/products/inventory/alerts/expired:
+    get:
+      tags:
+      - Product Inventory
+      summary: List Expired
+      operationId: list_expired_api_v1_products_inventory_alerts_expired_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ProductInventoryRecord'
+                type: array
+                title: Response List Expired Api V1 Products Inventory Alerts Expired
+                  Get
+      security:
+      - HTTPBearer: []
+  /api/v1/products/inventory/by-status/{status_value}:
+    get:
+      tags:
+      - Product Inventory
+      summary: List By Status
+      operationId: list_by_status_api_v1_products_inventory_by_status__status_value__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: status_value
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Status Value
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductInventoryRecord'
+                title: Response List By Status Api V1 Products Inventory By Status  Status
+                  Value  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/inventory/by-product/{product_id}:
+    get:
+      tags:
+      - Product Inventory
+      summary: List By Product
+      operationId: list_by_product_api_v1_products_inventory_by_product__product_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductInventoryRecord'
+                title: Response List By Product Api V1 Products Inventory By Product  Product
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/inventory/by-location/{location_id}:
+    get:
+      tags:
+      - Product Inventory
+      summary: List By Location
+      operationId: list_by_location_api_v1_products_inventory_by_location__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductInventoryRecord'
+                title: Response List By Location Api V1 Products Inventory By Location  Location
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/inventory/by-product/{product_id}/location/{location_id}:
+    get:
+      tags:
+      - Product Inventory
+      summary: Get By Product And Location
+      operationId: get_by_product_and_location_api_v1_products_inventory_by_product__product_id__location__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInventoryRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/inventory/summary/{product_id}:
+    get:
+      tags:
+      - Product Inventory
+      summary: Get Inventory Summary
+      operationId: get_inventory_summary_api_v1_products_inventory_summary__product_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventorySummary'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/inventory/{inventory_id}:
+    get:
+      tags:
+      - Product Inventory
+      summary: Get Inventory
+      operationId: get_inventory_api_v1_products_inventory__inventory_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Inventory Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInventoryRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Product Inventory
+      summary: Update Inventory
+      operationId: update_inventory_api_v1_products_inventory__inventory_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Inventory Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInventoryUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductInventoryRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Product Inventory
+      summary: Delete Inventory
+      operationId: delete_inventory_api_v1_products_inventory__inventory_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Inventory Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/pricing/:
+    get:
+      tags:
+      - Product Pricing
+      summary: List Pricing
+      operationId: list_pricing_api_v1_products_pricing__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Product Pricing
+      summary: Create Pricing
+      operationId: create_pricing_api_v1_products_pricing__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPricingCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPricingRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/pricing/by-product/{product_id}:
+    get:
+      tags:
+      - Product Pricing
+      summary: List Pricing By Product
+      operationId: list_pricing_by_product_api_v1_products_pricing_by_product__product_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductPricingRecord'
+                title: Response List Pricing By Product Api V1 Products Pricing By
+                  Product  Product Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Product Pricing
+      summary: Delete Pricing By Product
+      operationId: delete_pricing_by_product_api_v1_products_pricing_by_product__product_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/pricing/by-product/{product_id}/active:
+    get:
+      tags:
+      - Product Pricing
+      summary: List Active Pricing By Product
+      operationId: list_active_pricing_by_product_api_v1_products_pricing_by_product__product_id__active_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductPricingRecord'
+                title: Response List Active Pricing By Product Api V1 Products Pricing
+                  By Product  Product Id  Active Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/pricing/by-type/{pricing_type}:
+    get:
+      tags:
+      - Product Pricing
+      summary: List Pricing By Type
+      operationId: list_pricing_by_type_api_v1_products_pricing_by_type__pricing_type__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pricing_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Pricing Type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductPricingRecord'
+                title: Response List Pricing By Type Api V1 Products Pricing By Type  Pricing
+                  Type  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/pricing/by-currency/{currency}:
+    get:
+      tags:
+      - Product Pricing
+      summary: List Pricing By Currency
+      operationId: list_pricing_by_currency_api_v1_products_pricing_by_currency__currency__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: currency
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Currency
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductPricingRecord'
+                title: Response List Pricing By Currency Api V1 Products Pricing By
+                  Currency  Currency  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/products/pricing/{pricing_id}:
+    get:
+      tags:
+      - Product Pricing
+      summary: Get Pricing
+      operationId: get_pricing_api_v1_products_pricing__pricing_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pricing_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Pricing Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPricingRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Product Pricing
+      summary: Update Pricing
+      operationId: update_pricing_api_v1_products_pricing__pricing_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pricing_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Pricing Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPricingUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPricingRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Product Pricing
+      summary: Delete Pricing
+      operationId: delete_pricing_api_v1_products_pricing__pricing_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: pricing_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Pricing Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/product-research/drugs-india/:
+    get:
+      tags:
+      - India Drug Formulation Research
+      summary: List Drug Research Records
+      operationId: list_drug_research_records_api_v1_product_research_drugs_india__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: generic_name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Generic Name
+      - name: dosage_form
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dosage Form
+      - name: therapeutic_class
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Therapeutic Class
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDrugResearchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - India Drug Formulation Research
+      summary: Upsert Drug Research Record
+      operationId: upsert_drug_research_record_api_v1_product_research_drugs_india__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DrugFormulationResearchCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DrugFormulationResearchRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/product-research/drugs-india/search:
+    get:
+      tags:
+      - India Drug Formulation Research
+      summary: Search Drug Research Records
+      operationId: search_drug_research_records_api_v1_product_research_drugs_india_search_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          title: Q
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 25
+          minimum: 1
+          default: 8
+          title: Limit
+      - name: include_documents
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Include Documents
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DrugResearchSearchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/product-research/drugs-india/sync-elasticsearch:
+    post:
+      tags:
+      - India Drug Formulation Research
+      summary: Sync Drug Research Elasticsearch
+      operationId: sync_drug_research_elasticsearch_api_v1_product_research_drugs_india_sync_elasticsearch_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 1
+          - type: 'null'
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/product-research/drugs-india/canvas:
+    get:
+      tags:
+      - India Drug Formulation Research
+      summary: Product Similarity Canvas
+      operationId: product_similarity_canvas_api_v1_product_research_drugs_india_canvas_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Q
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 25
+          minimum: 1
+          default: 8
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSimilarityCanvasResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/product-research/drugs-india/{research_product_id}:
+    get:
+      tags:
+      - India Drug Formulation Research
+      summary: Get Drug Research Record
+      operationId: get_drug_research_record_api_v1_product_research_drugs_india__research_product_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: research_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Research Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DrugFormulationResearchRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - India Drug Formulation Research
+      summary: Update Drug Research Record
+      operationId: update_drug_research_record_api_v1_product_research_drugs_india__research_product_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: research_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Research Product Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DrugFormulationResearchUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DrugFormulationResearchRecord'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - India Drug Formulation Research
+      summary: Delete Drug Research Record
+      operationId: delete_drug_research_record_api_v1_product_research_drugs_india__research_product_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: research_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Research Product Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tag-groups:
+    get:
+      tags:
+      - Compatibility
+      summary: List Tag Groups
+      operationId: list_tag_groups_api_v1_tag_groups_get
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: collection
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_groups
+          title: Collection
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response List Tag Groups Api V1 Tag Groups Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Compatibility
+      summary: Create Tag Groups
+      operationId: create_tag_groups_api_v1_tag_groups_post
+      parameters:
+      - name: collection
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_groups
+          title: Collection
+      - name: id_field
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_group_id
+          title: Id Field
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Payload
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Tag Groups Api V1 Tag Groups Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tag-groups/upload-json:
+    post:
+      tags:
+      - Compatibility
+      summary: Upload Tag Groups Json
+      operationId: upload_tag_groups_json_api_v1_tag_groups_upload_json_post
+      parameters:
+      - name: collection
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_groups
+          title: Collection
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_tag_groups_json_api_v1_tag_groups_upload_json_post'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Upload Tag Groups Json Api V1 Tag Groups Upload Json
+                  Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/tag-groups/{record_id}:
+    get:
+      tags:
+      - Compatibility
+      summary: Get Tag Groups
+      operationId: get_tag_groups_api_v1_tag_groups__record_id__get
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Record Id
+      - name: collection
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_groups
+          title: Collection
+      - name: id_field
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_group_id
+          title: Id Field
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Tag Groups Api V1 Tag Groups  Record Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Compatibility
+      summary: Update Tag Groups
+      operationId: update_tag_groups_api_v1_tag_groups__record_id__patch
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Record Id
+      - name: collection
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_groups
+          title: Collection
+      - name: id_field
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_group_id
+          title: Id Field
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              title: Payload
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Update Tag Groups Api V1 Tag Groups  Record Id  Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Compatibility
+      summary: Delete Tag Groups
+      operationId: delete_tag_groups_api_v1_tag_groups__record_id__delete
+      parameters:
+      - name: record_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Record Id
+      - name: collection
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_groups
+          title: Collection
+      - name: id_field
+        in: query
+        required: false
+        schema:
+          type: string
+          default: tag_group_id
+          title: Id Field
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    BOMComponent-Input:
+      properties:
+        line_id:
+          type: string
+          minLength: 1
+          title: Line Id
+          description: Unique line identifier within this BOM
+        component_product_id:
+          type: string
+          minLength: 1
+          title: Component Product Id
+          description: FK to the product catalogue
+        component_sku:
+          type: string
+          title: Component Sku
+          default: ''
+        component_name:
+          type: string
+          title: Component Name
+          default: ''
+        component_type:
+          $ref: '#/components/schemas/BOMComponentType'
+        quantity_per_parent:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Quantity Per Parent
+        uom:
+          type: string
+          minLength: 1
+          title: Uom
+          description: Unit of measure, e.g. 'Each', 'kg'
+        usage_type:
+          $ref: '#/components/schemas/UsageType'
+          default: Standard
+        scrap_rate_pct:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Scrap Rate Pct
+        sequence_number:
+          type: integer
+          minimum: 0.0
+          title: Sequence Number
+          description: Assembly sequence order
+        operation_step:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Operation Step
+          description: Work-centre operation ref
+        effective_from:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective From
+        effective_to:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective To
+        material:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material
+          description: Raw material spec, e.g. 'Western Red Cedar (1/4" thick)'
+        lead_time:
+          anyOf:
+          - $ref: '#/components/schemas/LeadTimeStatus'
+          - type: 'null'
+        supplier:
+          anyOf:
+          - $ref: '#/components/schemas/Supplier'
+          - type: 'null'
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        children:
+          items:
+            $ref: '#/components/schemas/BOMNode-Input'
+          type: array
+          title: Children
+          description: Sub-components; non-empty means this component is itself an
+            assembly.
+      type: object
+      required:
+      - line_id
+      - component_product_id
+      - component_type
+      - quantity_per_parent
+      - uom
+      - sequence_number
+      title: BOMComponent
+      description: 'A single line-item inside a BOM.
+
+
+        Fields merged from the production schema, multilevel tree support,
+
+        and MBOM enrichment fields.'
+    BOMComponent-Output:
+      properties:
+        line_id:
+          type: string
+          minLength: 1
+          title: Line Id
+          description: Unique line identifier within this BOM
+        component_product_id:
+          type: string
+          minLength: 1
+          title: Component Product Id
+          description: FK to the product catalogue
+        component_sku:
+          type: string
+          title: Component Sku
+          default: ''
+        component_name:
+          type: string
+          title: Component Name
+          default: ''
+        component_type:
+          $ref: '#/components/schemas/BOMComponentType'
+        quantity_per_parent:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Quantity Per Parent
+        uom:
+          type: string
+          minLength: 1
+          title: Uom
+          description: Unit of measure, e.g. 'Each', 'kg'
+        usage_type:
+          $ref: '#/components/schemas/UsageType'
+          default: Standard
+        scrap_rate_pct:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Scrap Rate Pct
+        sequence_number:
+          type: integer
+          minimum: 0.0
+          title: Sequence Number
+          description: Assembly sequence order
+        operation_step:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Operation Step
+          description: Work-centre operation ref
+        effective_from:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective From
+        effective_to:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective To
+        material:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Material
+          description: Raw material spec, e.g. 'Western Red Cedar (1/4" thick)'
+        lead_time:
+          anyOf:
+          - $ref: '#/components/schemas/LeadTimeStatus'
+          - type: 'null'
+        supplier:
+          anyOf:
+          - $ref: '#/components/schemas/Supplier'
+          - type: 'null'
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        children:
+          items:
+            $ref: '#/components/schemas/BOMNode-Output'
+          type: array
+          title: Children
+          description: Sub-components; non-empty means this component is itself an
+            assembly.
+      type: object
+      required:
+      - line_id
+      - component_product_id
+      - component_type
+      - quantity_per_parent
+      - uom
+      - sequence_number
+      title: BOMComponent
+      description: 'A single line-item inside a BOM.
+
+
+        Fields merged from the production schema, multilevel tree support,
+
+        and MBOM enrichment fields.'
+    BOMComponentType:
+      type: string
+      enum:
+      - Raw Material
+      - Component
+      - Subassembly
+      - Finished Good
+      - Packaging
+      - Consumable
+      - Other
+      title: BOMComponentType
+    BOMCreate:
+      properties:
+        bom_id:
+          type: string
+          minLength: 1
+          title: Bom Id
+        bom_code:
+          type: string
+          minLength: 1
+          title: Bom Code
+        version:
+          type: string
+          minLength: 1
+          title: Version
+          default: '1.0'
+        parent_product_id:
+          type: string
+          minLength: 1
+          title: Parent Product Id
+        parent_product_name:
+          type: string
+          title: Parent Product Name
+          default: ''
+        parent_sku:
+          type: string
+          title: Parent Sku
+          default: ''
+        bom_type:
+          $ref: '#/components/schemas/BOMType'
+          default: Manufacturing
+        status:
+          $ref: '#/components/schemas/BOMStatus'
+          default: Draft
+        effective_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Expiry Date
+        base_quantity:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Base Quantity
+          default: 1
+        base_uom:
+          type: string
+          minLength: 1
+          title: Base Uom
+          default: Each
+        routing_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Routing Id
+        approved_process_definition_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Definition Id
+          description: Approved manufacturing/packaging process definition this BOM
+            is authorized for.
+        approved_process_definition_revision:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Definition Revision
+          description: Revision of the approved process definition captured when this
+            BOM was released.
+        approved_process_route_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Route Id
+          description: Approved process route/version used with this BOM.
+        mbmr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mbmr Template Id
+          description: Master Batch Manufacturing Record template bound to this BOM.
+        bmr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bmr Template Id
+          description: Batch Manufacturing Record template generated/executed from
+            this BOM.
+        bpr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bpr Template Id
+          description: Batch Packaging Record template used when this BOM covers packaging.
+        batch_execution_record_ids:
+          items:
+            type: string
+          type: array
+          title: Batch Execution Record Ids
+          description: Batch execution records that have executed or instantiated
+            this BOM.
+        standard_work_hours:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Standard Work Hours
+        overall_scrap_rate_pct:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Overall Scrap Rate Pct
+        expected_yield_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Expected Yield Pct
+        components:
+          items:
+            $ref: '#/components/schemas/BOMComponent-Input'
+          type: array
+          title: Components
+        revision_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revision Notes
+        engineering_change_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engineering Change No
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+        attachments:
+          items:
+            type: string
+          type: array
+          title: Attachments
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+      type: object
+      required:
+      - bom_id
+      - bom_code
+      - parent_product_id
+      title: BOMCreate
+      description: Payload for creating a new BOM.
+    BOMNode-Input:
+      properties:
+        component:
+          $ref: '#/components/schemas/BOMComponent-Input'
+        level:
+          type: integer
+          minimum: 0.0
+          title: Level
+          description: Depth in the BOM tree (0 = root)
+          default: 0
+        position:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Position
+          description: Dotted find-number within the parent assembly, e.g. '1.2.3'
+        quantity_override:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Quantity Override
+          description: Overrides component.quantity_per_parent for this specific parent-context
+            without modifying the master component record.
+      type: object
+      required:
+      - component
+      title: BOMNode
+      description: 'Positional wrapper around a BOMComponent.
+
+
+        Allows the same component to appear at multiple positions in the tree
+
+        with independent position labels and quantity overrides without
+
+        duplicating the component definition.'
+    BOMNode-Output:
+      properties:
+        component:
+          $ref: '#/components/schemas/BOMComponent-Output'
+        level:
+          type: integer
+          minimum: 0.0
+          title: Level
+          description: Depth in the BOM tree (0 = root)
+          default: 0
+        position:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Position
+          description: Dotted find-number within the parent assembly, e.g. '1.2.3'
+        quantity_override:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Quantity Override
+          description: Overrides component.quantity_per_parent for this specific parent-context
+            without modifying the master component record.
+      type: object
+      required:
+      - component
+      title: BOMNode
+      description: 'Positional wrapper around a BOMComponent.
+
+
+        Allows the same component to appear at multiple positions in the tree
+
+        with independent position labels and quantity overrides without
+
+        duplicating the component definition.'
+    BOMRecord:
+      properties:
+        bom_id:
+          type: string
+          minLength: 1
+          title: Bom Id
+        bom_code:
+          type: string
+          minLength: 1
+          title: Bom Code
+        version:
+          type: string
+          minLength: 1
+          title: Version
+          default: '1.0'
+        parent_product_id:
+          type: string
+          minLength: 1
+          title: Parent Product Id
+        parent_product_name:
+          type: string
+          title: Parent Product Name
+          default: ''
+        parent_sku:
+          type: string
+          title: Parent Sku
+          default: ''
+        bom_type:
+          $ref: '#/components/schemas/BOMType'
+          default: Manufacturing
+        status:
+          $ref: '#/components/schemas/BOMStatus'
+          default: Draft
+        effective_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Expiry Date
+        base_quantity:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Base Quantity
+          default: 1
+        base_uom:
+          type: string
+          minLength: 1
+          title: Base Uom
+          default: Each
+        routing_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Routing Id
+        approved_process_definition_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Definition Id
+          description: Approved manufacturing/packaging process definition this BOM
+            is authorized for.
+        approved_process_definition_revision:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Definition Revision
+          description: Revision of the approved process definition captured when this
+            BOM was released.
+        approved_process_route_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Route Id
+          description: Approved process route/version used with this BOM.
+        mbmr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mbmr Template Id
+          description: Master Batch Manufacturing Record template bound to this BOM.
+        bmr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bmr Template Id
+          description: Batch Manufacturing Record template generated/executed from
+            this BOM.
+        bpr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bpr Template Id
+          description: Batch Packaging Record template used when this BOM covers packaging.
+        batch_execution_record_ids:
+          items:
+            type: string
+          type: array
+          title: Batch Execution Record Ids
+          description: Batch execution records that have executed or instantiated
+            this BOM.
+        standard_work_hours:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Standard Work Hours
+        overall_scrap_rate_pct:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Overall Scrap Rate Pct
+        expected_yield_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Expected Yield Pct
+        components:
+          items:
+            $ref: '#/components/schemas/BOMComponent-Output'
+          type: array
+          title: Components
+        revision_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revision Notes
+        engineering_change_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engineering Change No
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+        attachments:
+          items:
+            type: string
+          type: array
+          title: Attachments
+        is_current_version:
+          type: boolean
+          title: Is Current Version
+          default: false
+        approval_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approval Date
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        estimated_material_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Estimated Material Cost
+        total_component_lines:
+          type: integer
+          title: Total Component Lines
+          default: 0
+        is_multi_level:
+          type: boolean
+          title: Is Multi Level
+          default: false
+        has_alternates:
+          type: boolean
+          title: Has Alternates
+          default: false
+        is_valid:
+          type: boolean
+          title: Is Valid
+          default: false
+        is_production_bound:
+          type: boolean
+          title: Is Production Bound
+          default: false
+        raw_materials:
+          items:
+            $ref: '#/components/schemas/BOMComponent-Output'
+          type: array
+          title: Raw Materials
+          description: All raw material component lines in this BOM, collected across
+            every BOM level.
+      type: object
+      required:
+      - bom_id
+      - bom_code
+      - parent_product_id
+      title: BOMRecord
+      description: Persisted BOM document with audit data and computed tree metrics.
+    BOMRelationshipType:
+      type: string
+      enum:
+      - assembly
+      - subassembly
+      - phantom
+      - reference
+      - co_product
+      title: BOMRelationshipType
+    BOMStatus:
+      type: string
+      enum:
+      - Draft
+      - Active
+      - Inactive
+      - Obsolete
+      - Archived
+      title: BOMStatus
+    BOMType:
+      type: string
+      enum:
+      - Engineering
+      - Manufacturing
+      - Service
+      - Sales
+      - Configurable
+      title: BOMType
+    BOMUpdate:
+      properties:
+        bom_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bom Code
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        parent_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Product Id
+        parent_product_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Product Name
+        parent_sku:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Sku
+        bom_type:
+          anyOf:
+          - $ref: '#/components/schemas/BOMType'
+          - type: 'null'
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/BOMStatus'
+          - type: 'null'
+        is_current_version:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Current Version
+        effective_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Expiry Date
+        approval_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approval Date
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        base_quantity:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Base Quantity
+        base_uom:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Base Uom
+        routing_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Routing Id
+        approved_process_definition_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Definition Id
+        approved_process_definition_revision:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Definition Revision
+        approved_process_route_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved Process Route Id
+        mbmr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mbmr Template Id
+        bmr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bmr Template Id
+        bpr_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bpr Template Id
+        batch_execution_record_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Batch Execution Record Ids
+        standard_work_hours:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Standard Work Hours
+        overall_scrap_rate_pct:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Overall Scrap Rate Pct
+        expected_yield_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Expected Yield Pct
+        components:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/BOMComponent-Input'
+            type: array
+          - type: 'null'
+          title: Components
+        revision_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revision Notes
+        engineering_change_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Engineering Change No
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+        attachments:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Attachments
+        estimated_material_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Estimated Material Cost
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+      type: object
+      title: BOMUpdate
+      description: Partial-update payload for stored BOM records.
+    Body_upload_tag_groups_json_api_v1_tag_groups_upload_json_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_tag_groups_json_api_v1_tag_groups_upload_json_post
+    CostInfo-Input:
+      properties:
+        unit_cost:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d{0,4}0*$
+          title: Unit Cost
+        currency:
+          $ref: '#/components/schemas/Currency'
+          default: USD
+        minimum_order_quantity:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Minimum Order Quantity
+        bulk_discount_threshold:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Bulk Discount Threshold
+        bulk_discount_percent:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Bulk Discount Percent
+        last_price_update:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Price Update
+      type: object
+      required:
+      - unit_cost
+      - minimum_order_quantity
+      title: CostInfo
+    CostInfo-Output:
+      properties:
+        unit_cost:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d{0,4}0*$
+          title: Unit Cost
+        currency:
+          $ref: '#/components/schemas/Currency'
+          default: USD
+        minimum_order_quantity:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Minimum Order Quantity
+        bulk_discount_threshold:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Bulk Discount Threshold
+        bulk_discount_percent:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Bulk Discount Percent
+        last_price_update:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Price Update
+      type: object
+      required:
+      - unit_cost
+      - minimum_order_quantity
+      title: CostInfo
+    Currency:
+      type: string
+      enum:
+      - USD
+      - EUR
+      - GBP
+      - INR
+      - JPY
+      - CNY
+      title: Currency
+    DrugAlternative:
+      properties:
+        research_product_id:
+          type: string
+          title: Research Product Id
+        display_name:
+          type: string
+          title: Display Name
+        generic_name:
+          type: string
+          title: Generic Name
+        dosage_form:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dosage Form
+        route:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Route
+        strength:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Strength
+        manufacturer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Name
+        therapeutic_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Therapeutic Class
+        score:
+          type: number
+          title: Score
+        reason:
+          type: string
+          title: Reason
+      type: object
+      required:
+      - research_product_id
+      - display_name
+      - generic_name
+      - score
+      - reason
+      title: DrugAlternative
+    DrugFormulationResearchCreate:
+      properties:
+        research_product_id:
+          type: string
+          minLength: 1
+          title: Research Product Id
+        generic_name:
+          type: string
+          minLength: 1
+          title: Generic Name
+        formulation_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Formulation Name
+        brand_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand Name
+        manufacturer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Name
+        manufacturer_site:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Site
+        country:
+          type: string
+          title: Country
+          default: India
+        source_authority:
+          type: string
+          minLength: 1
+          title: Source Authority
+          default: Unspecified
+        source_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Url
+        source_record_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Record Id
+        approval_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Number
+        approval_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approval Date
+        dosage_form:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dosage Form
+        route:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Route
+        strength:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Strength
+        composition:
+          items:
+            type: string
+          type: array
+          title: Composition
+        therapeutic_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Therapeutic Class
+        indications:
+          items:
+            type: string
+          type: array
+          title: Indications
+        schedule:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Schedule
+        regulatory_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Regulatory Status
+        product_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Category
+        storage_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Requirements
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        aliases:
+          items:
+            type: string
+          type: array
+          title: Aliases
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - research_product_id
+      - generic_name
+      title: DrugFormulationResearchCreate
+    DrugFormulationResearchRecord:
+      properties:
+        research_product_id:
+          type: string
+          minLength: 1
+          title: Research Product Id
+        generic_name:
+          type: string
+          minLength: 1
+          title: Generic Name
+        formulation_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Formulation Name
+        brand_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand Name
+        manufacturer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Name
+        manufacturer_site:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Site
+        country:
+          type: string
+          title: Country
+          default: India
+        source_authority:
+          type: string
+          minLength: 1
+          title: Source Authority
+          default: Unspecified
+        source_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Url
+        source_record_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Record Id
+        approval_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Number
+        approval_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approval Date
+        dosage_form:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dosage Form
+        route:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Route
+        strength:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Strength
+        composition:
+          items:
+            type: string
+          type: array
+          title: Composition
+        therapeutic_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Therapeutic Class
+        indications:
+          items:
+            type: string
+          type: array
+          title: Indications
+        schedule:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Schedule
+        regulatory_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Regulatory Status
+        product_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Category
+        storage_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Requirements
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        aliases:
+          items:
+            type: string
+          type: array
+          title: Aliases
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - research_product_id
+      - generic_name
+      title: DrugFormulationResearchRecord
+    DrugFormulationResearchUpdate:
+      properties:
+        generic_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Generic Name
+        formulation_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Formulation Name
+        brand_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand Name
+        manufacturer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Name
+        manufacturer_site:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Site
+        country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+        source_authority:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Authority
+        source_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Url
+        source_record_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Record Id
+        approval_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Number
+        approval_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approval Date
+        dosage_form:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Dosage Form
+        route:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Route
+        strength:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Strength
+        composition:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Composition
+        therapeutic_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Therapeutic Class
+        indications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Indications
+        schedule:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Schedule
+        regulatory_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Regulatory Status
+        product_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Category
+        storage_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Requirements
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        aliases:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Aliases
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      title: DrugFormulationResearchUpdate
+    DrugResearchSearchResponse:
+      properties:
+        query:
+          type: string
+          title: Query
+        elasticsearch:
+          additionalProperties: true
+          type: object
+          title: Elasticsearch
+        direct_matches:
+          items:
+            $ref: '#/components/schemas/DrugFormulationResearchRecord'
+          type: array
+          title: Direct Matches
+        alternatives:
+          items:
+            $ref: '#/components/schemas/DrugAlternative'
+          type: array
+          title: Alternatives
+        document_matches:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Document Matches
+      type: object
+      required:
+      - query
+      - elasticsearch
+      - direct_matches
+      - alternatives
+      title: DrugResearchSearchResponse
+    ECNRecord:
+      properties:
+        ecn_number:
+          type: string
+          maxLength: 30
+          pattern: ^ECN-\d{4,10}$
+          title: Ecn Number
+          description: ECN identifier, e.g. 'ECN-20240312'.
+        title:
+          type: string
+          maxLength: 200
+          title: Title
+        description:
+          type: string
+          maxLength: 2000
+          title: Description
+        status:
+          $ref: '#/components/schemas/ECNStatus'
+          default: draft
+        initiated_by:
+          type: string
+          maxLength: 100
+          title: Initiated By
+          description: Engineer or team who raised the ECN.
+        approved_by:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Approved By
+        date_initiated:
+          type: string
+          format: date
+          title: Date Initiated
+        date_approved:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Date Approved
+        date_effective:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Date Effective
+        affected_revision_from:
+          anyOf:
+          - type: string
+            maxLength: 10
+          - type: 'null'
+          title: Affected Revision From
+          description: Previous part revision this ECN supersedes.
+        affected_revision_to:
+          anyOf:
+          - type: string
+            maxLength: 10
+          - type: 'null'
+          title: Affected Revision To
+          description: New part revision introduced by this ECN.
+        reason_code:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Reason Code
+          description: Reason category, e.g. 'COST_REDUCTION', 'SAFETY', 'SUPPLIER_CHANGE'.
+        linked_documents:
+          items:
+            type: string
+          type: array
+          title: Linked Documents
+          description: Document IDs (drawings, test reports) related to this ECN.
+      type: object
+      required:
+      - ecn_number
+      - title
+      - description
+      - initiated_by
+      title: ECNRecord
+      description: A single Engineering Change Notice affecting this part.
+    ECNStatus:
+      type: string
+      enum:
+      - draft
+      - under_review
+      - approved
+      - released
+      - rejected
+      - obsolete
+      title: ECNStatus
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    HazmatInfo:
+      properties:
+        batch_tracking_required:
+          type: boolean
+          title: Batch Tracking Required
+          default: false
+        serial_tracking_required:
+          type: boolean
+          title: Serial Tracking Required
+          default: false
+        expiry_tracking_required:
+          type: boolean
+          title: Expiry Tracking Required
+          default: false
+        hazmat:
+          type: boolean
+          title: Hazmat
+          default: false
+        temp_sensitive:
+          type: boolean
+          title: Temp Sensitive
+          default: false
+        controlled_substance:
+          type: boolean
+          title: Controlled Substance
+          default: false
+        regulatory_certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Regulatory Certifications
+        msds_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Msds Url
+      type: object
+      title: HazmatInfo
+    InventorySummary:
+      properties:
+        product_id:
+          type: string
+          title: Product Id
+        sku:
+          type: string
+          title: Sku
+        product_name:
+          type: string
+          title: Product Name
+        total_on_hand:
+          type: number
+          title: Total On Hand
+        total_reserved:
+          type: number
+          title: Total Reserved
+        total_available:
+          type: number
+          title: Total Available
+        total_incoming:
+          type: number
+          title: Total Incoming
+        locations_count:
+          type: integer
+          title: Locations Count
+        locations:
+          items:
+            $ref: '#/components/schemas/InventorySummaryLocation'
+          type: array
+          title: Locations
+        is_below_reorder:
+          type: boolean
+          title: Is Below Reorder
+        estimated_reorder_value:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Estimated Reorder Value
+        currency:
+          type: string
+          title: Currency
+      type: object
+      required:
+      - product_id
+      - sku
+      - product_name
+      - total_on_hand
+      - total_reserved
+      - total_available
+      - total_incoming
+      - locations_count
+      - locations
+      - is_below_reorder
+      - currency
+      title: InventorySummary
+    InventorySummaryLocation:
+      properties:
+        location_id:
+          type: string
+          title: Location Id
+        location_name:
+          type: string
+          title: Location Name
+        on_hand:
+          type: number
+          title: On Hand
+        available:
+          type: number
+          title: Available
+        status:
+          type: string
+          enum:
+          - In-Stock
+          - Low-Stock
+          - Out-of-Stock
+          - Reserved
+          - In-Transit
+          - Quarantine
+          - Damaged
+          - Expired
+          title: Status
+      type: object
+      required:
+      - location_id
+      - location_name
+      - on_hand
+      - available
+      - status
+      title: InventorySummaryLocation
+    LeadTimeStatus:
+      type: string
+      enum:
+      - In Stock
+      - Short
+      - Medium
+      - Long
+      - Critical
+      - Unknown
+      title: LeadTimeStatus
+    MaterialSpec:
+      properties:
+        weight_kg:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Weight Kg
+        volume_liters:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Volume Liters
+        length_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Length Cm
+        width_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Width Cm
+        height_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Height Cm
+      type: object
+      title: MaterialSpec
+    PaginatedBOMResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/BOMRecord'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedBOMResponse
+    PaginatedDrugResearchResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/DrugFormulationResearchRecord'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedDrugResearchResponse
+    PaginatedProductInventoryResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ProductInventoryRecord'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedProductInventoryResponse
+    PaginatedProductResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ProductResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedProductResponse
+    PartCategory:
+      type: string
+      enum:
+      - raw_material
+      - component
+      - subassembly
+      - consumable
+      - packaging
+      - fastener
+      - electronic
+      - other
+      title: PartCategory
+    PricingTier:
+      properties:
+        min_quantity:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Min Quantity
+          default: 1
+        max_quantity:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Max Quantity
+        price_per_unit:
+          type: number
+          minimum: 0.0
+          title: Price Per Unit
+          default: 0
+      type: object
+      title: PricingTier
+    ProductComponent:
+      properties:
+        component_id:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Component Id
+          description: System-generated product component identifier.
+        product_id:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Product Id
+          description: Parent product identifier for this component entry.
+        part_number:
+          type: string
+          maxLength: 50
+          minLength: 3
+          pattern: ^[A-Z0-9\-_]+$
+          title: Part Number
+          description: Unique alphanumeric part identifier (uppercase, hyphens, underscores
+            allowed)
+        part_name:
+          type: string
+          maxLength: 200
+          minLength: 2
+          title: Part Name
+        description:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Description
+        category:
+          $ref: '#/components/schemas/PartCategory'
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        created_date:
+          type: string
+          format: date
+          title: Created Date
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Notes
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        sku:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sku
+        gtin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gtin
+        upc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc
+        ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ean
+        cas_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cas Number
+        revision:
+          type: string
+          maxLength: 10
+          title: Revision
+          description: Part revision/version
+          default: A
+        drawing_number:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Drawing Number
+        quantity:
+          $ref: '#/components/schemas/QuantityInfo'
+        cost:
+          $ref: '#/components/schemas/CostInfo-Output'
+        supplier_name:
+          type: string
+          title: Supplier Name
+        material_spec:
+          $ref: '#/components/schemas/MaterialSpec'
+        scrap_and_yield:
+          $ref: '#/components/schemas/ScrapAndYield-Output'
+          description: Scrap factors and process yield rates for consumption calculations.
+        reference_designators:
+          items:
+            $ref: '#/components/schemas/ReferenceDesignator-Output'
+          type: array
+          title: Reference Designators
+          description: PCB/electronics reference designators (e.g. R1, C12, U3A).
+        shelf_life:
+          anyOf:
+          - $ref: '#/components/schemas/ShelfLifeInfo-Output'
+          - type: 'null'
+          description: Shelf-life, floor-life, MSL, and storage condition requirements.
+        hazmat:
+          $ref: '#/components/schemas/HazmatInfo'
+          description: Hazardous material classification and RoHS/REACH compliance
+            flags.
+        ecn_history:
+          items:
+            $ref: '#/components/schemas/ECNRecord'
+          type: array
+          title: Ecn History
+          description: Engineering Change Notices that have affected this part.
+        parent_bom_id:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Parent Bom Id
+          description: Part number of the immediate parent assembly in the BOM.
+        bom_level:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Bom Level
+          description: BOM depth level (1 = top-level assembly, 2 = subassembly, ...).
+        quantity_per_assembly:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Quantity Per Assembly
+          description: Net quantity of this part required per one parent assembly.
+        find_number:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Find Number
+          description: Find number / item sequence on the engineering drawing BOM
+            table.
+        relationship_type:
+          $ref: '#/components/schemas/BOMRelationshipType'
+          default: assembly
+        is_configurable:
+          type: boolean
+          title: Is Configurable
+          description: Part may be substituted based on product configuration options.
+          default: false
+        substitute_part_numbers:
+          items:
+            type: string
+          type: array
+          title: Substitute Part Numbers
+          description: Approved alternate part numbers that may be used in place of
+            this part.
+        effective_date_start:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date Start
+          description: Date from which this BOM relationship is valid.
+        effective_date_end:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date End
+          description: Date after which this BOM relationship is superseded.
+        bom_notes:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Bom Notes
+      type: object
+      required:
+      - part_number
+      - part_name
+      - category
+      - quantity
+      - cost
+      - supplier_name
+      - material_spec
+      title: ProductComponent
+    ProductComponentCreate:
+      properties:
+        component_id:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Component Id
+          description: System-generated product component identifier.
+        product_id:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Product Id
+          description: Parent product identifier for this component entry.
+        part_number:
+          type: string
+          maxLength: 50
+          minLength: 3
+          pattern: ^[A-Z0-9\-_]+$
+          title: Part Number
+          description: Unique alphanumeric part identifier (uppercase, hyphens, underscores
+            allowed)
+        part_name:
+          type: string
+          maxLength: 200
+          minLength: 2
+          title: Part Name
+        description:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Description
+        category:
+          $ref: '#/components/schemas/PartCategory'
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        created_date:
+          type: string
+          format: date
+          title: Created Date
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Notes
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        sku:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sku
+        gtin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gtin
+        upc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc
+        ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ean
+        cas_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cas Number
+        revision:
+          type: string
+          maxLength: 10
+          title: Revision
+          description: Part revision/version
+          default: A
+        drawing_number:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Drawing Number
+        quantity:
+          $ref: '#/components/schemas/QuantityInfo'
+        cost:
+          $ref: '#/components/schemas/CostInfo-Input'
+        supplier_name:
+          type: string
+          title: Supplier Name
+        material_spec:
+          $ref: '#/components/schemas/MaterialSpec'
+        scrap_and_yield:
+          $ref: '#/components/schemas/ScrapAndYield-Input'
+          description: Scrap factors and process yield rates for consumption calculations.
+        reference_designators:
+          items:
+            $ref: '#/components/schemas/ReferenceDesignator-Input'
+          type: array
+          title: Reference Designators
+          description: PCB/electronics reference designators (e.g. R1, C12, U3A).
+        shelf_life:
+          anyOf:
+          - $ref: '#/components/schemas/ShelfLifeInfo-Input'
+          - type: 'null'
+          description: Shelf-life, floor-life, MSL, and storage condition requirements.
+        hazmat:
+          $ref: '#/components/schemas/HazmatInfo'
+          description: Hazardous material classification and RoHS/REACH compliance
+            flags.
+        ecn_history:
+          items:
+            $ref: '#/components/schemas/ECNRecord'
+          type: array
+          title: Ecn History
+          description: Engineering Change Notices that have affected this part.
+        parent_bom_id:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Parent Bom Id
+          description: Part number of the immediate parent assembly in the BOM.
+        bom_level:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Bom Level
+          description: BOM depth level (1 = top-level assembly, 2 = subassembly, ...).
+        quantity_per_assembly:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Quantity Per Assembly
+          description: Net quantity of this part required per one parent assembly.
+        find_number:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Find Number
+          description: Find number / item sequence on the engineering drawing BOM
+            table.
+        relationship_type:
+          $ref: '#/components/schemas/BOMRelationshipType'
+          default: assembly
+        is_configurable:
+          type: boolean
+          title: Is Configurable
+          description: Part may be substituted based on product configuration options.
+          default: false
+        substitute_part_numbers:
+          items:
+            type: string
+          type: array
+          title: Substitute Part Numbers
+          description: Approved alternate part numbers that may be used in place of
+            this part.
+        effective_date_start:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date Start
+          description: Date from which this BOM relationship is valid.
+        effective_date_end:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date End
+          description: Date after which this BOM relationship is superseded.
+        bom_notes:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Bom Notes
+      type: object
+      required:
+      - part_number
+      - part_name
+      - category
+      - quantity
+      - cost
+      - supplier_name
+      - material_spec
+      title: ProductComponentCreate
+    ProductComponentUpdate:
+      properties:
+        product_id:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Product Id
+        part_number:
+          anyOf:
+          - type: string
+            maxLength: 50
+            minLength: 3
+            pattern: ^[A-Z0-9\-_]+$
+          - type: 'null'
+          title: Part Number
+          description: Unique alphanumeric part identifier (uppercase, hyphens, underscores
+            allowed)
+        part_name:
+          anyOf:
+          - type: string
+            maxLength: 200
+            minLength: 2
+          - type: 'null'
+          title: Part Name
+        description:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Description
+        category:
+          anyOf:
+          - $ref: '#/components/schemas/PartCategory'
+          - type: 'null'
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Active
+        created_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Created Date
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        sku:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sku
+        gtin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gtin
+        upc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc
+        ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ean
+        cas_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cas Number
+        revision:
+          anyOf:
+          - type: string
+            maxLength: 10
+          - type: 'null'
+          title: Revision
+        drawing_number:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Drawing Number
+        quantity:
+          anyOf:
+          - $ref: '#/components/schemas/QuantityInfo'
+          - type: 'null'
+        cost:
+          anyOf:
+          - $ref: '#/components/schemas/CostInfo-Input'
+          - type: 'null'
+        supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Name
+        material_spec:
+          anyOf:
+          - $ref: '#/components/schemas/MaterialSpec'
+          - type: 'null'
+        scrap_and_yield:
+          anyOf:
+          - $ref: '#/components/schemas/ScrapAndYield-Input'
+          - type: 'null'
+        reference_designators:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ReferenceDesignator-Input'
+            type: array
+          - type: 'null'
+          title: Reference Designators
+          description: PCB/electronics reference designators (e.g. R1, C12, U3A).
+        shelf_life:
+          anyOf:
+          - $ref: '#/components/schemas/ShelfLifeInfo-Input'
+          - type: 'null'
+        hazmat:
+          anyOf:
+          - $ref: '#/components/schemas/HazmatInfo'
+          - type: 'null'
+        ecn_history:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ECNRecord'
+            type: array
+          - type: 'null'
+          title: Ecn History
+          description: Engineering Change Notices that have affected this part.
+        parent_bom_id:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Parent Bom Id
+          description: Part number of the immediate parent assembly in the BOM.
+        bom_level:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Bom Level
+          description: BOM depth level (1 = top-level assembly, 2 = subassembly, ...).
+        quantity_per_assembly:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Quantity Per Assembly
+          description: Net quantity of this part required per one parent assembly.
+        find_number:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Find Number
+          description: Find number / item sequence on the engineering drawing BOM
+            table.
+        relationship_type:
+          anyOf:
+          - $ref: '#/components/schemas/BOMRelationshipType'
+          - type: 'null'
+        is_configurable:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Configurable
+          description: Part may be substituted based on product configuration options.
+        substitute_part_numbers:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Substitute Part Numbers
+          description: Approved alternate part numbers that may be used in place of
+            this part.
+        effective_date_start:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date Start
+          description: Date from which this BOM relationship is valid.
+        effective_date_end:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective Date End
+          description: Date after which this BOM relationship is superseded.
+        bom_notes:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Bom Notes
+      type: object
+      title: ProductComponentUpdate
+    ProductCreate:
+      properties:
+        product_id:
+          type: string
+          minLength: 1
+          title: Product Id
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        sku:
+          type: string
+          minLength: 1
+          title: Sku
+        gtin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gtin
+        upc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc
+        ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ean
+        cas_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cas Number
+        barcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode
+        upc_ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc Ean
+        mpn:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mpn
+        ndc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ndc
+        internal_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Internal Code
+        name:
+          type: string
+          minLength: 1
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        short_description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Short Description
+        brand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        subcategory:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subcategory
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        product_type:
+          type: string
+          enum:
+          - Finished-Good
+          - Raw-Material
+          - Component
+          - Consumable
+          - Spare-Part
+          - Packaging
+          - Service
+          - Kit/Bundle
+          - Other
+          title: Product Type
+          default: Finished-Good
+        lifecycle_stage:
+          anyOf:
+          - type: string
+            enum:
+            - Development
+            - Introduction
+            - Growth
+            - Maturity
+            - Decline
+            - End-of-Life
+          - type: 'null'
+          title: Lifecycle Stage
+        status:
+          type: string
+          enum:
+          - Draft
+          - Active
+          - Inactive
+          - Discontinued
+          - Obsolete
+          - On-Hold
+          title: Status
+          default: Draft
+        base_unit_of_measure:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Base Unit Of Measure
+          default: Each
+        packaging_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Packaging Type
+        units_per_case:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Case
+        units_per_pallet:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Pallet
+        alternate_uoms:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Alternate Uoms
+        weight_kg:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Weight Kg
+        volume_liters:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Volume Liters
+        length_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Length Cm
+        width_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Width Cm
+        height_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Height Cm
+        reorder_point:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Point
+        max_stock_level:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Max Stock Level
+        min_order_quantity:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Min Order Quantity
+        lead_time_days:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Lead Time Days
+        shelf_life_days:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Shelf Life Days
+        storage_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Requirements
+        batch_tracking_required:
+          type: boolean
+          title: Batch Tracking Required
+          default: false
+        serial_tracking_required:
+          type: boolean
+          title: Serial Tracking Required
+          default: false
+        expiry_tracking_required:
+          type: boolean
+          title: Expiry Tracking Required
+          default: false
+        hazmat:
+          type: boolean
+          title: Hazmat
+          default: false
+        temp_sensitive:
+          type: boolean
+          title: Temp Sensitive
+          default: false
+        controlled_substance:
+          type: boolean
+          title: Controlled Substance
+          default: false
+        regulatory_certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Regulatory Certifications
+        msds_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Msds Url
+        cost_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Cost Price
+        selling_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Selling Price
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+            minLength: 3
+          - type: 'null'
+          title: Currency
+          default: USD
+        tax_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Category
+        default_supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Supplier Id
+        default_supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Supplier Name
+        manufacturer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Id
+        manufacturer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Name
+        country_of_origin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country Of Origin
+        images:
+          items:
+            type: string
+          type: array
+          title: Images
+        attachments:
+          items:
+            type: string
+          type: array
+          title: Attachments
+      type: object
+      required:
+      - product_id
+      - sku
+      - name
+      title: ProductCreate
+    ProductInventoryCreate:
+      properties:
+        product_id:
+          type: string
+          minLength: 1
+          title: Product Id
+        location_id:
+          type: string
+          minLength: 1
+          title: Location Id
+        quantity_on_hand:
+          type: number
+          minimum: 0.0
+          title: Quantity On Hand
+          default: 0
+        quantity_reserved:
+          type: number
+          minimum: 0.0
+          title: Quantity Reserved
+          default: 0
+        quantity_incoming:
+          type: number
+          minimum: 0.0
+          title: Quantity Incoming
+          default: 0
+        quantity_committed:
+          type: number
+          minimum: 0.0
+          title: Quantity Committed
+          default: 0
+        reorder_point:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Point
+        reorder_quantity:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Quantity
+        max_stock_level:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Max Stock Level
+        safety_stock:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Safety Stock
+        valuation_method:
+          type: string
+          enum:
+          - FIFO
+          - LIFO
+          - Weighted-Average
+          - Specific-Identification
+          title: Valuation Method
+          default: Weighted-Average
+        unit_cost:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Unit Cost
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          default: USD
+        batch_tracking:
+          type: boolean
+          title: Batch Tracking
+          default: false
+        serial_tracking:
+          type: boolean
+          title: Serial Tracking
+          default: false
+        expiry_tracking:
+          type: boolean
+          title: Expiry Tracking
+          default: false
+        last_counted_at:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Counted At
+        next_count_due:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Count Due
+        status:
+          type: string
+          enum:
+          - In-Stock
+          - Low-Stock
+          - Out-of-Stock
+          - Reserved
+          - In-Transit
+          - Quarantine
+          - Damaged
+          - Expired
+          title: Status
+          default: In-Stock
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - product_id
+      - location_id
+      title: ProductInventoryCreate
+    ProductInventoryRecord:
+      properties:
+        product_id:
+          type: string
+          minLength: 1
+          title: Product Id
+        location_id:
+          type: string
+          minLength: 1
+          title: Location Id
+        quantity_on_hand:
+          type: number
+          minimum: 0.0
+          title: Quantity On Hand
+          default: 0
+        quantity_reserved:
+          type: number
+          minimum: 0.0
+          title: Quantity Reserved
+          default: 0
+        quantity_incoming:
+          type: number
+          minimum: 0.0
+          title: Quantity Incoming
+          default: 0
+        quantity_committed:
+          type: number
+          minimum: 0.0
+          title: Quantity Committed
+          default: 0
+        reorder_point:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Point
+        reorder_quantity:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Quantity
+        max_stock_level:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Max Stock Level
+        safety_stock:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Safety Stock
+        valuation_method:
+          type: string
+          enum:
+          - FIFO
+          - LIFO
+          - Weighted-Average
+          - Specific-Identification
+          title: Valuation Method
+          default: Weighted-Average
+        unit_cost:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Unit Cost
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          default: USD
+        batch_tracking:
+          type: boolean
+          title: Batch Tracking
+          default: false
+        serial_tracking:
+          type: boolean
+          title: Serial Tracking
+          default: false
+        expiry_tracking:
+          type: boolean
+          title: Expiry Tracking
+          default: false
+        last_counted_at:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Counted At
+        next_count_due:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Count Due
+        status:
+          type: string
+          enum:
+          - In-Stock
+          - Low-Stock
+          - Out-of-Stock
+          - Reserved
+          - In-Transit
+          - Quarantine
+          - Damaged
+          - Expired
+          title: Status
+          default: In-Stock
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        inventory_id:
+          type: string
+          minLength: 1
+          title: Inventory Id
+        sku:
+          type: string
+          minLength: 1
+          title: Sku
+        product_name:
+          type: string
+          minLength: 1
+          title: Product Name
+        quantity_available:
+          type: number
+          minimum: 0.0
+          title: Quantity Available
+          default: 0
+        total_value:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Value
+        is_below_reorder:
+          type: boolean
+          title: Is Below Reorder
+          default: false
+        is_overstocked:
+          type: boolean
+          title: Is Overstocked
+          default: false
+        is_expired:
+          type: boolean
+          title: Is Expired
+          default: false
+        alert_flags:
+          items:
+            type: string
+          type: array
+          title: Alert Flags
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - product_id
+      - location_id
+      - inventory_id
+      - sku
+      - product_name
+      title: ProductInventoryRecord
+    ProductInventoryUpdate:
+      properties:
+        quantity_on_hand:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Quantity On Hand
+        quantity_reserved:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Quantity Reserved
+        quantity_incoming:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Quantity Incoming
+        quantity_committed:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Quantity Committed
+        reorder_point:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Point
+        reorder_quantity:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Quantity
+        max_stock_level:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Max Stock Level
+        safety_stock:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Safety Stock
+        valuation_method:
+          anyOf:
+          - type: string
+            enum:
+            - FIFO
+            - LIFO
+            - Weighted-Average
+            - Specific-Identification
+          - type: 'null'
+          title: Valuation Method
+        unit_cost:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Unit Cost
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+            minLength: 3
+          - type: 'null'
+          title: Currency
+        batch_tracking:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Batch Tracking
+        serial_tracking:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Serial Tracking
+        expiry_tracking:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Expiry Tracking
+        last_counted_at:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Counted At
+        next_count_due:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Count Due
+        status:
+          anyOf:
+          - type: string
+            enum:
+            - In-Stock
+            - Low-Stock
+            - Out-of-Stock
+            - Reserved
+            - In-Transit
+            - Quarantine
+            - Damaged
+            - Expired
+          - type: 'null'
+          title: Status
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+      type: object
+      title: ProductInventoryUpdate
+    ProductPricingCreate:
+      properties:
+        product_id:
+          type: string
+          minLength: 1
+          title: Product Id
+        pricing_type:
+          type: string
+          enum:
+          - Standard
+          - Promotional
+          - Contract
+          - Tiered
+          - Subscription
+          - Cost-Plus
+          - Dynamic
+          title: Pricing Type
+          default: Standard
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          default: USD
+        price_per_unit:
+          type: number
+          minimum: 0.0
+          title: Price Per Unit
+          default: 0
+        min_order_quantity:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Min Order Quantity
+        effective_from:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective From
+        effective_to:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective To
+        tier_rules:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PricingTier'
+            type: array
+          - type: 'null'
+          title: Tier Rules
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      additionalProperties: false
+      type: object
+      required:
+      - product_id
+      title: ProductPricingCreate
+    ProductPricingRecord:
+      properties:
+        product_id:
+          type: string
+          minLength: 1
+          title: Product Id
+        pricing_type:
+          type: string
+          enum:
+          - Standard
+          - Promotional
+          - Contract
+          - Tiered
+          - Subscription
+          - Cost-Plus
+          - Dynamic
+          title: Pricing Type
+          default: Standard
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          default: USD
+        price_per_unit:
+          type: number
+          minimum: 0.0
+          title: Price Per Unit
+          default: 0
+        min_order_quantity:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Min Order Quantity
+        effective_from:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective From
+        effective_to:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective To
+        tier_rules:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PricingTier'
+            type: array
+          - type: 'null'
+          title: Tier Rules
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        pricing_id:
+          type: string
+          minLength: 1
+          title: Pricing Id
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      additionalProperties: false
+      type: object
+      required:
+      - product_id
+      - pricing_id
+      title: ProductPricingRecord
+    ProductPricingUpdate:
+      properties:
+        product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Id
+        pricing_type:
+          anyOf:
+          - type: string
+            enum:
+            - Standard
+            - Promotional
+            - Contract
+            - Tiered
+            - Subscription
+            - Cost-Plus
+            - Dynamic
+          - type: 'null'
+          title: Pricing Type
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+            minLength: 3
+          - type: 'null'
+          title: Currency
+        price_per_unit:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Price Per Unit
+        min_order_quantity:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Min Order Quantity
+        effective_from:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective From
+        effective_to:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Effective To
+        tier_rules:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PricingTier'
+            type: array
+          - type: 'null'
+          title: Tier Rules
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Active
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      additionalProperties: false
+      type: object
+      title: ProductPricingUpdate
+    ProductResponse:
+      properties:
+        product_id:
+          type: string
+          minLength: 1
+          title: Product Id
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        sku:
+          type: string
+          minLength: 1
+          title: Sku
+        gtin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gtin
+        upc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc
+        ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ean
+        cas_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cas Number
+        barcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode
+        upc_ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc Ean
+        mpn:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mpn
+        ndc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ndc
+        internal_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Internal Code
+        name:
+          type: string
+          minLength: 1
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        short_description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Short Description
+        brand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        subcategory:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subcategory
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+        product_type:
+          type: string
+          enum:
+          - Finished-Good
+          - Raw-Material
+          - Component
+          - Consumable
+          - Spare-Part
+          - Packaging
+          - Service
+          - Kit/Bundle
+          - Other
+          title: Product Type
+          default: Finished-Good
+        lifecycle_stage:
+          anyOf:
+          - type: string
+            enum:
+            - Development
+            - Introduction
+            - Growth
+            - Maturity
+            - Decline
+            - End-of-Life
+          - type: 'null'
+          title: Lifecycle Stage
+        status:
+          type: string
+          enum:
+          - Draft
+          - Active
+          - Inactive
+          - Discontinued
+          - Obsolete
+          - On-Hold
+          title: Status
+          default: Draft
+        base_unit_of_measure:
+          type: string
+          enum:
+          - Each
+          - Case
+          - Pallet
+          - Kg
+          - L
+          - M
+          - Box
+          - Roll
+          - Custom
+          title: Base Unit Of Measure
+          default: Each
+        packaging_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Packaging Type
+        units_per_case:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Case
+        units_per_pallet:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Pallet
+        alternate_uoms:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Alternate Uoms
+        weight_kg:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Weight Kg
+        volume_liters:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Volume Liters
+        length_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Length Cm
+        width_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Width Cm
+        height_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Height Cm
+        reorder_point:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Point
+        max_stock_level:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Max Stock Level
+        min_order_quantity:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Min Order Quantity
+        lead_time_days:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Lead Time Days
+        shelf_life_days:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Shelf Life Days
+        storage_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Requirements
+        batch_tracking_required:
+          type: boolean
+          title: Batch Tracking Required
+          default: false
+        serial_tracking_required:
+          type: boolean
+          title: Serial Tracking Required
+          default: false
+        expiry_tracking_required:
+          type: boolean
+          title: Expiry Tracking Required
+          default: false
+        hazmat:
+          type: boolean
+          title: Hazmat
+          default: false
+        temp_sensitive:
+          type: boolean
+          title: Temp Sensitive
+          default: false
+        controlled_substance:
+          type: boolean
+          title: Controlled Substance
+          default: false
+        regulatory_certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Regulatory Certifications
+        msds_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Msds Url
+        cost_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Cost Price
+        selling_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Selling Price
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+            minLength: 3
+          - type: 'null'
+          title: Currency
+          default: USD
+        tax_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Category
+        default_supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Supplier Id
+        default_supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Supplier Name
+        manufacturer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Id
+        manufacturer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Name
+        country_of_origin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country Of Origin
+        images:
+          items:
+            type: string
+          type: array
+          title: Images
+        attachments:
+          items:
+            type: string
+          type: array
+          title: Attachments
+      type: object
+      required:
+      - product_id
+      - sku
+      - name
+      title: ProductResponse
+    ProductSimilarityCanvasEdge:
+      properties:
+        id:
+          type: string
+          title: Id
+        source:
+          type: string
+          title: Source
+        target:
+          type: string
+          title: Target
+        label:
+          type: string
+          title: Label
+        data:
+          additionalProperties: true
+          type: object
+          title: Data
+      type: object
+      required:
+      - id
+      - source
+      - target
+      - label
+      title: ProductSimilarityCanvasEdge
+    ProductSimilarityCanvasNode:
+      properties:
+        id:
+          type: string
+          title: Id
+        type:
+          type: string
+          title: Type
+        label:
+          type: string
+          title: Label
+        data:
+          additionalProperties: true
+          type: object
+          title: Data
+      type: object
+      required:
+      - id
+      - type
+      - label
+      title: ProductSimilarityCanvasNode
+    ProductSimilarityCanvasResponse:
+      properties:
+        query:
+          type: string
+          title: Query
+        data_sources:
+          additionalProperties: true
+          type: object
+          title: Data Sources
+        nodes:
+          items:
+            $ref: '#/components/schemas/ProductSimilarityCanvasNode'
+          type: array
+          title: Nodes
+        edges:
+          items:
+            $ref: '#/components/schemas/ProductSimilarityCanvasEdge'
+          type: array
+          title: Edges
+      type: object
+      required:
+      - query
+      - data_sources
+      - nodes
+      - edges
+      title: ProductSimilarityCanvasResponse
+    ProductUpdate:
+      properties:
+        product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Id
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        sku:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sku
+        gtin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gtin
+        upc:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc
+        ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ean
+        cas_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cas Number
+        barcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode
+        upc_ean:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upc Ean
+        mpn:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mpn
+        internal_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Internal Code
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        short_description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Short Description
+        brand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        subcategory:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subcategory
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+        product_type:
+          anyOf:
+          - type: string
+            enum:
+            - Finished-Good
+            - Raw-Material
+            - Component
+            - Consumable
+            - Spare-Part
+            - Packaging
+            - Service
+            - Kit/Bundle
+            - Other
+          - type: 'null'
+          title: Product Type
+        lifecycle_stage:
+          anyOf:
+          - type: string
+            enum:
+            - Development
+            - Introduction
+            - Growth
+            - Maturity
+            - Decline
+            - End-of-Life
+          - type: 'null'
+          title: Lifecycle Stage
+        status:
+          anyOf:
+          - type: string
+            enum:
+            - Draft
+            - Active
+            - Inactive
+            - Discontinued
+            - Obsolete
+            - On-Hold
+          - type: 'null'
+          title: Status
+        base_unit_of_measure:
+          anyOf:
+          - type: string
+            enum:
+            - Each
+            - Case
+            - Pallet
+            - Kg
+            - L
+            - M
+            - Box
+            - Roll
+            - Custom
+          - type: 'null'
+          title: Base Unit Of Measure
+        packaging_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Packaging Type
+        units_per_case:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Case
+        units_per_pallet:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Pallet
+        alternate_uoms:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Alternate Uoms
+        weight_kg:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Weight Kg
+        volume_liters:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Volume Liters
+        length_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Length Cm
+        width_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Width Cm
+        height_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Height Cm
+        reorder_point:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Reorder Point
+        max_stock_level:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Max Stock Level
+        min_order_quantity:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Min Order Quantity
+        lead_time_days:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Lead Time Days
+        shelf_life_days:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Shelf Life Days
+        storage_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Requirements
+        batch_tracking_required:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Batch Tracking Required
+        serial_tracking_required:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Serial Tracking Required
+        expiry_tracking_required:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Expiry Tracking Required
+        hazmat:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Hazmat
+        temp_sensitive:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Temp Sensitive
+        controlled_substance:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Controlled Substance
+        regulatory_certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Regulatory Certifications
+        msds_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Msds Url
+        cost_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Cost Price
+        selling_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Selling Price
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+            minLength: 3
+          - type: 'null'
+          title: Currency
+        tax_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Category
+        default_supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Supplier Id
+        default_supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Supplier Name
+        manufacturer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Id
+        manufacturer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Name
+        country_of_origin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country Of Origin
+        images:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Images
+        attachments:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Attachments
+        updated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updated By
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: ProductUpdate
+    QuantityInfo:
+      properties:
+        base_unit_of_measure:
+          $ref: '#/components/schemas/UnitOfMeasure'
+          default: Each
+        packaging_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Packaging Type
+        units_per_case:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Case
+        units_per_pallet:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Units Per Pallet
+        alternate_uoms:
+          anyOf:
+          - items: {}
+            type: array
+          - type: 'null'
+          title: Alternate Uoms
+      type: object
+      title: QuantityInfo
+    ReferenceDesignator-Input:
+      properties:
+        designator:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Z]{1,5}\d+[A-Z]?$
+          title: Designator
+          description: IPC-7711 reference designator, e.g. R1, C12, U3A, TP101.
+        board_id:
+          type: string
+          maxLength: 50
+          title: Board Id
+          description: PCB assembly part number or ID.
+        schematic_page:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Schematic Page
+          description: Schematic sheet number.
+        x_mm:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: X Mm
+          description: X centroid on board (mm).
+        y_mm:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Y Mm
+          description: Y centroid on board (mm).
+        rotation_deg:
+          anyOf:
+          - type: number
+            exclusiveMaximum: 360.0
+            minimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Rotation Deg
+          description: "Placement rotation (\xB0)."
+        side:
+          anyOf:
+          - type: string
+            pattern: ^(top|bottom)$
+          - type: 'null'
+          title: Side
+          description: '''top'' or ''bottom''.'
+        dnp:
+          type: boolean
+          title: Dnp
+          description: "Do Not Place \u2014 part is listed but intentionally unpopulated."
+          default: false
+      type: object
+      required:
+      - designator
+      - board_id
+      title: ReferenceDesignator
+      description: 'PCB/electronics reference designator entry.
+
+        Each instance maps one refdes (e.g. ''C12'') to this part on a specific board.'
+    ReferenceDesignator-Output:
+      properties:
+        designator:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Z]{1,5}\d+[A-Z]?$
+          title: Designator
+          description: IPC-7711 reference designator, e.g. R1, C12, U3A, TP101.
+        board_id:
+          type: string
+          maxLength: 50
+          title: Board Id
+          description: PCB assembly part number or ID.
+        schematic_page:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Schematic Page
+          description: Schematic sheet number.
+        x_mm:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: X Mm
+          description: X centroid on board (mm).
+        y_mm:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Y Mm
+          description: Y centroid on board (mm).
+        rotation_deg:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Rotation Deg
+          description: "Placement rotation (\xB0)."
+        side:
+          anyOf:
+          - type: string
+            pattern: ^(top|bottom)$
+          - type: 'null'
+          title: Side
+          description: '''top'' or ''bottom''.'
+        dnp:
+          type: boolean
+          title: Dnp
+          description: "Do Not Place \u2014 part is listed but intentionally unpopulated."
+          default: false
+      type: object
+      required:
+      - designator
+      - board_id
+      title: ReferenceDesignator
+      description: 'PCB/electronics reference designator entry.
+
+        Each instance maps one refdes (e.g. ''C12'') to this part on a specific board.'
+    ScrapAndYield-Input:
+      properties:
+        scrap_factor_percent:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Scrap Factor Percent
+          description: Extra material ordered/consumed to cover expected scrap. e.g.
+            5 means order 5 % more than BOM quantity.
+          default: '0'
+        process_yield_percent:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Process Yield Percent
+          description: Expected good-unit yield from this process step. e.g. 95 means
+            5 % of units are rejected.
+          default: '100'
+        shrinkage_factor_percent:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Shrinkage Factor Percent
+          description: Material lost due to shrinkage, evaporation, or trimming.
+          default: '0'
+        operation_scrap_code:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Operation Scrap Code
+          description: ERP/MES scrap reason code (e.g. 'TRIM', 'DEFECT', 'EVAP').
+      type: object
+      title: ScrapAndYield
+      description: Scrap factors and yield rates for manufacturing consumption calculations.
+    ScrapAndYield-Output:
+      properties:
+        scrap_factor_percent:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Scrap Factor Percent
+          description: Extra material ordered/consumed to cover expected scrap. e.g.
+            5 means order 5 % more than BOM quantity.
+          default: '0'
+        process_yield_percent:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Process Yield Percent
+          description: Expected good-unit yield from this process step. e.g. 95 means
+            5 % of units are rejected.
+          default: '100'
+        shrinkage_factor_percent:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Shrinkage Factor Percent
+          description: Material lost due to shrinkage, evaporation, or trimming.
+          default: '0'
+        operation_scrap_code:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Operation Scrap Code
+          description: ERP/MES scrap reason code (e.g. 'TRIM', 'DEFECT', 'EVAP').
+      type: object
+      title: ScrapAndYield
+      description: Scrap factors and yield rates for manufacturing consumption calculations.
+    ShelfLifeInfo-Input:
+      properties:
+        shelf_life_days:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Shelf Life Days
+          description: Total shelf life from manufacture date (days).
+        floor_life_hours:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Floor Life Hours
+          description: IPC/JEDEC MSL floor life once the original packaging is opened
+            (hours). Relevant for moisture-sensitive devices (MSDs).
+        msl_level:
+          anyOf:
+          - type: integer
+            maximum: 6.0
+            minimum: 1.0
+          - type: 'null'
+          title: Msl Level
+          description: "IPC/JEDEC J-STD-020 Moisture Sensitivity Level (1\u20136)."
+        storage_temperature_min_c:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Storage Temperature Min C
+          description: "Minimum storage temperature (\xB0C)."
+        storage_temperature_max_c:
+          anyOf:
+          - type: number
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Storage Temperature Max C
+          description: "Maximum storage temperature (\xB0C)."
+        storage_humidity_max_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Storage Humidity Max Pct
+          description: Maximum relative humidity for storage (%).
+        requires_dry_pack:
+          type: boolean
+          title: Requires Dry Pack
+          description: Must be stored/shipped in a sealed dry-pack bag.
+          default: false
+        requires_cold_chain:
+          type: boolean
+          title: Requires Cold Chain
+          description: Must remain in a refrigerated/frozen supply chain.
+          default: false
+        date_code_format:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Date Code Format
+          description: Expected date-code format on the part label, e.g. 'YYWW' or
+            'YYYYMMDD'.
+      type: object
+      title: ShelfLifeInfo
+      description: Shelf-life tracking for moisture-sensitive, chemical, or perishable
+        parts.
+    ShelfLifeInfo-Output:
+      properties:
+        shelf_life_days:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Shelf Life Days
+          description: Total shelf life from manufacture date (days).
+        floor_life_hours:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Floor Life Hours
+          description: IPC/JEDEC MSL floor life once the original packaging is opened
+            (hours). Relevant for moisture-sensitive devices (MSDs).
+        msl_level:
+          anyOf:
+          - type: integer
+            maximum: 6.0
+            minimum: 1.0
+          - type: 'null'
+          title: Msl Level
+          description: "IPC/JEDEC J-STD-020 Moisture Sensitivity Level (1\u20136)."
+        storage_temperature_min_c:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Storage Temperature Min C
+          description: "Minimum storage temperature (\xB0C)."
+        storage_temperature_max_c:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Storage Temperature Max C
+          description: "Maximum storage temperature (\xB0C)."
+        storage_humidity_max_pct:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Storage Humidity Max Pct
+          description: Maximum relative humidity for storage (%).
+        requires_dry_pack:
+          type: boolean
+          title: Requires Dry Pack
+          description: Must be stored/shipped in a sealed dry-pack bag.
+          default: false
+        requires_cold_chain:
+          type: boolean
+          title: Requires Cold Chain
+          description: Must remain in a refrigerated/frozen supply chain.
+          default: false
+        date_code_format:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Date Code Format
+          description: Expected date-code format on the part label, e.g. 'YYWW' or
+            'YYYYMMDD'.
+      type: object
+      title: ShelfLifeInfo
+      description: Shelf-life tracking for moisture-sensitive, chemical, or perishable
+        parts.
+    Supplier:
+      properties:
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Name
+        lead_time_days:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Lead Time Days
+        preferred:
+          type: boolean
+          title: Preferred
+          default: false
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: Supplier
+    UnitOfMeasure:
+      type: string
+      enum:
+      - piece
+      - kg
+      - g
+      - liter
+      - meter
+      - sq_meter
+      - cu_meter
+      - inch
+      - foot
+      - pound
+      - ounce
+      title: UnitOfMeasure
+    UsageType:
+      type: string
+      enum:
+      - Standard
+      - Optional
+      - Alternate
+      - Substitute
+      - Phantom
+      - Reference
+      title: UsageType
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

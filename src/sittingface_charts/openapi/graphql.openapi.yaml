@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: graphql API
+  description: GraphQL API client for schema-driven queries
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/graphql
+  description: Capability endpoint
+paths:
+  /query:
+    read:
+      summary: Execute a GraphQL query
+      operationId: graphql_query
+      parameters:
+      - name: query
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: variables
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /mutate:
+    create:
+      summary: Execute a GraphQL mutation
+      operationId: graphql_mutate
+      parameters:
+      - name: mutation
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: variables
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

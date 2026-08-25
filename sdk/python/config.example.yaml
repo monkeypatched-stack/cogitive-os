@@ -1,0 +1,97 @@
+# Monkeypatched Adapter SDK – Example Configuration
+# ====================================================
+#
+# Copy this file to config.yaml and fill in your values.
+# Environment variables can be injected with ${VAR_NAME} syntax.
+# Any field can be overridden at runtime:
+#   ADAPTER_<NAME>_<KEY>=value
+#   SDK_LOG_LEVEL=DEBUG
+
+sdk:
+  log_level: INFO                     # DEBUG | INFO | WARNING | ERROR
+  health_check_interval: 30           # seconds between health checks
+  telemetry_exporter: logging         # logging | prometheus | influx | jaeger
+
+# ---------------------------------------------------------------------------
+# Adapter configurations
+# ---------------------------------------------------------------------------
+# The key must match the capability_id OR the lower-cased class name
+# (without the "Adapter" suffix).  LifecycleManager resolves both.
+
+adapters:
+
+  # CMMS – Computerised Maintenance Management System
+  create_work_order:
+    enabled: true
+    endpoint: https://cmms.example.com
+    credentials:
+      api_key: ${CMMS_API_KEY}
+    timeout: 45
+    retry_count: 3
+    extra:
+      work_order_prefix: WO
+      company_id: "100"
+
+  # SAP – Purchase Orders (OAuth2)
+  create_purchase_order:
+    enabled: true
+    endpoint: https://sap.example.com
+    credentials:
+      oauth_endpoint: https://sap.example.com/oauth/token
+      client_id: ${SAP_CLIENT_ID}
+      client_secret: ${SAP_CLIENT_SECRET}
+      scope: MM.PurchaseOrders.Write
+    timeout: 60
+    extra:
+      company_code: "1000"
+      purchasing_org: "1000"
+      purchasing_group: "001"
+
+  # SAP – Material Stock
+  get_material_stock:
+    enabled: true
+    endpoint: https://sap.example.com
+    credentials:
+      oauth_endpoint: https://sap.example.com/oauth/token
+      client_id: ${SAP_CLIENT_ID}
+      client_secret: ${SAP_CLIENT_SECRET}
+    timeout: 30
+
+  # DataBricks – Job Execution
+  run_databricks_job:
+    enabled: true
+    endpoint: https://<workspace>.azuredatabricks.net
+    credentials:
+      api_key: ${DATABRICKS_TOKEN}
+    timeout: 600
+    extra:
+      poll_interval: 10
+
+  # OPC-UA – Industrial Sensor Reading
+  read_sensor_value:
+    enabled: true
+    endpoint: opc.tcp://plc.example.com:4840
+    credentials:
+      username: ${OPC_USER}
+      password: ${OPC_PASS}
+    timeout: 30
+    extra:
+      namespace_index: 2
+      pool_size: 3
+
+  # MQTT – Sensor Telemetry Ingestion
+  ingest_sensor_telemetry:
+    enabled: true
+    endpoint: mqtt.example.com          # broker hostname
+    credentials:
+      username: ${MQTT_USER}
+      password: ${MQTT_PASS}
+    timeout: 30
+    extra:
+      port: 1883
+      qos: 1
+      topics:
+        - sensors/+/temperature
+        - sensors/+/pressure
+        - sensors/+/vibration
+        - sensors/+/flow

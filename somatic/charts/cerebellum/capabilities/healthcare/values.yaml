@@ -1,0 +1,130 @@
+capability:
+  name: healthcare
+  id: cap-health-001
+  platform: Healthcare
+  description: Healthcare integrations (Patient Scheduling, Hospital Operations, Pharmacy, Laboratory)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - healthcare
+  - patient
+  - hospital
+  - pharmacy
+  - laboratory
+  references:
+  - src/cerebellum/capabilities/healthcare.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/healthcare
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: schedule_appointment
+  method: CREATE
+  path: /appointments
+  description: Schedule a patient appointment
+  required_params:
+  - patient_id
+  - doctor_id
+  - datetime
+  optional_params:
+  - reason
+  - notes
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_appointments
+  method: READ
+  path: /appointments
+  description: List appointments
+  required_params: []
+  optional_params:
+  - patient_id
+  - doctor_id
+  - date
+  paginated: true
+  pagination_cursor_field: cursor
+- name: fill_prescription
+  method: CREATE
+  path: /prescriptions
+  description: Fill a prescription
+  required_params:
+  - prescription_id
+  - pharmacy_id
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: submit_lab_order
+  method: CREATE
+  path: /lab-orders
+  description: Submit a laboratory order
+  required_params:
+  - patient_id
+  - tests
+  optional_params:
+  - priority
+  paginated: false
+  pagination_cursor_field: ''
+- name: get_bed_status
+  method: READ
+  path: /beds
+  description: Get hospital bed status
+  required_params: []
+  optional_params:
+  - ward
+  - status
+  paginated: true
+  pagination_cursor_field: cursor
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_healthcare_connect
+  - test_healthcare_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

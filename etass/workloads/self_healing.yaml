@@ -1,0 +1,27 @@
+workload: self_healing
+goal: >
+  Detect regressions in the MonkeyBrain kernel execution path.
+  Find failing tests, identify root cause, produce a corrective patch.
+domain: software_engineering
+bounded_context: ci_cd
+aggregate: test_suite
+reasoning: reflection
+constraints:
+  - Coverage must not drop below 80%
+  - No new failing tests may be introduced
+  - Changes must not touch governance or policy files
+  - Corrective patch must pass static analysis (ruff) and security scan (bandit)
+evidence:
+  - Pytest output from the last CI run
+  - Ruff static analysis report
+  - Bandit security report
+  - Operational evidence from .operational_evidence/
+success_criteria:
+  - All tests pass
+  - Coverage >= 80%
+  - No regressions detected relative to main branch
+  - Static analysis clean
+outputs:
+  - Corrective patch (diff)
+  - Updated test report
+  - Root cause analysis note

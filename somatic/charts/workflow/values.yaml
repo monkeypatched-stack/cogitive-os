@@ -1,0 +1,251 @@
+module:
+  name: workflow
+  type: module
+  description: >
+    End-to-end ETASS pipeline for generating, testing, and registering
+    a DDD microservice from a one-line service description.  Each step
+    delegates to a dedicated Broca agent — no inline logic in the CLI.
+
+preamble:
+  statement: >
+    You are an orchestration agent executing the MonkeyBrain ETASS pipeline.
+    Your responsibility is to coordinate 15 sequential steps (13 mandatory + 2 optional), each handled by
+    a specialized Broca agent.  You must verify each step succeeds before
+    advancing to the next.  On failure, surface the agent's observations and
+    halt — do not skip or paper over failures.
+
+    The pipeline is fully agent-driven:
+      api          → ApiChartAgent
+      codegen      → ServiceGenAgent
+      test-service → TestServiceAgent
+      govern       → CingulateAgent  (prompt compliance gate)
+      fixit        → FixItAgent      (auto-remediate govern findings)
+      ddd-check    → CingulateAgent  (structural DDD audit)
+      serve        → ServeAgent
+      client       → ClientGenAgent
+      chart        → ClientCharterAgent
+      compile      → CompileAgentAgent
+      comply       → GDPRComplianceAgent / SOC2Agent / etc. (regulatory standards)
+      plan         → PlannerAgent
+      execute      → ExecutorAgent
+      create-agent → ClientCapabilityAgent
+
+cot:
+  steps:
+    - step: 1
+      title: Generate API chart
+      command: "monkeypatched make api <service>"
+      agent: ApiChartAgent
+      description: >
+        ApiChartAgent reads the service domain model from sittingface, renders a
+        DDD-compliant values.yaml (somatic/charts/<service>-api/values.yaml), and
+        compiles it into a somatic prompt (somatic/compiled/<service>-api.prompt.md).
+        The prompt encodes the bounded context, aggregate, and all API invariants.
+
+    - step: 2
+      title: Generate DDD service code
+      command: "monkeypatched make codegen <service>"
+      agent: ServiceGenAgent
+      description: >
+        ServiceGenAgent reads the compiled prompt and calls CodeGenAgent to produce
+        a full DDD-layered Python service: domain/, application/, infrastructure/,
+        api/, main.py, settings.py, Dockerfile, docker-compose.yml, pyproject.toml.
+        Files are written to generated/<service>/ with no double-nesting.
+
+    - step: 3
+      title: Run static analysis + correction loop
+      command: "monkeypatched make test-service <service>"
+      agent: TestServiceAgent
+      description: >
+        TestServiceAgent runs ruff and pytest against the generated service.
+        On failure it invokes CodeGenAgent up to max_loops times to patch the
+        failing files. Each correction pass provides domain context so the LLM
+        can resolve F821 import errors correctly.
+
+    - step: 4
+      title: Governance review
+      command: "monkeypatched make govern somatic/compiled/<service>-api.prompt.md"
+      agent: CingulateAgent
+      description: >
+        CingulateAgent reviews the compiled API prompt for constitutional compliance,
+        security posture, and DDD policy adherence.  Returns COMPLIANT / NON-COMPLIANT.
+        On NON-COMPLIANT, run fixit (step 5) before proceeding.
+
+    - step: 5
+      title: Auto-fix governance findings
+      command: "monkeypatched make fixit <service>"
+      agent: FixItAgent
+      description: >
+        FixItAgent reads the most recent governance report for <service>, extracts
+        the issues list, and calls CodeGenAgent to patch the source files.  Re-run
+        govern after fixit to confirm all findings are resolved.  Skip if step 4
+        returned COMPLIANT.
+
+    - step: 6
+      title: DDD structural audit
+      command: "monkeypatched make ddd-check <service>"
+      agent: CingulateAgent
+      description: >
+        DDD structural audit walks generated/<service>/ and scores the directory
+        layout against 18 DDD rules: correct layer separation, aggregate roots,
+        repository interfaces in domain/, Motor implementations in infrastructure/,
+        domain events, etc.  Generates a timestamped compliance report.
+
+    - step: 7
+      title: Start the service
+      command: "monkeypatched make serve <service>"
+      agent: ServeAgent
+      description: >
+        ServeAgent launches uvicorn with the generated service, records the PID
+        to ~/.monkeybrain/pids/<service>.pid, and notifies MotorCortexAgent.
+        The service binds on 127.0.0.1:8090 by default.
+
+    - step: 8
+      title: Generate typed API client
+      command: "monkeypatched make client <service>"
+      agent: ClientGenAgent
+      description: >
+        ClientGenAgent reads api/router.py and api/schemas.py from the generated
+        service, loads the api-client chart invariants, and calls CodeGenAgent
+        to produce a fully-typed httpx client package in generated/<service>-client/.
+
+    - step: 9
+      title: Charter the client as a SOMA capability
+      command: "monkeypatched make chart-from-client <service>"
+      agent: ClientCharterAgent
+      description: >
+        ClientCharterAgent reverse-engineers the generated client into a SOMA
+        capability chart (somatic/charts/<service>-client/values.yaml), capturing
+        operations, endpoint, auth, and invariants via LLM analysis.
+
+    - step: 10
+      title: Compile capability chart to prompt
+      command: "monkeypatched make compile-agent <service>"
+      agent: CompileAgentAgent
+      description: >
+        CompileAgentAgent reads the capability chart and renders an executable
+        .prompt.md (somatic/compiled/<service>-client-cap.prompt.md).  Operations
+        become numbered CoT steps; invariants become front-matter constraints.
+
+    - step: 11
+      title: GDPR compliance check
+      command: "monkeypatched make comply gdpr --signals '{\"has_pii\": true, \"stores_pii\": true}' --attributes '{\"region\": \"EU\", \"privacy_by_design\": true}'"
+      agent: GDPRAgent
+      description: >
+        GDPRAgent evaluates data_signals and system_attributes against EU 2016/679
+        obligations: lawful basis, data minimisation, retention schedule,
+        right-to-erasure, right-to-access, breach notification procedure.
+        Exits 1 on CRITICAL or HIGH findings.
+        Report → ~/.monkeybrain/reports/comply_gdpr_<ts>.json.
+
+    - step: 12
+      title: SOC 2 Type II compliance check
+      command: "monkeypatched make comply soc2 --signals '{\"has_operations\": true, \"has_data\": true, \"has_user_access\": true}' --attributes '{\"monitoring_alerting_enabled\": true, \"change_log_maintained\": true, \"incident_response_plan\": true}'"
+      agent: SOC2Agent
+      description: >
+        SOC2Agent validates the AICPA Trust Service Criteria (CC1–CC8, A, C, PI, P).
+        The generated service satisfies monitoring_alerting_enabled via AuditLogMiddleware
+        (api/audit_log.py — emits structured JSON per request for CC7.2 auditability).
+        Exits 1 on CRITICAL or HIGH findings.
+        Report → ~/.monkeybrain/reports/comply_soc2_<ts>.json.
+
+    - step: 13
+      title: Register as a live capability agent
+      command: "monkeypatched make create-agent <service>"
+      agent: ClientCapabilityAgent
+      description: >
+        ClientCapabilityAgent loads the capability chart, instantiates a runtime
+        agent bound to the live service endpoint, and registers it into the Broca
+        registry so orchestrators can discover and invoke its operations.
+
+    - step: 14
+      title: Plan follow-on work
+      command: "monkeypatched make plan '<goal>' --service <service>"
+      agent: PlannerAgent
+      description: >
+        PlannerAgent uses the LLM to decompose the follow-on goal into a YAML
+        execution plan with topologically ordered steps and dependency edges.
+        The plan is saved to ~/.monkeybrain/plans/<service>-<ts>.yaml.
+
+    - step: 15
+      title: Execute the plan
+      command: "monkeypatched make execute-plan <plan_file>"
+      agent: ExecutorAgent
+      description: >
+        ExecutorAgent reads the plan YAML, topo-sorts steps by depends_on, and
+        executes each monkeypatched CLI command in order.  Reports pass/fail per
+        step.
+
+invariants:
+  - id: WF-INV-001
+    rule: every_step_uses_agent
+    statement: >
+      Every pipeline step must be executed by a named Broca agent.
+      No step may contain inline logic in the CLI command handler.
+    severity: critical
+    rejection: "REJECTED — pipeline step contains inline implementation, not agent delegation."
+
+  - id: WF-INV-002
+    rule: agent_result_via_payload
+    statement: >
+      CLI handlers must extract results exclusively through _payload() and _observations().
+      Direct attribute or dict access on AgentResult is forbidden.
+    severity: critical
+    rejection: "REJECTED — direct AgentResult access without _payload()/_observations() helpers."
+
+  - id: WF-INV-003
+    rule: ddd_layer_purity
+    statement: >
+      Generated domain/ layer must contain only pure Python — no FastAPI, Motor,
+      SQLAlchemy, or any infrastructure import.
+    severity: critical
+    rejection: "REJECTED — domain layer imports infrastructure package."
+
+  - id: WF-INV-004
+    rule: govern_before_comply
+    statement: >
+      monkeypatched make govern must run before monkeypatched make comply.
+      If govern returns NON-COMPLIANT, fixit must run and govern must re-pass
+      before comply is executed.
+    severity: high
+    rejection: "REJECTED — comply executed before govern passed."
+
+  - id: WF-INV-005
+    rule: fixit_on_non_compliant
+    statement: >
+      FixItAgent must be invoked whenever govern returns NON-COMPLIANT.
+      The pipeline must not advance past step 4 with unresolved findings.
+    severity: high
+    rejection: "REJECTED — pipeline advanced past govern with unresolved NON-COMPLIANT findings."
+
+  - id: WF-INV-006
+    rule: correction_loop_bounded
+    statement: >
+      TestServiceAgent correction loops must terminate within max_loops iterations.
+      If no files are patched in a loop, the loop must halt immediately.
+    severity: high
+    rejection: "REJECTED — correction loop ran past max_loops or continued after zero patches."
+
+  - id: WF-INV-008
+    rule: audit_log_required
+    statement: >
+      Every generated service must include api/audit_log.py with AuditLogMiddleware
+      mounted in main.py.  The middleware must emit one structured JSON record per
+      request containing at minimum: request_id, timestamp, method, path,
+      status_code, duration_ms, principal.  This satisfies SOC 2 CC7.2
+      (monitoring_alerting_enabled) and GDPR Art. 5(2) (accountability).
+    severity: high
+    rejection: "REJECTED — generated service missing AuditLogMiddleware or api/audit_log.py."
+
+  - id: WF-INV-007
+    rule: no_credential_exposure
+    statement: >
+      GITHUB_TOKEN, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, DEEPGRAM_API_KEY must
+      never appear in generated code, charts, prompts, or log output.
+    severity: critical
+    rejection: "REJECTED — real credential exposed in pipeline artifact."
+
+reviewGate:
+  reviewer: CingulateAgent
+  passThreshold: APPROVED
+  failAction: halt_pipeline

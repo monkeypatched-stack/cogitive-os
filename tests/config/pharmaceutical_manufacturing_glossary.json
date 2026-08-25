@@ -1,0 +1,1141 @@
+{
+  "version": "1.0.0",
+  "description": "Pharmaceutical Manufacturing Glossary - Comprehensive terms for tablet and capsule manufacturing.",
+  "last_updated": "2026-06-12",
+  "terms": [
+    {
+      "term": "Active Pharmaceutical Ingredient",
+      "abbreviation": "API",
+      "category": "materials",
+      "definition": "The biologically active component in a pharmaceutical product that produces the intended therapeutic effect.",
+      "related_terms": ["drug substance", "excipient", "formulation", "finished product"]
+    },
+    {
+      "term": "Excipient",
+      "abbreviation": null,
+      "category": "materials",
+      "definition": "An inactive substance used as a carrier, diluent, or vehicle for the active pharmaceutical ingredient in a dosage form.",
+      "related_terms": ["API", "filler", "binder", "disintegrant", "lubricant"]
+    },
+    {
+      "term": "Granulation",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "A process of agglomerating powder particles to form granules, improving flow properties and compressibility for tablet manufacturing.",
+      "related_terms": ["wet granulation", "dry granulation", "direct compression", "tablet compression"]
+    },
+    {
+      "term": "Wet Granulation",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "A granulation process where a liquid binder solution is added to powder mixture to form granules through high-shear mixing or fluid bed processing.",
+      "related_terms": ["granulation", "high-shear granulator", "fluid bed dryer", "binder"]
+    },
+    {
+      "term": "Dry Granulation",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "A granulation process where powders are compacted using slugging or roller compaction without the addition of liquid binders.",
+      "related_terms": ["granulation", "roller compactor", "slugging", "direct compression"]
+    },
+    {
+      "term": "Direct Compression",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "A tablet manufacturing method where blended powders are compressed directly into tablets without prior granulation steps.",
+      "related_terms": ["granulation", "tablet compression", "blending", "excipient"]
+    },
+    {
+      "term": "Blending",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of mixing powders to achieve uniform distribution of API and excipients before further processing or compression.",
+      "related_terms": ["V-blender", "bin blender", "uniformity", "lubrication"]
+    },
+    {
+      "term": "Lubrication",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The addition of lubricants to reduce friction during tablet ejection and prevent die-wall adhesion during compression.",
+      "related_terms": ["magnesium stearate", "tablet compression", "blending", "ejection force"]
+    },
+    {
+      "term": "Tablet Compression",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of compacting granulated or blended powder into tablets using a tablet press under controlled force and speed.",
+      "related_terms": ["tablet press", "rotary press", "single-station press", "compression force"]
+    },
+    {
+      "term": "Capsule Filling",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of filling empty gelatin or HPMC capsules with pharmaceutical powders, granules, or liquid formulations.",
+      "related_terms": ["capsule", "hard capsule", "soft capsule", "filling machine"]
+    },
+    {
+      "term": "Film Coating",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Application of a thin polymer-based coating to tablets to improve appearance, taste masking, moisture protection, or controlled release.",
+      "related_terms": ["coating pan", "spray gun", "enteric coating", "sugar coating"]
+    },
+    {
+      "term": "Sugar Coating",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "A multi-step coating process applying successive layers of sugar-based solution to tablets for taste masking and aesthetic improvement.",
+      "related_terms": ["film coating", "coating pan", "subcoating", "finishing"]
+    },
+    {
+      "term": "Packaging",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of enclosing finished pharmaceutical products in containers for distribution, storage, and patient use.",
+      "related_terms": ["blister packaging", "strip packaging", "bulk packaging", "labeling"]
+    },
+    {
+      "term": "Blister Packaging",
+      "abbreviation": null,
+      "category": "equipment",
+      "definition": "A unit-dose packaging method where individual tablets or capsules are sealed in pre-formed cavities backed by foil or film.",
+      "related_terms": ["PVC", "PVDC", "alu-alu", "thermoforming"]
+    },
+    {
+      "term": "Strip Packaging",
+      "abbreviation": null,
+      "category": "equipment",
+      "definition": "A packaging method where tablets or capsules are sealed between two layers of heat-sealable material.",
+      "related_terms": ["blister packaging", "individual packaging", "unit-dose"]
+    },
+    {
+      "term": "Bulk Packaging",
+      "abbreviation": null,
+      "category": "equipment",
+      "definition": "Packaging of finished products in large containers such as drums or cartons for bulk distribution.",
+      "related_terms": ["packaging", "drum", "carton", "palletization"]
+    },
+    {
+      "term": "Dispensing",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of weighing, measuring, and issuing raw materials according to the master formula for a specific batch.",
+      "related_terms": ["weighing", "master formula", "batch record", "raw material"]
+    },
+    {
+      "term": "Weighing",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Accurate measurement of raw materials using calibrated balances according to the master formula requirements.",
+      "related_terms": ["dispensing", "balance", "calibration", "master formula"]
+    },
+    {
+      "term": "Sifting",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of passing powders through a sieve to remove agglomerates and ensure uniform particle size distribution.",
+      "related_terms": ["sieving", "mesh", "particle size", "mill"]
+    },
+    {
+      "term": "Milling",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Size reduction of particles using mechanical force to achieve desired particle size distribution for processing.",
+      "related_terms": ["micronization", "comminution", "particle size", "mill"]
+    },
+    {
+      "term": "Micronization",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Reduction of particle size to micrometer range, typically for poorly soluble APIs to improve dissolution rate.",
+      "related_terms": ["milling", "particle size", "dissolution", "bioavailability"]
+    },
+    {
+      "term": "Homogenization",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of producing uniform particle distribution in emulsions, suspensions, or semi-solid formulations.",
+      "related_terms": ["emulsification", "particle size", "dispersion", "uniformity"]
+    },
+    {
+      "term": "Emulsification",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of creating a stable mixture of two immiscible liquids (oil and water) using emulsifiers and mechanical energy.",
+      "related_terms": ["homogenization", "emulsifier", "dispersion", "stability"]
+    },
+    {
+      "term": "Sterilization",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The process of eliminating or destroying all forms of microbial life from equipment, containers, or products.",
+      "related_terms": ["autoclave", "aseptic processing", "terminal sterilization", "moist heat"]
+    },
+    {
+      "term": "Pasteurization",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Heat treatment process applied to liquids to reduce microbial load without complete sterilization.",
+      "related_terms": ["sterilization", "heat treatment", "microbial load"]
+    },
+    {
+      "term": "Aseptic Processing",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Manufacturing of sterile products in a controlled environment where pre-sterilized components are assembled under aseptic conditions.",
+      "related_terms": ["clean room", "laminar airflow", "sterility", "terminal sterilization"]
+    },
+    {
+      "term": "Environmental Monitoring",
+      "abbreviation": "EM",
+      "category": "compliance",
+      "definition": "Monitoring of airborne particles, microbial contamination, temperature, humidity, and pressure differentials in clean rooms.",
+      "related_terms": ["clean room", "HEPA filter", "ISO classification", "particulate"]
+    },
+    {
+      "term": "High Efficiency Particulate Air Filter",
+      "abbreviation": "HEPA",
+      "category": "equipment",
+      "definition": "A filter capable of removing at least 99.97% of particles with size 0.3 micrometers, used in clean room air handling systems.",
+      "related_terms": ["clean room", "air handling unit", "ISO classification", "particulate"]
+    },
+    {
+      "term": "Laminar Air Flow",
+      "abbreviation": "LAF",
+      "category": "equipment",
+      "definition": "A unidirectional airflow system that provides a particle-free environment for aseptic operations.",
+      "related_terms": ["HEPA filter", "clean room", "aseptic processing", "biosafety cabinet"]
+    },
+    {
+      "term": "Clean Room",
+      "abbreviation": null,
+      "category": "equipment",
+      "definition": "A controlled environment with defined limits on airborne particle concentration, temperature, and humidity for pharmaceutical manufacturing.",
+      "related_terms": ["ISO classification", "HEPA filter", "laminar airflow", "environmental monitoring"]
+    },
+    {
+      "term": "ISO Classification",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "International standard (ISO 14644) defining air cleanliness classes based on particle concentration limits per cubic meter.",
+      "related_terms": ["clean room", "GMP", "particulate", "environmental monitoring"]
+    },
+    {
+      "term": "Good Manufacturing Practice",
+      "abbreviation": "GMP",
+      "category": "compliance",
+      "definition": "Regulations ensuring pharmaceutical products are consistently produced and controlled according to quality standards.",
+      "related_terms": ["FDA", "EU GMP", "WHO GMP", "quality assurance", "validation"]
+    },
+    {
+      "term": "Good Laboratory Practice",
+      "abbreviation": "GLP",
+      "category": "compliance",
+      "definition": "Quality system of management controls for research laboratories to ensure the integrity of non-clinical safety data.",
+      "related_terms": ["GMP", "validation", "analytical methods", "laboratory"]
+    },
+    {
+      "term": "Good Distribution Practice",
+      "abbreviation": "GDP",
+      "category": "compliance",
+      "definition": "Quality system ensuring pharmaceutical products are consistently stored, transported, and handled under proper conditions.",
+      "related_terms": ["GMP", "supply chain", "cold chain", "transportation"]
+    },
+    {
+      "term": "ICH Guidelines",
+      "abbreviation": "ICH",
+      "category": "compliance",
+      "definition": "International harmonization guidelines for pharmaceutical development, quality, safety, and efficacy established by the International Council for Harmonisation.",
+      "related_terms": ["Q1-Q12", "stability", "impurities", "validation"]
+    },
+    {
+      "term": "21 CFR Part 11",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "US FDA regulation defining requirements for electronic records, electronic signatures, and audit trails in pharmaceutical operations.",
+      "related_terms": ["electronic signature", "audit trail", "data integrity", "electronic batch record"]
+    },
+    {
+      "term": "21 CFR Parts 210/211",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "US FDA cGMP regulations for pharmaceutical manufacturing, covering general provisions and finished pharmaceuticals.",
+      "related_terms": ["GMP", "batch record", "validation", "quality control"]
+    },
+    {
+      "term": "EU GMP Annex 11",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "European Commission guideline for computerized systems in GMP-regulated environments.",
+      "related_terms": ["21 CFR Part 11", "computer system validation", "electronic records", "data integrity"]
+    },
+    {
+      "term": "EU GMP Annex 15",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "European Commission guideline for qualification and validation of equipment, utilities, and systems.",
+      "related_terms": ["IQ/OQ/PQ", "validation", "qualification", "process validation"]
+    },
+    {
+      "term": "WHO GMP",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Good Manufacturing Practice guidelines published by the World Health Organization for pharmaceutical manufacturing.",
+      "related_terms": ["GMP", "WHO", "prequalification", "regulatory"]
+    },
+    {
+      "term": "MHRA GxP",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "UK Medicines and Healthcare products Regulatory Agency guidelines covering GMP, GLP, GCP, and GDP.",
+      "related_terms": ["GMP", "GCP", "regulatory", "UK compliance"]
+    },
+    {
+      "term": "GAMP 5",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Good Automated Manufacturing Practice framework for validation of computerized systems in regulated environments.",
+      "related_terms": ["computer system validation", "CSV", "21 CFR Part 11", "EU GMP Annex 11"]
+    },
+    {
+      "term": "Installation Qualification/Operational Qualification/Performance Qualification",
+      "abbreviation": "IQ/OQ/PQ",
+      "category": "compliance",
+      "definition": "Three-phase validation approach: IQ verifies equipment installation, OQ tests operational parameters, PQ confirms performance under actual conditions.",
+      "related_terms": ["validation", "equipment qualification", "process validation", "GMP"]
+    },
+    {
+      "term": "Validation",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Documented evidence that a process, system, or method consistently produces a result meeting predetermined specifications.",
+      "related_terms": ["process validation", "cleaning validation", "analytical method validation", "IQ/OQ/PQ"]
+    },
+    {
+      "term": "Process Validation",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Establishing by scientific evidence that a manufacturing process consistently produces a product meeting its predetermined quality attributes.",
+      "related_terms": ["validation", "CPP", "CQA", "batch record"]
+    },
+    {
+      "term": "Cleaning Validation",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Documented evidence that cleaning procedures consistently remove residues from manufacturing equipment to predetermined limits.",
+      "related_terms": ["cleaning procedure", "MACO", "swab testing", "equipment qualification"]
+    },
+    {
+      "term": "Analytical Method Validation",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Establishing that an analytical procedure is suitable for its intended purpose by demonstrating specificity, accuracy, precision, and other performance characteristics.",
+      "related_terms": ["HPLC", "GC", "UV spectrophotometry", "validation"]
+    },
+    {
+      "term": "Stability Study",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Systematic testing of pharmaceutical products under defined conditions to determine shelf life and storage requirements.",
+      "related_terms": ["ICH conditions", "accelerated stability", "long-term stability", "shelf life"]
+    },
+    {
+      "term": "Accelerated Stability",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Stability testing at elevated conditions (40°C/75% RH for 6 months) to predict shelf life under normal storage conditions.",
+      "related_terms": ["ICH conditions", "long-term stability", "stability chamber"]
+    },
+    {
+      "term": "Long-term Stability",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Stability testing under recommended storage conditions (25°C/60% RH for Zone II) for the product's shelf life period.",
+      "related_terms": ["ICH conditions", "accelerated stability", "shelf life"]
+    },
+    {
+      "term": "Stress Testing",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Forced degradation studies conducted under extreme conditions to identify potential degradation products and establish stability-indicating methods.",
+      "related_terms": ["stability", "degradation", "impurities", "HPLC"]
+    },
+    {
+      "term": "Dissolution Testing",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "In vitro test measuring the rate and extent of drug release from a dosage form in simulated physiological conditions.",
+      "related_terms": ["USP", "bioavailability", "drug release", "stability"]
+    },
+    {
+      "term": "Disintegration Testing",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Test determining whether tablets or capsules break down into particles within a specified time in simulated gastrointestinal fluid.",
+      "related_terms": ["dissolution", "USP", "tablet quality", "bioavailability"]
+    },
+    {
+      "term": "Hardness Testing",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Measurement of the force required to break a tablet, indicating its mechanical strength and friability resistance.",
+      "related_terms": ["friability", "tablet compression", "CQA", "compression force"]
+    },
+    {
+      "term": "Friability Testing",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Test measuring the weight loss of tablets subjected to mechanical stress during tumbling, indicating resistance to chipping and abrasion.",
+      "related_terms": ["hardness", "USP", "tablet quality", "compression force"]
+    },
+    {
+      "term": "Weight Variation",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Test measuring the uniformity of tablet weight within a batch to ensure consistent dosage delivery.",
+      "related_terms": ["content uniformity", "USP", "IPC", "tablet compression"]
+    },
+    {
+      "term": "Content Uniformity",
+      "abbreviation": "CU",
+      "category": "metrics",
+      "definition": "Test ensuring that individual dosage units contain the labeled amount of API within specified limits.",
+      "related_terms": ["weight variation", "assay", "IPC", "USP"]
+    },
+    {
+      "term": "Assay",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Analytical determination of the amount of active ingredient in a pharmaceutical product, typically expressed as percentage of label claim.",
+      "related_terms": ["HPLC", "content uniformity", "specification", "certificate of analysis"]
+    },
+    {
+      "term": "Related Substances",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Impurities chemically related to the API, including degradation products and synthesis by-products, monitored to ensure product safety.",
+      "related_terms": ["impurities", "HPLC", "specification", "stability"]
+    },
+    {
+      "term": "Residual Solvents",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Organic solvents retained in drug substances or products after manufacturing, classified by ICH Q3C based on toxicity.",
+      "related_terms": ["ICH Q3C", "GC", "specification", "API"]
+    },
+    {
+      "term": "Water Content",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Measurement of moisture present in pharmaceutical products, typically determined by Karl Fischer titration.",
+      "related_terms": ["Karl Fischer", "moisture", "stability", "specification"]
+    },
+    {
+      "term": "Karl Fischer Titration",
+      "abbreviation": "KF",
+      "category": "metrics",
+      "definition": "Analytical method for precise determination of water content in pharmaceutical products using iodine-based chemistry.",
+      "related_terms": ["water content", "moisture", "titration", "USP"]
+    },
+    {
+      "term": "In-Process Control",
+      "abbreviation": "IPC",
+      "category": "metrics",
+      "definition": "Checks and tests performed during manufacturing to monitor and control process parameters and product quality.",
+      "related_terms": ["CPP", "CQA", "batch record", "deviation"]
+    },
+    {
+      "term": "Critical Process Parameter",
+      "abbreviation": "CPP",
+      "category": "metrics",
+      "definition": "A process variable whose variation has a direct impact on a critical quality attribute and must be monitored and controlled.",
+      "related_terms": ["CQA", "process validation", "IPC", "OOS"]
+    },
+    {
+      "term": "Critical Quality Attribute",
+      "abbreviation": "CQA",
+      "category": "metrics",
+      "definition": "A physical, chemical, biological, or microbiological property or characteristic that must be within an appropriate limit to ensure product quality.",
+      "related_terms": ["CPP", "process validation", "specification", "dissolution"]
+    },
+    {
+      "term": "Failure Mode and Effects Analysis",
+      "abbreviation": "FMEA",
+      "category": "quality",
+      "definition": "Systematic risk assessment tool to identify potential failure modes, their causes, and effects on process or product quality.",
+      "related_terms": ["risk assessment", "CAPA", "quality risk management", "FMEA"]
+    },
+    {
+      "term": "Fishbone Diagram",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Cause-and-effect diagram (also called Ishikawa diagram) used to systematically identify potential root causes of a problem.",
+      "related_terms": ["Ishikawa diagram", "root cause analysis", "5 why", "quality"]
+    },
+    {
+      "term": "Ishikawa Diagram",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "A cause-and-effect diagram developed by Kaoru Ishikawa for identifying potential factors causing an overall effect.",
+      "related_terms": ["fishbone diagram", "root cause analysis", "5 why", "quality"]
+    },
+    {
+      "term": "Pareto Chart",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "A bar graph arranging causes from most to least frequent, used to identify the vital few problems requiring attention.",
+      "related_terms": ["quality tools", "SPC", "root cause analysis", "fishbone diagram"]
+    },
+    {
+      "term": "Control Chart",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "A statistical tool with upper and lower control limits used to determine if a manufacturing process is in a state of control.",
+      "related_terms": ["SPC", "process capability", "Cp", "Cpk"]
+    },
+    {
+      "term": "Statistical Process Control",
+      "abbreviation": "SPC",
+      "category": "quality",
+      "definition": "Use of statistical methods to monitor and control a manufacturing process to ensure it operates at its full potential.",
+      "related_terms": ["control chart", "process capability", "Cp", "Cpk"]
+    },
+    {
+      "term": "Process Capability",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Statistical measure of the inherent process variability compared to specification limits, expressed as Cp and Cpk indices.",
+      "related_terms": ["Cp", "Cpk", "SPC", "control chart"]
+    },
+    {
+      "term": "Process Capability Index",
+      "abbreviation": "Cp",
+      "category": "quality",
+      "definition": "Ratio of specification width to process width, measuring how well a process can meet specification limits assuming it is centered.",
+      "related_terms": ["Cpk", "process capability", "SPC", "quality"]
+    },
+    {
+      "term": "Process Capability Index (Centered)",
+      "abbreviation": "Cpk",
+      "category": "quality",
+      "definition": "Measure of process capability accounting for process centering relative to specification limits.",
+      "related_terms": ["Cp", "process capability", "SPC", "quality"]
+    },
+    {
+      "term": "Mean Time Between Failures",
+      "abbreviation": "MTBF",
+      "category": "metrics",
+      "definition": "Average time between equipment failures, used to measure equipment reliability and plan preventive maintenance.",
+      "related_terms": ["MTTR", "TPM", "equipment reliability", "preventive maintenance"]
+    },
+    {
+      "term": "Mean Time To Repair",
+      "abbreviation": "MTTR",
+      "category": "metrics",
+      "definition": "Average time required to repair equipment after a failure, measuring maintenance efficiency and downtime impact.",
+      "related_terms": ["MTBF", "TPM", "equipment reliability", "maintenance"]
+    },
+    {
+      "term": "Overall Equipment Effectiveness",
+      "abbreviation": "OEE",
+      "category": "metrics",
+      "definition": "Productivity metric calculated as Availability × Performance × Quality, measuring equipment utilization efficiency.",
+      "related_terms": ["availability", "performance rate", "quality rate", "TPM"]
+    },
+    {
+      "term": "Total Productive Maintenance",
+      "abbreviation": "TPM",
+      "category": "quality",
+      "definition": "Systematic approach to equipment maintenance involving all employees to maximize equipment effectiveness and eliminate breakdowns.",
+      "related_terms": ["OEE", "MTBF", "MTTR", "preventive maintenance"]
+    },
+    {
+      "term": "Lean Manufacturing",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Production methodology focused on minimizing waste while maximizing productivity and value creation.",
+      "related_terms": ["six sigma", "kaizen", "5S", "value stream mapping"]
+    },
+    {
+      "term": "Six Sigma",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Data-driven methodology for eliminating defects and reducing process variation to achieve 3.4 defects per million opportunities.",
+      "related_terms": ["DMAIC", "lean manufacturing", "SPC", "quality"]
+    },
+    {
+      "term": "Define, Measure, Analyze, Improve, Control",
+      "abbreviation": "DMAIC",
+      "category": "quality",
+      "definition": "Six Sigma improvement cycle methodology for optimizing and stabilizing business processes.",
+      "related_terms": ["six sigma", "quality", "process improvement", "SPC"]
+    },
+    {
+      "term": "Kaizen",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Continuous improvement philosophy involving all employees in small, incremental positive changes.",
+      "related_terms": ["lean manufacturing", "5S", "poka-yoke", "value stream mapping"]
+    },
+    {
+      "term": "5S",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Workplace organization methodology: Sort, Set in order, Shine, Standardize, Sustain.",
+      "related_terms": ["lean manufacturing", "kaizen", "poka-yoke", "workplace organization"]
+    },
+    {
+      "term": "Kanban",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Visual scheduling system for lean manufacturing and just-in-time production that controls workflow through visual signals.",
+      "related_terms": ["lean manufacturing", "just-in-time", "value stream mapping", "pull system"]
+    },
+    {
+      "term": "Poka-Yoke",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Error-proofing technique designed to prevent mistakes or make them immediately obvious in manufacturing processes.",
+      "related_terms": ["lean manufacturing", "quality", "error prevention", "5S"]
+    },
+    {
+      "term": "Andon",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Visual signaling system indicating the status of a production line, allowing operators to stop production when problems occur.",
+      "related_terms": ["lean manufacturing", "quality", "escalation", "continuous improvement"]
+    },
+    {
+      "term": "Single Minute Exchange of Die",
+      "abbreviation": "SMED",
+      "category": "quality",
+      "definition": "Methodology for reducing setup and changeover time to under 10 minutes in manufacturing operations.",
+      "related_terms": ["lean manufacturing", "changeover", "setup reduction", "kaizen"]
+    },
+    {
+      "term": "Value Stream Mapping",
+      "abbreviation": "VSM",
+      "category": "quality",
+      "definition": "Lean management tool visualizing all steps in a manufacturing process to identify waste and optimize flow.",
+      "related_terms": ["lean manufacturing", "kaizen", "waste reduction", "process improvement"]
+    },
+    {
+      "term": "Corrective and Preventive Action",
+      "abbreviation": "CAPA",
+      "category": "quality",
+      "definition": "Systematic approach to investigating deviations, identifying root causes, implementing corrections, and preventing recurrence.",
+      "related_terms": ["deviation", "root cause analysis", "quality", "change control"]
+    },
+    {
+      "term": "Deviation",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Any departure from approved procedures, instructions, specifications, or established standards during manufacturing.",
+      "related_terms": ["CAPA", "root cause analysis", "OOS", "investigation"]
+    },
+    {
+      "term": "Out of Specification",
+      "abbreviation": "OOS",
+      "category": "quality",
+      "definition": "A result that falls outside established acceptance criteria or specifications, requiring investigation.",
+      "related_terms": ["OOT", "deviation", "investigation", "specification"]
+    },
+    {
+      "term": "Out of Trend",
+      "abbreviation": "OOT",
+      "category": "quality",
+      "definition": "A result showing a statistically significant trend away from historical data, though still within specification limits.",
+      "related_terms": ["OOS", "trending", "stability", "statistical analysis"]
+    },
+    {
+      "term": "Root Cause Analysis",
+      "abbreviation": "RCA",
+      "category": "quality",
+      "definition": "Systematic process of identifying the fundamental reason for a deviation or problem to prevent recurrence.",
+      "related_terms": ["5 why", "fishbone diagram", "Ishikawa", "CAPA"]
+    },
+    {
+      "term": "5 Why Analysis",
+      "abbreviation": "5 Whys",
+      "category": "quality",
+      "definition": "Iterative interrogative technique to explore cause-and-effect relationships by repeatedly asking 'why' to identify root cause.",
+      "related_terms": ["root cause analysis", "fishbone diagram", "Ishikawa", "quality"]
+    },
+    {
+      "term": "Fault Tree Analysis",
+      "abbreviation": "FTA",
+      "category": "quality",
+      "definition": "Top-down deductive failure analysis method using Boolean logic to identify pathways leading to system failure.",
+      "related_terms": ["FMEA", "risk assessment", "root cause analysis", "quality"]
+    },
+    {
+      "term": "Change Control",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Formal system to evaluate, approve, and document changes to processes, equipment, materials, or systems.",
+      "related_terms": ["deviation", "CAPA", "approval", "impact assessment"]
+    },
+    {
+      "term": "Stability, Compliance, Change",
+      "abbreviation": "SCC",
+      "category": "quality",
+      "definition": "Integrative framework linking product stability data, regulatory compliance requirements, and change management decisions.",
+      "related_terms": ["stability", "change control", "compliance", "quality"]
+    },
+    {
+      "term": "Technology Transfer",
+      "abbreviation": "Tech Transfer",
+      "category": "process",
+      "definition": "Process of transferring knowledge, methods, and documentation from development to manufacturing or between manufacturing sites.",
+      "related_terms": ["scale-up", "process transfer", "validation", "batch record"]
+    },
+    {
+      "term": "Scale-up",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Process of increasing batch size from development scale to commercial manufacturing scale while maintaining product quality.",
+      "related_terms": ["technology transfer", "process validation", "process transfer", "batch size"]
+    },
+    {
+      "term": "Batch Manufacturing Record",
+      "abbreviation": "BMR",
+      "category": "documentation",
+      "definition": "Document detailing the step-by-step manufacturing instructions for producing a specific batch of product.",
+      "related_terms": ["BPR", "MBMR", "batch record", "eBMR"]
+    },
+    {
+      "term": "Batch Packaging Record",
+      "abbreviation": "BPR",
+      "category": "documentation",
+      "definition": "Document detailing the packaging instructions and operations for a specific batch of finished product.",
+      "related_terms": ["BMR", "batch record", "packaging", "labeling"]
+    },
+    {
+      "term": "Master Batch Manufacturing Record",
+      "abbreviation": "MBMR",
+      "category": "documentation",
+      "definition": "The approved template or reference document from which individual batch manufacturing records are generated.",
+      "related_terms": ["BMR", "master formula", "batch record", "eBMR"]
+    },
+    {
+      "term": "Electronic Batch Record",
+      "abbreviation": "eBMR",
+      "category": "documentation",
+      "definition": "Digital version of batch manufacturing and packaging records compliant with 21 CFR Part 11 requirements.",
+      "related_terms": ["BMR", "BPR", "21 CFR Part 11", "electronic signature"]
+    },
+    {
+      "term": "Electronic Signature",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "An electronic sound, symbol, or process attached to a record that has the same legal significance as a handwritten signature.",
+      "related_terms": ["21 CFR Part 11", "eBMR", "audit trail", "electronic record"]
+    },
+    {
+      "term": "Data Integrity",
+      "abbreviation": "DI",
+      "category": "compliance",
+      "definition": "The degree to which data are complete, consistent, accurate, trustworthy, and reliable throughout the data lifecycle.",
+      "related_terms": ["ALCOA+", "audit trail", "21 CFR Part 11", "electronic record"]
+    },
+    {
+      "term": "ALCOA+",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Data integrity principles: Attributable, Legible, Contemporaneous, Original, Accurate, plus Complete, Consistent, Enduring, Available.",
+      "related_terms": ["data integrity", "audit trail", "GMP", "documentation"]
+    },
+    {
+      "term": "Audit Trail",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Chronological record providing documentary evidence of the sequence of activities that created, modified, or deleted a record.",
+      "related_terms": ["21 CFR Part 11", "data integrity", "electronic record", "ALCOA+"]
+    },
+    {
+      "term": "Electronic Record",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "Any combination of text, graphics, data, audio, pictorial, or other information represented in digital form that is created, modified, or maintained.",
+      "related_terms": ["21 CFR Part 11", "eBMR", "electronic signature", "audit trail"]
+    },
+    {
+      "term": "Standard Operating Procedure",
+      "abbreviation": "SOP",
+      "category": "documentation",
+      "definition": "Detailed written instructions describing how to perform an activity or process consistently to achieve uniform quality.",
+      "related_terms": ["work instruction", "batch record", "GMP", "document control"]
+    },
+    {
+      "term": "Work Instruction",
+      "abbreviation": "WI",
+      "category": "documentation",
+      "definition": "Detailed step-by-step instructions for performing a specific task, derived from an SOP.",
+      "related_terms": ["SOP", "batch record", "GMP", "document control"]
+    },
+    {
+      "term": "Master Formula",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "The approved composition and instructions for manufacturing a pharmaceutical product, including quantities and process parameters.",
+      "related_terms": ["batch formula", "BMR", "dispensing", "bill of materials"]
+    },
+    {
+      "term": "Batch Formula",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "The document listing all materials and their quantities required to manufacture a specific batch size.",
+      "related_terms": ["master formula", "bill of materials", "dispensing", "BMR"]
+    },
+    {
+      "term": "Bill of Materials",
+      "abbreviation": "BOM",
+      "category": "documentation",
+      "definition": "Complete list of raw materials, components, and quantities required to manufacture a pharmaceutical product.",
+      "related_terms": ["batch formula", "master formula", "ERP", "dispensing"]
+    },
+    {
+      "term": "Specification",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "Documented requirements for materials, processes, equipment, or products including acceptance criteria and test methods.",
+      "related_terms": ["certificate of analysis", "assay", "dissolution", "USP"]
+    },
+    {
+      "term": "Certificate of Analysis",
+      "abbreviation": "CoA",
+      "category": "documentation",
+      "definition": "Official document providing test results and specifications compliance for a specific batch of material or product.",
+      "related_terms": ["specification", "certificate of conformance", "raw material", "finished product"]
+    },
+    {
+      "term": "Certificate of Conformance",
+      "abbreviation": "CoC",
+      "category": "documentation",
+      "definition": "Document certifying that a product or material conforms to specified requirements and standards.",
+      "related_terms": ["certificate of analysis", "specification", "batch release", "QA"]
+    },
+    {
+      "term": "Raw Material",
+      "abbreviation": "RM",
+      "category": "materials",
+      "definition": "Any substance used in the manufacturing of a pharmaceutical product before it undergoes any processing.",
+      "related_terms": ["API", "excipient", "intermediate", "dispensing"]
+    },
+    {
+      "term": "Intermediate",
+      "abbreviation": null,
+      "category": "materials",
+      "definition": "Material produced during manufacturing steps between the raw material and finished product stages.",
+      "related_terms": ["raw material", "bulk product", "finished product", "granulation"]
+    },
+    {
+      "term": "Bulk Product",
+      "abbreviation": null,
+      "category": "materials",
+      "definition": "The completed pharmaceutical product before final packaging into commercial containers.",
+      "related_terms": ["finished product", "packaging", "intermediate", "bulk packaging"]
+    },
+    {
+      "term": "Finished Product",
+      "abbreviation": "FP",
+      "category": "materials",
+      "definition": "The final pharmaceutical product packaged in its intended container with labeling, ready for distribution.",
+      "related_terms": ["bulk product", "packaging", "release", "specification"]
+    },
+    {
+      "term": "Quarantine",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Status of materials or products held pending quality review and decision, physically segregated from approved stock.",
+      "related_terms": ["hold", "release", "reject", "quality control"]
+    },
+    {
+      "term": "Release",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Official decision to approve a batch of product for distribution after confirming compliance with specifications.",
+      "related_terms": ["QA", "batch release", "specification", "certificate of analysis"]
+    },
+    {
+      "term": "Reject",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Official decision to reject a batch that fails to meet specifications or quality requirements.",
+      "related_terms": ["release", "quarantine", "deviation", "OOS"]
+    },
+    {
+      "term": "Hold",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Temporary cessation of production or batch movement pending investigation or decision.",
+      "related_terms": ["quarantine", "deviation", "investigation", "batch record"]
+    },
+    {
+      "term": "Rework",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Reprocessing of a batch through one or more steps of the manufacturing process to correct a deviation.",
+      "related_terms": ["reprocess", "deviation", "batch record", "validation"]
+    },
+    {
+      "term": "Reprocess",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Reprocessing of a previously manufactured batch by repeating a step or procedure not originally included in the approved process.",
+      "related_terms": ["rework", "deviation", "change control", "validation"]
+    },
+    {
+      "term": "Recall",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Action to retrieve distributed product that may be defective or non-compliant with regulatory requirements.",
+      "related_terms": ["complaint", "adverse event", "deviation", "regulatory"]
+    },
+    {
+      "term": "Complaint",
+      "abbreviation": null,
+      "category": "quality",
+      "definition": "Written, electronic, or oral communication alleging deficiencies related to the identity, quality, purity, or potency of a product.",
+      "related_terms": ["recall", "adverse event", "pharmacovigilance", "investigation"]
+    },
+    {
+      "term": "Adverse Event",
+      "abbreviation": "AE",
+      "category": "quality",
+      "definition": "Any untoward medical occurrence associated with the use of a pharmaceutical product, regardless of causal relationship.",
+      "related_terms": ["pharmacovigilance", "complaint", "recall", "safety reporting"]
+    },
+    {
+      "term": "Pharmacovigilance",
+      "abbreviation": "PV",
+      "category": "quality",
+      "definition": "Activities relating to the detection, assessment, understanding, and prevention of adverse drug reactions.",
+      "related_terms": ["adverse event", "complaint", "recall", "safety reporting"]
+    },
+    {
+      "term": "Stability Chamber",
+      "abbreviation": null,
+      "category": "equipment",
+      "definition": "Controlled environment equipment for conducting stability studies at specified temperature and humidity conditions.",
+      "related_terms": ["ICH conditions", "accelerated stability", "long-term stability", "stability study"]
+    },
+    {
+      "term": "ICH Conditions",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Standardized temperature and humidity conditions defined by ICH for pharmaceutical stability testing (Zone I-IV).",
+      "related_terms": ["Zone IV", "Zone II", "accelerated conditions", "stability chamber"]
+    },
+    {
+      "term": "Zone IV",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Hot and humid climate zone (30°C/75% RH) for long-term stability testing, applicable to regions like India.",
+      "related_terms": ["Zone II", "ICH conditions", "accelerated stability", "stability"]
+    },
+    {
+      "term": "Zone II",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Subtropical climate zone (25°C/60% RH) for long-term stability testing, applicable to most of Europe and North America.",
+      "related_terms": ["Zone IV", "ICH conditions", "stability", "accelerated stability"]
+    },
+    {
+      "term": "Accelerated Conditions",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Stressful storage conditions (40°C±2°C/75%±5% RH) used to predict stability behavior over longer periods.",
+      "related_terms": ["ICH conditions", "long-term conditions", "stability chamber", "stability study"]
+    },
+    {
+      "term": "Long-term Conditions",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Standard storage conditions for stability testing representing the intended storage environment for the product.",
+      "related_terms": ["ICH conditions", "accelerated conditions", "stability", "shelf life"]
+    },
+    {
+      "term": "Intermediate Conditions",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Storage conditions (30°C/65% RH) used for long-term testing in Zone IV or when justified by deviation from long-term conditions.",
+      "related_terms": ["ICH conditions", "Zone IV", "stability", "long-term conditions"]
+    },
+    {
+      "term": "Shelf Life",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "The period during which a pharmaceutical product remains within its approved specifications when stored under defined conditions.",
+      "related_terms": ["expiry date", "stability", "retest date", "ICH conditions"]
+    },
+    {
+      "term": "Expiry Date",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "The date after which the product should not be used, based on stability data and shelf life determination.",
+      "related_terms": ["shelf life", "retest date", "stability", "batch record"]
+    },
+    {
+      "term": "Retest Date",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "The date after which raw materials or intermediates should be retested for compliance before use.",
+      "related_terms": ["shelf life", "expiry date", "stability", "raw material"]
+    },
+    {
+      "term": "Batch Size",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "The quantity of product produced in a single manufacturing run as defined in the batch formula.",
+      "related_terms": ["batch number", "lot number", "master formula", "scale-up"]
+    },
+    {
+      "term": "Lot Number",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "A distinctive combination of numbers and/or letters assigned to identify and trace a specific quantity of material or product.",
+      "related_terms": ["batch number", "batch size", "traceability", "batch record"]
+    },
+    {
+      "term": "Batch Number",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "A unique identifier assigned to a specific batch for traceability throughout manufacturing, testing, and distribution.",
+      "related_terms": ["lot number", "batch size", "traceability", "batch record"]
+    },
+    {
+      "term": "Manufacturing Date",
+      "abbreviation": "Mfg Date",
+      "category": "documentation",
+      "definition": "The date on which the manufacturing of a batch is completed.",
+      "related_terms": ["expiry date", "packaging date", "batch record", "lot number"]
+    },
+    {
+      "term": "Packaging Date",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "The date on which the final packaging operation for a batch is completed.",
+      "related_terms": ["manufacturing date", "expiry date", "batch record", "labeling"]
+    },
+    {
+      "term": "First In First Out",
+      "abbreviation": "FIFO",
+      "category": "process",
+      "definition": "Inventory management method where oldest stock is used or distributed first to minimize expiry-related waste.",
+      "related_terms": ["FEFO", "expiry date", "inventory", "warehouse"]
+    },
+    {
+      "term": "First Expire First Out",
+      "abbreviation": "FEFO",
+      "category": "process",
+      "definition": "Inventory management method where materials or products closest to expiry are used or distributed first.",
+      "related_terms": ["FIFO", "expiry date", "retest date", "warehouse"]
+    },
+    {
+      "term": "Yield Calculation",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "Determination of the percentage of theoretical output actually achieved during manufacturing.",
+      "related_terms": ["theoretical yield", "actual yield", "percent yield", "batch record"]
+    },
+    {
+      "term": "Theoretical Yield",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "The maximum amount of product that can be produced from a given quantity of raw materials under ideal conditions.",
+      "related_terms": ["actual yield", "percent yield", "batch record", "batch formula"]
+    },
+    {
+      "term": "Actual Yield",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "The quantity of product actually produced from a given quantity of raw materials.",
+      "related_terms": ["theoretical yield", "percent yield", "batch record", "yield calculation"]
+    },
+    {
+      "term": "Percent Yield",
+      "abbreviation": null,
+      "category": "metrics",
+      "definition": "The ratio of actual yield to theoretical yield, expressed as a percentage.",
+      "related_terms": ["theoretical yield", "actual yield", "batch record", "yield calculation"]
+    },
+    {
+      "term": "Line Clearance",
+      "abbreviation": null,
+      "category": "process",
+      "definition": "Procedure to ensure all materials, components, and documents from the previous batch are removed before starting a new batch.",
+      "related_terms": ["GMP", "batch record", "changeover", "cleaning"]
+    },
+    {
+      "term": "Equipment Qualification",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Documented evidence that equipment is suitable for its intended use through installation, operational, and performance qualification.",
+      "related_terms": ["IQ/OQ/PQ", "validation", "GMP", "computer system validation"]
+    },
+    {
+      "term": "Computer System Validation",
+      "abbreviation": "CSV",
+      "category": "compliance",
+      "definition": "Documented evidence that a computerized system consistently performs according to its intended use and specifications.",
+      "related_terms": ["GAMP 5", "21 CFR Part 11", "EU GMP Annex 11", "electronic record"]
+    },
+    {
+      "term": "GxP",
+      "abbreviation": null,
+      "category": "compliance",
+      "definition": "Umbrella term for Good Practice quality guidelines and regulations including GMP, GLP, GCP, GDP, and GVP.",
+      "related_terms": ["GMP", "GLP", "GCP", "GDP", "GVP"]
+    },
+    {
+      "term": "Regulatory Filing",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "The submission of regulatory dossiers to health authorities for product approval or variation changes.",
+      "related_terms": ["dossier", "ANDA", "NDA", "CTD", "eCTD"]
+    },
+    {
+      "term": "Dossier",
+      "abbreviation": null,
+      "category": "documentation",
+      "definition": "The complete package of documents submitted to regulatory authorities for marketing authorization approval.",
+      "related_terms": ["ANDA", "NDA", "CTD", "regulatory filing"]
+    },
+    {
+      "term": "Abbreviated New Drug Application",
+      "abbreviation": "ANDA",
+      "category": "documentation",
+      "definition": "FDA application for approval of a generic drug, demonstrating bioequivalence to the reference listed drug.",
+      "related_terms": ["NDA", "DMF", "CTD", "regulatory filing"]
+    },
+    {
+      "term": "New Drug Application",
+      "abbreviation": "NDA",
+      "category": "documentation",
+      "definition": "FDA application for approval to market a new pharmaceutical product, including full safety and efficacy data.",
+      "related_terms": ["ANDA", "DMF", "CTD", "regulatory filing"]
+    },
+    {
+      "term": "Drug Master File",
+      "abbreviation": "DMF",
+      "category": "documentation",
+      "definition": "Confidential document submitted to FDA containing detailed information about manufacturing processes, facilities, or materials.",
+      "related_terms": ["NDA", "ANDA", "CTD", "regulatory filing"]
+    },
+    {
+      "term": "Common Technical Document",
+      "abbreviation": "CTD",
+      "category": "documentation",
+      "definition": "Standardized format for regulatory submissions defined by ICH for drug registration applications.",
+      "related_terms": ["eCTD", "NDA", "ANDA", "regulatory filing"]
+    },
+    {
+      "term": "Electronic Common Technical Document",
+      "abbreviation": "eCTD",
+      "category": "documentation",
+      "definition": "Electronic version of CTD submissions using XML backbone for regulatory filing to health authorities.",
+      "related_terms": ["CTD", "NDA", "ANDA", "regulatory filing"]
+    }
+  ]
+}

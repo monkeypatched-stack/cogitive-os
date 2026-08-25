@@ -1,0 +1,60 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monkeybrain
+
+resources:
+  - configmap.yaml
+  - secret.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  - servicemonitor.yaml
+  - prometheusrule.yaml
+  - opa.yaml
+
+# Generated (not hand-copied) from the real opa/policies/*.rego source
+# files so there is exactly one source of truth for policy content — a
+# hand-embedded ConfigMap would silently drift the first time someone
+# edits a .rego file and forgets to update a duplicate. The default
+# content-hash suffix (NOT disabled here) is a genuine feature, not
+# incidental complexity: it means an OPA policy change automatically
+# produces a new ConfigMap name, which automatically triggers a rolling
+# restart of opa.yaml's Deployment (which references these by base
+# name — kustomize's nameReference transformer rewrites that
+# reference to the hashed name at apply time) picking up the new
+# policy on next apply, with no manual pod restart step.
+#
+# configMapGenerator's `files:` is non-recursive per directory (matches
+# `kubectl create configmap --from-file=DIR`), which is exactly why this
+# is two generators, not one — opa/policies/*.rego and
+# opa/policies/compliance/*.rego are mounted as two separate volumes at
+# /policies and /policies/compliance in opa.yaml.
+configMapGenerator:
+  - name: opa-policies
+    files:
+      - ../../opa/policies/agent_mesh.rego
+      - ../../opa/policies/agent_routes.rego
+      - ../../opa/policies/agentos_execute.rego
+      - ../../opa/policies/agentos_governance.rego
+      - ../../opa/policies/pipeline_guardrail.rego
+  - name: opa-policies-compliance
+    files:
+      - ../../opa/policies/compliance/fda.rego
+      - ../../opa/policies/compliance/gdpr.rego
+      - ../../opa/policies/compliance/gxp.rego
+      - ../../opa/policies/compliance/iec61508.rego
+      - ../../opa/policies/compliance/iso10218.rego
+      - ../../opa/policies/compliance/iso27001.rego
+      - ../../opa/policies/compliance/soc2.rego
+
+# Apply with: kubectl apply -k deploy/k8s/ --load-restrictor=LoadRestrictionsNone
+# (was: kubectl apply -f deploy/k8s/ — that form still works for any
+# individual file, but skips the ConfigMap generation above, which is
+# the actual point of this file existing.) The load-restrictor flag is
+# required, not optional: kustomize refuses by default to read files
+# from outside its own directory tree, and opa/policies/*.rego
+# legitimately lives above deploy/k8s/ at the repo root — confirmed
+# locally via `kubectl kustomize deploy/k8s/ --load-restrictor=
+# LoadRestrictionsNone`, which renders all 11 resources (including both
+# generated, content-hashed opa-policies ConfigMaps with their volume
+# references correctly rewritten) with no errors.

@@ -1,0 +1,414 @@
+workload: etass
+goal: >
+  Execute the full ETASS software engineering lifecycle as a single continuous
+  execution pipeline. From natural language intent to deployed, tested,
+  governed software — with post-release cognitive loop (serve, client generation,
+  agent registration, planning, simulation, execution, comparison, policy update).
+  The specification is the source of truth. Code is a generated artifact.
+domain: software_engineering
+bounded_context: ci_cd
+aggregate: pull_request
+reasoning: chain_of_thought
+
+policies:
+  - Specification > Prompt > Goal > Code. Never Code > Specification.
+  - The specification is permanent. Code is disposable.
+  - Evidence governs evolution. Governance controls change.
+  - ETASS orchestrates the full lifecycle. No phase may be skipped.
+
+constitutions:
+  - etass/constitutions/coding-standards.yaml
+
+constraints:
+  - Governance review is mandatory before implementation begins
+  - Governance review is mandatory after deployment
+  - All generated code must pass static analysis and security scan before PR creation
+  - Human review is mandatory before merge to main
+  - Deployment requires all CI stages to pass
+  - DDD compliance checks run in parallel over generated code
+  - Compliance checks (SOC2, GDPR, ISO27001) run in parallel over generated code
+
+evidence:
+  - Execution graph node states and results
+  - Lemon metrics from pipeline execution
+  - Governance decisions at review gates
+  - Test results (unit, service, integration)
+  - Deployment records
+  - Post-release simulation and comparison results
+
+success_criteria:
+  - All 35 nodes execute in dependency order
+  - Specification discovery completes with confidence >= 0.5
+  - Governance approves at review gates
+  - All DDD compliance checks pass
+  - All compliance checks pass
+  - All CI stages pass
+  - Deployment completes
+  - Post-release cognitive loop executes (serve → client → charter → agent → plan → simulate → execute → compare → policy update)
+
+outputs:
+  - Discovered specification (node: specification_discovery)
+  - Compiled specification (node: specification)
+  - Requirements artifact (node: requirements)
+  - Architecture decision (node: architecture)
+  - API design chart (node: design)
+  - Generated service code (node: implementation:service_gen)
+  - DDD compliance results (nodes: ddd_domain through ddd_policy)
+  - Regulatory compliance results (nodes: compliance_soc2, compliance_gdpr, compliance_iso27001)
+  - Code review report (node: review)
+  - Governance review report (node: review:governance)
+  - Test authoring output (node: testing:authoring)
+  - Unit test results (node: testing:unit)
+  - Service test results (node: testing:service)
+  - Integration test results (node: testing:integration)
+  - Packaged artifact (node: packaging)
+  - Pull request (node: release:pull_request)
+  - Deployment record (node: deploy)
+  - Release (node: release)
+  - Running service (node: serve)
+  - Generated API client (node: client_gen)
+  - Client capability chart (node: client_charter)
+  - Compiled agent prompt (node: compile_agent)
+  - Registered agent (node: register_agent)
+  - Execution plan (node: planner)
+  - Simulation results (node: simulate)
+  - Execution results (node: execute)
+  - Comparison results (node: comparator)
+  - Updated policy (node: policy_update)
+
+pipeline:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PHASE 1: DISCOVERY & SPECIFICATION (linear)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - phase: 1
+    node: sdlc:specification_discovery
+    name: specification_discovery
+    agent: specification_discovery
+    goal: >
+      Analyze the user's natural language intent. Discover required agents,
+      providers, knowledge sources, security requirements. Generate a
+      recommended workflow DAG. Present the inferred specification for review.
+    depends_on: []
+
+  - phase: 2
+    node: sdlc:specification
+    name: specification
+    agent: prompt_compiler
+    goal: >
+      Compile the discovered specification into a StructuredPromptIR.
+      Resolve domain ontology, DDD agents, reasoning strategy, invariants.
+      Produce the deterministic engineering specification.
+    depends_on: [sdlc:specification_discovery]
+
+  - phase: 3
+    node: sdlc:requirements
+    name: requirements
+    agent: requirements
+    goal: >
+      Turn the compiled specification into a structured requirements artifact.
+      Extract functional requirements, non-functional constraints, and
+      testable acceptance criteria.
+    depends_on: [sdlc:specification]
+
+  - phase: 4
+    node: sdlc:architecture
+    name: architecture
+    agent: architecture_decision
+    goal: >
+      Produce an architecture decision record. Define module boundaries,
+      layer structure, technology choices, integration points.
+    depends_on: [sdlc:requirements]
+
+  - phase: 5
+    node: sdlc:design
+    name: design
+    agent: api_chart
+    goal: >
+      Generate the DDD API design chart. Define aggregates, entities,
+      value objects, domain events, endpoints, invariants.
+    depends_on: [sdlc:architecture]
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PHASE 2: IMPLEMENTATION (service gen → DDD fan-out → compliance fan-out)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - phase: 6
+    node: sdlc:implementation:service_gen
+    name: service_generation
+    agent: service_gen
+    goal: >
+      Generate the DDD-compliant service code. Produce domain layer,
+      application layer, infrastructure layer, API layer, main + settings.
+      Follow the design chart's aggregates, entities, value objects, endpoints.
+    depends_on: [sdlc:design]
+
+  # DDD compliance checks (all depend on service_gen, run in parallel)
+  - phase: 7a
+    node: sdlc:implementation:ddd_domain
+    name: ddd_domain
+    agent: domain
+    goal: Verify domain layer purity — no framework imports in domain/.
+    depends_on: [sdlc:implementation:service_gen]
+
+  - phase: 7b
+    node: sdlc:implementation:ddd_aggregate
+    name: ddd_aggregate
+    agent: aggregate
+    goal: Verify aggregate invariants are enforced at the aggregate root.
+    depends_on: [sdlc:implementation:service_gen]
+
+  - phase: 7c
+    node: sdlc:implementation:ddd_entity
+    name: ddd_entity
+    agent: entity
+    goal: Verify entity lifecycle, identity, state transitions.
+    depends_on: [sdlc:implementation:service_gen]
+
+  - phase: 7d
+    node: sdlc:implementation:ddd_value_object
+    name: ddd_value_object
+    agent: value_object
+    goal: Verify value objects are immutable with proper validation.
+    depends_on: [sdlc:implementation:service_gen]
+
+  - phase: 7e
+    node: sdlc:implementation:ddd_repository
+    name: ddd_repository
+    agent: repository
+    goal: Verify repository abstraction — persistence separation from domain.
+    depends_on: [sdlc:implementation:service_gen]
+
+  - phase: 7f
+    node: sdlc:implementation:ddd_policy
+    name: ddd_policy
+    agent: policy
+    goal: Verify governance rules and OPA policy evaluation.
+    depends_on: [sdlc:implementation:service_gen]
+
+  # Regulatory compliance checks (run in parallel)
+  - phase: 7g
+    node: sdlc:implementation:compliance_soc2
+    name: compliance_soc2
+    agent: compliance_soc2
+    goal: Run SOC2 compliance checks against the generated code.
+    depends_on: [sdlc:implementation:service_gen]
+
+  - phase: 7h
+    node: sdlc:implementation:compliance_gdpr
+    name: compliance_gdpr
+    agent: compliance_gdpr
+    goal: Run GDPR compliance checks against the generated code.
+    depends_on: [sdlc:implementation:service_gen]
+
+  - phase: 7i
+    node: sdlc:implementation:compliance_iso27001
+    name: compliance_iso27001
+    agent: compliance_iso27001
+    goal: Run ISO27001 compliance checks against the generated code.
+    depends_on: [sdlc:implementation:service_gen]
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PHASE 3: REVIEW & GOVERNANCE (parallel gates)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - phase: 8
+    node: sdlc:review
+    name: code_review
+    agent: code_review
+    goal: >
+      LLM-based diff review. Check correctness, design, style, security.
+      Return structured findings with severity levels.
+    depends_on: [sdlc:implementation:service_gen, sdlc:implementation:ddd_domain,
+                 sdlc:implementation:ddd_aggregate, sdlc:implementation:ddd_entity,
+                 sdlc:implementation:ddd_value_object, sdlc:implementation:ddd_repository,
+                 sdlc:implementation:ddd_policy, sdlc:implementation:compliance_soc2,
+                 sdlc:implementation:compliance_gdpr, sdlc:implementation:compliance_iso27001]
+
+  - phase: 9
+    node: sdlc:review:governance
+    name: governance_review
+    agent: governance
+    goal: >
+      Submit to Cingulate governance engine. Review constitutional compliance,
+      architecture adherence, policy validation. Reject if non-compliant.
+    depends_on: [sdlc:implementation:service_gen, sdlc:implementation:ddd_domain,
+                 sdlc:implementation:ddd_aggregate, sdlc:implementation:ddd_entity,
+                 sdlc:implementation:ddd_value_object, sdlc:implementation:ddd_repository,
+                 sdlc:implementation:ddd_policy, sdlc:implementation:compliance_soc2,
+                 sdlc:implementation:compliance_gdpr, sdlc:implementation:compliance_iso27001]
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PHASE 4: TESTING (linear pipeline)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - phase: 10
+    node: sdlc:testing:authoring
+    name: test_authoring
+    agent: test_authoring
+    goal: >
+      LLM-authored pytest tests from requirements and generated code.
+      Produce test files covering happy path, edge cases, error handling.
+    depends_on: [sdlc:requirements]
+
+  - phase: 11
+    node: sdlc:testing:unit
+    name: unit_testing
+    agent: unit_testing
+    goal: >
+      Run pytest on all unit tests. Collect pass/fail/skip counts.
+      Block on any failures.
+    depends_on: [sdlc:review, sdlc:review:governance, sdlc:testing:authoring]
+
+  - phase: 12
+    node: sdlc:testing:service
+    name: service_testing
+    agent: test_service
+    goal: >
+      Run ruff static analysis + pytest on generated service.
+      Auto-correct failures via CodeGenAgent up to 3 iterations.
+    depends_on: [sdlc:testing:unit]
+
+  - phase: 13
+    node: sdlc:testing:integration
+    name: integration_testing
+    agent: integration_test
+    goal: >
+      HTTP smoke tests against live services. Health check polling.
+      Verify end-to-end request flow through the generated service.
+    depends_on: [sdlc:testing:service]
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PHASE 5: PACKAGING & RELEASE (linear)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - phase: 14
+    node: sdlc:packaging
+    name: artifact_packaging
+    agent: artifact_packaging
+    goal: >
+      Build versioned Docker container image. Bump patch version.
+      Write CHANGELOG.md entry.
+    depends_on: [sdlc:testing:integration]
+
+  - phase: 15
+    node: sdlc:release:pull_request
+    name: pull_request
+    agent: pull_request
+    goal: >
+      Create GitHub pull request via API or gh CLI.
+      Title: [ETASS] {chart} v{version}. Base: main.
+    depends_on: [sdlc:packaging]
+
+  - phase: 16
+    node: sdlc:deploy
+    name: deploy
+    agent: deploy
+    goal: >
+      Deploy the packaged service. Start with uvicorn, track PID.
+      Maintain deploy history for rollback capability.
+    depends_on: [sdlc:release:pull_request]
+
+  - phase: 17
+    node: sdlc:release
+    name: release
+    agent: release
+    goal: >
+      Tag the merged commit. Push tag. Create GitHub Release via API.
+      Generate release notes from changelog.
+    depends_on: [sdlc:deploy]
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PHASE 6: POST-RELEASE COGNITIVE LOOP (linear)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - phase: 18
+    node: sdlc:serve
+    name: serve
+    agent: serve
+    goal: >
+      Start the generated service with uvicorn for live testing.
+      Write PID to ~/.monkeybrain/pids/.
+    depends_on: [sdlc:release]
+
+  - phase: 19
+    node: sdlc:client_gen
+    name: client_generation
+    agent: client_gen
+    goal: >
+      Generate a typed Python API client for the running service.
+      Read router + schemas, produce httpx client with typed methods.
+    depends_on: [sdlc:serve]
+
+  - phase: 20
+    node: sdlc:client_charter
+    name: client_charter
+    agent: client_charter
+    goal: >
+      Convert the generated API client into a SOMA capability chart.
+      Write somatic/charts/{service}-client/values.yaml.
+    depends_on: [sdlc:client_gen]
+
+  - phase: 21
+    node: sdlc:compile_agent
+    name: compile_agent
+    agent: compile_agent
+    goal: >
+      Compile the client capability chart into an executable .prompt.md.
+      Operations become numbered steps, invariants become constraints.
+    depends_on: [sdlc:client_charter]
+
+  - phase: 22
+    node: sdlc:register_agent
+    name: register_agent
+    agent: client_capability_register
+    goal: >
+      Register the compiled agent into the Broca registry.
+      The service is now a discoverable agent in the Cognitive OS.
+    depends_on: [sdlc:compile_agent]
+
+  - phase: 23
+    node: sdlc:planner
+    name: planner
+    agent: planner
+    goal: >
+      Generate a structured YAML execution plan from the registered agent.
+      Map the goal to a sequence of executable steps.
+    depends_on: [sdlc:register_agent]
+
+  - phase: 24
+    node: sdlc:simulate
+    name: simulate
+    agent: plan_simulate
+    goal: >
+      Dry-run the execution plan. Predict outcomes without side effects.
+      Compare predicted vs actual behavior of the generated service.
+    depends_on: [sdlc:planner]
+
+  - phase: 25
+    node: sdlc:execute
+    name: execute
+    agent: executor
+    goal: >
+      Execute the plan against the live service. Run the full cognitive
+      workload — measure latency, throughput, error rates.
+    depends_on: [sdlc:simulate]
+
+  - phase: 26
+    node: sdlc:comparator
+    name: comparator
+    agent: comparator
+    goal: >
+      A/B comparison of simulated vs actual execution. Compute loss delta.
+      Identify gaps between predicted and real behavior.
+    depends_on: [sdlc:execute]
+
+  - phase: 27
+    node: sdlc:policy_update
+    name: policy_update
+    agent: policy_update
+    goal: >
+      Feed comparison results back into the Bellman Q-learning policy.
+      Update Q-table, adjust exploration/exploitation ratio.
+      Close the cognitive loop.
+    depends_on: [sdlc:comparator]

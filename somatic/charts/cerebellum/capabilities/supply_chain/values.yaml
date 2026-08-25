@@ -1,0 +1,131 @@
+capability:
+  name: supply_chain
+  id: cap-supply-001
+  platform: Supply Chain
+  description: Supply chain integrations (Procurement, Vendor Management, Distribution, Logistics)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - supply_chain
+  - procurement
+  - vendors
+  - logistics
+  references:
+  - src/cerebellum/capabilities/supply_chain.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/supply-chain
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: create_purchase_order
+  method: CREATE
+  path: /purchase-orders
+  description: Create a purchase order
+  required_params:
+  - vendor_id
+  - items
+  optional_params:
+  - delivery_date
+  - shipping_method
+  paginated: false
+  pagination_cursor_field: ''
+- name: onboard_vendor
+  method: CREATE
+  path: /vendors
+  description: Onboard a new vendor
+  required_params:
+  - vendor_name
+  - contact_info
+  optional_params:
+  - certifications
+  - terms
+  paginated: false
+  pagination_cursor_field: ''
+- name: optimize_route
+  method: READ
+  path: /logistics/optimize
+  description: Optimize delivery route
+  required_params:
+  - origin
+  - destinations
+  optional_params:
+  - vehicle_type
+  - constraints
+  paginated: false
+  pagination_cursor_field: ''
+- name: manage_inventory
+  method: UPDATE
+  path: /inventory
+  description: Manage inventory levels
+  required_params:
+  - warehouse_id
+  - product_id
+  - action
+  optional_params:
+  - quantity
+  paginated: false
+  pagination_cursor_field: ''
+- name: track_shipment
+  method: READ
+  path: /shipments/track
+  description: Track shipment status
+  required_params:
+  - shipment_id
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_supply_chain_connect
+  - test_supply_chain_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

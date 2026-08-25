@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: elasticsearch API
+  description: Elasticsearch for full-text search and audit indexing
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/elasticsearch
+  description: Capability endpoint
+paths:
+  /{index}/doc:
+    create:
+      summary: Index a document
+      operationId: elasticsearch_index
+      parameters:
+      - name: index
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: document
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /{index}/_search:
+    read:
+      summary: Search documents
+      operationId: elasticsearch_search
+      parameters:
+      - name: index
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: query
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /{index}/doc/{id}:
+    delete:
+      summary: Delete a document
+      operationId: elasticsearch_delete
+      parameters:
+      - name: index
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

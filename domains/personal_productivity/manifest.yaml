@@ -1,0 +1,30 @@
+name: personal_productivity
+version: "0.1.0"
+description: "Personal productivity bounded context — todo management, calendar, notes, email"
+bounded_context:
+  name: personal_productivity
+  aggregates:
+    - TodoItem
+    - CalendarEvent
+    - Note
+    - Email
+  entities:
+    - TodoItem
+    - CalendarEvent
+    - Note
+    - Email
+    - Reminder
+    - Tag
+  value_objects:
+    - TodoStatus
+    - Priority
+    - DateTimeRange
+    - EmailStatus
+  events:
+    - TodoCreated
+    - TodoCompleted
+    - EventScheduled
+    - EventReminder
+    - NoteCreated
+    - EmailSent
+    - EmailReceived

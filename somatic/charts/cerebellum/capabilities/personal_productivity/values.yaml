@@ -1,0 +1,135 @@
+capability:
+  name: personal_productivity
+  id: cap-prod-personal-001
+  platform: Productivity
+  description: Personal productivity integrations (Todo, Calendar, Notes, Email)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - productivity
+  - todo
+  - calendar
+  - notes
+  - email
+  references:
+  - src/cerebellum/capabilities/personal_productivity.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/productivity
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: create_todo
+  method: CREATE
+  path: /todos
+  description: Create a new todo item
+  required_params:
+  - title
+  optional_params:
+  - description
+  - priority
+  - due_date
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_todos
+  method: READ
+  path: /todos
+  description: List all todo items
+  required_params: []
+  optional_params:
+  - status
+  - priority
+  paginated: true
+  pagination_cursor_field: cursor
+- name: create_event
+  method: CREATE
+  path: /events
+  description: Create a calendar event
+  required_params:
+  - title
+  - start
+  - end
+  optional_params:
+  - description
+  - attendees
+  paginated: false
+  pagination_cursor_field: ''
+- name: send_email
+  method: CREATE
+  path: /emails
+  description: Send an email
+  required_params:
+  - to
+  - subject
+  - body
+  optional_params:
+  - cc
+  - bcc
+  - attachments
+  paginated: false
+  pagination_cursor_field: ''
+- name: create_note
+  method: CREATE
+  path: /notes
+  description: Create a note
+  required_params:
+  - title
+  - content
+  optional_params:
+  - tags
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_productivity_connect
+  - test_productivity_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

@@ -1,0 +1,51 @@
+workload: source_control
+goal: Execute safe, auditable git operations against a target repository via soma commands
+domain: software_engineering
+bounded_context: source_control
+aggregate: repository
+entity: commit
+value_object: branch_name
+reasoning: chain_of_thought
+
+constraints:
+  - All git operations run inside the configured spec repo (MONKEYBRAIN_SPEC_REPO)
+  - Never run destructive operations (reset --hard, push --force) without explicit approval
+  - Branch creation must use kebab-case names prefixed with feat/, fix/, hotfix/, or chore/
+  - Commits require at least one staged file — never create empty commits
+  - Merge conflicts must be surfaced to the caller, not silently suppressed
+  - Stash before checkout when working tree is dirty
+  - Pull with --rebase to maintain linear history on feature branches
+  - Tag names must follow semver (v1.2.3) for release commits
+
+evidence:
+  - soma status --short shows current working-tree state before any operation
+  - soma diff --stat shows scope of changes before commit
+  - soma log --oneline -10 shows recent history for context
+  - Exit codes from each soma command determine success or failure
+  - Branch tracking info from soma branch -vv shows upstream sync state
+
+success_criteria:
+  - Target operation completes with exit code 0
+  - Working tree is in the expected state after the operation
+  - Remote reflects local state after push operations
+  - No unresolved conflicts in the repository
+  - Commit history is linear and auditable
+
+outputs:
+  - exit_code: integer exit code from the soma/git command
+  - stdout: captured standard output from the command
+  - stderr: captured standard error (present on failure)
+  - branch: current branch name after the operation
+  - commit_sha: SHA of created or targeted commit
+
+policies:
+  - POLICY_NO_FORCE_PUSH: push --force is blocked on main and release/* branches
+  - POLICY_CLEAN_BEFORE_CHECKOUT: stash dirty working tree before switching branches
+  - POLICY_PULL_BEFORE_PUSH: always pull --rebase before pushing to avoid rejection
+  - POLICY_AUDIT_LOG: every soma command and its exit code is recorded in agent evidence
+
+constitutions:
+  - Source control is the audit trail of the system — every operation must be traceable
+  - Agent-initiated commits must include agent_type in commit metadata or message
+  - Spec changes are governed by spec_lifecycle policy; code changes by code review policy
+  - The soma CLI is the only sanctioned interface for git operations in this system

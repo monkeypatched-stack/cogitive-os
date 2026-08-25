@@ -1,0 +1,333 @@
+/* ── Context & Memory panel — styled to match EventStreamPanel ── */
+
+/* Make the dashboard plan-page slot flex so the panel fills height */
+.lwe-plan-page:has(.lwe-cm-panel) {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+/* ── Root container — matches lwe-event-stream ── */
+.lwe-cm-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Controls bar — mirrors lwe-event-stream-controls ── */
+.lwe-cm-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--lwe-border);
+  flex-wrap: wrap;
+}
+
+/* Filter pill group */
+.lwe-cm-filters {
+  display: flex;
+  gap: 3px;
+}
+
+.lwe-cm-controls button {
+  border: 1px solid var(--lwe-border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  background: var(--lwe-surface-alt);
+  color: var(--lwe-text-muted);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.lwe-cm-controls button:hover,
+.lwe-cm-controls button.lwe-cm-filter-active {
+  background: var(--lwe-accent);
+  border-color: var(--lwe-accent);
+  color: var(--lwe-accent-contrast);
+}
+
+.lwe-cm-filter-count {
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Search input */
+.lwe-cm-controls input {
+  min-width: 180px;
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--lwe-border);
+  border-radius: 5px;
+  background: var(--lwe-bg);
+  color: var(--lwe-text);
+  font-size: 11px;
+}
+
+/* Action buttons on the right */
+.lwe-cm-action-btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* ── Status bar — mirrors lwe-event-stream-status ── */
+.lwe-cm-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  color: var(--lwe-text-muted);
+  font-size: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--lwe-border) 50%, transparent);
+}
+
+.lwe-cm-status-live { color: #1565c0; font-weight: 600; }
+.lwe-cm-status-error { color: var(--lwe-danger); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Scrollable list ── */
+.lwe-cm-list {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+/* ── Overview stat cards — row of cards, same width as event rows ── */
+.lwe-cm-stat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 10px;
+}
+
+.lwe-cm-stat-card {
+  flex: 1 1 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--lwe-border);
+  border-radius: 7px;
+  background: var(--lwe-surface-alt);
+}
+
+.lwe-cm-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--lwe-accent);
+  line-height: 1;
+}
+
+.lwe-cm-stat-label {
+  font-size: 10px;
+  color: var(--lwe-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Dashboard-mode stat card overrides */
+.lwe-dashboard .lwe-cm-stat-card {
+  border-color: #e0e3e8;
+  background: #ffffff;
+  box-shadow: 0 2px 5px #33415512;
+}
+.lwe-dashboard .lwe-cm-stat-value { color: #321fdb; }
+.lwe-dashboard .lwe-cm-stat-label { color: #7b8794; }
+
+/* ── Section heading inside the list ── */
+.lwe-cm-section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lwe-text-muted);
+  border-top: 1px solid var(--lwe-border);
+  background: color-mix(in srgb, var(--lwe-surface-alt) 60%, transparent);
+  sticky: top 0;
+}
+.lwe-cm-section-head:first-child { border-top: none; }
+
+.lwe-cm-section-count {
+  background: var(--lwe-surface-alt);
+  border: 1px solid var(--lwe-border);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Event row — mirrors lwe-event-row ── */
+.lwe-cm-row {
+  display: grid;
+  grid-template-columns: 72px 88px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 7px 10px;
+  border-top: 1px solid color-mix(in srgb, var(--lwe-border) 65%, transparent);
+  font-size: 11px;
+}
+
+.lwe-cm-row time {
+  color: var(--lwe-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Category badge — mirrors lwe-event-badge ── */
+.lwe-cm-badge {
+  text-transform: uppercase;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.lwe-cm-badge-semantic     { color: #2563eb; }
+.lwe-cm-badge-episodic     { color: #7c3aed; }
+.lwe-cm-badge-conversation { color: #0891b2; }
+.lwe-cm-badge-belief       { color: #c2410c; }
+.lwe-cm-badge-goal         { color: #059669; }
+.lwe-cm-badge-plan         { color: #b45309; }
+
+.lwe-cm-row-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lwe-cm-row-detail {
+  color: var(--lwe-text-muted);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.lwe-cm-row-chain {
+  font-size: 10.5px;
+  color: var(--lwe-text-muted);
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* Outcome pill */
+.lwe-cm-outcome {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-top: 3px;
+}
+.lwe-cm-outcome-success { background: #d1fae5; color: #065f46; }
+.lwe-cm-outcome-failed  { background: #fee2e2; color: #991b1b; }
+
+/* ── Empty / loading ── */
+.lwe-cm-empty {
+  padding: 18px 10px;
+  color: var(--lwe-text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* ── Inject Modal ── */
+.lwe-cm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: #00000066;
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+
+.lwe-cm-modal {
+  width: 420px;
+  max-width: 95vw;
+  border: 1px solid var(--lwe-border);
+  border-radius: 10px;
+  background: var(--lwe-surface);
+  box-shadow: 0 8px 40px #0004;
+  overflow: hidden;
+}
+
+.lwe-cm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--lwe-border);
+}
+
+.lwe-cm-modal-header h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--lwe-text);
+}
+
+.lwe-cm-modal-close {
+  background: transparent;
+  border: 0;
+  color: var(--lwe-text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+.lwe-cm-modal-close:hover { color: var(--lwe-text); }
+
+.lwe-cm-modal-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lwe-cm-modal-body label {
+  display: block;
+  font-size: 10px;
+  color: var(--lwe-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.lwe-cm-modal-body input,
+.lwe-cm-modal-body select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--lwe-border);
+  border-radius: 5px;
+  background: var(--lwe-surface-alt);
+  color: var(--lwe-text);
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.lwe-cm-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--lwe-border);
+}
+
+.lwe-cm-modal-cancel {
+  border: 1px solid var(--lwe-border);
+  border-radius: 5px;
+  padding: 6px 14px;
+  background: var(--lwe-surface-alt);
+  color: var(--lwe-text-muted);
+  cursor: pointer;
+  font-size: 12px;
+}
+.lwe-cm-modal-submit {
+  border: none;
+  border-radius: 5px;
+  padding: 6px 14px;
+  background: var(--lwe-accent);
+  color: var(--lwe-accent-contrast);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+.lwe-cm-modal-submit:disabled { opacity: 0.45; cursor: not-allowed; }

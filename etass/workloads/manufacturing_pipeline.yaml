@@ -1,0 +1,151 @@
+workload: etass
+goal: >
+  Execute the full ETASS manufacturing lifecycle for pharmaceutical production.
+  Transform manufacturing requirements into governed production execution through
+  specification, work order dispatch, batch production, QA review, release decision,
+  operational evidence collection, and continuous improvement.
+  The specification is the source of truth. Production records are generated artifacts.
+domain: manufacturing
+bounded_context: production
+aggregate: batch
+entity: lot
+value_object: recipe
+reasoning: chain_of_thought
+policies:
+  - GMP compliance is non-negotiable. Every phase produces auditable evidence.
+  - Specification > SOP > Work Order > Batch Record. Never modify SOPs directly.
+  - QA sign-off is mandatory before any batch release.
+  - Deviations require CAPA before next batch can start.
+  - Change control must be approved before any process change.
+constitutions:
+  - domains/manufacturing/constitutions/gmp-constitution.yaml
+constraints:
+  - Never skip QA review (Phase 4 and Phase 13)
+  - Batch yield must be >= 90% before release review
+  - All calibration records must be current before production starts
+  - Change control approval required for any process deviation
+  - Operational evidence must be collected at every phase
+evidence:
+  - Recipe specification from MES
+  - Equipment calibration ledger
+  - Change control tracker
+  - Prior batch records for this product
+  - Deviation log
+success_criteria:
+  - All phases execute with auditable evidence
+  - QA approves at Phase 4 and Phase 13
+  - Batch meets yield, purity, and quality invariants
+  - All deviations documented and CAPA assigned
+  - Operational evidence feeds specification evolution
+outputs:
+  - Compiled production specification (Phase 2)
+  - Work order set with assignments (Phase 3)
+  - Batch record (Phase 5)
+  - QA review decision (Phase 4)
+  - Release decision with evidence (Phase 7)
+  - Deviation report if applicable (Phase 8)
+  - Operational evidence report (Phase 10)
+  - Evolved manufacturing specification (Phase 12)
+
+pipeline:
+  - phase: 1
+    name: load_specification
+    agent: governance
+    goal: Load the recipe specification, SOP set, equipment list, and compliance constitutions. Validate all required fields. Resolve dependencies between SOPs and equipment.
+
+  - phase: 2
+    name: compile_specification
+    agent: prompt_compiler
+    goal: Compile the recipe and SOPs into a deterministic production plan. Resolve all variable substitutions, yield targets, quality parameters, and compliance requirements.
+
+  - phase: 3
+    name: work_order_dispatch
+    agent: domain
+    goal: >
+      Create work orders for all production phases: setup, production, cleaning, calibration, and QA sampling.
+      Assign workers. Confirm equipment availability.
+      Use WorkOrderAggregateAgent to enforce dispatch invariants.
+
+  - phase: 4
+    name: qa_pre_review
+    agent: governance
+    goal: >
+      QA pre-batch review. Validate recipe version, equipment calibration status,
+      change control approvals, and SOP versions. Reject if any prerequisite fails.
+
+  - phase: 5
+    name: batch_production
+    agent: codegen
+    goal: >
+      Execute the batch production work orders. Record process parameters, in-process
+      controls, and yield measurements. Use BatchAggregateAgent to enforce yield
+      and quality invariants. Route vision checks via OpenClaw. Log to MES via n8n SAP connector.
+
+  - phase: 6
+    name: deviation_management
+    agent: operational_evidence
+    goal: >
+      Detect and document any out-of-specification results, equipment failures,
+      or SOP deviations. Assign CAPA for each deviation. Escalate critical deviations
+      to QA via n8n email connector.
+
+  - phase: 7
+    name: batch_release_review
+    agent: governance
+    goal: >
+      QA release review. Evaluate batch record completeness, yield against specification,
+      in-process test results, deviation status, and equipment calibration.
+      Use BatchReleaseService and QA approval workflow.
+      Route to human reviewer via n8n webhook.
+
+  - phase: 8
+    name: regulatory_documentation
+    agent: pull_request
+    goal: >
+      Generate batch release package: batch record, CoA, deviation summary, CAPA log,
+      and QA sign-off. Submit to document management system via n8n SAP connector.
+
+  - phase: 9
+    name: release_decision
+    agent: human_review
+    goal: >
+      Final QA Director approval for batch release.
+      If rejected, return to deviation management (Phase 6). If approved, release batch.
+
+  - phase: 10
+    name: operational_evidence
+    agent: operational_evidence
+    goal: >
+      Collect and correlate all production evidence: yield trends, OEE metrics,
+      deviation frequency, calibration compliance, and process capability indices.
+      Store in evidence repository. Feed to Lemon for trend detection.
+
+  - phase: 11
+    name: introspection
+    agent: introspection
+    goal: >
+      Analyze operational evidence for systemic issues:
+      yield degradation, equipment wear, SOP gaps, and compliance drift.
+      Produce an actionable improvement report.
+
+  - phase: 12
+    name: specification_evolution
+    agent: chart_evolution
+    goal: >
+      Update the recipe specification and SOPs based on operational evidence
+      and improvement report. All changes go through change control (Phase 3 of next cycle).
+      The evolved specification becomes the source of truth for the next batch.
+
+  - phase: 13
+    name: governance_review_post
+    agent: governance
+    goal: >
+      Post-production governance review. Validate that operational evidence is complete,
+      deviations are resolved, and the evolved specification meets GMP compliance.
+
+  - phase: 14
+    name: repeat
+    agent: prompt_compiler
+    goal: >
+      Restart the manufacturing lifecycle from Phase 1 with the evolved specification.
+      Continuous improvement through governed specification updates.

@@ -1,0 +1,128 @@
+capability:
+  name: ecommerce
+  id: cap-ecom-001
+  platform: Ecommerce
+  description: Ecommerce integrations (Orders, Inventory, Shipping, Customer Service)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - ecommerce
+  - orders
+  - inventory
+  - shipping
+  - customer_service
+  references:
+  - src/cerebellum/capabilities/ecommerce.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/ecommerce
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: place_order
+  method: CREATE
+  path: /orders
+  description: Place a new order
+  required_params:
+  - customer_id
+  - items
+  optional_params:
+  - shipping_address
+  - payment_method
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_orders
+  method: READ
+  path: /orders
+  description: List orders
+  required_params: []
+  optional_params:
+  - status
+  - customer_id
+  paginated: true
+  pagination_cursor_field: cursor
+- name: update_inventory
+  method: UPDATE
+  path: /inventory/{product_id}
+  description: Update inventory levels
+  required_params:
+  - product_id
+  - quantity
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: create_shipment
+  method: CREATE
+  path: /shipments
+  description: Create a shipment
+  required_params:
+  - order_id
+  - carrier
+  optional_params:
+  - tracking_number
+  paginated: false
+  pagination_cursor_field: ''
+- name: get_customer_support
+  method: READ
+  path: /support/tickets
+  description: Get customer support tickets
+  required_params: []
+  optional_params:
+  - customer_id
+  - status
+  paginated: true
+  pagination_cursor_field: cursor
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_ecommerce_connect
+  - test_ecommerce_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

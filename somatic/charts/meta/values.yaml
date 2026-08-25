@@ -1,0 +1,74 @@
+module:
+  name: meta
+  source: soma/README.md
+
+global:
+  constitution:
+    version: "1.0.0"
+  invariants:
+    - id: GLOBAL-INV-001
+      rule: kernel_owns_cognition
+      statement: "All cognition lives in monkey_brain/kernel. No exceptions."
+      severity: critical
+    - id: GLOBAL-INV-002
+      rule: runtime_owns_execution
+      statement: "All execution lives in monkey_brain/runtime. No exceptions."
+      severity: critical
+    - id: GLOBAL-INV-003
+      rule: capabilities_own_integrations
+      statement: "All external integrations live in cerebellum. No exceptions."
+      severity: critical
+    - id: GLOBAL-INV-004
+      rule: cortex_owns_world_model
+      statement: "World model and simulation live in cortex. No exceptions."
+      severity: critical
+
+preamble:
+  system: MonkeyBrain
+  statement: >
+    MonkeyBrain is a Cognitive Operating System.
+    It is not an AI framework.
+    It is not a workflow engine.
+    It is not an orchestration platform.
+    Use the Operating System analogy as the primary architectural constraint.
+
+osAnalogy:
+  traditional: [Application, Kernel, Runtime, Drivers, Hardware]
+  agentos:
+    - Application
+    - "monkey_brain/kernel  (Cognitive Kernel)"
+    - "monkey_brain/runtime (Execution Runtime)"
+    - "cerebellum           (Capabilities & Drivers)"
+    - Peripherals
+
+executionModel:
+  naturalLanguage: "Interpreted into executable Capability Pipelines"
+  runtime:  "Executes pipelines exactly as an OS executes machine instructions"
+  planner:  "Generates candidate workflows — lives in monkey_brain/kernel"
+  policy:   "Selects workflows — lives in monkey_brain/kernel/rl"
+  observer: "Computes loss — lives in monkey_brain/kernel"
+  learning: "Updates the Policy — lives in monkey_brain/kernel/rl"
+  llm:      "Exploration mechanism only — not the execution policy"
+  convergence: "As experience increases, execution converges toward RL"
+
+decisionRules:
+  - "When in doubt: reduce abstractions."
+  - "Delete before adding."
+  - "Keep cognition in monkey_brain/kernel."
+  - "Keep execution in monkey_brain/runtime."
+  - "Keep integrations in cerebellum."
+  - "Keep prediction in cortex."
+  - "The architecture is authoritative. The implementation is not."
+
+cot:
+  steps:
+    - step: 1
+      instruction: "Assert the OS analogy. Map every abstraction to exactly one layer."
+    - step: 2
+      instruction: "Verify no layer bleeds responsibility into another."
+    - step: 3
+      instruction: "Confirm the LLM is an explorer, not the policy."
+    - step: 4
+      instruction: "Apply all INV-* invariants before generating any implementation guidance."
+    - step: 5
+      instruction: "If implementation conflicts with constitution, reject the implementation."

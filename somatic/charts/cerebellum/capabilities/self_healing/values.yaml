@@ -1,0 +1,145 @@
+capability:
+  name: self_healing
+  id: cap-self-healing-001
+  platform: MonkeyBrain/Kernel
+  description: |
+    Self-Healing Capability — after each /prompt execution, composes runtime errors
+    into the pipeline prompt and submits the combined prompt to the LLM planner,
+    which generates and applies source-level fixes autonomously.
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-29'
+  review_date: '2026-12-29'
+  module_id: monkey_brain
+  module_name: MonkeyBrain
+  tags:
+    - self-healing
+    - autonomous-repair
+    - etass
+    - runtime-evolution
+  references:
+    - src/monkey_brain/kernel/intents/predicates/self_healing_pipeline.py
+  document_ids: []
+
+# ── Healing Prompt ──────────────────────────────────────────────────────────
+# This is the directive appended to the original pipeline prompt when errors
+# are detected. The combined prompt is sent to Claude, which generates the
+# repair steps. No steps are hardcoded here — Claude plans them.
+healing_prompt: |
+  # Self-Healing Directive
+
+  You are the ETASS Self-Healing Runtime.
+
+  Runtime errors were detected during the previous execution cycle.
+
+  Your responsibility:
+  1. Read each error in the Runtime Errors Observed section below.
+  2. Identify the exact source file and line that caused it.
+  3. Read the current content of that file.
+  4. Generate the minimum corrected Python source that eliminates the error.
+  5. Output the corrected file using the exact format below.
+
+  Output format — one block per file requiring a fix:
+
+  FILE: <path relative to repo root>
+  ```python
+  <complete corrected Python source>
+  ```
+
+  Constitution (you MUST comply):
+  - HEAL-INV-001: Fix only the file that produced the error. Nothing else.
+  - HEAL-INV-002: Preserve all existing APIs, class names, and function signatures exactly.
+  - HEAL-INV-003: Never modify somatic charts, specifications, or governance files.
+  - HEAL-INV-004: Fixes go to src/ only. Never to generated/ or somatic/.
+  - HEAL-INV-005: If an import path is wrong, correct the import. Do not move files.
+  - HEAL-INV-006: If a module is missing, create the minimal stub that satisfies the import.
+
+# ── Constitution ────────────────────────────────────────────────────────────
+constitution:
+  invariants:
+    - id: HEAL-INV-001
+      rule: fix_only_what_failed
+      statement: "Self-healing patches only the file that produced the error."
+      severity: critical
+      rejection: "REJECTED — Healer modified files unrelated to the error."
+    - id: HEAL-INV-002
+      rule: preserve_api
+      statement: "Fixed code preserves all existing APIs, class names, and function signatures."
+      severity: critical
+      rejection: "REJECTED — Healer broke existing API."
+    - id: HEAL-INV-003
+      rule: no_chart_modification
+      statement: "Self-healing never modifies somatic charts or specifications."
+      severity: critical
+      rejection: "REJECTED — Healer modified a somatic chart."
+    - id: HEAL-INV-004
+      rule: src_only
+      statement: "Fixes are written to src/ only."
+      severity: critical
+      rejection: "REJECTED — Healer wrote outside src/."
+    - id: HEAL-INV-005
+      rule: fix_imports_not_files
+      statement: "Wrong import paths are fixed at the import site, not by moving files."
+      severity: high
+      rejection: "REJECTED — Healer moved source files instead of fixing imports."
+    - id: HEAL-INV-006
+      rule: create_stubs_for_missing_modules
+      statement: "Missing modules get a minimal stub that satisfies the import contract."
+      severity: high
+      rejection: "REJECTED — Healer left a missing module unresolved."
+
+# ── Trigger Policy ──────────────────────────────────────────────────────────
+trigger:
+  "on": post_prompt_execution
+  condition: errors_detected
+  min_error_count: 1
+  excluded_error_patterns:
+    - "unauthenticated requests"
+    - "HF_TOKEN"
+    - "rate limit"
+  run_as: background_task
+
+# ── Auth / Endpoint (internal capability — no external API) ─────────────────
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+
+endpoint:
+  base_url: internal
+  protocol: internal
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 120
+
+operations:
+  - name: heal
+    method: internal
+    path: /self_healing/heal
+    description: Compose errors into pipeline prompt and submit to LLM for autonomous repair
+    required_params:
+      - original_question
+      - errors
+    optional_params:
+      - context
+    paginated: false
+    pagination_cursor_field: ''
+
+rate_limit:
+  requests_per_hour: 60
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 1
+  retry_on_status: [500]
+
+error_handling:
+  transient_statuses: [500, 502, 503, 504]
+  permanent_statuses: [400, 401, 403]
+  retry_delay_ms: 5000
+  circuit_breaker_threshold: 3
+  circuit_breaker_window_seconds: 300

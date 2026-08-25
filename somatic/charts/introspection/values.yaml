@@ -1,0 +1,179 @@
+module:
+  name: introspection
+  layer: 2
+  alias: Lemon
+  biologicalRole: Self-awareness
+  softwareRole: Observability, tracing, and debugging of cognitive execution
+  source: soma/Observability/Lemon.md
+  owns:
+  - lemon
+  - tracing
+  - logging
+  - metrics
+  - health
+  - alerting
+owns:
+- Metrics
+- Telemetry
+- DistributedTracing
+- StructuredLogging
+- Profiling
+- Auditing
+- Dashboards
+- Alerting
+- HealthMonitoring
+- OperationalAnalytics
+neverOwns:
+- WorkflowExecution
+- Scheduling
+- Memory
+- Persistence
+- CapabilityLogic
+- Planning
+- WorldModel
+traceContract:
+  rule: Every user request gets a globally unique Trace ID. Every child operation
+    inherits it.
+  hierarchy:
+  - Trace
+  - "\u251C\u2500\u2500 Intent Analysis"
+  - "\u251C\u2500\u2500 Workflow Resolution"
+  - "\u251C\u2500\u2500 Scheduler"
+  - "\u251C\u2500\u2500 Pipeline"
+  - "\u2502   \u251C\u2500\u2500 Capability X"
+  - "\u2502   \u2514\u2500\u2500 Memory Lookup"
+  - "\u2514\u2500\u2500 Response Generation"
+metricCategories:
+  runtime:
+  - Requests
+  - ConcurrentExecutions
+  - QueueLength
+  - ActiveSessions
+  - ActiveWorkflows
+  performance:
+  - ExecutionTime
+  - QueueWaitTime
+  - SchedulingLatency
+  - PipelineDuration
+  - DBLatency
+  ai:
+  - PromptTokens
+  - CompletionTokens
+  - ModelUsed
+  - Provider
+  - LLMLatency
+  - Cost
+  capability:
+  - InitTime
+  - ExecTime
+  - SuccessRate
+  - FailureRate
+  - RetryCount
+  - Health
+  persistence:
+  - MongoOps
+  - Neo4jQueries
+  - RedisHits
+  - RedisMisses
+  - InfluxWrites
+  - ElasticSearches
+  memory:
+  - WorkingMemorySize
+  - LongTermMemorySize
+  - RetrievalTime
+  - RecallAccuracy
+logSchema:
+  required:
+  - Timestamp
+  - TraceID
+  - SpanID
+  - WorkflowID
+  - PipelineID
+  - CapabilityID
+  - Severity
+  - Component
+  - Duration
+  format: "structured JSON \u2014 no unstructured console output in production"
+principles:
+- id: 1
+  name: EverythingIsObservable
+  statement: Every runtime component emits telemetry. Nothing executes silently.
+- id: 2
+  name: EndToEndTraceability
+  statement: Every request is traceable from first user interaction to final response.
+- id: 3
+  name: ObservesNeverChanges
+  statement: Lemon observes. It never changes runtime behavior.
+- id: 4
+  name: OpenTelemetryCompatible
+  statement: Architecture is OpenTelemetry-compatible for future integrations.
+- id: 5
+  name: AuditRecordsAreImmutable
+  statement: Audit records are immutable. Written once. Never modified.
+invariants:
+- id: INTRO-INV-001
+  rule: lemon_observes_only
+  statement: introspection never modifies runtime behavior. It observes only.
+  severity: critical
+  rejection: "REJECTED \u2014 introspection contains runtime modification logic."
+- id: INTRO-INV-002
+  rule: no_unstructured_logs
+  statement: No unstructured console output in production. All logs are structured
+    JSON.
+  severity: high
+  rejection: "REJECTED \u2014 Unstructured logging found."
+- id: INTRO-INV-003
+  rule: trace_id_propagation
+  statement: Every operation must propagate TraceID and SpanID.
+  severity: critical
+  rejection: "REJECTED \u2014 Operation missing TraceID propagation."
+deliverables:
+- artifact: DistributedTracing
+- artifact: MetricsCollection
+- artifact: StructuredLogging
+- artifact: RuntimeProfiling
+- artifact: HealthMonitoring
+- artifact: EventTelemetry
+- artifact: AuditFramework
+- artifact: AlertingSystem
+- artifact: DashboardIntegration
+- artifact: PerformanceAnalytics
+- artifact: CostAnalytics
+- artifact: EndToEndExecutionVisualization
+- artifact: AutomaticInstrumentationForAllSubsystems
+- artifact: OpenTelemetryCompatibleArchitecture
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: introspection observes. It never modifies runtime behavior.'
+    constraint: INTRO-INV-001
+    auditGate: true
+  - step: 2
+    instruction: Verify every submodule maps to exactly one observability concern.
+  - step: 3
+    instruction: Verify the tracing module propagates TraceID and SpanID across all boundaries.
+    constraint: INTRO-INV-003
+    auditGate: true
+  - step: 4
+    instruction: Verify the logging module emits structured JSON only. No console.log or print.
+    constraint: INTRO-INV-002
+    auditGate: true
+  - step: 5
+    instruction: 'Map all metric categories: runtime, performance, AI, capability,
+      persistence, memory.'
+  - step: 6
+    instruction: Verify audit records are append-only and immutable.
+  - step: 7
+    instruction: Produce all 14 deliverables.
+  - step: 8
+    instruction: Run constitutional review gate.
+    auditGate: true
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 introspection conforms to Observability Constitution\
+      \ v1.0.0"
+    rejected:
+    - "REJECTED \u2014 introspection modifies runtime behavior."
+    - "REJECTED \u2014 Unstructured logging found."
+    - "REJECTED \u2014 TraceID propagation missing."

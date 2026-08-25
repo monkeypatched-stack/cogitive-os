@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: workflows API
+  description: Workflow orchestration (n8n, Temporal, Airflow)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/workflows
+  description: Capability endpoint
+paths:
+  /start:
+    create:
+      summary: Start a workflow
+      operationId: workflows_start
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: input
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /status/{id}:
+    read:
+      summary: Get workflow status
+      operationId: workflows_status
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /cancel/{id}:
+    delete:
+      summary: Cancel a workflow
+      operationId: workflows_cancel
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

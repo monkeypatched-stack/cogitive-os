@@ -1,0 +1,478 @@
+version: "3.8"
+
+services:
+  # ── Infrastructure ──────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: mongosh --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  neo4j:
+    # Gate 8 (Operations) finding: the comment this replaced ("neo4j
+    # removed — replaced by TensorGraphStore") does not match reality —
+    # confirmed live all session (SemanticGraph connects to
+    # bolt://localhost:7687 on every boot; deploy/k8s/configmap.yaml
+    # already configures NEO4J_URI/NEO4J_USER/NEO4J_PASSWORD for exactly
+    # this). Without this service, `docker-compose up` could never
+    # actually boot the agentos service — confirmed by running the
+    # rebuilt image standalone (no Neo4j reachable): "Required
+    # subsystems (Persistence, Runtime, Broca) raise RuntimeError on
+    # failure" (kernel.py's own documented contract) — it fails fast
+    # rather than silently degrading, which is correct once this
+    # service actually exists to connect to.
+    image: neo4j:5-community
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: wget -q --spider http://localhost:7474 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  influxdb:
+    image: influxdb:3.0
+    ports:
+      - "8181:8181"
+    volumes:
+      - influxdb_data:/var/lib/influxdb3
+    healthcheck:
+      test: curl -f http://localhost:8181/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: curl -f http://localhost:9200/_cluster/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - full
+
+  nats:
+    image: nats:2-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["-js", "-sd", "/data"]
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: wget -qO- http://localhost:8222/healthz || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  opa:
+    image: openpolicyagent/opa:latest
+    ports:
+      - "8181:8181"
+    # Filesystem bundle (opa/policies/*.rego) loaded directly at startup — no
+    # remote bundle service or extra container needed. OPA's `bundles:` polling
+    # config requires an HTTP(S)/OCI service for the resource, so a purely
+    # local directory of loose .rego files is served this way instead, via
+    # the documented "filesystem bundle" (--bundle flag) mechanism.
+    command: ["run", "--server", "--addr=0.0.0.0:8181", "--bundle", "/policies"]
+    volumes:
+      - ./opa/policies:/policies:ro
+    healthcheck:
+      test: wget -qO- http://localhost:8181/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Core Services ──────────────────────────────────────────────────────────
+  auth:
+    build:
+      context: .
+      dockerfile: docker/services/auth/Dockerfile
+    ports:
+      - "8010:8010"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+      - REDIS_URL=redis://redis:6379
+      - NATS_URL=nats://nats:4222
+      - INFLUXDB_URL=http://influxdb:8181
+      - INFLUXDB_ORG=indus
+      - INFLUXDB_BUCKET=events
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    restart: unless-stopped
+
+  events:
+    build:
+      context: .
+      dockerfile: docker/services/events/Dockerfile
+    ports:
+      - "8013:8013"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  assets:
+    build:
+      context: .
+      dockerfile: docker/services/assets/Dockerfile
+    ports:
+      - "8011:8011"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  customers:
+    build:
+      context: .
+      dockerfile: docker/services/customers/Dockerfile
+    ports:
+      - "8012:8012"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  facilities:
+    build:
+      context: .
+      dockerfile: docker/services/facilities/Dockerfile
+    ports:
+      - "8014:8014"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  floor-layout:
+    build:
+      context: .
+      dockerfile: docker/services/floor-layout/Dockerfile
+    ports:
+      - "8015:8015"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  inventory:
+    build:
+      context: .
+      dockerfile: docker/services/inventory/Dockerfile
+    ports:
+      - "8016:8016"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  iot:
+    build:
+      context: .
+      dockerfile: docker/services/iot/Dockerfile
+    ports:
+      - "8017:8017"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  orders:
+    build:
+      context: .
+      dockerfile: docker/services/orders/Dockerfile
+    ports:
+      - "8018:8018"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  pm:
+    build:
+      context: .
+      dockerfile: docker/services/pm/Dockerfile
+    ports:
+      - "8019:8019"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+      - INFLUXDB_URL=http://influxdb:8181
+      - INFLUXDB_ORG=indus
+      - INFLUXDB_BUCKET=events
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  procurement:
+    build:
+      context: .
+      dockerfile: docker/services/procurement/Dockerfile
+    ports:
+      - "8020:8020"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  products:
+    build:
+      context: .
+      dockerfile: docker/services/products/Dockerfile
+    ports:
+      - "8021:8021"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  shipping:
+    build:
+      context: .
+      dockerfile: docker/services/shipping/Dockerfile
+    ports:
+      - "8022:8022"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  shifts:
+    build:
+      context: .
+      dockerfile: docker/services/shifts/Dockerfile
+    ports:
+      - "8023:8023"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  suppliers:
+    build:
+      context: .
+      dockerfile: docker/services/suppliers/Dockerfile
+    ports:
+      - "8024:8024"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  taxonomy:
+    build:
+      context: .
+      dockerfile: docker/services/taxonomy/Dockerfile
+    ports:
+      - "8025:8025"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  process-definition:
+    build:
+      context: .
+      dockerfile: docker/services/process-definition/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  workorders:
+    build:
+      context: .
+      dockerfile: docker/services/workorders/Dockerfile
+    ports:
+      - "8027:8027"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  changeover:
+    build:
+      context: .
+      dockerfile: docker/services/changeover/Dockerfile
+    ports:
+      - "8028:8028"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  documents:
+    build:
+      context: .
+      dockerfile: docker/services/documents/Dockerfile
+    ports:
+      - "8029:8029"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  file:
+    build:
+      context: .
+      dockerfile: docker/services/file/Dockerfile
+    ports:
+      - "8030:8030"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  module-control:
+    build:
+      context: .
+      dockerfile: docker/services/module-control/Dockerfile
+    ports:
+      - "8032:8032"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  agentos:
+    build:
+      context: .
+      dockerfile: docker/services/agentos/Dockerfile
+    ports:
+      - "8031:8031"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+      - REDIS_URL=redis://redis:6379
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      - NATS_URL=nats://nats:4222
+      - INFLUXDB_URL=http://influxdb:8181
+      - INFLUXDB_ORG=indus
+      - INFLUXDB_BUCKET=events
+      - AUDIT_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - OPA_URL=http://opa:8181
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      opa:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  redis_data:
+  neo4j_data:
+  influxdb_data:
+  es_data:
+  nats_data:

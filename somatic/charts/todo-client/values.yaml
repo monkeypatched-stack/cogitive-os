@@ -1,0 +1,106 @@
+capability:
+  name: todo-client
+  id: cap-todo-client-001
+  platform: HTTP/REST
+  description: "Typed todo API client capability"
+  version: "1.0.0"
+  status: active
+  authored_by: ClientCharterAgent
+  approved_by: CingulateAgent
+  effective_date: '2026-07-04'
+  review_date: '2027-07-04'
+  module_id: todo
+  module_name: Todo
+  tags:
+    - api-client
+    - todo
+    - capability
+
+auth:
+  type: bearer
+  header_name: Authorization
+  format_template: "Bearer {{token}}"
+  scopes: []
+  refresh_endpoint: ""
+  ttl_seconds: 3600
+
+endpoint:
+  base_url: "http://localhost:8090"
+  protocol: http
+  version: "1.0.0"
+  tls_verify: false
+  timeout_seconds: 30
+
+operations:
+  - name: create_todo
+    method: POST
+    path: /todos/
+    description: "Create todo"
+    auth_required: true
+  - name: list_todos
+    method: GET
+    path: /todos/
+    description: "List todos"
+    auth_required: false
+  - name: get_todo
+    method: GET
+    path: /todos/{id}
+    description: "Get todo"
+    auth_required: false
+  - name: complete_todo
+    method: GET
+    path: /todos/
+    description: "Complete todo"
+    auth_required: false
+  - name: delete_todo
+    method: DELETE
+    path: /todos/{id}
+    description: "Delete todo"
+    auth_required: true
+
+rate_limit:
+  requests_per_hour: 1000
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status: [429, 500, 502, 503]
+
+error_handling:
+  transient_statuses: [500, 502, 503, 504]
+  permanent_statuses: [400, 401, 403, 404, 422]
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+
+preamble:
+  statement: >
+    The todo-client capability wraps the Todo REST API as a registered
+    MonkeyBrain ICapability. It provides typed operations for interacting with
+    todo resources. Authentication is via JWT Bearer token injected at registration.
+    Errors are mapped to domain exceptions. Retries on 429/5xx with exponential backoff.
+
+invariants:
+  - id: TODO-CAP-001
+    rule: typed_parameters
+    statement: All operation parameters must be fully typed.
+    severity: critical
+    rejection: "REJECTED — Untyped parameter in operation."
+  - id: TODO-CAP-002
+    rule: auth_at_registration
+    statement: JWT token injected at capability registration, not per operation.
+    severity: high
+    rejection: "REJECTED — Auth credential passed per operation call."
+  - id: TODO-CAP-003
+    rule: error_mapping
+    statement: HTTP errors must map to domain exceptions.
+    severity: high
+    rejection: "REJECTED — Raw HTTP error exposed to caller."
+
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED — todo-client capability conforms to all API client invariants."
+    rejected:
+      - "REJECTED — Untyped parameter in operation."
+      - "REJECTED — Auth credential passed per operation call."
+      - "REJECTED — Raw HTTP error exposed to caller."

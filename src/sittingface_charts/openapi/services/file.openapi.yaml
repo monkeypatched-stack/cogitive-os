@@ -1,0 +1,644 @@
+openapi: 3.1.0
+info:
+  title: file API
+  description: MonkeyBrain file service API
+  version: 1.0.0
+paths:
+  /files/upload/:
+    post:
+      tags:
+      - Files
+      summary: Upload File
+      description: 'Upload a document to S3 and optionally forward it to another service
+        via HTTP POST.
+
+        Folder structure: uploads/YYYY-MM-DD/<uuid>.<ext>'
+      operationId: upload_file_files_upload__post
+      parameters:
+      - name: notify
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Notify
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_files_upload__post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /files/upload:
+    post:
+      tags:
+      - Files
+      summary: Upload File
+      description: 'Upload a document to S3 and optionally forward it to another service
+        via HTTP POST.
+
+        Folder structure: uploads/YYYY-MM-DD/<uuid>.<ext>'
+      operationId: upload_file_files_upload_post
+      parameters:
+      - name: notify
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Notify
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_files_upload_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /files/{date}:
+    get:
+      tags:
+      - Files
+      summary: List Files By Date
+      description: 'List all files uploaded on a given date with backup status.
+
+        Example: GET /files/2025-11-11'
+      operationId: list_files_by_date_files__date__get
+      parameters:
+      - name: date
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Date
+      - name: create_backup
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Create Backup
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Files
+      summary: Delete Folder
+      description: Delete all files for a specific date (entire folder).
+      operationId: delete_folder_files__date__delete
+      parameters:
+      - name: date
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Date
+      - name: delete_backup
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Delete Backup
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /files/{date}/{filename}:
+    get:
+      tags:
+      - Files
+      summary: Read File
+      description: 'Read or download a file from S3 given its date and filename.
+
+        URL format: /files/YYYY-MM-DD/<filename>'
+      operationId: read_file_files__date___filename__get
+      parameters:
+      - name: date
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Date
+      - name: filename
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Filename
+      - name: download
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Return as browser download attachment when true
+          default: true
+          title: Download
+        description: Return as browser download attachment when true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Files
+      summary: Delete File
+      description: Delete a file from S3 and optionally its backup.
+      operationId: delete_file_files__date___filename__delete
+      parameters:
+      - name: date
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Date
+      - name: filename
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Filename
+      - name: delete_backup
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Delete Backup
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /upload/:
+    post:
+      tags:
+      - Files
+      summary: Upload File
+      description: 'Upload a document to S3 and optionally forward it to another service
+        via HTTP POST.
+
+        Folder structure: uploads/YYYY-MM-DD/<uuid>.<ext>'
+      operationId: upload_file_upload__post
+      parameters:
+      - name: notify
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Notify
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_upload__post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /upload:
+    post:
+      tags:
+      - Files
+      summary: Upload File
+      description: 'Upload a document to S3 and optionally forward it to another service
+        via HTTP POST.
+
+        Folder structure: uploads/YYYY-MM-DD/<uuid>.<ext>'
+      operationId: upload_file_upload_post
+      parameters:
+      - name: notify
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Notify
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_upload_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/cad/convert-to-svg:
+    post:
+      tags:
+      - CAD Conversion
+      summary: Convert Dwg Or Cad To Svg
+      operationId: convert_dwg_or_cad_to_svg_api_v1_cad_convert_to_svg_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_convert_dwg_or_cad_to_svg_api_v1_cad_convert_to_svg_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/convert/dwg-to-svg:
+    post:
+      tags:
+      - CAD Conversion
+      summary: Convert Dwg Or Cad To Svg
+      operationId: convert_dwg_or_cad_to_svg_api_v1_convert_dwg_to_svg_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_convert_dwg_or_cad_to_svg_api_v1_convert_dwg_to_svg_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /cad/convert-to-svg:
+    post:
+      tags:
+      - CAD Conversion
+      summary: Convert Dwg Or Cad To Svg
+      operationId: convert_dwg_or_cad_to_svg_cad_convert_to_svg_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_convert_dwg_or_cad_to_svg_cad_convert_to_svg_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /convert/cad-to-svg:
+    post:
+      tags:
+      - CAD Conversion
+      summary: Convert Dwg Or Cad To Svg
+      operationId: convert_dwg_or_cad_to_svg_convert_cad_to_svg_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_convert_dwg_or_cad_to_svg_convert_cad_to_svg_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /convert/dwg-to-svg:
+    post:
+      tags:
+      - CAD Conversion
+      summary: Convert Dwg Or Cad To Svg
+      operationId: convert_dwg_or_cad_to_svg_convert_dwg_to_svg_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_convert_dwg_or_cad_to_svg_convert_dwg_to_svg_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /url/presigned-url/preview:
+    get:
+      tags:
+      - Files
+      summary: Generate Preview Presigned Url
+      description: 'Generate a presigned URL for **previewing** an S3 object in the
+        browser.
+
+
+        Example:
+
+        GET /presigned-url/preview?key=uploads/2025-11-21/file.pdf&expires_in=300'
+      operationId: generate_preview_presigned_url_url_presigned_url_preview_get
+      parameters:
+      - name: key
+        in: query
+        required: true
+        schema:
+          type: string
+          description: S3 object key (e.g. uploads/2025-11-21/file.pdf)
+          title: Key
+        description: S3 object key (e.g. uploads/2025-11-21/file.pdf)
+      - name: expires_in
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 3600
+          minimum: 1
+          description: "Expiry time in seconds (1\u20133600)"
+          default: 300
+          title: Expires In
+        description: "Expiry time in seconds (1\u20133600)"
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /url/presigned-url/download:
+    get:
+      tags:
+      - Files
+      summary: Generate Download Presigned Url
+      description: 'Generate a presigned URL for **downloading** an S3 object.
+
+
+        Example:
+
+        GET /presigned-url/download?key=uploads/2025-11-21/file.pdf&filename=invoice-123.pdf'
+      operationId: generate_download_presigned_url_url_presigned_url_download_get
+      parameters:
+      - name: key
+        in: query
+        required: true
+        schema:
+          type: string
+          description: S3 object key (e.g. uploads/2025-11-21/file.pdf)
+          title: Key
+        description: S3 object key (e.g. uploads/2025-11-21/file.pdf)
+      - name: expires_in
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 3600
+          minimum: 1
+          description: "Expiry time in seconds (1\u20133600)"
+          default: 300
+          title: Expires In
+        description: "Expiry time in seconds (1\u20133600)"
+      - name: filename
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Optional filename to suggest in the browser download dialog
+          title: Filename
+        description: Optional filename to suggest in the browser download dialog
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    Body_convert_dwg_or_cad_to_svg_api_v1_cad_convert_to_svg_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_convert_dwg_or_cad_to_svg_api_v1_cad_convert_to_svg_post
+    Body_convert_dwg_or_cad_to_svg_api_v1_convert_dwg_to_svg_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_convert_dwg_or_cad_to_svg_api_v1_convert_dwg_to_svg_post
+    Body_convert_dwg_or_cad_to_svg_cad_convert_to_svg_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_convert_dwg_or_cad_to_svg_cad_convert_to_svg_post
+    Body_convert_dwg_or_cad_to_svg_convert_cad_to_svg_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_convert_dwg_or_cad_to_svg_convert_cad_to_svg_post
+    Body_convert_dwg_or_cad_to_svg_convert_dwg_to_svg_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_convert_dwg_or_cad_to_svg_convert_dwg_to_svg_post
+    Body_upload_file_files_upload__post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_file_files_upload__post
+    Body_upload_file_files_upload_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_file_files_upload_post
+    Body_upload_file_upload__post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_file_upload__post
+    Body_upload_file_upload_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_file_upload_post
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

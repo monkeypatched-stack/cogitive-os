@@ -1,0 +1,5581 @@
+openapi: 3.1.0
+info:
+  title: suppliers API
+  description: MonkeyBrain suppliers service API
+  version: 1.0.0
+paths:
+  /api/v1/supplier-details/:
+    get:
+      tags:
+      - Supplier Details
+      summary: List Supplier Details
+      operationId: list_supplier_details_api_v1_supplier_details__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Details
+      summary: Create Supplier Details
+      operationId: create_supplier_details_api_v1_supplier_details__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierDetailsCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-details/{supplier_id}:
+    get:
+      tags:
+      - Supplier Details
+      summary: Get Supplier Details
+      operationId: get_supplier_details_api_v1_supplier_details__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Details
+      summary: Update Supplier Details
+      operationId: update_supplier_details_api_v1_supplier_details__supplier_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierDetailsUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Details
+      summary: Delete Supplier Details
+      operationId: delete_supplier_details_api_v1_supplier_details__supplier_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-capabilities/:
+    get:
+      tags:
+      - Supplier Capabilities
+      summary: List Supplier Capabilities
+      operationId: list_supplier_capabilities_api_v1_supplier_capabilities__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierCapabilitiesResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Capabilities
+      summary: Create Supplier Capabilities
+      operationId: create_supplier_capabilities_api_v1_supplier_capabilities__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierCapabilitiesCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierCapabilitiesResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-capabilities/{supplier_id}:
+    get:
+      tags:
+      - Supplier Capabilities
+      summary: Get Supplier Capabilities
+      operationId: get_supplier_capabilities_api_v1_supplier_capabilities__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierCapabilitiesResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Capabilities
+      summary: Update Supplier Capabilities
+      operationId: update_supplier_capabilities_api_v1_supplier_capabilities__supplier_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierCapabilitiesUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierCapabilitiesResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Capabilities
+      summary: Delete Supplier Capabilities
+      operationId: delete_supplier_capabilities_api_v1_supplier_capabilities__supplier_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-certifications/:
+    get:
+      tags:
+      - Supplier Certifications
+      summary: List Supplier Certifications
+      operationId: list_supplier_certifications_api_v1_supplier_certifications__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCertificationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Certifications
+      summary: Create Supplier Certification
+      operationId: create_supplier_certification_api_v1_supplier_certifications__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-certifications/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Supplier Certifications
+      summary: List Supplier Certifications By Supplier
+      operationId: list_supplier_certifications_by_supplier_api_v1_supplier_certifications_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CertificationResponse'
+                title: Response List Supplier Certifications By Supplier Api V1 Supplier
+                  Certifications By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-certifications/{certification_id}:
+    get:
+      tags:
+      - Supplier Certifications
+      summary: Get Supplier Certification
+      operationId: get_supplier_certification_api_v1_supplier_certifications__certification_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: certification_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Certification Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Certifications
+      summary: Update Supplier Certification
+      operationId: update_supplier_certification_api_v1_supplier_certifications__certification_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: certification_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Certification Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Certifications
+      summary: Delete Supplier Certification
+      operationId: delete_supplier_certification_api_v1_supplier_certifications__certification_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: certification_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Certification Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-financials/:
+    get:
+      tags:
+      - Supplier Financials
+      summary: List Supplier Financials
+      operationId: list_supplier_financials_api_v1_supplier_financials__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierFinancialsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Financials
+      summary: Create Supplier Financials
+      operationId: create_supplier_financials_api_v1_supplier_financials__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierFinancialsCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierFinancialsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-financials/{supplier_id}:
+    get:
+      tags:
+      - Supplier Financials
+      summary: Get Supplier Financials
+      operationId: get_supplier_financials_api_v1_supplier_financials__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierFinancialsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Financials
+      summary: Update Supplier Financials
+      operationId: update_supplier_financials_api_v1_supplier_financials__supplier_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierFinancialsUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierFinancialsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Financials
+      summary: Delete Supplier Financials
+      operationId: delete_supplier_financials_api_v1_supplier_financials__supplier_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-inventory/:
+    get:
+      tags:
+      - Supplier Inventory
+      summary: List Supplier Inventory
+      operationId: list_supplier_inventory_api_v1_supplier_inventory__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierInventoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Inventory
+      summary: Create Supplier Inventory
+      operationId: create_supplier_inventory_api_v1_supplier_inventory__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierInventoryCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierInventoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-inventory/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Supplier Inventory
+      summary: List Supplier Inventory By Supplier
+      operationId: list_supplier_inventory_by_supplier_api_v1_supplier_inventory_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierInventoryResponse'
+                title: Response List Supplier Inventory By Supplier Api V1 Supplier
+                  Inventory By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-inventory/by-item/{item_id}:
+    get:
+      tags:
+      - Supplier Inventory
+      summary: List Supplier Inventory By Item
+      operationId: list_supplier_inventory_by_item_api_v1_supplier_inventory_by_item__item_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierInventoryResponse'
+                title: Response List Supplier Inventory By Item Api V1 Supplier Inventory
+                  By Item  Item Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-inventory/by-location/{location_id}:
+    get:
+      tags:
+      - Supplier Inventory
+      summary: List Supplier Inventory By Location
+      operationId: list_supplier_inventory_by_location_api_v1_supplier_inventory_by_location__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierInventoryResponse'
+                title: Response List Supplier Inventory By Location Api V1 Supplier
+                  Inventory By Location  Location Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-inventory/by-sku/{sku}:
+    get:
+      tags:
+      - Supplier Inventory
+      summary: List Supplier Inventory By Sku
+      operationId: list_supplier_inventory_by_sku_api_v1_supplier_inventory_by_sku__sku__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sku
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierInventoryResponse'
+                title: Response List Supplier Inventory By Sku Api V1 Supplier Inventory
+                  By Sku  Sku  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-inventory/{supplier_inventory_id}:
+    get:
+      tags:
+      - Supplier Inventory
+      summary: Get Supplier Inventory
+      operationId: get_supplier_inventory_api_v1_supplier_inventory__supplier_inventory_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Inventory Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierInventoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Inventory
+      summary: Update Supplier Inventory
+      operationId: update_supplier_inventory_api_v1_supplier_inventory__supplier_inventory_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Inventory Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierInventoryUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierInventoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Inventory
+      summary: Delete Supplier Inventory
+      operationId: delete_supplier_inventory_api_v1_supplier_inventory__supplier_inventory_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Inventory Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-locations/:
+    get:
+      tags:
+      - Supplier Locations
+      summary: List Supplier Locations
+      operationId: list_supplier_locations_api_v1_supplier_locations__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierLocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Locations
+      summary: Create Supplier Location
+      operationId: create_supplier_location_api_v1_supplier_locations__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierLocationCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierLocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-locations/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Supplier Locations
+      summary: List Supplier Locations By Supplier
+      operationId: list_supplier_locations_by_supplier_api_v1_supplier_locations_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierLocationResponse'
+                title: Response List Supplier Locations By Supplier Api V1 Supplier
+                  Locations By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-locations/by-item/{item_id}:
+    get:
+      tags:
+      - Supplier Locations
+      summary: List Supplier Locations By Item
+      operationId: list_supplier_locations_by_item_api_v1_supplier_locations_by_item__item_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierLocationResponse'
+                title: Response List Supplier Locations By Item Api V1 Supplier Locations
+                  By Item  Item Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-locations/{location_id}:
+    get:
+      tags:
+      - Supplier Locations
+      summary: Get Supplier Location
+      operationId: get_supplier_location_api_v1_supplier_locations__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierLocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Locations
+      summary: Update Supplier Location
+      operationId: update_supplier_location_api_v1_supplier_locations__location_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierLocationUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierLocationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Locations
+      summary: Delete Supplier Location
+      operationId: delete_supplier_location_api_v1_supplier_locations__location_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-pricing/:
+    get:
+      tags:
+      - Supplier Pricing
+      summary: List Supplier Pricing
+      operationId: list_supplier_pricing_api_v1_supplier_pricing__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierPricingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Pricing
+      summary: Create Supplier Pricing
+      operationId: create_supplier_pricing_api_v1_supplier_pricing__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierPricingCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierPricingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-pricing/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Supplier Pricing
+      summary: List Supplier Pricing By Supplier
+      operationId: list_supplier_pricing_by_supplier_api_v1_supplier_pricing_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierPricingResponse'
+                title: Response List Supplier Pricing By Supplier Api V1 Supplier
+                  Pricing By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-pricing/by-item/{item_id}:
+    get:
+      tags:
+      - Supplier Pricing
+      summary: List Supplier Pricing By Item
+      operationId: list_supplier_pricing_by_item_api_v1_supplier_pricing_by_item__item_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierPricingResponse'
+                title: Response List Supplier Pricing By Item Api V1 Supplier Pricing
+                  By Item  Item Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-pricing/by-location/{location_id}:
+    get:
+      tags:
+      - Supplier Pricing
+      summary: List Supplier Pricing By Location
+      operationId: list_supplier_pricing_by_location_api_v1_supplier_pricing_by_location__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierPricingResponse'
+                title: Response List Supplier Pricing By Location Api V1 Supplier
+                  Pricing By Location  Location Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-pricing/{supplier_pricing_id}:
+    get:
+      tags:
+      - Supplier Pricing
+      summary: Get Supplier Pricing
+      operationId: get_supplier_pricing_api_v1_supplier_pricing__supplier_pricing_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_pricing_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Pricing Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierPricingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Pricing
+      summary: Update Supplier Pricing
+      operationId: update_supplier_pricing_api_v1_supplier_pricing__supplier_pricing_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_pricing_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Pricing Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierPricingUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierPricingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Pricing
+      summary: Delete Supplier Pricing
+      operationId: delete_supplier_pricing_api_v1_supplier_pricing__supplier_pricing_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_pricing_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Pricing Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-quality/:
+    get:
+      tags:
+      - Supplier Quality
+      summary: List Supplier Quality
+      operationId: list_supplier_quality_api_v1_supplier_quality__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierQualityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Quality
+      summary: Create Supplier Quality
+      operationId: create_supplier_quality_api_v1_supplier_quality__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierQualityCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierQualityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-quality/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Supplier Quality
+      summary: List Supplier Quality By Supplier
+      operationId: list_supplier_quality_by_supplier_api_v1_supplier_quality_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierQualityResponse'
+                title: Response List Supplier Quality By Supplier Api V1 Supplier
+                  Quality By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-quality/by-item/{item_id}:
+    get:
+      tags:
+      - Supplier Quality
+      summary: List Supplier Quality By Item
+      operationId: list_supplier_quality_by_item_api_v1_supplier_quality_by_item__item_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierQualityResponse'
+                title: Response List Supplier Quality By Item Api V1 Supplier Quality
+                  By Item  Item Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-quality/by-location/{location_id}:
+    get:
+      tags:
+      - Supplier Quality
+      summary: List Supplier Quality By Location
+      operationId: list_supplier_quality_by_location_api_v1_supplier_quality_by_location__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierQualityResponse'
+                title: Response List Supplier Quality By Location Api V1 Supplier
+                  Quality By Location  Location Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-quality/{supplier_quality_id}:
+    get:
+      tags:
+      - Supplier Quality
+      summary: Get Supplier Quality
+      operationId: get_supplier_quality_api_v1_supplier_quality__supplier_quality_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_quality_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Quality Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierQualityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Quality
+      summary: Update Supplier Quality
+      operationId: update_supplier_quality_api_v1_supplier_quality__supplier_quality_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_quality_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Quality Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierQualityUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierQualityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Quality
+      summary: Delete Supplier Quality
+      operationId: delete_supplier_quality_api_v1_supplier_quality__supplier_quality_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_quality_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Quality Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-shipping/:
+    get:
+      tags:
+      - Supplier Shipping
+      summary: List Supplier Shipping
+      operationId: list_supplier_shipping_api_v1_supplier_shipping__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierShippingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Supplier Shipping
+      summary: Create Supplier Shipping
+      operationId: create_supplier_shipping_api_v1_supplier_shipping__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierShippingCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierShippingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-shipping/by-supplier/{supplier_id}:
+    get:
+      tags:
+      - Supplier Shipping
+      summary: List Supplier Shipping By Supplier
+      operationId: list_supplier_shipping_by_supplier_api_v1_supplier_shipping_by_supplier__supplier_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierShippingResponse'
+                title: Response List Supplier Shipping By Supplier Api V1 Supplier
+                  Shipping By Supplier  Supplier Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-shipping/by-item/{item_id}:
+    get:
+      tags:
+      - Supplier Shipping
+      summary: List Supplier Shipping By Item
+      operationId: list_supplier_shipping_by_item_api_v1_supplier_shipping_by_item__item_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierShippingResponse'
+                title: Response List Supplier Shipping By Item Api V1 Supplier Shipping
+                  By Item  Item Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-shipping/by-location/{location_id}:
+    get:
+      tags:
+      - Supplier Shipping
+      summary: List Supplier Shipping By Location
+      operationId: list_supplier_shipping_by_location_api_v1_supplier_shipping_by_location__location_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Location Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierShippingResponse'
+                title: Response List Supplier Shipping By Location Api V1 Supplier
+                  Shipping By Location  Location Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/supplier-shipping/{supplier_shipping_id}:
+    get:
+      tags:
+      - Supplier Shipping
+      summary: Get Supplier Shipping
+      operationId: get_supplier_shipping_api_v1_supplier_shipping__supplier_shipping_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_shipping_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Shipping Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierShippingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Supplier Shipping
+      summary: Update Supplier Shipping
+      operationId: update_supplier_shipping_api_v1_supplier_shipping__supplier_shipping_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_shipping_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Shipping Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierShippingUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierShippingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Supplier Shipping
+      summary: Delete Supplier Shipping
+      operationId: delete_supplier_shipping_api_v1_supplier_shipping__supplier_shipping_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: supplier_shipping_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Supplier Shipping Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    CertificationCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        certification_name:
+          type: string
+          title: Certification Name
+          description: Name of the certification or standard achieved by the supplier.
+        certification_type:
+          type: string
+          title: Certification Type
+          description: Type of certification, for example Quality, Environmental,
+            Safety, or Industry-Specific.
+        issuing_authority:
+          type: string
+          title: Issuing Authority
+          description: Organization or authority that issued the certification.
+        certification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certification Number
+          description: Unique identification number for the certification, if applicable.
+        issue_date:
+          type: string
+          format: date-time
+          title: Issue Date
+          description: Date on which the certification was issued.
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+        renewal_required:
+          type: boolean
+          title: Renewal Required
+          description: Indicates if the certification requires periodic renewal.
+        renewal_frequency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Renewal Frequency
+          description: How often the certification must be renewed, for example Annual
+            or Every 3 Years.
+        scope_of_certification:
+          type: string
+          title: Scope Of Certification
+          description: Description of the areas or processes covered by the certification.
+        audit_required:
+          type: boolean
+          title: Audit Required
+          description: Indicates if regular audits are required to maintain the certification.
+        last_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Audit Date
+        next_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Next Audit Date
+        certification_status:
+          type: string
+          title: Certification Status
+          description: Current status of the certification, for example Active, Pending
+            Renewal, or Expired.
+        certificate_document:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certificate Document
+          description: Reference to the digital copy of the certificate or a link
+            to its location.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the certification.
+      type: object
+      required:
+      - supplier_id
+      - certification_name
+      - certification_type
+      - issuing_authority
+      - issue_date
+      - renewal_required
+      - scope_of_certification
+      - audit_required
+      - certification_status
+      title: CertificationCreate
+    CertificationResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        certification_name:
+          type: string
+          title: Certification Name
+          description: Name of the certification or standard achieved by the supplier.
+        certification_type:
+          type: string
+          title: Certification Type
+          description: Type of certification, for example Quality, Environmental,
+            Safety, or Industry-Specific.
+        issuing_authority:
+          type: string
+          title: Issuing Authority
+          description: Organization or authority that issued the certification.
+        certification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certification Number
+          description: Unique identification number for the certification, if applicable.
+        issue_date:
+          type: string
+          format: date-time
+          title: Issue Date
+          description: Date on which the certification was issued.
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+        renewal_required:
+          type: boolean
+          title: Renewal Required
+          description: Indicates if the certification requires periodic renewal.
+        renewal_frequency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Renewal Frequency
+          description: How often the certification must be renewed, for example Annual
+            or Every 3 Years.
+        scope_of_certification:
+          type: string
+          title: Scope Of Certification
+          description: Description of the areas or processes covered by the certification.
+        audit_required:
+          type: boolean
+          title: Audit Required
+          description: Indicates if regular audits are required to maintain the certification.
+        last_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Audit Date
+        next_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Next Audit Date
+        certification_status:
+          type: string
+          title: Certification Status
+          description: Current status of the certification, for example Active, Pending
+            Renewal, or Expired.
+        certificate_document:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certificate Document
+          description: Reference to the digital copy of the certificate or a link
+            to its location.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the certification.
+        certification_id:
+          type: string
+          title: Certification Id
+      type: object
+      required:
+      - supplier_id
+      - certification_name
+      - certification_type
+      - issuing_authority
+      - issue_date
+      - renewal_required
+      - scope_of_certification
+      - audit_required
+      - certification_status
+      - certification_id
+      title: CertificationResponse
+    CertificationUpdate:
+      properties:
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        certification_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certification Name
+        certification_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certification Type
+        issuing_authority:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Issuing Authority
+        certification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certification Number
+        issue_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Issue Date
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+        renewal_required:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Renewal Required
+        renewal_frequency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Renewal Frequency
+        scope_of_certification:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Scope Of Certification
+        audit_required:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Audit Required
+        last_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Audit Date
+        next_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Next Audit Date
+        certification_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certification Status
+        certificate_document:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Certificate Document
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: CertificationUpdate
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PaginatedCertificationResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/CertificationResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedCertificationResponse
+    PaginatedSupplierCapabilitiesResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierCapabilitiesResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierCapabilitiesResponse
+    PaginatedSupplierDetailsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierDetailsResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierDetailsResponse
+    PaginatedSupplierFinancialsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierFinancialsResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierFinancialsResponse
+    PaginatedSupplierInventoryResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierInventoryResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierInventoryResponse
+    PaginatedSupplierLocationResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierLocationResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierLocationResponse
+    PaginatedSupplierPricingResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierPricingResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierPricingResponse
+    PaginatedSupplierQualityResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierQualityResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierQualityResponse
+    PaginatedSupplierShippingResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SupplierShippingResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSupplierShippingResponse
+    SupplierCapabilitiesCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        core_competencies:
+          items:
+            type: string
+          type: array
+          title: Core Competencies
+          description: Key areas of expertise or specialization.
+        production_capacity:
+          type: integer
+          title: Production Capacity
+          description: Maximum production output per month.
+        capacity_unit:
+          type: string
+          title: Capacity Unit
+          description: Unit of measurement for production capacity, for example units
+            or tons.
+        lead_time:
+          type: integer
+          title: Lead Time
+          description: Average time in days required for order fulfillment.
+        technology_capability:
+          items:
+            type: string
+          type: array
+          title: Technology Capability
+          description: Technologies or equipment used, for example CNC, Robotics,
+            or 3D Printing.
+        certifications:
+          items:
+            type: string
+          type: array
+          title: Certifications
+          description: List of certifications that validate the supplier's capabilities.
+        quality_control_measures:
+          type: string
+          title: Quality Control Measures
+          description: Description of the supplier's quality assurance and control
+            processes.
+        rad_capabilities:
+          type: boolean
+          title: Rad Capabilities
+          description: Indicates if the supplier has in-house research and development
+            facilities.
+        customization_capability:
+          type: boolean
+          title: Customization Capability
+          description: Indicates if the supplier can produce custom designs or products.
+        geographical_reach:
+          items:
+            type: string
+          type: array
+          title: Geographical Reach
+          description: List of regions or countries the supplier can serve.
+        material_expertise:
+          items:
+            type: string
+          type: array
+          title: Material Expertise
+          description: Types of materials the supplier specializes in, for example
+            Steel or Aluminum.
+        sustainability_practices:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sustainability Practices
+          description: Description of any eco-friendly or sustainable practices followed
+            by the supplier.
+        subcontracting_capability:
+          type: boolean
+          title: Subcontracting Capability
+          description: Indicates if the supplier can manage subcontracted production.
+        maintenance_services:
+          type: boolean
+          title: Maintenance Services
+          description: Indicates if the supplier provides maintenance or after-sales
+            services.
+        packaging_capabilities:
+          type: string
+          title: Packaging Capabilities
+          description: Types of packaging options offered, for example Bulk or Retail-Ready.
+        export_compliance:
+          type: boolean
+          title: Export Compliance
+          description: Indicates if the supplier complies with the required export
+            regulations.
+        testing_facilities:
+          type: boolean
+          title: Testing Facilities
+          description: Indicates if the supplier has in-house testing and validation
+            facilities.
+        automation_level:
+          type: string
+          title: Automation Level
+          description: Level of automation in the supplier's production process, for
+            example Manual, Semi-Automated, or Fully Automated.
+        employee_count:
+          type: integer
+          title: Employee Count
+          description: Total number of employees at the supplier's facility.
+        partnership_initiatives:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partnership Initiatives
+          description: Details of significant partnerships or collaborations with
+            other firms.
+        innovation_awards:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Innovation Awards
+          description: Recognition received for innovation or excellence.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations regarding the supplier's capabilities.
+      type: object
+      required:
+      - supplier_id
+      - core_competencies
+      - production_capacity
+      - capacity_unit
+      - lead_time
+      - technology_capability
+      - certifications
+      - quality_control_measures
+      - rad_capabilities
+      - customization_capability
+      - geographical_reach
+      - material_expertise
+      - subcontracting_capability
+      - maintenance_services
+      - packaging_capabilities
+      - export_compliance
+      - testing_facilities
+      - automation_level
+      - employee_count
+      title: SupplierCapabilitiesCreate
+    SupplierCapabilitiesResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        core_competencies:
+          items:
+            type: string
+          type: array
+          title: Core Competencies
+          description: Key areas of expertise or specialization.
+        production_capacity:
+          type: integer
+          title: Production Capacity
+          description: Maximum production output per month.
+        capacity_unit:
+          type: string
+          title: Capacity Unit
+          description: Unit of measurement for production capacity, for example units
+            or tons.
+        lead_time:
+          type: integer
+          title: Lead Time
+          description: Average time in days required for order fulfillment.
+        technology_capability:
+          items:
+            type: string
+          type: array
+          title: Technology Capability
+          description: Technologies or equipment used, for example CNC, Robotics,
+            or 3D Printing.
+        certifications:
+          items:
+            type: string
+          type: array
+          title: Certifications
+          description: List of certifications that validate the supplier's capabilities.
+        quality_control_measures:
+          type: string
+          title: Quality Control Measures
+          description: Description of the supplier's quality assurance and control
+            processes.
+        rad_capabilities:
+          type: boolean
+          title: Rad Capabilities
+          description: Indicates if the supplier has in-house research and development
+            facilities.
+        customization_capability:
+          type: boolean
+          title: Customization Capability
+          description: Indicates if the supplier can produce custom designs or products.
+        geographical_reach:
+          items:
+            type: string
+          type: array
+          title: Geographical Reach
+          description: List of regions or countries the supplier can serve.
+        material_expertise:
+          items:
+            type: string
+          type: array
+          title: Material Expertise
+          description: Types of materials the supplier specializes in, for example
+            Steel or Aluminum.
+        sustainability_practices:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sustainability Practices
+          description: Description of any eco-friendly or sustainable practices followed
+            by the supplier.
+        subcontracting_capability:
+          type: boolean
+          title: Subcontracting Capability
+          description: Indicates if the supplier can manage subcontracted production.
+        maintenance_services:
+          type: boolean
+          title: Maintenance Services
+          description: Indicates if the supplier provides maintenance or after-sales
+            services.
+        packaging_capabilities:
+          type: string
+          title: Packaging Capabilities
+          description: Types of packaging options offered, for example Bulk or Retail-Ready.
+        export_compliance:
+          type: boolean
+          title: Export Compliance
+          description: Indicates if the supplier complies with the required export
+            regulations.
+        testing_facilities:
+          type: boolean
+          title: Testing Facilities
+          description: Indicates if the supplier has in-house testing and validation
+            facilities.
+        automation_level:
+          type: string
+          title: Automation Level
+          description: Level of automation in the supplier's production process, for
+            example Manual, Semi-Automated, or Fully Automated.
+        employee_count:
+          type: integer
+          title: Employee Count
+          description: Total number of employees at the supplier's facility.
+        partnership_initiatives:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partnership Initiatives
+          description: Details of significant partnerships or collaborations with
+            other firms.
+        innovation_awards:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Innovation Awards
+          description: Recognition received for innovation or excellence.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations regarding the supplier's capabilities.
+      type: object
+      required:
+      - supplier_id
+      - core_competencies
+      - production_capacity
+      - capacity_unit
+      - lead_time
+      - technology_capability
+      - certifications
+      - quality_control_measures
+      - rad_capabilities
+      - customization_capability
+      - geographical_reach
+      - material_expertise
+      - subcontracting_capability
+      - maintenance_services
+      - packaging_capabilities
+      - export_compliance
+      - testing_facilities
+      - automation_level
+      - employee_count
+      title: SupplierCapabilitiesResponse
+    SupplierCapabilitiesUpdate:
+      properties:
+        core_competencies:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Core Competencies
+        production_capacity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Production Capacity
+        capacity_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Capacity Unit
+        lead_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lead Time
+        technology_capability:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Technology Capability
+        certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Certifications
+        quality_control_measures:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Quality Control Measures
+        rad_capabilities:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Rad Capabilities
+        customization_capability:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Customization Capability
+        geographical_reach:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Geographical Reach
+        material_expertise:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Material Expertise
+        sustainability_practices:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sustainability Practices
+        subcontracting_capability:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Subcontracting Capability
+        maintenance_services:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Maintenance Services
+        packaging_capabilities:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Packaging Capabilities
+        export_compliance:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Export Compliance
+        testing_facilities:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Testing Facilities
+        automation_level:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Automation Level
+        employee_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Employee Count
+        partnership_initiatives:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partnership Initiatives
+        innovation_awards:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Innovation Awards
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: SupplierCapabilitiesUpdate
+    SupplierDetailsCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        supplier_name:
+          type: string
+          title: Supplier Name
+          description: Official name of the supplier.
+        supplier_type:
+          type: string
+          title: Supplier Type
+          description: Type of supplier, for example Manufacturer, Distributor, Wholesaler,
+            or Service Provider.
+        address:
+          type: string
+          title: Address
+          description: Registered address of the supplier.
+        city:
+          type: string
+          title: City
+          description: City where the supplier is located.
+        state_region:
+          type: string
+          title: State Region
+          description: State or region where the supplier operates.
+        country:
+          type: string
+          title: Country
+          description: Country of the supplier.
+        postal_code:
+          type: string
+          title: Postal Code
+          description: Postal code for the supplier's address.
+        contact_name:
+          type: string
+          title: Contact Name
+          description: Primary contact person's name.
+        contact_email:
+          type: string
+          format: email
+          title: Contact Email
+          description: Email address for communication.
+        contact_phone:
+          type: string
+          title: Contact Phone
+          description: Phone number for the primary contact.
+        website:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Website
+          description: Official website of the supplier, if available.
+        tax_id:
+          type: string
+          title: Tax Id
+          description: Taxpayer Identification Number of the supplier.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Agreed payment terms, for example Net 30 or Net 45.
+        currency:
+          type: string
+          title: Currency
+          description: Default currency for transactions with the supplier.
+        lead_time_days:
+          type: integer
+          title: Lead Time Days
+          description: Average time required to fulfill an order in days.
+        annual_spend:
+          type: number
+          title: Annual Spend
+          description: Total annual expenditure on this supplier.
+        approval_status:
+          type: string
+          title: Approval Status
+          description: Supplier's approval status, for example Approved, Pending,
+            or Blacklisted.
+        risk_rating:
+          type: integer
+          title: Risk Rating
+          description: Risk score assigned to the supplier based on financial and
+            operational factors.
+        certifications:
+          items:
+            type: string
+          type: array
+          title: Certifications
+          description: Certifications held by the supplier, for example ISO 9001,
+            CE, or RoHS.
+        industry:
+          type: string
+          title: Industry
+          description: Industry in which the supplier operates.
+        past_performance_score:
+          type: number
+          title: Past Performance Score
+          description: Rating based on historical performance on a 1-10 scale.
+        preferred_supplier:
+          type: boolean
+          title: Preferred Supplier
+          description: Indicates if this supplier is a preferred vendor.
+        last_order_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Order Date
+          description: The most recent date an order was placed with the supplier.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional metadata or context not covered by other fields.
+      type: object
+      required:
+      - supplier_id
+      - supplier_name
+      - supplier_type
+      - address
+      - city
+      - state_region
+      - country
+      - postal_code
+      - contact_name
+      - contact_email
+      - contact_phone
+      - tax_id
+      - payment_terms
+      - currency
+      - lead_time_days
+      - annual_spend
+      - approval_status
+      - risk_rating
+      - certifications
+      - industry
+      - past_performance_score
+      - preferred_supplier
+      title: SupplierDetailsCreate
+    SupplierDetailsResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        supplier_name:
+          type: string
+          title: Supplier Name
+          description: Official name of the supplier.
+        supplier_type:
+          type: string
+          title: Supplier Type
+          description: Type of supplier, for example Manufacturer, Distributor, Wholesaler,
+            or Service Provider.
+        address:
+          type: string
+          title: Address
+          description: Registered address of the supplier.
+        city:
+          type: string
+          title: City
+          description: City where the supplier is located.
+        state_region:
+          type: string
+          title: State Region
+          description: State or region where the supplier operates.
+        country:
+          type: string
+          title: Country
+          description: Country of the supplier.
+        postal_code:
+          type: string
+          title: Postal Code
+          description: Postal code for the supplier's address.
+        contact_name:
+          type: string
+          title: Contact Name
+          description: Primary contact person's name.
+        contact_email:
+          type: string
+          format: email
+          title: Contact Email
+          description: Email address for communication.
+        contact_phone:
+          type: string
+          title: Contact Phone
+          description: Phone number for the primary contact.
+        website:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Website
+          description: Official website of the supplier, if available.
+        tax_id:
+          type: string
+          title: Tax Id
+          description: Taxpayer Identification Number of the supplier.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Agreed payment terms, for example Net 30 or Net 45.
+        currency:
+          type: string
+          title: Currency
+          description: Default currency for transactions with the supplier.
+        lead_time_days:
+          type: integer
+          title: Lead Time Days
+          description: Average time required to fulfill an order in days.
+        annual_spend:
+          type: number
+          title: Annual Spend
+          description: Total annual expenditure on this supplier.
+        approval_status:
+          type: string
+          title: Approval Status
+          description: Supplier's approval status, for example Approved, Pending,
+            or Blacklisted.
+        risk_rating:
+          type: integer
+          title: Risk Rating
+          description: Risk score assigned to the supplier based on financial and
+            operational factors.
+        certifications:
+          items:
+            type: string
+          type: array
+          title: Certifications
+          description: Certifications held by the supplier, for example ISO 9001,
+            CE, or RoHS.
+        industry:
+          type: string
+          title: Industry
+          description: Industry in which the supplier operates.
+        past_performance_score:
+          type: number
+          title: Past Performance Score
+          description: Rating based on historical performance on a 1-10 scale.
+        preferred_supplier:
+          type: boolean
+          title: Preferred Supplier
+          description: Indicates if this supplier is a preferred vendor.
+        last_order_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Order Date
+          description: The most recent date an order was placed with the supplier.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional metadata or context not covered by other fields.
+      type: object
+      required:
+      - supplier_id
+      - supplier_name
+      - supplier_type
+      - address
+      - city
+      - state_region
+      - country
+      - postal_code
+      - contact_name
+      - contact_email
+      - contact_phone
+      - tax_id
+      - payment_terms
+      - currency
+      - lead_time_days
+      - annual_spend
+      - approval_status
+      - risk_rating
+      - certifications
+      - industry
+      - past_performance_score
+      - preferred_supplier
+      title: SupplierDetailsResponse
+    SupplierDetailsUpdate:
+      properties:
+        supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Name
+        supplier_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Type
+        address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address
+        city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: City
+        state_region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State Region
+        country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+        postal_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Postal Code
+        contact_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contact Name
+        contact_email:
+          anyOf:
+          - type: string
+            format: email
+          - type: 'null'
+          title: Contact Email
+        contact_phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contact Phone
+        website:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Website
+        tax_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Id
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        lead_time_days:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lead Time Days
+        annual_spend:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Annual Spend
+        approval_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approval Status
+        risk_rating:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Risk Rating
+        certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Certifications
+        industry:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Industry
+        past_performance_score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Past Performance Score
+        preferred_supplier:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Preferred Supplier
+        last_order_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Order Date
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: SupplierDetailsUpdate
+    SupplierFinancialsCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        annual_revenue:
+          type: number
+          title: Annual Revenue
+          description: Total revenue generated by the supplier in a financial year.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which financial values are reported.
+        net_profit_margin:
+          type: number
+          title: Net Profit Margin
+          description: Percentage of revenue that constitutes net profit.
+        operating_costs:
+          type: number
+          title: Operating Costs
+          description: Total operational expenses incurred by the supplier in a year.
+        debt_to_equity_ratio:
+          type: number
+          title: Debt To Equity Ratio
+          description: Ratio of supplier's total debt to its shareholder equity.
+        credit_rating:
+          type: string
+          title: Credit Rating
+          description: Supplier's creditworthiness as rated by a recognized agency.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Standard payment terms agreed upon with the supplier, for example
+            Net 30 or Net 60.
+        outstanding_balance:
+          type: number
+          title: Outstanding Balance
+          description: Amount currently owed to the supplier.
+        overdue_invoices:
+          type: integer
+          title: Overdue Invoices
+          description: Number of unpaid invoices that are past their due date.
+        average_payment_delay_days:
+          type: integer
+          title: Average Payment Delay Days
+          description: Average delay in payment beyond the agreed payment terms.
+        financial_health_score:
+          type: number
+          title: Financial Health Score
+          description: Composite score reflecting the supplier's financial health.
+        bank_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank Name
+          description: Name of the bank used by the supplier for transactions.
+        bank_account_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank Account Number
+          description: Bank account number for supplier payments.
+        tax_identification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Identification Number
+          description: Tax ID or equivalent identification for compliance purposes.
+        audited_financials:
+          type: boolean
+          title: Audited Financials
+          description: Indicates whether the supplier's financial statements are audited.
+        last_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Audit Date
+          description: Date of the supplier's most recent financial audit.
+        profitability_trends:
+          type: string
+          title: Profitability Trends
+          description: Summary or description of profitability trends over recent
+            years.
+        liquidity_ratio:
+          type: number
+          title: Liquidity Ratio
+          description: Ratio of the supplier's liquid assets to its current liabilities.
+        payment_methods_accepted:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Payment Methods Accepted
+          description: List of payment methods accepted by the supplier, for example
+            Bank Transfer or Credit.
+        tax_compliance_status:
+          type: boolean
+          title: Tax Compliance Status
+          description: Indicates whether the supplier is compliant with tax regulations.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the supplier's finances.
+      type: object
+      required:
+      - supplier_id
+      - annual_revenue
+      - currency
+      - net_profit_margin
+      - operating_costs
+      - debt_to_equity_ratio
+      - credit_rating
+      - payment_terms
+      - outstanding_balance
+      - overdue_invoices
+      - average_payment_delay_days
+      - financial_health_score
+      - audited_financials
+      - profitability_trends
+      - liquidity_ratio
+      - tax_compliance_status
+      title: SupplierFinancialsCreate
+    SupplierFinancialsResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        annual_revenue:
+          type: number
+          title: Annual Revenue
+          description: Total revenue generated by the supplier in a financial year.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which financial values are reported.
+        net_profit_margin:
+          type: number
+          title: Net Profit Margin
+          description: Percentage of revenue that constitutes net profit.
+        operating_costs:
+          type: number
+          title: Operating Costs
+          description: Total operational expenses incurred by the supplier in a year.
+        debt_to_equity_ratio:
+          type: number
+          title: Debt To Equity Ratio
+          description: Ratio of supplier's total debt to its shareholder equity.
+        credit_rating:
+          type: string
+          title: Credit Rating
+          description: Supplier's creditworthiness as rated by a recognized agency.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Standard payment terms agreed upon with the supplier, for example
+            Net 30 or Net 60.
+        outstanding_balance:
+          type: number
+          title: Outstanding Balance
+          description: Amount currently owed to the supplier.
+        overdue_invoices:
+          type: integer
+          title: Overdue Invoices
+          description: Number of unpaid invoices that are past their due date.
+        average_payment_delay_days:
+          type: integer
+          title: Average Payment Delay Days
+          description: Average delay in payment beyond the agreed payment terms.
+        financial_health_score:
+          type: number
+          title: Financial Health Score
+          description: Composite score reflecting the supplier's financial health.
+        bank_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank Name
+          description: Name of the bank used by the supplier for transactions.
+        bank_account_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank Account Number
+          description: Bank account number for supplier payments.
+        tax_identification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Identification Number
+          description: Tax ID or equivalent identification for compliance purposes.
+        audited_financials:
+          type: boolean
+          title: Audited Financials
+          description: Indicates whether the supplier's financial statements are audited.
+        last_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Audit Date
+          description: Date of the supplier's most recent financial audit.
+        profitability_trends:
+          type: string
+          title: Profitability Trends
+          description: Summary or description of profitability trends over recent
+            years.
+        liquidity_ratio:
+          type: number
+          title: Liquidity Ratio
+          description: Ratio of the supplier's liquid assets to its current liabilities.
+        payment_methods_accepted:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Payment Methods Accepted
+          description: List of payment methods accepted by the supplier, for example
+            Bank Transfer or Credit.
+        tax_compliance_status:
+          type: boolean
+          title: Tax Compliance Status
+          description: Indicates whether the supplier is compliant with tax regulations.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the supplier's finances.
+      type: object
+      required:
+      - supplier_id
+      - annual_revenue
+      - currency
+      - net_profit_margin
+      - operating_costs
+      - debt_to_equity_ratio
+      - credit_rating
+      - payment_terms
+      - outstanding_balance
+      - overdue_invoices
+      - average_payment_delay_days
+      - financial_health_score
+      - audited_financials
+      - profitability_trends
+      - liquidity_ratio
+      - tax_compliance_status
+      title: SupplierFinancialsResponse
+    SupplierFinancialsUpdate:
+      properties:
+        annual_revenue:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Annual Revenue
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        net_profit_margin:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Net Profit Margin
+        operating_costs:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Operating Costs
+        debt_to_equity_ratio:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Debt To Equity Ratio
+        credit_rating:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Credit Rating
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        outstanding_balance:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Outstanding Balance
+        overdue_invoices:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Overdue Invoices
+        average_payment_delay_days:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Average Payment Delay Days
+        financial_health_score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Financial Health Score
+        bank_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank Name
+        bank_account_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Bank Account Number
+        tax_identification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Identification Number
+        audited_financials:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Audited Financials
+        last_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Audit Date
+        profitability_trends:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profitability Trends
+        liquidity_ratio:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Liquidity Ratio
+        payment_methods_accepted:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Payment Methods Accepted
+        tax_compliance_status:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Tax Compliance Status
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: SupplierFinancialsUpdate
+    SupplierInventoryCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        item_name:
+          type: string
+          title: Item Name
+          description: Name or description of the inventory item.
+        sku:
+          type: string
+          title: Sku
+          description: Unique stock-keeping unit identifier assigned by the supplier.
+        category:
+          type: string
+          title: Category
+          description: Category or classification of the inventory item, for example
+            Raw Material or Component.
+        current_stock:
+          type: integer
+          title: Current Stock
+          description: Quantity of the item currently available in stock.
+        unit_of_measure:
+          type: string
+          title: Unit Of Measure
+          description: Unit in which the inventory is measured, for example Kg or
+            Units.
+        reorder_level:
+          type: integer
+          title: Reorder Level
+          description: Minimum stock level at which new stock needs to be ordered.
+        safety_stock:
+          type: integer
+          title: Safety Stock
+          description: Buffer stock maintained to avoid stockouts.
+        maximum_stock_level:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Maximum Stock Level
+          description: Maximum quantity that can be stored.
+        location_id:
+          type: string
+          title: Location Id
+          description: Identifier for the location where the inventory is stored.
+        batch_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Number
+          description: Batch identifier for tracking purposes.
+        manufacturing_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Manufacturing Date
+          description: Date when the item was manufactured.
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+          description: Expiry date for perishable or limited-lifecycle items.
+        cost_per_unit:
+          type: number
+          title: Cost Per Unit
+          description: Cost of one unit of the item.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which the item is priced.
+        reserved_stock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Reserved Stock
+          description: Quantity reserved for existing orders or commitments.
+        available_stock:
+          type: integer
+          title: Available Stock
+          description: Stock available for new orders after accounting for reserved
+            quantities.
+        lead_time:
+          type: integer
+          title: Lead Time
+          description: Time in days required to restock the item.
+        last_stock_update_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Stock Update Date
+          description: Date when the inventory data was last updated.
+        supplier_lead_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Supplier Lead Time
+          description: Time taken by the supplier to replenish stock.
+        stock_turnover_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Stock Turnover Rate
+          description: Rate at which stock is consumed or sold.
+        quality_check_status:
+          type: boolean
+          title: Quality Check Status
+          description: Indicates whether the stock has passed quality checks.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the stock.
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - item_name
+      - sku
+      - category
+      - current_stock
+      - unit_of_measure
+      - reorder_level
+      - safety_stock
+      - location_id
+      - cost_per_unit
+      - currency
+      - available_stock
+      - lead_time
+      - quality_check_status
+      title: SupplierInventoryCreate
+    SupplierInventoryResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        item_name:
+          type: string
+          title: Item Name
+          description: Name or description of the inventory item.
+        sku:
+          type: string
+          title: Sku
+          description: Unique stock-keeping unit identifier assigned by the supplier.
+        category:
+          type: string
+          title: Category
+          description: Category or classification of the inventory item, for example
+            Raw Material or Component.
+        current_stock:
+          type: integer
+          title: Current Stock
+          description: Quantity of the item currently available in stock.
+        unit_of_measure:
+          type: string
+          title: Unit Of Measure
+          description: Unit in which the inventory is measured, for example Kg or
+            Units.
+        reorder_level:
+          type: integer
+          title: Reorder Level
+          description: Minimum stock level at which new stock needs to be ordered.
+        safety_stock:
+          type: integer
+          title: Safety Stock
+          description: Buffer stock maintained to avoid stockouts.
+        maximum_stock_level:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Maximum Stock Level
+          description: Maximum quantity that can be stored.
+        location_id:
+          type: string
+          title: Location Id
+          description: Identifier for the location where the inventory is stored.
+        batch_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Number
+          description: Batch identifier for tracking purposes.
+        manufacturing_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Manufacturing Date
+          description: Date when the item was manufactured.
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+          description: Expiry date for perishable or limited-lifecycle items.
+        cost_per_unit:
+          type: number
+          title: Cost Per Unit
+          description: Cost of one unit of the item.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which the item is priced.
+        reserved_stock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Reserved Stock
+          description: Quantity reserved for existing orders or commitments.
+        available_stock:
+          type: integer
+          title: Available Stock
+          description: Stock available for new orders after accounting for reserved
+            quantities.
+        lead_time:
+          type: integer
+          title: Lead Time
+          description: Time in days required to restock the item.
+        last_stock_update_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Stock Update Date
+          description: Date when the inventory data was last updated.
+        supplier_lead_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Supplier Lead Time
+          description: Time taken by the supplier to replenish stock.
+        stock_turnover_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Stock Turnover Rate
+          description: Rate at which stock is consumed or sold.
+        quality_check_status:
+          type: boolean
+          title: Quality Check Status
+          description: Indicates whether the stock has passed quality checks.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the stock.
+        supplier_inventory_id:
+          type: string
+          title: Supplier Inventory Id
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - item_name
+      - sku
+      - category
+      - current_stock
+      - unit_of_measure
+      - reorder_level
+      - safety_stock
+      - location_id
+      - cost_per_unit
+      - currency
+      - available_stock
+      - lead_time
+      - quality_check_status
+      - supplier_inventory_id
+      title: SupplierInventoryResponse
+    SupplierInventoryUpdate:
+      properties:
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        item_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Item Id
+        item_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Item Name
+        sku:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sku
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        current_stock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Current Stock
+        unit_of_measure:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit Of Measure
+        reorder_level:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Reorder Level
+        safety_stock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Safety Stock
+        maximum_stock_level:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Maximum Stock Level
+        location_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Id
+        batch_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Number
+        manufacturing_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Manufacturing Date
+        expiry_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiry Date
+        cost_per_unit:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost Per Unit
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        reserved_stock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Reserved Stock
+        available_stock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Available Stock
+        lead_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Lead Time
+        last_stock_update_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Stock Update Date
+        supplier_lead_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Supplier Lead Time
+        stock_turnover_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Stock Turnover Rate
+        quality_check_status:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Quality Check Status
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: SupplierInventoryUpdate
+    SupplierLocationCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        location_name:
+          type: string
+          title: Location Name
+          description: Name or description of the location, for example Head Office
+            or Manufacturing Plant.
+        address_line_1:
+          type: string
+          title: Address Line 1
+          description: Primary address line for the location.
+        address_line_2:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address Line 2
+          description: Secondary address line, if applicable.
+        city:
+          type: string
+          title: City
+          description: City where the supplier's location is based.
+        state_province:
+          type: string
+          title: State Province
+          description: State or province of the location.
+        country:
+          type: string
+          title: Country
+          description: Country of the supplier's location.
+        postal_code:
+          type: string
+          title: Postal Code
+          description: Postal or ZIP code for the location.
+        contact_number:
+          type: string
+          title: Contact Number
+          description: Phone number for the location.
+        email_address:
+          type: string
+          title: Email Address
+          description: Email address for location-specific communication.
+        facility_type:
+          type: string
+          title: Facility Type
+          description: Type of facility at the location, for example Manufacturing,
+            Warehouse, or Office.
+        operational_hours:
+          type: string
+          title: Operational Hours
+          description: Standard hours of operation for the facility.
+        primary_function:
+          type: string
+          title: Primary Function
+          description: Main activity performed at the location, for example Assembly
+            or Distribution.
+        geographical_coordinates:
+          type: string
+          title: Geographical Coordinates
+          description: Latitude and longitude for mapping purposes.
+        annual_production_capacity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Annual Production Capacity
+          description: Maximum production output per year at this location.
+        employee_count:
+          type: integer
+          title: Employee Count
+          description: Total number of employees at the location.
+        certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Certifications
+          description: Certifications specific to the location, for example ISO 9001
+            or OSHA Compliance.
+        storage_capacity:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Storage Capacity
+          description: Maximum storage capacity at the location, for example in cubic
+            meters.
+        key_contact_person:
+          type: string
+          title: Key Contact Person
+          description: Name of the primary contact person at the location.
+        key_contact_role:
+          type: string
+          title: Key Contact Role
+          description: Role of the key contact person, for example Plant Manager or
+            Logistics Coordinator.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the location.
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - location_name
+      - address_line_1
+      - city
+      - state_province
+      - country
+      - postal_code
+      - contact_number
+      - email_address
+      - facility_type
+      - operational_hours
+      - primary_function
+      - geographical_coordinates
+      - employee_count
+      - key_contact_person
+      - key_contact_role
+      title: SupplierLocationCreate
+    SupplierLocationResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        location_name:
+          type: string
+          title: Location Name
+          description: Name or description of the location, for example Head Office
+            or Manufacturing Plant.
+        address_line_1:
+          type: string
+          title: Address Line 1
+          description: Primary address line for the location.
+        address_line_2:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address Line 2
+          description: Secondary address line, if applicable.
+        city:
+          type: string
+          title: City
+          description: City where the supplier's location is based.
+        state_province:
+          type: string
+          title: State Province
+          description: State or province of the location.
+        country:
+          type: string
+          title: Country
+          description: Country of the supplier's location.
+        postal_code:
+          type: string
+          title: Postal Code
+          description: Postal or ZIP code for the location.
+        contact_number:
+          type: string
+          title: Contact Number
+          description: Phone number for the location.
+        email_address:
+          type: string
+          title: Email Address
+          description: Email address for location-specific communication.
+        facility_type:
+          type: string
+          title: Facility Type
+          description: Type of facility at the location, for example Manufacturing,
+            Warehouse, or Office.
+        operational_hours:
+          type: string
+          title: Operational Hours
+          description: Standard hours of operation for the facility.
+        primary_function:
+          type: string
+          title: Primary Function
+          description: Main activity performed at the location, for example Assembly
+            or Distribution.
+        geographical_coordinates:
+          type: string
+          title: Geographical Coordinates
+          description: Latitude and longitude for mapping purposes.
+        annual_production_capacity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Annual Production Capacity
+          description: Maximum production output per year at this location.
+        employee_count:
+          type: integer
+          title: Employee Count
+          description: Total number of employees at the location.
+        certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Certifications
+          description: Certifications specific to the location, for example ISO 9001
+            or OSHA Compliance.
+        storage_capacity:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Storage Capacity
+          description: Maximum storage capacity at the location, for example in cubic
+            meters.
+        key_contact_person:
+          type: string
+          title: Key Contact Person
+          description: Name of the primary contact person at the location.
+        key_contact_role:
+          type: string
+          title: Key Contact Role
+          description: Role of the key contact person, for example Plant Manager or
+            Logistics Coordinator.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the location.
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - location_name
+      - address_line_1
+      - city
+      - state_province
+      - country
+      - postal_code
+      - contact_number
+      - email_address
+      - facility_type
+      - operational_hours
+      - primary_function
+      - geographical_coordinates
+      - employee_count
+      - key_contact_person
+      - key_contact_role
+      title: SupplierLocationResponse
+    SupplierLocationUpdate:
+      properties:
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        item_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Item Id
+        location_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Name
+        address_line_1:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address Line 1
+        address_line_2:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Address Line 2
+        city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: City
+        state_province:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: State Province
+        country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Country
+        postal_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Postal Code
+        contact_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contact Number
+        email_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email Address
+        facility_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Facility Type
+        operational_hours:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Operational Hours
+        primary_function:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Primary Function
+        geographical_coordinates:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Geographical Coordinates
+        annual_production_capacity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Annual Production Capacity
+        employee_count:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Employee Count
+        certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Certifications
+        storage_capacity:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Storage Capacity
+        key_contact_person:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Key Contact Person
+        key_contact_role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Key Contact Role
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: SupplierLocationUpdate
+    SupplierPricingCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        item_name:
+          type: string
+          title: Item Name
+          description: Name or description of the item.
+        unit_price:
+          type: number
+          title: Unit Price
+          description: Price per unit of the item.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which the price is quoted.
+        pricing_tier:
+          type: string
+          title: Pricing Tier
+          description: Price category based on order volume, for example Bulk, Standard,
+            or Wholesale.
+        discount_rate:
+          type: number
+          title: Discount Rate
+          description: Discount percentage for bulk purchases or special agreements.
+        net_unit_price:
+          type: number
+          title: Net Unit Price
+          description: Final price per unit after applying any discounts.
+        quantity_range:
+          type: string
+          title: Quantity Range
+          description: Range of quantities applicable for the specific pricing tier.
+        pricing_validity_start:
+          type: string
+          format: date-time
+          title: Pricing Validity Start
+          description: Start datetime for the validity of the quoted price.
+        pricing_validity_end:
+          type: string
+          format: date-time
+          title: Pricing Validity End
+          description: End datetime for the validity of the quoted price.
+        price_adjustment_terms:
+          type: string
+          title: Price Adjustment Terms
+          description: Terms for adjusting prices due to inflation, raw material costs,
+            etc.
+        tax_rate:
+          type: number
+          title: Tax Rate
+          description: Applicable tax percentage for the item.
+        tax_amount:
+          type: number
+          title: Tax Amount
+          description: Calculated tax amount per unit.
+        total_unit_cost:
+          type: number
+          title: Total Unit Cost
+          description: Unit price including taxes.
+        shipping_cost_per_unit:
+          type: number
+          title: Shipping Cost Per Unit
+          description: Estimated or actual shipping cost per unit.
+        total_landed_cost:
+          type: number
+          title: Total Landed Cost
+          description: Total cost per unit including price, taxes, and shipping.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Terms of payment specific to pricing agreements, for example
+            Net 30 or Advance Payment.
+        minimum_order_quantity:
+          type: integer
+          title: Minimum Order Quantity
+          description: Minimum quantity required for purchase at the specified price.
+        price_escalation_clause:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Price Escalation Clause
+          description: Conditions under which price increases are allowed.
+        currency_exchange_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Currency Exchange Rate
+          description: Exchange rate if pricing is in a foreign currency.
+        custom_pricing_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Custom Pricing Notes
+          description: Additional notes or special agreements regarding pricing.
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - item_name
+      - unit_price
+      - currency
+      - pricing_tier
+      - discount_rate
+      - net_unit_price
+      - quantity_range
+      - pricing_validity_start
+      - pricing_validity_end
+      - price_adjustment_terms
+      - tax_rate
+      - tax_amount
+      - total_unit_cost
+      - shipping_cost_per_unit
+      - total_landed_cost
+      - payment_terms
+      - minimum_order_quantity
+      title: SupplierPricingCreate
+    SupplierPricingResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        item_name:
+          type: string
+          title: Item Name
+          description: Name or description of the item.
+        unit_price:
+          type: number
+          title: Unit Price
+          description: Price per unit of the item.
+        currency:
+          type: string
+          title: Currency
+          description: Currency in which the price is quoted.
+        pricing_tier:
+          type: string
+          title: Pricing Tier
+          description: Price category based on order volume, for example Bulk, Standard,
+            or Wholesale.
+        discount_rate:
+          type: number
+          title: Discount Rate
+          description: Discount percentage for bulk purchases or special agreements.
+        net_unit_price:
+          type: number
+          title: Net Unit Price
+          description: Final price per unit after applying any discounts.
+        quantity_range:
+          type: string
+          title: Quantity Range
+          description: Range of quantities applicable for the specific pricing tier.
+        pricing_validity_start:
+          type: string
+          format: date-time
+          title: Pricing Validity Start
+          description: Start datetime for the validity of the quoted price.
+        pricing_validity_end:
+          type: string
+          format: date-time
+          title: Pricing Validity End
+          description: End datetime for the validity of the quoted price.
+        price_adjustment_terms:
+          type: string
+          title: Price Adjustment Terms
+          description: Terms for adjusting prices due to inflation, raw material costs,
+            etc.
+        tax_rate:
+          type: number
+          title: Tax Rate
+          description: Applicable tax percentage for the item.
+        tax_amount:
+          type: number
+          title: Tax Amount
+          description: Calculated tax amount per unit.
+        total_unit_cost:
+          type: number
+          title: Total Unit Cost
+          description: Unit price including taxes.
+        shipping_cost_per_unit:
+          type: number
+          title: Shipping Cost Per Unit
+          description: Estimated or actual shipping cost per unit.
+        total_landed_cost:
+          type: number
+          title: Total Landed Cost
+          description: Total cost per unit including price, taxes, and shipping.
+        payment_terms:
+          type: string
+          title: Payment Terms
+          description: Terms of payment specific to pricing agreements, for example
+            Net 30 or Advance Payment.
+        minimum_order_quantity:
+          type: integer
+          title: Minimum Order Quantity
+          description: Minimum quantity required for purchase at the specified price.
+        price_escalation_clause:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Price Escalation Clause
+          description: Conditions under which price increases are allowed.
+        currency_exchange_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Currency Exchange Rate
+          description: Exchange rate if pricing is in a foreign currency.
+        custom_pricing_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Custom Pricing Notes
+          description: Additional notes or special agreements regarding pricing.
+        supplier_pricing_id:
+          type: string
+          title: Supplier Pricing Id
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - item_name
+      - unit_price
+      - currency
+      - pricing_tier
+      - discount_rate
+      - net_unit_price
+      - quantity_range
+      - pricing_validity_start
+      - pricing_validity_end
+      - price_adjustment_terms
+      - tax_rate
+      - tax_amount
+      - total_unit_cost
+      - shipping_cost_per_unit
+      - total_landed_cost
+      - payment_terms
+      - minimum_order_quantity
+      - supplier_pricing_id
+      title: SupplierPricingResponse
+    SupplierPricingUpdate:
+      properties:
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        item_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Item Id
+        location_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Id
+        item_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Item Name
+        unit_price:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Unit Price
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        pricing_tier:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Pricing Tier
+        discount_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Discount Rate
+        net_unit_price:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Net Unit Price
+        quantity_range:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Quantity Range
+        pricing_validity_start:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Pricing Validity Start
+        pricing_validity_end:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Pricing Validity End
+        price_adjustment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Price Adjustment Terms
+        tax_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Tax Rate
+        tax_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Tax Amount
+        total_unit_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Total Unit Cost
+        shipping_cost_per_unit:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Shipping Cost Per Unit
+        total_landed_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Total Landed Cost
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        minimum_order_quantity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Minimum Order Quantity
+        price_escalation_clause:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Price Escalation Clause
+        currency_exchange_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Currency Exchange Rate
+        custom_pricing_notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Custom Pricing Notes
+      type: object
+      title: SupplierPricingUpdate
+    SupplierQualityCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        quality_rating:
+          type: number
+          title: Quality Rating
+          description: Overall quality score based on historical performance, for
+            example 1 to 100.
+        defect_rate:
+          type: number
+          title: Defect Rate
+          description: Percentage of defective items in delivered goods.
+        on_time_delivery_rate:
+          type: number
+          title: On Time Delivery Rate
+          description: Percentage of orders delivered on or before the agreed-upon
+            date.
+        return_rate:
+          type: number
+          title: Return Rate
+          description: Percentage of delivered goods returned due to quality issues.
+        non_conformance_reports:
+          type: integer
+          title: Non Conformance Reports
+          description: Number of non-conformance reports filed against the supplier.
+        iso_certifications:
+          items:
+            type: string
+          type: array
+          title: Iso Certifications
+          description: List of ISO or equivalent certifications related to quality
+            management.
+        quality_audit_compliance_rate:
+          type: number
+          title: Quality Audit Compliance Rate
+          description: Percentage of quality audits passed successfully.
+        inspection_pass_rate:
+          type: number
+          title: Inspection Pass Rate
+          description: Percentage of items that pass quality inspection upon delivery.
+        warranty_claims_rate:
+          type: number
+          title: Warranty Claims Rate
+          description: Percentage of delivered goods that resulted in warranty claims.
+        supplier_quality_manager:
+          type: string
+          title: Supplier Quality Manager
+          description: Name of the person responsible for quality assurance at the
+            supplier.
+        corrective_action_turnaround_time:
+          type: integer
+          title: Corrective Action Turnaround Time
+          description: Average number of days to resolve quality issues raised by
+            the buyer.
+        customer_complaint_rate:
+          type: number
+          title: Customer Complaint Rate
+          description: Percentage of complaints related to supplier's products or
+            services.
+        continuous_improvement_programs:
+          type: boolean
+          title: Continuous Improvement Programs
+          description: Indicates if the supplier has active quality improvement initiatives.
+        last_quality_audit_date:
+          type: string
+          format: date-time
+          title: Last Quality Audit Date
+          description: Date of the most recent quality audit conducted.
+        next_quality_audit_date:
+          type: string
+          format: date-time
+          title: Next Quality Audit Date
+          description: Scheduled date for the next quality audit.
+        inspection_process_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inspection Process Details
+          description: Description of the supplier's internal quality inspection processes.
+        first_pass_yield:
+          type: number
+          title: First Pass Yield
+          description: Percentage of goods that meet quality standards without rework.
+        material_traceability:
+          type: boolean
+          title: Material Traceability
+          description: Indicates whether the supplier provides traceability for materials
+            used.
+        adherence_to_specifications:
+          type: number
+          title: Adherence To Specifications
+          description: Percentage of delivered goods meeting exact design or technical
+            specifications.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the supplier's quality
+            performance.
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - quality_rating
+      - defect_rate
+      - on_time_delivery_rate
+      - return_rate
+      - non_conformance_reports
+      - iso_certifications
+      - quality_audit_compliance_rate
+      - inspection_pass_rate
+      - warranty_claims_rate
+      - supplier_quality_manager
+      - corrective_action_turnaround_time
+      - customer_complaint_rate
+      - continuous_improvement_programs
+      - last_quality_audit_date
+      - next_quality_audit_date
+      - first_pass_yield
+      - material_traceability
+      - adherence_to_specifications
+      title: SupplierQualityCreate
+    SupplierQualityResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        quality_rating:
+          type: number
+          title: Quality Rating
+          description: Overall quality score based on historical performance, for
+            example 1 to 100.
+        defect_rate:
+          type: number
+          title: Defect Rate
+          description: Percentage of defective items in delivered goods.
+        on_time_delivery_rate:
+          type: number
+          title: On Time Delivery Rate
+          description: Percentage of orders delivered on or before the agreed-upon
+            date.
+        return_rate:
+          type: number
+          title: Return Rate
+          description: Percentage of delivered goods returned due to quality issues.
+        non_conformance_reports:
+          type: integer
+          title: Non Conformance Reports
+          description: Number of non-conformance reports filed against the supplier.
+        iso_certifications:
+          items:
+            type: string
+          type: array
+          title: Iso Certifications
+          description: List of ISO or equivalent certifications related to quality
+            management.
+        quality_audit_compliance_rate:
+          type: number
+          title: Quality Audit Compliance Rate
+          description: Percentage of quality audits passed successfully.
+        inspection_pass_rate:
+          type: number
+          title: Inspection Pass Rate
+          description: Percentage of items that pass quality inspection upon delivery.
+        warranty_claims_rate:
+          type: number
+          title: Warranty Claims Rate
+          description: Percentage of delivered goods that resulted in warranty claims.
+        supplier_quality_manager:
+          type: string
+          title: Supplier Quality Manager
+          description: Name of the person responsible for quality assurance at the
+            supplier.
+        corrective_action_turnaround_time:
+          type: integer
+          title: Corrective Action Turnaround Time
+          description: Average number of days to resolve quality issues raised by
+            the buyer.
+        customer_complaint_rate:
+          type: number
+          title: Customer Complaint Rate
+          description: Percentage of complaints related to supplier's products or
+            services.
+        continuous_improvement_programs:
+          type: boolean
+          title: Continuous Improvement Programs
+          description: Indicates if the supplier has active quality improvement initiatives.
+        last_quality_audit_date:
+          type: string
+          format: date-time
+          title: Last Quality Audit Date
+          description: Date of the most recent quality audit conducted.
+        next_quality_audit_date:
+          type: string
+          format: date-time
+          title: Next Quality Audit Date
+          description: Scheduled date for the next quality audit.
+        inspection_process_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inspection Process Details
+          description: Description of the supplier's internal quality inspection processes.
+        first_pass_yield:
+          type: number
+          title: First Pass Yield
+          description: Percentage of goods that meet quality standards without rework.
+        material_traceability:
+          type: boolean
+          title: Material Traceability
+          description: Indicates whether the supplier provides traceability for materials
+            used.
+        adherence_to_specifications:
+          type: number
+          title: Adherence To Specifications
+          description: Percentage of delivered goods meeting exact design or technical
+            specifications.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or observations about the supplier's quality
+            performance.
+        supplier_quality_id:
+          type: string
+          title: Supplier Quality Id
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - quality_rating
+      - defect_rate
+      - on_time_delivery_rate
+      - return_rate
+      - non_conformance_reports
+      - iso_certifications
+      - quality_audit_compliance_rate
+      - inspection_pass_rate
+      - warranty_claims_rate
+      - supplier_quality_manager
+      - corrective_action_turnaround_time
+      - customer_complaint_rate
+      - continuous_improvement_programs
+      - last_quality_audit_date
+      - next_quality_audit_date
+      - first_pass_yield
+      - material_traceability
+      - adherence_to_specifications
+      - supplier_quality_id
+      title: SupplierQualityResponse
+    SupplierQualityUpdate:
+      properties:
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        item_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Item Id
+        location_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Id
+        quality_rating:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Quality Rating
+        defect_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Defect Rate
+        on_time_delivery_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: On Time Delivery Rate
+        return_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Return Rate
+        non_conformance_reports:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Non Conformance Reports
+        iso_certifications:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Iso Certifications
+        quality_audit_compliance_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Quality Audit Compliance Rate
+        inspection_pass_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Inspection Pass Rate
+        warranty_claims_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Warranty Claims Rate
+        supplier_quality_manager:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Quality Manager
+        corrective_action_turnaround_time:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Corrective Action Turnaround Time
+        customer_complaint_rate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Customer Complaint Rate
+        continuous_improvement_programs:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Continuous Improvement Programs
+        last_quality_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Quality Audit Date
+        next_quality_audit_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Next Quality Audit Date
+        inspection_process_details:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inspection Process Details
+        first_pass_yield:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: First Pass Yield
+        material_traceability:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Material Traceability
+        adherence_to_specifications:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Adherence To Specifications
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: SupplierQualityUpdate
+    SupplierShippingCreate:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        shipping_method:
+          type: string
+          title: Shipping Method
+          description: The mode of transportation used, for example Air, Sea, Rail,
+            Road, or Courier.
+        shipping_carrier:
+          type: string
+          title: Shipping Carrier
+          description: Name of the logistics provider or shipping company.
+        shipping_terms:
+          type: string
+          title: Shipping Terms
+          description: Delivery terms as per the Incoterms, for example FOB, CIF,
+            DDP, or EXW.
+        origin_address:
+          type: string
+          title: Origin Address
+          description: Address from which the goods will be shipped.
+        destination_address:
+          type: string
+          title: Destination Address
+          description: Delivery address for the goods.
+        average_transit_time_days:
+          type: integer
+          title: Average Transit Time Days
+          description: Average number of days required for shipping to the destination.
+        shipping_cost:
+          type: number
+          title: Shipping Cost
+          description: Estimated or actual shipping cost per shipment.
+        shipping_currency:
+          type: string
+          title: Shipping Currency
+          description: Currency in which the shipping cost is quoted.
+        packaging_type:
+          type: string
+          title: Packaging Type
+          description: Type of packaging used for shipments, for example Pallet, Crate,
+            or Box.
+        max_weight_per_shipment:
+          type: number
+          title: Max Weight Per Shipment
+          description: Maximum allowable weight for a single shipment in kg.
+        max_volume_per_shipment:
+          type: number
+          title: Max Volume Per Shipment
+          description: Maximum allowable volume for a single shipment in cubic meters.
+        tracking_available:
+          type: boolean
+          title: Tracking Available
+          description: Indicates if shipment tracking is available.
+        tracking_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tracking Url
+          description: URL for shipment tracking, if applicable.
+        preferred_delivery_time:
+          type: string
+          title: Preferred Delivery Time
+          description: Preferred time window for delivery, for example 9 AM - 5 PM.
+        insurance_provided:
+          type: boolean
+          title: Insurance Provided
+          description: Indicates if the shipment is insured.
+        insurance_coverage_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Insurance Coverage Amount
+          description: Value covered by shipping insurance.
+        freight_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Freight Class
+          description: Freight classification for the shipment, for example Hazardous
+            or Perishable.
+        customs_clearance_included:
+          type: boolean
+          title: Customs Clearance Included
+          description: Indicates if customs clearance is necessary for international
+            shipments.
+        customs_documentation:
+          items:
+            type: string
+          type: array
+          title: Customs Documentation
+          description: List of documents required for customs clearance, for example
+            Invoice or Packing List.
+        last_shipping_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Shipping Date
+          description: The most recent date a shipment was dispatched by the supplier.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or special instructions related to shipping.
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - shipping_method
+      - shipping_carrier
+      - shipping_terms
+      - origin_address
+      - destination_address
+      - average_transit_time_days
+      - shipping_cost
+      - shipping_currency
+      - packaging_type
+      - max_weight_per_shipment
+      - max_volume_per_shipment
+      - tracking_available
+      - preferred_delivery_time
+      - insurance_provided
+      - customs_clearance_included
+      - customs_documentation
+      title: SupplierShippingCreate
+    SupplierShippingResponse:
+      properties:
+        supplier_id:
+          type: string
+          title: Supplier Id
+          description: Unique identifier for the supplier.
+        item_id:
+          type: string
+          title: Item Id
+          description: Unique identifier for the inventory item.
+        location_id:
+          type: string
+          title: Location Id
+          description: Unique identifier for the supplier's specific location.
+        shipping_method:
+          type: string
+          title: Shipping Method
+          description: The mode of transportation used, for example Air, Sea, Rail,
+            Road, or Courier.
+        shipping_carrier:
+          type: string
+          title: Shipping Carrier
+          description: Name of the logistics provider or shipping company.
+        shipping_terms:
+          type: string
+          title: Shipping Terms
+          description: Delivery terms as per the Incoterms, for example FOB, CIF,
+            DDP, or EXW.
+        origin_address:
+          type: string
+          title: Origin Address
+          description: Address from which the goods will be shipped.
+        destination_address:
+          type: string
+          title: Destination Address
+          description: Delivery address for the goods.
+        average_transit_time_days:
+          type: integer
+          title: Average Transit Time Days
+          description: Average number of days required for shipping to the destination.
+        shipping_cost:
+          type: number
+          title: Shipping Cost
+          description: Estimated or actual shipping cost per shipment.
+        shipping_currency:
+          type: string
+          title: Shipping Currency
+          description: Currency in which the shipping cost is quoted.
+        packaging_type:
+          type: string
+          title: Packaging Type
+          description: Type of packaging used for shipments, for example Pallet, Crate,
+            or Box.
+        max_weight_per_shipment:
+          type: number
+          title: Max Weight Per Shipment
+          description: Maximum allowable weight for a single shipment in kg.
+        max_volume_per_shipment:
+          type: number
+          title: Max Volume Per Shipment
+          description: Maximum allowable volume for a single shipment in cubic meters.
+        tracking_available:
+          type: boolean
+          title: Tracking Available
+          description: Indicates if shipment tracking is available.
+        tracking_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tracking Url
+          description: URL for shipment tracking, if applicable.
+        preferred_delivery_time:
+          type: string
+          title: Preferred Delivery Time
+          description: Preferred time window for delivery, for example 9 AM - 5 PM.
+        insurance_provided:
+          type: boolean
+          title: Insurance Provided
+          description: Indicates if the shipment is insured.
+        insurance_coverage_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Insurance Coverage Amount
+          description: Value covered by shipping insurance.
+        freight_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Freight Class
+          description: Freight classification for the shipment, for example Hazardous
+            or Perishable.
+        customs_clearance_included:
+          type: boolean
+          title: Customs Clearance Included
+          description: Indicates if customs clearance is necessary for international
+            shipments.
+        customs_documentation:
+          items:
+            type: string
+          type: array
+          title: Customs Documentation
+          description: List of documents required for customs clearance, for example
+            Invoice or Packing List.
+        last_shipping_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Shipping Date
+          description: The most recent date a shipment was dispatched by the supplier.
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+          description: Additional notes or special instructions related to shipping.
+        supplier_shipping_id:
+          type: string
+          title: Supplier Shipping Id
+      type: object
+      required:
+      - supplier_id
+      - item_id
+      - location_id
+      - shipping_method
+      - shipping_carrier
+      - shipping_terms
+      - origin_address
+      - destination_address
+      - average_transit_time_days
+      - shipping_cost
+      - shipping_currency
+      - packaging_type
+      - max_weight_per_shipment
+      - max_volume_per_shipment
+      - tracking_available
+      - preferred_delivery_time
+      - insurance_provided
+      - customs_clearance_included
+      - customs_documentation
+      - supplier_shipping_id
+      title: SupplierShippingResponse
+    SupplierShippingUpdate:
+      properties:
+        supplier_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Id
+        item_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Item Id
+        location_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Id
+        shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Method
+        shipping_carrier:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Carrier
+        shipping_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Terms
+        origin_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Origin Address
+        destination_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Destination Address
+        average_transit_time_days:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Average Transit Time Days
+        shipping_cost:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Shipping Cost
+        shipping_currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Currency
+        packaging_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Packaging Type
+        max_weight_per_shipment:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Max Weight Per Shipment
+        max_volume_per_shipment:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Max Volume Per Shipment
+        tracking_available:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Tracking Available
+        tracking_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tracking Url
+        preferred_delivery_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preferred Delivery Time
+        insurance_provided:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Insurance Provided
+        insurance_coverage_amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Insurance Coverage Amount
+        freight_class:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Freight Class
+        customs_clearance_included:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Customs Clearance Included
+        customs_documentation:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Customs Documentation
+        last_shipping_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Shipping Date
+        remarks:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Remarks
+      type: object
+      title: SupplierShippingUpdate
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

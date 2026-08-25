@@ -1,0 +1,29 @@
+# Monkeypatched Adapter SDK – Core Requirements
+# =============================================
+# These are the ONLY hard dependencies of the SDK.
+# Protocol-specific deps (mqtt, opc-ua, etc.) are optional.
+
+PyYAML>=6.0
+httpx>=0.24
+
+# ---------------------------------------------------------------------------
+# Optional: install what you need for your adapter type
+# ---------------------------------------------------------------------------
+
+# Authentication
+# python-jose[cryptography]>=3.3    # JWT support
+
+# Telemetry exporters (choose one or more)
+# prometheus_client>=0.16           # Prometheus metrics
+# influxdb-client>=1.36             # InfluxDB v2 metrics
+# opentelemetry-sdk>=1.18           # OpenTelemetry
+# opentelemetry-exporter-jaeger     # Jaeger tracing
+
+# Industrial protocols
+# asyncua>=0.9                      # OPC-UA (opcua-asyncio)
+# paho-mqtt>=1.6                    # MQTT
+
+# Databases
+# asyncpg>=0.27                     # PostgreSQL
+# motor>=3.1                        # MongoDB (async)
+# neo4j>=5.0                        # Neo4j

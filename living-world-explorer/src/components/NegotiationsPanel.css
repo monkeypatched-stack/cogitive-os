@@ -1,0 +1,110 @@
+/* Negotiations workspace — the real TransactionCoordinator + GameTheoryRuntime
+ * negotiation loop (kernel/society/transaction.py, game_theory.py). Own
+ * class prefix (lwe-neg-). Same visual language as every other workspace
+ * this session built. */
+
+.lwe-neg-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 14px;
+  padding: 20px 22px 22px;
+  box-sizing: border-box;
+  background: #F8FAFC;
+  color: #1E293B;
+  overflow-y: auto;
+}
+
+.lwe-neg-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex: none; }
+.lwe-neg-heading h2 { margin: 0; font-size: 19px; font-weight: 600; }
+.lwe-neg-heading p { margin: 4px 0 0; font-size: 12.5px; color: #64748B; max-width: 680px; }
+
+.lwe-neg-error { flex: none; padding: 10px 14px; border-radius: 10px; background: #FEF2F2; color: #B91C1C; font-size: 12.5px; }
+
+.lwe-neg-form {
+  flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;
+  border: 1px solid #E8EAF0; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+}
+.lwe-neg-form-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.lwe-neg-input {
+  flex: 1 1 260px; padding: 8px 12px; border: 1px solid #E8EAF0; border-radius: 8px; font-size: 13px; font-family: inherit;
+}
+.lwe-neg-input-small { flex: none; width: 90px; padding: 8px 10px; border: 1px solid #E8EAF0; border-radius: 8px; font-size: 13px; }
+.lwe-neg-btn {
+  padding: 8px 16px; border-radius: 10px; border: none; background: #4338CA; color: #FFFFFF;
+  font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.lwe-neg-btn:disabled { background: #C7D2FE; cursor: not-allowed; }
+.lwe-neg-btn-secondary { background: #FFFFFF; color: #4338CA; border: 1px solid #C7D2FE; }
+.lwe-neg-note { font-size: 11.5px; color: #94A3B8; }
+
+.lwe-neg-progress {
+  flex: none; display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  border: 1px solid #C7D2FE; border-radius: 10px; background: #EEF2FF; color: #4338CA; font-size: 12.5px;
+}
+.lwe-neg-spinner {
+  width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid #C7D2FE; border-top-color: #4338CA;
+  animation: lwe-neg-spin 800ms linear infinite;
+}
+@keyframes lwe-neg-spin { to { transform: rotate(360deg); } }
+
+.lwe-neg-columns { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 14px; flex: 1 1 auto; min-height: 420px; }
+
+.lwe-neg-sessions { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+.lwe-neg-session-group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94A3B8; display: flex; align-items: center; gap: 8px; }
+.lwe-neg-badge { padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+.lwe-neg-badge-live { background: #ECFDF5; color: #047857; }
+.lwe-neg-badge-historical { background: #F1F5F9; color: #64748B; }
+
+.lwe-neg-session-card {
+  width: 100%; text-align: left; padding: 10px 12px; border: 1px solid #E8EAF0; border-radius: 10px;
+  background: #FFFFFF; cursor: pointer; display: flex; flex-direction: column; gap: 3px;
+}
+.lwe-neg-session-card:hover { border-color: #C7D2FE; }
+.lwe-neg-session-card.is-selected { border-color: #4338CA; background: #EEF2FF; }
+.lwe-neg-session-card-title { font-size: 12.5px; font-weight: 600; color: #1E293B; }
+.lwe-neg-session-card-sub { font-size: 11px; color: #64748B; }
+.lwe-neg-status-chip { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.lwe-neg-status-completed { background: #ECFDF5; color: #047857; }
+.lwe-neg-status-terminated { background: #FEF2F2; color: #B91C1C; }
+.lwe-neg-status-in_progress { background: #FFFBEB; color: #92400E; }
+
+.lwe-neg-empty { padding: 20px; text-align: center; color: #94A3B8; font-size: 12.5px; }
+
+.lwe-neg-detail {
+  display: flex; flex-direction: column; gap: 12px; border: 1px solid #E8EAF0; border-radius: 14px;
+  background: #FFFFFF; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05); padding: 16px; overflow-y: auto;
+}
+.lwe-neg-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.lwe-neg-detail-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+
+.lwe-neg-graph { overflow-x: auto; }
+.lwe-neg-svg { display: block; }
+.lwe-neg-edge { stroke: #C7CDD9; stroke-width: 1.6; }
+.lwe-neg-node-card { fill: #FFFFFF; stroke: #E8EAF0; stroke-width: 1.5; cursor: pointer; }
+.lwe-neg-node-card.is-selected { stroke: #4338CA; stroke-width: 2.5; }
+.lwe-neg-node-card.outcome-goal_achieved { stroke: #34D399; }
+.lwe-neg-node-card.outcome-failed { stroke: #FCA5A5; }
+.lwe-neg-node-label { fill: #1E293B; font-size: 11px; font-weight: 600; }
+.lwe-neg-node-sub { fill: #64748B; font-size: 9.5px; }
+
+.lwe-neg-step-inspector { border-top: 1px solid #F1F5F9; padding-top: 12px; }
+
+.lwe-neg-live-stream { border-top: 1px solid #F1F5F9; padding-top: 12px; max-height: 160px; overflow-y: auto; font-size: 11px; color: #475569; }
+.lwe-neg-live-stream-row { padding: 4px 0; border-bottom: 1px solid #F8FAFC; }
+
+.lwe-neg-raw { border: 1px solid #E8EAF0; border-radius: 8px; overflow: hidden; }
+.lwe-neg-raw summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px;
+  padding: 9px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #F8FAFC;
+}
+.lwe-neg-raw summary::-webkit-details-marker { display: none; }
+.lwe-neg-raw summary::before { content: '▸'; font-size: 10px; color: #94A3B8; transition: transform 0.15s ease; }
+.lwe-neg-raw[open] summary::before { transform: rotate(90deg); }
+.lwe-neg-raw[open] summary { border-bottom: 1px solid #E8EAF0; }
+.lwe-neg-raw pre {
+  margin: 0; padding: 10px 12px; background: #0F172A; color: #E2E8F0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto;
+}

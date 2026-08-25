@@ -1,0 +1,84 @@
+module:
+  name: soma
+  layer: 0
+  alias: "Constitution Source"
+  biologicalRole: "The substrate — executable architecture"
+  softwareRole: "Constitutional documentation — source of truth for all modules"
+  treeRoot: src/soma/
+
+role: "soma is not a runtime module. It is the constitutional source. Every other chart derives from it."
+
+documents:
+  ai:
+    - path: soma/Artificial Intelligence/Agent.md
+      maps_to: broca
+    - path: soma/Artificial Intelligence/Capability.md
+      maps_to: cerebellum
+    - path: soma/Artificial Intelligence/Reinforcement Learning.md
+      maps_to: plasticity/seed + monkey_brain/kernel/rl
+    - path: soma/Artificial Intelligence/Workflow.md
+      maps_to: monkey_brain/kernel
+    - path: soma/Artificial Intelligence/World Model.md
+      maps_to: cortex
+
+  computerSystems:
+    - path: soma/Computer Systems/Operating Systems/MonkeyBrain.md
+      maps_to: monkey_brain
+    - path: soma/Computer Systems/Distributed Systems/Edge.md
+      maps_to: sync
+    - path: soma/Computer Systems/Persistence/DLM.md
+      maps_to: monkey_brain/dlm
+    - path: soma/Computer Systems/Persistence/Persistence.md
+      maps_to: monkey_brain/persistence
+
+  governance:
+    - path: soma/Governance/Governance.md
+      maps_to: cingulate/governance
+
+  observability:
+    - path: soma/Observability/Lemon.md
+      maps_to: introspection
+
+  softwareArchitecture:
+    - path: soma/Software Architecture/SOLID.md
+      maps_to: all modules
+    - path: soma/Software Architecture/Performance Testing.md
+      maps_to: plasticity/testing
+    - path: soma/Software Architecture/Reliability Engineering.md
+      maps_to: homeostasis
+    - path: soma/Software Architecture/Testing.md
+      maps_to: plasticity/testing + cingulate/benchmark
+
+invariants:
+  - id: SOMA-INV-001
+    rule: soma_is_read_only
+    statement: "soma is never modified to preserve legacy code. Implementation changes. Constitution does not."
+    severity: critical
+    rejection: "REJECTED — soma document modified to accommodate implementation."
+  - id: SOMA-INV-002
+    rule: single_source_of_truth
+    statement: "Every architectural decision traces to exactly one soma document."
+    severity: high
+
+cot:
+  steps:
+    - step: 1
+      instruction: "Read all soma documents. Map each to its canonical module."
+    - step: 2
+      instruction: "Verify every module chart references its source soma document."
+    - step: 3
+      instruction: "Verify no module contradicts its source soma document."
+      constraint: SOMA-INV-001
+      auditGate: true
+    - step: 4
+      instruction: "Verify every architectural decision in every module traces to a soma document."
+      constraint: SOMA-INV-002
+      auditGate: true
+
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED — All modules trace to soma source documents."
+    rejected:
+      - "REJECTED — soma modified to accommodate implementation."
+      - "REJECTED — Architectural decision has no soma source."

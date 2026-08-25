@@ -1,0 +1,1844 @@
+openapi: 3.1.0
+info:
+  title: shifts API
+  description: MonkeyBrain shifts service API
+  version: 1.0.0
+paths:
+  /api/v1/shift-templates/:
+    get:
+      tags:
+      - Shift Templates
+      summary: List Shift Templates
+      operationId: list_shift_templates_api_v1_shift_templates__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShiftTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Shift Templates
+      summary: Create Shift Template
+      operationId: create_shift_template_api_v1_shift_templates__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftTemplateCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shift-templates/by-factory/{factory_id}:
+    get:
+      tags:
+      - Shift Templates
+      summary: List Shift Templates By Factory
+      operationId: list_shift_templates_by_factory_api_v1_shift_templates_by_factory__factory_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: factory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Factory Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShiftTemplateResponse'
+                title: Response List Shift Templates By Factory Api V1 Shift Templates
+                  By Factory  Factory Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shift-templates/{template_id}:
+    get:
+      tags:
+      - Shift Templates
+      summary: Get Shift Template
+      operationId: get_shift_template_api_v1_shift_templates__template_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Template Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Shift Templates
+      summary: Update Shift Template
+      operationId: update_shift_template_api_v1_shift_templates__template_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Template Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftTemplateUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Shift Templates
+      summary: Delete Shift Template
+      operationId: delete_shift_template_api_v1_shift_templates__template_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Template Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shifts/:
+    get:
+      tags:
+      - Shifts
+      summary: List Shifts
+      operationId: list_shifts_api_v1_shifts__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShiftScheduleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Shifts
+      summary: Create Shift
+      operationId: create_shift_api_v1_shifts__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftScheduleCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftScheduleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shifts/by-factory/{factory_id}:
+    get:
+      tags:
+      - Shifts
+      summary: List Shifts By Factory
+      operationId: list_shifts_by_factory_api_v1_shifts_by_factory__factory_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: factory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Factory Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShiftScheduleResponse'
+                title: Response List Shifts By Factory Api V1 Shifts By Factory  Factory
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shifts/by-template/{template_id}:
+    get:
+      tags:
+      - Shifts
+      summary: List Shifts By Template
+      operationId: list_shifts_by_template_api_v1_shifts_by_template__template_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Template Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShiftScheduleResponse'
+                title: Response List Shifts By Template Api V1 Shifts By Template  Template
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shifts/by-date/{shift_date}:
+    get:
+      tags:
+      - Shifts
+      summary: List Shifts By Date
+      operationId: list_shifts_by_date_api_v1_shifts_by_date__shift_date__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: shift_date
+        in: path
+        required: true
+        schema:
+          type: string
+          format: date
+          title: Shift Date
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShiftScheduleResponse'
+                title: Response List Shifts By Date Api V1 Shifts By Date  Shift Date  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/shifts/{shift_id}:
+    get:
+      tags:
+      - Shifts
+      summary: Get Shift
+      operationId: get_shift_api_v1_shifts__shift_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: shift_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Shift Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftScheduleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Shifts
+      summary: Update Shift
+      operationId: update_shift_api_v1_shifts__shift_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: shift_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Shift Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftScheduleUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftScheduleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Shifts
+      summary: Delete Shift
+      operationId: delete_shift_api_v1_shifts__shift_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: shift_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Shift Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/timesheets/:
+    get:
+      tags:
+      - Timesheets
+      summary: List Timesheets
+      operationId: list_timesheets_api_v1_timesheets__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTimeSheetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Timesheets
+      summary: Create Timesheet
+      operationId: create_timesheet_api_v1_timesheets__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSheetCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSheetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/timesheets/by-worker/{worker_id}:
+    get:
+      tags:
+      - Timesheets
+      summary: List Timesheets By Worker
+      operationId: list_timesheets_by_worker_api_v1_timesheets_by_worker__worker_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: worker_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Worker Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeSheetResponse'
+                title: Response List Timesheets By Worker Api V1 Timesheets By Worker  Worker
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/timesheets/by-payroll-reference/{payroll_reference}:
+    get:
+      tags:
+      - Timesheets
+      summary: Get Timesheet By Payroll Reference
+      operationId: get_timesheet_by_payroll_reference_api_v1_timesheets_by_payroll_reference__payroll_reference__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: payroll_reference
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Payroll Reference
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSheetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/timesheets/by-approval/{approved}:
+    get:
+      tags:
+      - Timesheets
+      summary: List Timesheets By Approval
+      operationId: list_timesheets_by_approval_api_v1_timesheets_by_approval__approved__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: approved
+        in: path
+        required: true
+        schema:
+          type: boolean
+          title: Approved
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeSheetResponse'
+                title: Response List Timesheets By Approval Api V1 Timesheets By Approval  Approved  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/timesheets/{timesheet_id}:
+    get:
+      tags:
+      - Timesheets
+      summary: Get Timesheet
+      operationId: get_timesheet_api_v1_timesheets__timesheet_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: timesheet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Timesheet Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSheetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Timesheets
+      summary: Update Timesheet
+      operationId: update_timesheet_api_v1_timesheets__timesheet_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: timesheet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Timesheet Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSheetUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSheetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Timesheets
+      summary: Delete Timesheet
+      operationId: delete_timesheet_api_v1_timesheets__timesheet_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: timesheet_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Timesheet Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    BreakPeriod-Input:
+      properties:
+        break_start:
+          type: string
+          format: time
+          title: Break Start
+        break_end:
+          type: string
+          format: time
+          title: Break End
+        paid:
+          type: boolean
+          title: Paid
+          default: false
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Reason
+          examples:
+          - Lunch
+          - Short break
+      type: object
+      required:
+      - break_start
+      - break_end
+      title: BreakPeriod
+      description: A single break within a shift.
+    BreakPeriod-Output:
+      properties:
+        break_start:
+          type: string
+          format: time
+          title: Break Start
+        break_end:
+          type: string
+          format: time
+          title: Break End
+        paid:
+          type: boolean
+          title: Paid
+          default: false
+        reason:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Reason
+          examples:
+          - Lunch
+          - Short break
+        duration_minutes:
+          type: integer
+          title: Duration Minutes
+          readOnly: true
+      type: object
+      required:
+      - break_start
+      - break_end
+      - duration_minutes
+      title: BreakPeriod
+      description: A single break within a shift.
+    BreakSlot-Input:
+      properties:
+        label:
+          type: string
+          title: Label
+          examples:
+          - Lunch
+          - Tea Break
+        time_range:
+          $ref: '#/components/schemas/TimeRange-Input'
+        paid:
+          type: boolean
+          title: Paid
+          default: false
+      type: object
+      required:
+      - label
+      - time_range
+      title: BreakSlot
+      description: A scheduled break within a shift.
+    BreakSlot-Output:
+      properties:
+        label:
+          type: string
+          title: Label
+          examples:
+          - Lunch
+          - Tea Break
+        time_range:
+          $ref: '#/components/schemas/TimeRange-Output'
+        paid:
+          type: boolean
+          title: Paid
+          default: false
+      type: object
+      required:
+      - label
+      - time_range
+      title: BreakSlot
+      description: A scheduled break within a shift.
+    DayOfWeek:
+      type: string
+      enum:
+      - monday
+      - tuesday
+      - wednesday
+      - thursday
+      - friday
+      - saturday
+      - sunday
+      title: DayOfWeek
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PaginatedShiftScheduleResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ShiftScheduleResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedShiftScheduleResponse
+    PaginatedShiftTemplateResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ShiftTemplateResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedShiftTemplateResponse
+    PaginatedTimeSheetResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/TimeSheetResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedTimeSheetResponse
+    ShiftScheduleCreate:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        plant_id:
+          type: string
+          title: Plant Id
+        template_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Template Id
+          description: Source ShiftTemplate, if generated from one
+        shift_date:
+          type: string
+          format: date
+          title: Shift Date
+        shift_type:
+          $ref: '#/components/schemas/ShiftType'
+        time_range:
+          $ref: '#/components/schemas/TimeRange-Input'
+        supervisor_id:
+          type: string
+          format: uuid
+          title: Supervisor Id
+          description: Responsible supervisor employee id
+        employee_ids:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Employee Ids
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - plant_id
+      - shift_date
+      - shift_type
+      - time_range
+      - supervisor_id
+      title: ShiftScheduleCreate
+    ShiftScheduleResponse:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        plant_id:
+          type: string
+          title: Plant Id
+        template_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Template Id
+          description: Source ShiftTemplate, if generated from one
+        shift_date:
+          type: string
+          format: date
+          title: Shift Date
+        shift_type:
+          $ref: '#/components/schemas/ShiftType'
+        time_range:
+          $ref: '#/components/schemas/TimeRange-Output'
+        supervisor_id:
+          type: string
+          format: uuid
+          title: Supervisor Id
+          description: Responsible supervisor employee id
+        employee_ids:
+          items:
+            type: string
+            format: uuid
+          type: array
+          title: Employee Ids
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        headcount:
+          type: integer
+          title: Headcount
+          readOnly: true
+      type: object
+      required:
+      - plant_id
+      - shift_date
+      - shift_type
+      - time_range
+      - supervisor_id
+      - headcount
+      title: ShiftScheduleResponse
+    ShiftScheduleUpdate:
+      properties:
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+        template_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Template Id
+        shift_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Shift Date
+        shift_type:
+          anyOf:
+          - $ref: '#/components/schemas/ShiftType'
+          - type: 'null'
+        time_range:
+          anyOf:
+          - $ref: '#/components/schemas/TimeRange-Input'
+          - type: 'null'
+        supervisor_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Supervisor Id
+        employee_ids:
+          anyOf:
+          - items:
+              type: string
+              format: uuid
+            type: array
+          - type: 'null'
+          title: Employee Ids
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: ShiftScheduleUpdate
+    ShiftTemplateCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        plant_id:
+          type: string
+          title: Plant Id
+        name:
+          type: string
+          maxLength: 80
+          minLength: 2
+          title: Name
+        shift_type:
+          $ref: '#/components/schemas/ShiftType'
+        time_range:
+          $ref: '#/components/schemas/TimeRange-Input'
+        days:
+          items:
+            $ref: '#/components/schemas/DayOfWeek'
+          type: array
+          minItems: 1
+          title: Days
+        breaks:
+          items:
+            $ref: '#/components/schemas/BreakSlot-Input'
+          type: array
+          title: Breaks
+        color_hex:
+          type: string
+          pattern: ^#[0-9A-Fa-f]{6}$
+          title: Color Hex
+          description: UI colour for calendar views
+          default: '#3B82F6'
+      type: object
+      required:
+      - plant_id
+      - name
+      - shift_type
+      - time_range
+      - days
+      title: ShiftTemplateCreate
+    ShiftTemplateResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        plant_id:
+          type: string
+          title: Plant Id
+        name:
+          type: string
+          maxLength: 80
+          minLength: 2
+          title: Name
+        shift_type:
+          $ref: '#/components/schemas/ShiftType'
+        time_range:
+          $ref: '#/components/schemas/TimeRange-Output'
+        days:
+          items:
+            $ref: '#/components/schemas/DayOfWeek'
+          type: array
+          minItems: 1
+          title: Days
+        breaks:
+          items:
+            $ref: '#/components/schemas/BreakSlot-Output'
+          type: array
+          title: Breaks
+        color_hex:
+          type: string
+          pattern: ^#[0-9A-Fa-f]{6}$
+          title: Color Hex
+          description: UI colour for calendar views
+          default: '#3B82F6'
+        net_work_minutes:
+          type: integer
+          title: Net Work Minutes
+          description: Shift duration minus all unpaid breaks.
+          readOnly: true
+      type: object
+      required:
+      - plant_id
+      - name
+      - shift_type
+      - time_range
+      - days
+      - net_work_minutes
+      title: ShiftTemplateResponse
+    ShiftTemplateUpdate:
+      properties:
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+        name:
+          anyOf:
+          - type: string
+            maxLength: 80
+            minLength: 2
+          - type: 'null'
+          title: Name
+        shift_type:
+          anyOf:
+          - $ref: '#/components/schemas/ShiftType'
+          - type: 'null'
+        time_range:
+          anyOf:
+          - $ref: '#/components/schemas/TimeRange-Input'
+          - type: 'null'
+        days:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/DayOfWeek'
+            type: array
+            minItems: 1
+          - type: 'null'
+          title: Days
+        breaks:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/BreakSlot-Input'
+            type: array
+          - type: 'null'
+          title: Breaks
+        color_hex:
+          anyOf:
+          - type: string
+            pattern: ^#[0-9A-Fa-f]{6}$
+          - type: 'null'
+          title: Color Hex
+          description: UI colour for calendar views
+      type: object
+      title: ShiftTemplateUpdate
+    ShiftType:
+      type: string
+      enum:
+      - morning
+      - afternoon
+      - night
+      - split
+      - overtime
+      title: ShiftType
+    TimeRange-Input:
+      properties:
+        start:
+          type: string
+          format: time
+          title: Start
+        end:
+          type: string
+          format: time
+          title: End
+      type: object
+      required:
+      - start
+      - end
+      title: TimeRange
+      description: An inclusive start-to-end time window within a single day.
+    TimeRange-Output:
+      properties:
+        start:
+          type: string
+          format: time
+          title: Start
+        end:
+          type: string
+          format: time
+          title: End
+        duration_minutes:
+          type: integer
+          title: Duration Minutes
+          readOnly: true
+      type: object
+      required:
+      - start
+      - end
+      - duration_minutes
+      title: TimeRange
+      description: An inclusive start-to-end time window within a single day.
+    TimeSheetCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        worker_id:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Worker Id
+        worker_name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Worker Name
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        entries:
+          items:
+            $ref: '#/components/schemas/TimeSheetEntry-Input'
+          type: array
+          title: Entries
+        total_regular_hours:
+          type: number
+          minimum: 0.0
+          title: Total Regular Hours
+          default: 0.0
+        total_overtime_hours:
+          type: number
+          minimum: 0.0
+          title: Total Overtime Hours
+          default: 0.0
+        total_paid_hours:
+          type: number
+          minimum: 0.0
+          title: Total Paid Hours
+          default: 0.0
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          description: ISO 4217
+          default: USD
+        hourly_rate:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Hourly Rate
+        overtime_rate_multiplier:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Overtime Rate Multiplier
+          default: 1.5
+        submitted:
+          type: boolean
+          title: Submitted
+          default: false
+        submitted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Submitted At
+        approved:
+          type: boolean
+          title: Approved
+          default: false
+        approved_by:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        payroll_reference:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Payroll Reference
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updated At
+      type: object
+      required:
+      - worker_id
+      - worker_name
+      - period_start
+      - period_end
+      title: TimeSheetCreate
+    TimeSheetEntry-Input:
+      properties:
+        id:
+          type: string
+          title: Id
+        worker_id:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Worker Id
+          description: Employee ID or badge number
+        worker_name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Worker Name
+        work_date:
+          type: string
+          format: date
+          title: Work Date
+        shift_type:
+          $ref: '#/components/schemas/ShiftType'
+          default: morning
+        clock_in:
+          type: string
+          format: date-time
+          title: Clock In
+        clock_out:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Clock Out
+        breaks:
+          items:
+            $ref: '#/components/schemas/BreakPeriod-Input'
+          type: array
+          title: Breaks
+        delivery_note_ids:
+          items:
+            type: string
+          type: array
+          title: Delivery Note Ids
+          description: Delivery notes this worker was involved in
+        vehicle_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Vehicle Id
+          description: Vehicle driven / operated during this shift
+        warehouse_zone:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Warehouse Zone
+          description: Zone or bay assignment
+        tasks_performed:
+          items:
+            type: string
+          type: array
+          title: Tasks Performed
+          examples:
+          - - Loading
+            - Unloading
+            - Pallet wrapping
+            - Forklift operation
+        overtime_hours:
+          type: number
+          minimum: 0.0
+          title: Overtime Hours
+          default: 0.0
+        overtime_approved_by:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Overtime Approved By
+        supervisor_id:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Supervisor Id
+        approved:
+          type: boolean
+          title: Approved
+          default: false
+        approved_by:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - worker_id
+      - worker_name
+      - work_date
+      - clock_in
+      title: TimeSheetEntry
+      description: A single day/shift entry for one worker.
+    TimeSheetEntry-Output:
+      properties:
+        id:
+          type: string
+          title: Id
+        worker_id:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Worker Id
+          description: Employee ID or badge number
+        worker_name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Worker Name
+        work_date:
+          type: string
+          format: date
+          title: Work Date
+        shift_type:
+          $ref: '#/components/schemas/ShiftType'
+          default: morning
+        clock_in:
+          type: string
+          format: date-time
+          title: Clock In
+        clock_out:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Clock Out
+        breaks:
+          items:
+            $ref: '#/components/schemas/BreakPeriod-Output'
+          type: array
+          title: Breaks
+        delivery_note_ids:
+          items:
+            type: string
+          type: array
+          title: Delivery Note Ids
+          description: Delivery notes this worker was involved in
+        vehicle_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Vehicle Id
+          description: Vehicle driven / operated during this shift
+        warehouse_zone:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Warehouse Zone
+          description: Zone or bay assignment
+        tasks_performed:
+          items:
+            type: string
+          type: array
+          title: Tasks Performed
+          examples:
+          - - Loading
+            - Unloading
+            - Pallet wrapping
+            - Forklift operation
+        overtime_hours:
+          type: number
+          minimum: 0.0
+          title: Overtime Hours
+          default: 0.0
+        overtime_approved_by:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Overtime Approved By
+        supervisor_id:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Supervisor Id
+        approved:
+          type: boolean
+          title: Approved
+          default: false
+        approved_by:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        total_break_minutes:
+          type: integer
+          title: Total Break Minutes
+          readOnly: true
+        gross_hours_worked:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Gross Hours Worked
+          readOnly: true
+        net_hours_worked:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Net Hours Worked
+          description: Gross hours minus unpaid breaks.
+          readOnly: true
+      type: object
+      required:
+      - worker_id
+      - worker_name
+      - work_date
+      - clock_in
+      - total_break_minutes
+      - gross_hours_worked
+      - net_hours_worked
+      title: TimeSheetEntry
+      description: A single day/shift entry for one worker.
+    TimeSheetResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        worker_id:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Worker Id
+        worker_name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Worker Name
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        entries:
+          items:
+            $ref: '#/components/schemas/TimeSheetEntry-Output'
+          type: array
+          title: Entries
+        total_regular_hours:
+          type: number
+          minimum: 0.0
+          title: Total Regular Hours
+          default: 0.0
+        total_overtime_hours:
+          type: number
+          minimum: 0.0
+          title: Total Overtime Hours
+          default: 0.0
+        total_paid_hours:
+          type: number
+          minimum: 0.0
+          title: Total Paid Hours
+          default: 0.0
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          description: ISO 4217
+          default: USD
+        hourly_rate:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Hourly Rate
+        overtime_rate_multiplier:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Overtime Rate Multiplier
+          default: 1.5
+        submitted:
+          type: boolean
+          title: Submitted
+          default: false
+        submitted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Submitted At
+        approved:
+          type: boolean
+          title: Approved
+          default: false
+        approved_by:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        payroll_reference:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Payroll Reference
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updated At
+        gross_pay:
+          anyOf:
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Gross Pay
+          readOnly: true
+      type: object
+      required:
+      - worker_id
+      - worker_name
+      - period_start
+      - period_end
+      - gross_pay
+      title: TimeSheetResponse
+    TimeSheetUpdate:
+      properties:
+        worker_id:
+          anyOf:
+          - type: string
+            maxLength: 50
+            minLength: 1
+          - type: 'null'
+          title: Worker Id
+        worker_name:
+          anyOf:
+          - type: string
+            maxLength: 150
+            minLength: 1
+          - type: 'null'
+          title: Worker Name
+        period_start:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period Start
+        period_end:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period End
+        entries:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/TimeSheetEntry-Input'
+            type: array
+          - type: 'null'
+          title: Entries
+        total_regular_hours:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Regular Hours
+        total_overtime_hours:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Overtime Hours
+        total_paid_hours:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Paid Hours
+        currency:
+          anyOf:
+          - type: string
+            maxLength: 3
+            minLength: 3
+          - type: 'null'
+          title: Currency
+        hourly_rate:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          - type: 'null'
+          title: Hourly Rate
+        overtime_rate_multiplier:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Overtime Rate Multiplier
+        submitted:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Submitted
+        submitted_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Submitted At
+        approved:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Approved
+        approved_by:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        payroll_reference:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Payroll Reference
+        updated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updated At
+      type: object
+      title: TimeSheetUpdate
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

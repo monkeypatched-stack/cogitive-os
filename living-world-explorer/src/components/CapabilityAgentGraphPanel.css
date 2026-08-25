@@ -1,0 +1,400 @@
+.lwe-cap-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px 22px;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  background: #F8FAFC;
+  color: #1E293B;
+  overflow-y: auto;
+}
+
+.lwe-cap-heading h2 { margin: 0; font-size: 19px; font-weight: 600; }
+.lwe-cap-heading p { margin: 4px 0 0; font-size: 12.5px; color: #64748B; max-width: 680px; }
+
+.lwe-cap-toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lwe-cap-toolbar-group { flex: none; display: flex; gap: 6px; flex-wrap: wrap; }
+
+.lwe-cap-mode-btn {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #E8EAF0;
+  background: #fff;
+  color: #64748B;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lwe-cap-mode-btn.is-active { background: #EEF2FF; border-color: #C7D2FE; color: #4338CA; font-weight: 600; }
+
+.lwe-cap-toolbar-controls {
+  margin-left: auto;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lwe-cap-search {
+  padding: 7px 12px;
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  font-size: 12.5px;
+  width: 260px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.lwe-cap-toolbar select {
+  padding: 7px 10px;
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  font-size: 12px;
+  background: #fff;
+  flex: none;
+}
+
+/* ── Status dot ──────────────────────────────────────────────────────── */
+.lwe-cap-status-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #22C55E;
+  margin-right: 6px;
+}
+.lwe-cap-status-dot.is-off { background: #CBD5E1; }
+
+/* ── Topology ────────────────────────────────────────────────────────── */
+
+.lwe-cap-topology {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lwe-cap-tier {
+  border: 1px solid #E8EAF0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px;
+}
+
+.lwe-cap-tier-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.lwe-cap-tier-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.lwe-cap-tier-badge-agent { background: #EFF6FF; color: #1D4ED8; }
+.lwe-cap-tier-badge-capability { background: #ECFDF5; color: #047857; }
+.lwe-cap-tier-badge-used { background: #ECFDF5; color: #047857; }
+.lwe-cap-tier-badge-available { background: #F1F5F9; color: #475569; }
+
+.lwe-cap-tier-count { font-size: 11.5px; color: #94A3B8; }
+
+.lwe-cap-tier-connector {
+  text-align: center;
+  font-size: 11px;
+  color: #94A3B8;
+  font-style: italic;
+  padding: 2px 40px;
+}
+
+.lwe-cap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.lwe-cap-card {
+  text-align: left;
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  background: #F8FAFC;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.lwe-cap-card:hover { border-color: #C7D2FE; background: #EEF2FF; }
+
+.lwe-cap-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+.lwe-cap-card-desc {
+  font-size: 10.5px;
+  color: #64748B;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+
+/* ── Agent / Capability View (list + detail split) ──────────────────── */
+
+.lwe-cap-split {
+  flex: 1 1 auto;
+  min-height: 420px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  border: 1px solid #E8EAF0;
+  border-radius: 12px;
+  background: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .lwe-cap-split { grid-template-columns: 1fr; grid-template-rows: 200px minmax(0, 1fr); }
+  .lwe-cap-list { border-right: none; border-bottom: 1px solid #E8EAF0; }
+}
+
+.lwe-cap-list {
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid #E8EAF0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lwe-cap-list-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #E8EAF0;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94A3B8;
+  background: #F8FAFC;
+}
+
+.lwe-cap-list-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.lwe-cap-list-empty {
+  padding: 14px;
+  font-size: 12px;
+  color: #94A3B8;
+  font-style: italic;
+}
+
+.lwe-cap-list-row {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  padding: 9px 14px;
+  border: none;
+  border-bottom: 1px solid #F1F5F9;
+  background: none;
+  color: #334155;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lwe-cap-list-row:hover { background: #F8FAFC; }
+.lwe-cap-list-row.is-selected { background: #EEF2FF; color: #4338CA; font-weight: 600; }
+
+.lwe-cap-list-row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lwe-cap-detail {
+  min-width: 0;
+  min-height: 0;
+  padding: 20px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.lwe-cap-detail-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+}
+
+.lwe-cap-detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  max-width: 760px;
+}
+
+.lwe-cap-detail-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+}
+.lwe-cap-detail-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E293B;
+  overflow-wrap: anywhere;
+}
+
+.lwe-cap-detail-source {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.lwe-cap-status-pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #047857;
+  background: #ECFDF5;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+}
+.lwe-cap-status-pill.is-off { color: #64748B; background: #F1F5F9; }
+
+.lwe-cap-detail-section { min-width: 0; }
+.lwe-cap-detail-section h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94A3B8;
+}
+
+.lwe-cap-detail-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #334155;
+  overflow-wrap: anywhere;
+}
+
+.lwe-cap-empty-panel {
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  background: #F8FAFC;
+  padding: 12px 14px;
+}
+.lwe-cap-empty-panel-title {
+  margin: 0 0 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+}
+.lwe-cap-empty-panel-detail {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #94A3B8;
+  overflow-wrap: anywhere;
+}
+
+/* ── Collapsible raw-data block ───────────────────────────────────────── */
+.lwe-cap-raw {
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.lwe-cap-raw summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  background: #F8FAFC;
+}
+.lwe-cap-raw summary::-webkit-details-marker { display: none; }
+.lwe-cap-raw summary::before {
+  content: '▸';
+  font-size: 10px;
+  color: #94A3B8;
+  transition: transform 0.15s ease;
+}
+.lwe-cap-raw[open] summary::before { transform: rotate(90deg); }
+.lwe-cap-raw[open] summary { border-bottom: 1px solid #E8EAF0; }
+.lwe-cap-raw .lwe-gg-pre { border-radius: 0; margin: 0; }
+
+/* ── Execution View ──────────────────────────────────────────────────── */
+
+.lwe-cap-execution {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lwe-cap-exec-picker { display: flex; gap: 10px; }
+.lwe-cap-exec-picker select {
+  padding: 7px 10px;
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  font-size: 12px;
+  background: #fff;
+}
+
+.lwe-cap-exec-note {
+  font-size: 11.5px;
+  color: #64748B;
+  background: #F8FAFC;
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0;
+}
+
+.lwe-cap-exec-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}

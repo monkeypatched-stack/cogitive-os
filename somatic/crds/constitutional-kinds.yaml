@@ -1,0 +1,253 @@
+# =============================================================================
+# AgentOS Constitution — Custom Resource Definitions
+# Source of truth: soma/ directory tree
+# These CRDs are the schema contracts for the constitutional compiler.
+# Every Helm chart produces resources conforming to these kinds.
+# =============================================================================
+
+---
+apiVersion: constitution.agentos.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: constitutionalmodules.constitution.agentos.io
+  annotations:
+    description: >
+      Top-level module resource. One per src/ directory.
+      Maps directly to a brain module in the MonkeyBrain architecture.
+spec:
+  group: constitution.agentos.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Cluster
+  names:
+    plural: constitutionalmodules
+    singular: constitutionalmodule
+    kind: ConstitutionalModule
+  schema:
+    openAPIV3Schema:
+      type: object
+      required: [metadata, spec]
+      properties:
+        metadata:
+          type: object
+          required: [name, layer]
+          properties:
+            name:          { type: string }   # matches src/ dir name exactly
+            layer:         { type: integer }  # 0-5 from layered architecture
+            alias:         { type: string }   # marketing name e.g. Deadpool
+            biologicalRole: { type: string }  # e.g. "Central nervous system"
+            softwareRole:   { type: string }  # e.g. "Kernel, scheduler, runtime"
+            description:   { type: string }
+        spec:
+          type: object
+          properties:
+            owns:
+              type: array
+              items: { type: string }
+            neverOwns:
+              type: array
+              items: { type: string }
+            submodules:
+              type: array
+              items: { type: string }     # matches subdirectory names
+            dependsOn:
+              type: array
+              items: { type: string }     # other module names from tree
+            exposes:
+              type: array
+              items: { type: string }     # public API surfaces
+            consumes:
+              type: array
+              items: { type: string }     # APIs consumed from other modules
+
+---
+apiVersion: constitution.agentos.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: constitutionalprinciples.constitution.agentos.io
+  annotations:
+    description: >
+      A single constitutional principle scoped to a module.
+      Sourced from soma/<domain>/<file>.md principle blocks.
+spec:
+  group: constitution.agentos.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: constitutionalprinciples
+    singular: constitutionalprinciple
+    kind: ConstitutionalPrinciple
+  schema:
+    openAPIV3Schema:
+      type: object
+      required: [metadata, spec]
+      properties:
+        metadata:
+          type: object
+          required: [name, module, id]
+          properties:
+            name:   { type: string }
+            module: { type: string }   # matches src/ dir name
+            id:     { type: integer }
+            source: { type: string }   # soma/<domain>/<file>.md
+        spec:
+          type: object
+          required: [statement]
+          properties:
+            statement:  { type: string }
+            rationale:  { type: string }
+            examples:
+              type: array
+              items: { type: string }
+            violations:
+              type: array
+              items: { type: string }
+
+---
+apiVersion: constitution.agentos.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: constitutionalinvariants.constitution.agentos.io
+  annotations:
+    description: >
+      Hard architectural rules. Never-do constraints.
+      Violations trigger REJECTED in the constitutional review gate.
+spec:
+  group: constitution.agentos.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: constitutionalinvariants
+    singular: constitutionalinvariant
+    kind: ConstitutionalInvariant
+  schema:
+    openAPIV3Schema:
+      type: object
+      required: [metadata, spec]
+      properties:
+        metadata:
+          type: object
+          required: [name, module, severity]
+          properties:
+            name:     { type: string }
+            module:   { type: string }
+            severity: { type: string, enum: [critical, high, medium] }
+        spec:
+          type: object
+          required: [rule, rejection]
+          properties:
+            rule:       { type: string }
+            rationale:  { type: string }
+            auditCheck: { type: string }
+            rejection:  { type: string }
+
+---
+apiVersion: constitution.agentos.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: constitutionaldeliverables.constitution.agentos.io
+  annotations:
+    description: >
+      Output artifacts required from each module's implementation.
+      These become the acceptance criteria in the review gate.
+spec:
+  group: constitution.agentos.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: constitutionaldeliverables
+    singular: constitutionaldeliverable
+    kind: ConstitutionalDeliverable
+  schema:
+    openAPIV3Schema:
+      type: object
+      required: [metadata, spec]
+      properties:
+        metadata:
+          type: object
+          required: [name, module]
+          properties:
+            name:   { type: string }
+            module: { type: string }
+        spec:
+          type: object
+          required: [artifact]
+          properties:
+            artifact:    { type: string }
+            description: { type: string }
+            acceptanceCriteria:
+              type: array
+              items: { type: string }
+
+---
+apiVersion: constitution.agentos.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: constitutionalprompts.constitution.agentos.io
+  annotations:
+    description: >
+      The compiled prompt resource. This is the final output of
+      helm template | prompt-compiler. One per module.
+      Contains ordered CoT steps ready for injection into an
+      implementation agent (Claude, Codex, Cursor, GPT etc.)
+spec:
+  group: constitution.agentos.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  scope: Namespaced
+  names:
+    plural: constitutionalprompts
+    singular: constitutionalprompt
+    kind: ConstitutionalPrompt
+  schema:
+    openAPIV3Schema:
+      type: object
+      required: [metadata, spec]
+      properties:
+        metadata:
+          type: object
+          required: [name, module]
+          properties:
+            name:   { type: string }
+            module: { type: string }
+            phase:  { type: string }
+        spec:
+          type: object
+          properties:
+            preamble:   { type: string }   # injected from meta chart
+            cot:
+              type: object
+              properties:
+                steps:
+                  type: array
+                  items:
+                    type: object
+                    required: [step, instruction]
+                    properties:
+                      step:        { type: integer }
+                      instruction: { type: string }
+                      constraint:  { type: string }  # invariant ref
+                      auditGate:   { type: boolean }
+            reviewGate:
+              type: object
+              properties:
+                mode:     { type: string, enum: [constitutional, functional, syntactic] }
+                criteria: { type: array, items: { type: string } }
+                outcomes:
+                  type: object
+                  properties:
+                    approved: { type: string }
+                    rejected: { type: array, items: { type: string } }

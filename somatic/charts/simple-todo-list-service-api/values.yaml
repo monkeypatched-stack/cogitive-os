@@ -1,0 +1,98 @@
+module:
+  name: simple-todo-list-service-api
+  description: Simple Todo List Service management service
+preamble:
+  statement: You are a senior software architect generating a production-grade FastAPI
+    service for Simple Todo List Service management service. The service is structured
+    around Domain-Driven Design with a SimpleTodoListService aggregate root, entities
+    [SimpleTodoListServiceItem], and value objects [Status, Reference]. Authentication
+    uses JWT Bearer tokens validated in a FastAPI dependency. All requests are structured-logged
+    through the Lemon logger with correlation-ID propagation. Errors are captured
+    in Sentry via a global middleware. All inbound/outbound spans are emitted via
+    OpenTelemetry middleware to the Lemon collector.
+invariants:
+- id: SIMPLE-INV-001
+  rule: reference_unique
+  statement: Every Simple Todo List Service must have a unique, immutable reference
+    identifier.
+  severity: critical
+  rejection: REJECTED — Duplicate Simple Todo List Service reference.
+- id: SIMPLE-INV-002
+  rule: deleted_not_mutable
+  statement: A deleted Simple Todo List Service must not accept further mutations.
+  severity: critical
+  rejection: REJECTED — Mutated deleted Simple Todo List Service.
+- id: SIMPLE-AUTH-001
+  rule: auth_on_every_protected_route
+  statement: Every non-public route must declare the get_current_user dependency.
+  severity: critical
+  rejection: REJECTED — Protected route missing auth dependency.
+- id: SIMPLE-LOG-001
+  rule: lemon_structured_logging
+  statement: Every request handler must emit at least one structured Lemon log entry
+    with component, correlation_id, and user_id.
+  severity: high
+  rejection: REJECTED — Handler missing Lemon structured log.
+- id: SIMPLE-OBS-001
+  rule: sentry_middleware_only
+  statement: Sentry capture must only happen in the global exception middleware, never
+    inside business logic.
+  severity: high
+  rejection: REJECTED — Manual sentry_sdk.capture_exception in business logic.
+- id: SIMPLE-OBS-002
+  rule: otel_middleware_first
+  statement: OpenTelemetryMiddleware must be registered before any route-level middleware.
+  severity: high
+  rejection: REJECTED — OpenTelemetry middleware out of order.
+- id: SIMPLE-DDD-001
+  rule: domain_no_framework_imports
+  statement: domain/ files must never import from fastapi, motor, httpx, or any infrastructure
+    package.
+  severity: critical
+  rejection: REJECTED — Domain layer contains framework import.
+- id: SIMPLE-DDD-002
+  rule: domain_events_on_mutation
+  statement: Every SimpleTodoListService mutation must raise and publish at least
+    one domain event.
+  severity: high
+  rejection: REJECTED — SimpleTodoListService mutation produces no domain event.
+cot:
+  steps:
+  - step: 1
+    title: Domain layer — entities, value objects, aggregates, events, repository
+      ABC
+    description: 'Pure Python only. SimpleTodoListService aggregate root enforces
+      invariants, emits SimpleTodoListServiceCreated, SimpleTodoListServiceUpdated,
+      SimpleTodoListServiceDeleted. Subdirs: entities/, value_objects/, aggregates/,
+      repositories/, events/, services/, specifications/, exceptions/, policies/'
+  - step: 2
+    title: Application layer — commands, queries, handlers, dto
+    description: 'Handlers orchestrate: load aggregate → invoke behavior → persist
+      → emit events. No framework imports. Subdirs: commands/, queries/, handlers/,
+      dto/'
+  - step: 3
+    title: Infrastructure layer — Motor repository, database connection
+    description: MotorSimpleTodoListServiceRepository in infrastructure/persistence/motor/.
+      AsyncIOMotorClient factory in infrastructure/database/. No SQLAlchemy.
+  - step: 4
+    title: API layer — FastAPI router, Pydantic schemas, JWT dependencies
+    description: router.py calls handlers ONLY. All protected routes use Depends(get_current_user)
+      from dependencies.py.
+  - step: 5
+    title: Main + settings — lifespan, Sentry, /health, structured logging
+    description: 'Lifespan: Sentry → Motor → yield → close. /health endpoint. Timing
+      middleware.'
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: APPROVED — simple-todo-list-service API conforms to all DDD, auth, and
+      observability invariants.
+    rejected:
+    - REJECTED — Duplicate Simple Todo List Service reference.
+    - REJECTED — Mutated deleted Simple Todo List Service.
+    - REJECTED — Protected route missing auth dependency.
+    - REJECTED — Handler missing Lemon structured log.
+    - REJECTED — Manual sentry_sdk.capture_exception in business logic.
+    - REJECTED — OpenTelemetry middleware out of order.
+    - REJECTED — Domain layer contains framework import.
+    - REJECTED — SimpleTodoListService mutation produces no domain event.

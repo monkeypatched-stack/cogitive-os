@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: elasticsearch_driver API
+  description: Elasticsearch async client wrapper
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/elasticsearch_driver
+  description: Capability endpoint
+paths:
+  /connect:
+    create:
+      summary: Connect to Elasticsearch
+      operationId: elasticsearch_driver_connect
+      parameters:
+      - name: url
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /bulk:
+    create:
+      summary: Bulk index documents
+      operationId: elasticsearch_driver_bulk_index
+      parameters:
+      - name: index
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: documents
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

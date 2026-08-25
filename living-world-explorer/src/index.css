@@ -1,0 +1,98 @@
+:root {
+  --lwe-bg: #f5f6f8;
+  --lwe-surface: #ffffff;
+  --lwe-surface-alt: #eef0f3;
+  --lwe-border: #d6dbe1;
+  --lwe-text: #1a1d21;
+  --lwe-text-muted: #63697a;
+  --lwe-accent: #3363ff;
+  --lwe-accent-contrast: #ffffff;
+  --lwe-success: #1f9d55;
+  --lwe-danger: #d64545;
+
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root[data-theme='dark'] {
+  --lwe-bg: #14161a;
+  --lwe-surface: #1c1f26;
+  --lwe-surface-alt: #23262e;
+  --lwe-border: #33373f;
+  --lwe-text: #e7e9ee;
+  --lwe-text-muted: #9aa0ad;
+  --lwe-accent: #6d8bff;
+  --lwe-accent-contrast: #0c0e12;
+  --lwe-success: #37c96b;
+  --lwe-danger: #ef5a5a;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--lwe-bg);
+  color: var(--lwe-text);
+}
+
+.lwe-error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  min-height: 100vh;
+  padding: 32px;
+  background: var(--lwe-bg);
+  color: var(--lwe-text);
+}
+.lwe-error-boundary.compact {
+  min-height: 160px;
+  border: 1px solid var(--lwe-border);
+  border-radius: 10px;
+  background: var(--lwe-surface);
+  padding: 24px;
+}
+.lwe-error-boundary-icon {
+  font-size: 28px;
+  color: var(--lwe-danger);
+}
+.lwe-error-boundary-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+.lwe-error-boundary-detail {
+  font-size: 12px;
+  color: var(--lwe-text-muted);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  max-width: 560px;
+}
+.lwe-error-boundary-retry {
+  margin-top: 4px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--lwe-border);
+  background: var(--lwe-surface-alt);
+  color: var(--lwe-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lwe-error-boundary-retry:hover {
+  background: var(--lwe-border);
+}
+
+button {
+  font-family: inherit;
+}

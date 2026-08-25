@@ -1,0 +1,3493 @@
+openapi: 3.1.0
+info:
+  title: iot API
+  description: MonkeyBrain iot service API
+  version: 1.0.0
+paths:
+  /api/v1/ble-devices/:
+    get:
+      tags:
+      - BLE Devices
+      summary: List Ble Devices
+      operationId: list_ble_devices_api_v1_ble_devices__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBLEDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - BLE Devices
+      summary: Create Ble Device
+      operationId: create_ble_device_api_v1_ble_devices__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BLEDeviceCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BLEDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ble-devices/by-mac/{mac_address}:
+    get:
+      tags:
+      - BLE Devices
+      summary: Get Ble Device By Mac Address
+      operationId: get_ble_device_by_mac_address_api_v1_ble_devices_by_mac__mac_address__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: mac_address
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Mac Address
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BLEDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ble-devices/by-active/{active}:
+    get:
+      tags:
+      - BLE Devices
+      summary: List Ble Devices By Active
+      operationId: list_ble_devices_by_active_api_v1_ble_devices_by_active__active__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: active
+        in: path
+        required: true
+        schema:
+          type: boolean
+          title: Active
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BLEDeviceResponse'
+                title: Response List Ble Devices By Active Api V1 Ble Devices By Active  Active  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ble-devices/by-tag/{tag}:
+    get:
+      tags:
+      - BLE Devices
+      summary: List Ble Devices By Tag
+      operationId: list_ble_devices_by_tag_api_v1_ble_devices_by_tag__tag__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tag
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BLEDeviceResponse'
+                title: Response List Ble Devices By Tag Api V1 Ble Devices By Tag  Tag  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/ble-devices/{device_id}:
+    get:
+      tags:
+      - BLE Devices
+      summary: Get Ble Device
+      operationId: get_ble_device_api_v1_ble_devices__device_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Device Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BLEDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - BLE Devices
+      summary: Update Ble Device
+      operationId: update_ble_device_api_v1_ble_devices__device_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Device Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BLEDeviceUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BLEDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - BLE Devices
+      summary: Delete Ble Device
+      operationId: delete_ble_device_api_v1_ble_devices__device_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Device Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/:
+    get:
+      tags:
+      - Sensors
+      summary: List Sensors
+      operationId: list_sensors_api_v1_sensors__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSensorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Sensors
+      summary: Create Sensor
+      operationId: create_sensor_api_v1_sensors__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/by-machine/{machine_id}:
+    get:
+      tags:
+      - Sensors
+      summary: List Sensors By Machine
+      operationId: list_sensors_by_machine_api_v1_sensors_by_machine__machine_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: machine_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Machine Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SensorResponse'
+                title: Response List Sensors By Machine Api V1 Sensors By Machine  Machine
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/by-equipment/{equipment_id}:
+    get:
+      tags:
+      - Sensors
+      summary: List Sensors By Equipment
+      operationId: list_sensors_by_equipment_api_v1_sensors_by_equipment__equipment_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: equipment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Equipment Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SensorResponse'
+                title: Response List Sensors By Equipment Api V1 Sensors By Equipment  Equipment
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/by-edge-server/{edge_server_id}:
+    get:
+      tags:
+      - Sensors
+      summary: List Sensors By Edge Server
+      operationId: list_sensors_by_edge_server_api_v1_sensors_by_edge_server__edge_server_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: edge_server_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Edge Server Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SensorResponse'
+                title: Response List Sensors By Edge Server Api V1 Sensors By Edge
+                  Server  Edge Server Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/by-facility/{facility}:
+    get:
+      tags:
+      - Sensors
+      summary: List Sensors By Facility
+      operationId: list_sensors_by_facility_api_v1_sensors_by_facility__facility__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: facility
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Facility
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SensorResponse'
+                title: Response List Sensors By Facility Api V1 Sensors By Facility  Facility  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/{sensor_id}:
+    get:
+      tags:
+      - Sensors
+      summary: Get Sensor
+      operationId: get_sensor_api_v1_sensors__sensor_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sensor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sensor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Sensors
+      summary: Update Sensor
+      operationId: update_sensor_api_v1_sensors__sensor_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sensor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sensor Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensorUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Sensors
+      summary: Delete Sensor
+      operationId: delete_sensor_api_v1_sensors__sensor_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sensor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sensor Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/{sensor_id}/readings:
+    get:
+      tags:
+      - Sensors
+      summary: List Sensor Readings
+      operationId: list_sensor_readings_api_v1_sensors__sensor_id__readings_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sensor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sensor Id
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 100
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sensors/{sensor_id}/readings/latest:
+    get:
+      tags:
+      - Sensors
+      summary: Get Latest Sensor Reading
+      operationId: get_latest_sensor_reading_api_v1_sensors__sensor_id__readings_latest_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: sensor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Sensor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/servers/:
+    get:
+      tags:
+      - Servers
+      summary: List Edge Servers
+      operationId: list_edge_servers_api_v1_servers__get
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEdgeServerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Servers
+      summary: Create Edge Server
+      operationId: create_edge_server_api_v1_servers__post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdgeServerCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdgeServerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/servers/by-facility/{facility}:
+    get:
+      tags:
+      - Servers
+      summary: List Edge Servers By Facility
+      operationId: list_edge_servers_by_facility_api_v1_servers_by_facility__facility__get
+      parameters:
+      - name: facility
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Facility
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EdgeServerResponse'
+                title: Response List Edge Servers By Facility Api V1 Servers By Facility  Facility  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/servers/by-parent/{parent_server_id}:
+    get:
+      tags:
+      - Servers
+      summary: List Edge Servers By Parent
+      operationId: list_edge_servers_by_parent_api_v1_servers_by_parent__parent_server_id__get
+      parameters:
+      - name: parent_server_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Parent Server Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EdgeServerResponse'
+                title: Response List Edge Servers By Parent Api V1 Servers By Parent  Parent
+                  Server Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/servers/{server_id}:
+    get:
+      tags:
+      - Servers
+      summary: Get Edge Server
+      operationId: get_edge_server_api_v1_servers__server_id__get
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Server Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdgeServerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Servers
+      summary: Update Edge Server
+      operationId: update_edge_server_api_v1_servers__server_id__patch
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Server Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdgeServerUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdgeServerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Servers
+      summary: Delete Edge Server
+      operationId: delete_edge_server_api_v1_servers__server_id__delete
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Server Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/servers/{server_id}/sensors:
+    get:
+      tags:
+      - Servers
+      summary: List Sensors By Edge Server
+      operationId: list_sensors_by_edge_server_api_v1_servers__server_id__sensors_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Server Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SensorResponse'
+                title: Response List Sensors By Edge Server Api V1 Servers  Server
+                  Id  Sensors Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/servers/{server_id}/health:
+    get:
+      tags:
+      - Servers
+      summary: Get Edge Server Health
+      operationId: get_edge_server_health_api_v1_servers__server_id__health_get
+      parameters:
+      - name: server_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Server Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdgeServerResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uwb-devices/:
+    get:
+      tags:
+      - UWB Devices
+      summary: List Uwb Devices
+      operationId: list_uwb_devices_api_v1_uwb_devices__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUWBDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - UWB Devices
+      summary: Create Uwb Device
+      operationId: create_uwb_device_api_v1_uwb_devices__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UWBDeviceCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UWBDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uwb-devices/by-mac/{mac_address}:
+    get:
+      tags:
+      - UWB Devices
+      summary: Get Uwb Device By Mac Address
+      operationId: get_uwb_device_by_mac_address_api_v1_uwb_devices_by_mac__mac_address__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: mac_address
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Mac Address
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UWBDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uwb-devices/by-serial/{serial_number}:
+    get:
+      tags:
+      - UWB Devices
+      summary: Get Uwb Device By Serial Number
+      operationId: get_uwb_device_by_serial_number_api_v1_uwb_devices_by_serial__serial_number__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: serial_number
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Serial Number
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UWBDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uwb-devices/by-anchor/{anchor_id}:
+    get:
+      tags:
+      - UWB Devices
+      summary: Get Uwb Device By Anchor Id
+      operationId: get_uwb_device_by_anchor_id_api_v1_uwb_devices_by_anchor__anchor_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: anchor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Anchor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UWBDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uwb-devices/by-active/{active}:
+    get:
+      tags:
+      - UWB Devices
+      summary: List Uwb Devices By Active
+      operationId: list_uwb_devices_by_active_api_v1_uwb_devices_by_active__active__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: active
+        in: path
+        required: true
+        schema:
+          type: boolean
+          title: Active
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UWBDeviceResponse'
+                title: Response List Uwb Devices By Active Api V1 Uwb Devices By Active  Active  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uwb-devices/by-tag/{tag}:
+    get:
+      tags:
+      - UWB Devices
+      summary: List Uwb Devices By Tag
+      operationId: list_uwb_devices_by_tag_api_v1_uwb_devices_by_tag__tag__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tag
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UWBDeviceResponse'
+                title: Response List Uwb Devices By Tag Api V1 Uwb Devices By Tag  Tag  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/uwb-devices/{device_id}:
+    get:
+      tags:
+      - UWB Devices
+      summary: Get Uwb Device
+      operationId: get_uwb_device_api_v1_uwb_devices__device_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Device Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UWBDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - UWB Devices
+      summary: Update Uwb Device
+      operationId: update_uwb_device_api_v1_uwb_devices__device_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Device Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UWBDeviceUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UWBDeviceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - UWB Devices
+      summary: Delete Uwb Device
+      operationId: delete_uwb_device_api_v1_uwb_devices__device_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Device Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    BLEBeaconConfig:
+      properties:
+        protocol:
+          type: string
+          enum:
+          - ibeacon
+          - eddystone
+          - altbeacon
+          title: Protocol
+        tx_power:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Tx Power
+        advertising_interval_ms:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Advertising Interval Ms
+        uuid:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uuid
+        major:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Major
+        minor:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Minor
+      type: object
+      required:
+      - protocol
+      title: BLEBeaconConfig
+    BLEDeviceCreate:
+      properties:
+        device_type:
+          type: string
+          const: bluetooth
+          title: Device Type
+          default: bluetooth
+        id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: string
+          title: Id
+        name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Name
+        mac_address:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: Mac Address
+        manufacturer:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Manufacturer
+        model:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Model
+        ble_version:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Ble Version
+          default: '5.0'
+        capabilities:
+          $ref: '#/components/schemas/DeviceCapabilities'
+        beacon_config:
+          anyOf:
+          - $ref: '#/components/schemas/BLEBeaconConfig'
+          - type: 'null'
+        signal_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/SignalMetrics'
+          - type: 'null'
+        battery:
+          anyOf:
+          - $ref: '#/components/schemas/BatteryInfo'
+          - type: 'null'
+        firmware:
+          anyOf:
+          - $ref: '#/components/schemas/FirmwareInfo'
+          - type: 'null'
+        current_location:
+          anyOf:
+          - $ref: '#/components/schemas/Coordinates'
+          - type: 'null'
+        last_seen:
+          type: string
+          format: date-time
+          title: Last Seen
+        active:
+          type: boolean
+          title: Active
+          default: true
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+      type: object
+      required:
+      - name
+      - mac_address
+      title: BLEDeviceCreate
+    BLEDeviceResponse:
+      properties:
+        device_type:
+          type: string
+          const: bluetooth
+          title: Device Type
+          default: bluetooth
+        id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: string
+          title: Id
+        name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Name
+        mac_address:
+          type: string
+          maxLength: 32
+          minLength: 1
+          title: Mac Address
+        manufacturer:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Manufacturer
+        model:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Model
+        ble_version:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Ble Version
+          default: '5.0'
+        capabilities:
+          $ref: '#/components/schemas/DeviceCapabilities'
+        beacon_config:
+          anyOf:
+          - $ref: '#/components/schemas/BLEBeaconConfig'
+          - type: 'null'
+        signal_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/SignalMetrics'
+          - type: 'null'
+        battery:
+          anyOf:
+          - $ref: '#/components/schemas/BatteryInfo'
+          - type: 'null'
+        firmware:
+          anyOf:
+          - $ref: '#/components/schemas/FirmwareInfo'
+          - type: 'null'
+        current_location:
+          anyOf:
+          - $ref: '#/components/schemas/Coordinates'
+          - type: 'null'
+        last_seen:
+          type: string
+          format: date-time
+          title: Last Seen
+        active:
+          type: boolean
+          title: Active
+          default: true
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+      type: object
+      required:
+      - name
+      - mac_address
+      title: BLEDeviceResponse
+    BLEDeviceUpdate:
+      properties:
+        device_type:
+          anyOf:
+          - type: string
+            const: bluetooth
+          - type: 'null'
+          title: Device Type
+        name:
+          anyOf:
+          - type: string
+            maxLength: 150
+            minLength: 1
+          - type: 'null'
+          title: Name
+        mac_address:
+          anyOf:
+          - type: string
+            maxLength: 32
+            minLength: 1
+          - type: 'null'
+          title: Mac Address
+        manufacturer:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Manufacturer
+        model:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Model
+        ble_version:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Ble Version
+        capabilities:
+          anyOf:
+          - $ref: '#/components/schemas/DeviceCapabilities'
+          - type: 'null'
+        beacon_config:
+          anyOf:
+          - $ref: '#/components/schemas/BLEBeaconConfig'
+          - type: 'null'
+        signal_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/SignalMetrics'
+          - type: 'null'
+        battery:
+          anyOf:
+          - $ref: '#/components/schemas/BatteryInfo'
+          - type: 'null'
+        firmware:
+          anyOf:
+          - $ref: '#/components/schemas/FirmwareInfo'
+          - type: 'null'
+        current_location:
+          anyOf:
+          - $ref: '#/components/schemas/Coordinates'
+          - type: 'null'
+        last_seen:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Seen
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+      type: object
+      title: BLEDeviceUpdate
+    BatteryInfo:
+      properties:
+        level_percent:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: Level Percent
+        voltage:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Voltage
+        charging:
+          type: boolean
+          title: Charging
+          default: false
+        last_replaced_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Replaced At
+      type: object
+      title: BatteryInfo
+    Coordinates:
+      properties:
+        latitude:
+          type: number
+          maximum: 90.0
+          minimum: -90.0
+          title: Latitude
+        longitude:
+          type: number
+          maximum: 180.0
+          minimum: -180.0
+          title: Longitude
+        altitude_m:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Altitude M
+      type: object
+      required:
+      - latitude
+      - longitude
+      title: Coordinates
+    DeviceCapabilities:
+      properties:
+        supports_scanning:
+          type: boolean
+          title: Supports Scanning
+          default: false
+        supports_beaconing:
+          type: boolean
+          title: Supports Beaconing
+          default: true
+        supports_location_tracking:
+          type: boolean
+          title: Supports Location Tracking
+          default: false
+        supports_temperature:
+          type: boolean
+          title: Supports Temperature
+          default: false
+        supports_humidity:
+          type: boolean
+          title: Supports Humidity
+          default: false
+        supports_motion:
+          type: boolean
+          title: Supports Motion
+          default: false
+      type: object
+      title: DeviceCapabilities
+    EdgeServerCreate:
+      properties:
+        server_id:
+          type: string
+          minLength: 1
+          title: Server Id
+        serial_no:
+          type: string
+          minLength: 1
+          title: Serial No
+        model_no:
+          type: string
+          minLength: 1
+          title: Model No
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        role:
+          type: string
+          enum:
+          - Primary Gateway
+          - Redundant Gateway
+          - Protocol Translator
+          - Data Aggregator
+          - Local Historian
+          - Other
+          title: Role
+          default: Primary Gateway
+        status:
+          type: string
+          enum:
+          - Online
+          - Offline
+          - Degraded
+          - Maintenance
+          - Decommissioned
+          title: Status
+          default: Offline
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        parent_server_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Server Id
+        plant_id:
+          type: string
+          title: Plant Id
+        building_id:
+          type: string
+          title: Building Id
+        floor_id:
+          type: string
+          title: Floor Id
+        room_id:
+          type: string
+          title: Room Id
+        bay_id:
+          type: string
+          title: Bay Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        rack_position:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rack Position
+        manufacturer:
+          type: string
+          title: Manufacturer
+        manufacturer_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Country
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+        mac_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mac Address
+        hostname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Hostname
+        subnet_mask:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subnet Mask
+        gateway_ip:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gateway Ip
+        connectivity_type:
+          type: string
+          enum:
+          - Ethernet
+          - Wi-Fi
+          - 4G / LTE
+          - 5G
+          - Fibre
+          - Serial RS-485
+          - Other
+          title: Connectivity Type
+          default: Ethernet
+        vpn_enabled:
+          type: boolean
+          title: Vpn Enabled
+          default: false
+        cpu:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cpu
+        ram_gb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Ram Gb
+        storage_gb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Storage Gb
+        operating_system:
+          type: string
+          enum:
+          - Linux
+          - Windows IoT
+          - FreeRTOS
+          - VxWorks
+          - QNX
+          - Other
+          title: Operating System
+          default: Linux
+        os_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Os Version
+        firmware_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firmware Version
+        supported_protocols:
+          items:
+            type: string
+          type: array
+          title: Supported Protocols
+        max_sensor_count:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Max Sensor Count
+        connected_sensor_count:
+          type: integer
+          minimum: 0.0
+          title: Connected Sensor Count
+          default: 0
+        last_heartbeat:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Heartbeat
+        uptime_seconds:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Uptime Seconds
+        upstream_broker_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Broker Url
+        upstream_topic_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Topic Prefix
+        purchase_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Purchase Date
+        installation_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Installation Date
+        warranty_expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Warranty Expiry Date
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - server_id
+      - serial_no
+      - model_no
+      - plant_id
+      - building_id
+      - floor_id
+      - room_id
+      - bay_id
+      - workstation_id
+      - manufacturer
+      title: EdgeServerCreate
+    EdgeServerResponse:
+      properties:
+        server_id:
+          type: string
+          minLength: 1
+          title: Server Id
+        serial_no:
+          type: string
+          minLength: 1
+          title: Serial No
+        model_no:
+          type: string
+          minLength: 1
+          title: Model No
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        role:
+          type: string
+          enum:
+          - Primary Gateway
+          - Redundant Gateway
+          - Protocol Translator
+          - Data Aggregator
+          - Local Historian
+          - Other
+          title: Role
+          default: Primary Gateway
+        status:
+          type: string
+          enum:
+          - Online
+          - Offline
+          - Degraded
+          - Maintenance
+          - Decommissioned
+          title: Status
+          default: Offline
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        parent_server_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Server Id
+        plant_id:
+          type: string
+          title: Plant Id
+        building_id:
+          type: string
+          title: Building Id
+        floor_id:
+          type: string
+          title: Floor Id
+        room_id:
+          type: string
+          title: Room Id
+        bay_id:
+          type: string
+          title: Bay Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        rack_position:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rack Position
+        manufacturer:
+          type: string
+          title: Manufacturer
+        manufacturer_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Country
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+        mac_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mac Address
+        hostname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Hostname
+        subnet_mask:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subnet Mask
+        gateway_ip:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gateway Ip
+        connectivity_type:
+          type: string
+          enum:
+          - Ethernet
+          - Wi-Fi
+          - 4G / LTE
+          - 5G
+          - Fibre
+          - Serial RS-485
+          - Other
+          title: Connectivity Type
+          default: Ethernet
+        vpn_enabled:
+          type: boolean
+          title: Vpn Enabled
+          default: false
+        cpu:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cpu
+        ram_gb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Ram Gb
+        storage_gb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Storage Gb
+        operating_system:
+          type: string
+          enum:
+          - Linux
+          - Windows IoT
+          - FreeRTOS
+          - VxWorks
+          - QNX
+          - Other
+          title: Operating System
+          default: Linux
+        os_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Os Version
+        firmware_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firmware Version
+        supported_protocols:
+          items:
+            type: string
+          type: array
+          title: Supported Protocols
+        max_sensor_count:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Max Sensor Count
+        connected_sensor_count:
+          type: integer
+          minimum: 0.0
+          title: Connected Sensor Count
+          default: 0
+        last_heartbeat:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Heartbeat
+        uptime_seconds:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Uptime Seconds
+        upstream_broker_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Broker Url
+        upstream_topic_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Topic Prefix
+        purchase_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Purchase Date
+        installation_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Installation Date
+        warranty_expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Warranty Expiry Date
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - server_id
+      - serial_no
+      - model_no
+      - plant_id
+      - building_id
+      - floor_id
+      - room_id
+      - bay_id
+      - workstation_id
+      - manufacturer
+      title: EdgeServerResponse
+    EdgeServerUpdate:
+      properties:
+        serial_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serial No
+        model_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model No
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        role:
+          anyOf:
+          - type: string
+            enum:
+            - Primary Gateway
+            - Redundant Gateway
+            - Protocol Translator
+            - Data Aggregator
+            - Local Historian
+            - Other
+          - type: 'null'
+          title: Role
+        status:
+          anyOf:
+          - type: string
+            enum:
+            - Online
+            - Offline
+            - Degraded
+            - Maintenance
+            - Decommissioned
+          - type: 'null'
+          title: Status
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        parent_server_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Server Id
+        facility:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Facility
+        building:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Building
+        room:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room
+        rack_position:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rack Position
+        manufacturer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer
+        manufacturer_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Country
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+        mac_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mac Address
+        hostname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Hostname
+        subnet_mask:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subnet Mask
+        gateway_ip:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gateway Ip
+        connectivity_type:
+          anyOf:
+          - type: string
+            enum:
+            - Ethernet
+            - Wi-Fi
+            - 4G / LTE
+            - 5G
+            - Fibre
+            - Serial RS-485
+            - Other
+          - type: 'null'
+          title: Connectivity Type
+        vpn_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Vpn Enabled
+        cpu:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cpu
+        ram_gb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Ram Gb
+        storage_gb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Storage Gb
+        operating_system:
+          anyOf:
+          - type: string
+            enum:
+            - Linux
+            - Windows IoT
+            - FreeRTOS
+            - VxWorks
+            - QNX
+            - Other
+          - type: 'null'
+          title: Operating System
+        os_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Os Version
+        firmware_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firmware Version
+        supported_protocols:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Supported Protocols
+        max_sensor_count:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Max Sensor Count
+        connected_sensor_count:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Connected Sensor Count
+        last_heartbeat:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Heartbeat
+        uptime_seconds:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Uptime Seconds
+        upstream_broker_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Broker Url
+        upstream_topic_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Upstream Topic Prefix
+        purchase_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Purchase Date
+        installation_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Installation Date
+        warranty_expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Warranty Expiry Date
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: EdgeServerUpdate
+    FirmwareInfo:
+      properties:
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        build_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Build Number
+        last_updated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Updated At
+      type: object
+      title: FirmwareInfo
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PaginatedBLEDeviceResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/BLEDeviceResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedBLEDeviceResponse
+    PaginatedEdgeServerResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/EdgeServerResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedEdgeServerResponse
+    PaginatedSensorResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/SensorResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedSensorResponse
+    PaginatedUWBDeviceResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/UWBDeviceResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedUWBDeviceResponse
+    SensorCreate:
+      properties:
+        sensor_id:
+          type: string
+          minLength: 1
+          title: Sensor Id
+        serial_no:
+          type: string
+          minLength: 1
+          title: Serial No
+        model_no:
+          type: string
+          minLength: 1
+          title: Model No
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        sensor_type:
+          type: string
+          enum:
+          - Temperature
+          - Pressure
+          - Humidity
+          - Vibration
+          - Flow Rate
+          - Level
+          - Proximity
+          - Current
+          - Voltage
+          - Speed / RPM
+          - Force / Load
+          - Gas / Emission
+          - Vision / Camera
+          - Other
+          title: Sensor Type
+        status:
+          type: string
+          enum:
+          - Active
+          - Inactive
+          - Faulty
+          - Calibrating
+          - Decommissioned
+          - Offline
+          title: Status
+          default: Inactive
+        communication_protocol:
+          type: string
+          enum:
+          - MQTT
+          - OPC-UA
+          - Modbus RTU
+          - Modbus TCP
+          - PROFINET
+          - EtherNet/IP
+          - IO-Link
+          - BACnet
+          - Zigbee
+          - LoRaWAN
+          - "4\u201320mA"
+          - Other
+          title: Communication Protocol
+          default: MQTT
+        mounting_type:
+          type: string
+          enum:
+          - Surface Mount
+          - Inline
+          - Clamp-On
+          - Immersion
+          - Wireless
+          - Panel Mount
+          - Other
+          title: Mounting Type
+          default: Other
+        machine_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Machine Id
+        equipment_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Equipment Id
+        sensors_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sensors Id
+        edge_server_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Edge Server Id
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        facility:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Facility
+        building:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Building
+        room:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room
+        position:
+          type: string
+          title: Position
+        manufacturer:
+          type: string
+          title: Manufacturer
+        manufacturer_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Country
+        measurement_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Measurement Unit
+        measurement_range_min:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Measurement Range Min
+        measurement_range_max:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Measurement Range Max
+        accuracy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accuracy
+        resolution:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution
+        sampling_rate_hz:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Sampling Rate Hz
+        alert_threshold_low:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Alert Threshold Low
+        alert_threshold_high:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Alert Threshold High
+        purchase_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Purchase Date
+        installation_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Installation Date
+        warranty_expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Warranty Expiry Date
+        last_calibration_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Calibration Date
+        next_calibration_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Calibration Date
+        calibration_interval_days:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Calibration Interval Days
+        firmware_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firmware Version
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+        mac_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mac Address
+        topic:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Topic
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - sensor_id
+      - serial_no
+      - model_no
+      - sensor_type
+      - manufacturer
+      title: SensorCreate
+    SensorResponse:
+      properties:
+        sensor_id:
+          type: string
+          minLength: 1
+          title: Sensor Id
+        serial_no:
+          type: string
+          minLength: 1
+          title: Serial No
+        model_no:
+          type: string
+          minLength: 1
+          title: Model No
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        sensor_type:
+          type: string
+          enum:
+          - Temperature
+          - Pressure
+          - Humidity
+          - Vibration
+          - Flow Rate
+          - Level
+          - Proximity
+          - Current
+          - Voltage
+          - Speed / RPM
+          - Force / Load
+          - Gas / Emission
+          - Vision / Camera
+          - Other
+          title: Sensor Type
+        status:
+          type: string
+          enum:
+          - Active
+          - Inactive
+          - Faulty
+          - Calibrating
+          - Decommissioned
+          - Offline
+          title: Status
+          default: Inactive
+        communication_protocol:
+          type: string
+          enum:
+          - MQTT
+          - OPC-UA
+          - Modbus RTU
+          - Modbus TCP
+          - PROFINET
+          - EtherNet/IP
+          - IO-Link
+          - BACnet
+          - Zigbee
+          - LoRaWAN
+          - "4\u201320mA"
+          - Other
+          title: Communication Protocol
+          default: MQTT
+        mounting_type:
+          type: string
+          enum:
+          - Surface Mount
+          - Inline
+          - Clamp-On
+          - Immersion
+          - Wireless
+          - Panel Mount
+          - Other
+          title: Mounting Type
+          default: Other
+        machine_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Machine Id
+        equipment_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Equipment Id
+        sensors_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sensors Id
+        edge_server_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Edge Server Id
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        facility:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Facility
+        building:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Building
+        room:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room
+        position:
+          type: string
+          title: Position
+        manufacturer:
+          type: string
+          title: Manufacturer
+        manufacturer_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Country
+        measurement_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Measurement Unit
+        measurement_range_min:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Measurement Range Min
+        measurement_range_max:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Measurement Range Max
+        accuracy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accuracy
+        resolution:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution
+        sampling_rate_hz:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Sampling Rate Hz
+        alert_threshold_low:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Alert Threshold Low
+        alert_threshold_high:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Alert Threshold High
+        purchase_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Purchase Date
+        installation_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Installation Date
+        warranty_expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Warranty Expiry Date
+        last_calibration_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Calibration Date
+        next_calibration_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Calibration Date
+        calibration_interval_days:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Calibration Interval Days
+        firmware_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firmware Version
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+        mac_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mac Address
+        topic:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Topic
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - sensor_id
+      - serial_no
+      - model_no
+      - sensor_type
+      - manufacturer
+      title: SensorResponse
+    SensorUpdate:
+      properties:
+        serial_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serial No
+        model_no:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model No
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        sensor_type:
+          anyOf:
+          - type: string
+            enum:
+            - Temperature
+            - Pressure
+            - Humidity
+            - Vibration
+            - Flow Rate
+            - Level
+            - Proximity
+            - Current
+            - Voltage
+            - Speed / RPM
+            - Force / Load
+            - Gas / Emission
+            - Vision / Camera
+            - Other
+          - type: 'null'
+          title: Sensor Type
+        status:
+          anyOf:
+          - type: string
+            enum:
+            - Active
+            - Inactive
+            - Faulty
+            - Calibrating
+            - Decommissioned
+            - Offline
+          - type: 'null'
+          title: Status
+        communication_protocol:
+          anyOf:
+          - type: string
+            enum:
+            - MQTT
+            - OPC-UA
+            - Modbus RTU
+            - Modbus TCP
+            - PROFINET
+            - EtherNet/IP
+            - IO-Link
+            - BACnet
+            - Zigbee
+            - LoRaWAN
+            - "4\u201320mA"
+            - Other
+          - type: 'null'
+          title: Communication Protocol
+        mounting_type:
+          anyOf:
+          - type: string
+            enum:
+            - Surface Mount
+            - Inline
+            - Clamp-On
+            - Immersion
+            - Wireless
+            - Panel Mount
+            - Other
+          - type: 'null'
+          title: Mounting Type
+        machine_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Machine Id
+        equipment_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Equipment Id
+        edge_server_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Edge Server Id
+        asset_tag:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Asset Tag
+        facility:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Facility
+        building:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Building
+        room:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Room
+        position:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Position
+        manufacturer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer
+        manufacturer_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manufacturer Country
+        measurement_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Measurement Unit
+        measurement_range_min:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Measurement Range Min
+        measurement_range_max:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Measurement Range Max
+        accuracy:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Accuracy
+        resolution:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution
+        sampling_rate_hz:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Sampling Rate Hz
+        alert_threshold_low:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Alert Threshold Low
+        alert_threshold_high:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Alert Threshold High
+        purchase_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Purchase Date
+        installation_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Installation Date
+        warranty_expiry_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Warranty Expiry Date
+        last_calibration_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Last Calibration Date
+        next_calibration_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Next Calibration Date
+        calibration_interval_days:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Calibration Interval Days
+        firmware_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firmware Version
+        ip_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ip Address
+        mac_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mac Address
+        topic:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Topic
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: SensorUpdate
+    SignalMetrics:
+      properties:
+        rssi:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Rssi
+          description: Received signal strength in dBm
+        tx_power:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Tx Power
+          description: Transmit power in dBm
+        measured_power:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Measured Power
+          description: Measured power at 1 metre
+        last_scan_distance_m:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Last Scan Distance M
+      type: object
+      title: SignalMetrics
+    UWBAnchorConfig:
+      properties:
+        anchor_id:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: Anchor Id
+        role:
+          type: string
+          enum:
+          - anchor
+          - tag
+          title: Role
+        update_rate_hz:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Update Rate Hz
+          default: 10
+        positioning_mode:
+          type: string
+          enum:
+          - tdoa
+          - twr
+          - aoa
+          title: Positioning Mode
+          default: tdoa
+      type: object
+      required:
+      - anchor_id
+      - role
+      title: UWBAnchorConfig
+    UWBDeviceCreate:
+      properties:
+        device_type:
+          type: string
+          const: uwb
+          title: Device Type
+          default: uwb
+        id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: string
+          title: Id
+        name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Name
+        mac_address:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Mac Address
+        serial_number:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Serial Number
+        manufacturer:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Manufacturer
+        model:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Model
+        uwb_chipset:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Uwb Chipset
+        uwb_channel:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Uwb Channel
+        capabilities:
+          $ref: '#/components/schemas/DeviceCapabilities'
+        anchor_config:
+          anyOf:
+          - $ref: '#/components/schemas/UWBAnchorConfig'
+          - type: 'null'
+        precision_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/UWBPrecisionMetrics'
+          - type: 'null'
+        signal_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/SignalMetrics'
+          - type: 'null'
+        battery:
+          anyOf:
+          - $ref: '#/components/schemas/BatteryInfo'
+          - type: 'null'
+        firmware:
+          anyOf:
+          - $ref: '#/components/schemas/FirmwareInfo'
+          - type: 'null'
+        current_location:
+          anyOf:
+          - $ref: '#/components/schemas/Coordinates'
+          - type: 'null'
+        last_seen:
+          type: string
+          format: date-time
+          title: Last Seen
+        active:
+          type: boolean
+          title: Active
+          default: true
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+      type: object
+      required:
+      - name
+      title: UWBDeviceCreate
+    UWBDeviceResponse:
+      properties:
+        device_type:
+          type: string
+          const: uwb
+          title: Device Type
+          default: uwb
+        id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: string
+          title: Id
+        name:
+          type: string
+          maxLength: 150
+          minLength: 1
+          title: Name
+        mac_address:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Mac Address
+        serial_number:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Serial Number
+        manufacturer:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Manufacturer
+        model:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Model
+        uwb_chipset:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Uwb Chipset
+        uwb_channel:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Uwb Channel
+        capabilities:
+          $ref: '#/components/schemas/DeviceCapabilities'
+        anchor_config:
+          anyOf:
+          - $ref: '#/components/schemas/UWBAnchorConfig'
+          - type: 'null'
+        precision_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/UWBPrecisionMetrics'
+          - type: 'null'
+        signal_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/SignalMetrics'
+          - type: 'null'
+        battery:
+          anyOf:
+          - $ref: '#/components/schemas/BatteryInfo'
+          - type: 'null'
+        firmware:
+          anyOf:
+          - $ref: '#/components/schemas/FirmwareInfo'
+          - type: 'null'
+        current_location:
+          anyOf:
+          - $ref: '#/components/schemas/Coordinates'
+          - type: 'null'
+        last_seen:
+          type: string
+          format: date-time
+          title: Last Seen
+        active:
+          type: boolean
+          title: Active
+          default: true
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+      type: object
+      required:
+      - name
+      title: UWBDeviceResponse
+    UWBDeviceUpdate:
+      properties:
+        device_type:
+          anyOf:
+          - type: string
+            const: uwb
+          - type: 'null'
+          title: Device Type
+        name:
+          anyOf:
+          - type: string
+            maxLength: 150
+            minLength: 1
+          - type: 'null'
+          title: Name
+        mac_address:
+          anyOf:
+          - type: string
+            maxLength: 32
+          - type: 'null'
+          title: Mac Address
+        serial_number:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Serial Number
+        manufacturer:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Manufacturer
+        model:
+          anyOf:
+          - type: string
+            maxLength: 150
+          - type: 'null'
+          title: Model
+        uwb_chipset:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Uwb Chipset
+        uwb_channel:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Uwb Channel
+        capabilities:
+          anyOf:
+          - $ref: '#/components/schemas/DeviceCapabilities'
+          - type: 'null'
+        anchor_config:
+          anyOf:
+          - $ref: '#/components/schemas/UWBAnchorConfig'
+          - type: 'null'
+        precision_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/UWBPrecisionMetrics'
+          - type: 'null'
+        signal_metrics:
+          anyOf:
+          - $ref: '#/components/schemas/SignalMetrics'
+          - type: 'null'
+        battery:
+          anyOf:
+          - $ref: '#/components/schemas/BatteryInfo'
+          - type: 'null'
+        firmware:
+          anyOf:
+          - $ref: '#/components/schemas/FirmwareInfo'
+          - type: 'null'
+        current_location:
+          anyOf:
+          - $ref: '#/components/schemas/Coordinates'
+          - type: 'null'
+        last_seen:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Seen
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+        tags:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tags
+      type: object
+      title: UWBDeviceUpdate
+    UWBPrecisionMetrics:
+      properties:
+        accuracy_cm:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Accuracy Cm
+        distance_m:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Distance M
+        angle_deg:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Angle Deg
+        update_frequency_hz:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Update Frequency Hz
+      type: object
+      title: UWBPrecisionMetrics
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

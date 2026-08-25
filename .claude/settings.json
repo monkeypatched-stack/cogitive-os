@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash(md5 *)",
+      "Bash(openclaw agent --help)",
+      "Bash(pip show *)",
+      "Bash(.venv/bin/pip show *)",
+      "Bash(brew list*)",
+      "Bash(openclaw status*)",
+      "Bash(openclaw --version)",
+      "Bash(openclaw system --help)",
+      "Bash(openclaw logs --help)",
+      "Bash(openclaw capability --help)",
+      "Bash(openclaw agents list*)",
+      "Bash(n8n --help)"
+    ]
+  }
+}

@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Seed cleaning records into InfluxDB cleaning_log measurement with full field data."""
+
+import sys
+from datetime import datetime, timezone, timedelta
+from urllib.request import Request, urlopen
+from urllib.parse import urlencode
+
+sys.path.insert(0, "/Users/prashunjaveri/Code/monkeypatched")
+from services.common.config import settings
+
+NOW = datetime.now(timezone.utc)
+
+CLEANING_RECORDS = [
+    {"machine_id": "MCH-TAB-01-01", "machine_name": "LAF Sampling Booth", "stage": "Dispensing", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Priya-Sharma", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 2, "batch": "BATCH-TAB-2601", "days_ago": 3, "scheduled_offset": -2},
+    {"machine_id": "MCH-TAB-01-02", "machine_name": "LAF Weighing Booth", "stage": "Dispensing", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Priya-Sharma", "verify": "Swab Test", "residue_limit": 10, "residue_found": 1, "batch": "BATCH-TAB-2601", "days_ago": 5, "scheduled_offset": -3},
+    {"machine_id": "MCH-TAB-02-01", "machine_name": "Vibro Sifter", "stage": "Sifting/Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Visual Inspection", "residue_limit": 15, "residue_found": 3, "batch": "BATCH-TAB-2602", "days_ago": 20, "scheduled_offset": -18},
+    {"machine_id": "MCH-TAB-02-02", "machine_name": "Conical Mill", "stage": "Sifting/Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Swab Test", "residue_limit": 15, "residue_found": 4, "batch": "BATCH-TAB-2602", "days_ago": 18, "scheduled_offset": -16},
+    {"machine_id": "MCH-TAB-03-01", "machine_name": "Rapid Mixer Granulator", "stage": "Granulation", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Priya-Sharma", "verify": "TOC Analysis", "residue_limit": 5, "residue_found": 1, "batch": "BATCH-TAB-2603", "days_ago": 15, "scheduled_offset": -14},
+    {"machine_id": "MCH-TAB-03-02", "machine_name": "Binder Prep Vessel", "stage": "Granulation", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Priya-Sharma", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 2, "batch": "BATCH-TAB-2603", "days_ago": 14, "scheduled_offset": -12},
+    {"machine_id": "MCH-TAB-04-01", "machine_name": "Fluid Bed Dryer", "stage": "Drying", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Karan-Shah", "verify": "TOC Analysis", "residue_limit": 5, "residue_found": 0, "batch": "BATCH-TAB-2604", "days_ago": 12, "scheduled_offset": -10},
+    {"machine_id": "MCH-TAB-05-01", "machine_name": "Conical Mill", "stage": "Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Swab Test", "residue_limit": 15, "residue_found": 5, "batch": "BATCH-TAB-2605", "days_ago": 11, "scheduled_offset": -9},
+    {"machine_id": "MCH-TAB-05-02", "machine_name": "Vibro Sifter", "stage": "Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Visual Inspection", "residue_limit": 15, "residue_found": 3, "batch": "BATCH-TAB-2605", "days_ago": 10, "scheduled_offset": -8},
+    {"machine_id": "MCH-TAB-06-01", "machine_name": "Octagonal Blender", "stage": "Blending", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Devansh-Kapoor", "verify": "Rinse Sample", "residue_limit": 5, "residue_found": 1, "batch": "BATCH-TAB-2606", "days_ago": 10, "scheduled_offset": -8},
+    {"machine_id": "MCH-TAB-07-01", "machine_name": "Rotary Tablet Press", "stage": "Compression", "clean_type": "SOP-Based", "method": "Manual", "status": "In Progress", "technician": "Ananya-Desai", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": None, "batch": "BATCH-TAB-2607", "days_ago": 1, "scheduled_offset": -1},
+    {"machine_id": "MCH-TAB-08-01", "machine_name": "Coating Solution Vessel", "stage": "Film Coating", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Karan-Shah", "verify": "TOC Analysis", "residue_limit": 5, "residue_found": 2, "batch": "BATCH-TAB-2608", "days_ago": 9, "scheduled_offset": -7},
+    {"machine_id": "MCH-TAB-08-02", "machine_name": "Auto Coater", "stage": "Film Coating", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Karan-Shah", "verify": "Swab Test", "residue_limit": 5, "residue_found": 1, "batch": "BATCH-TAB-2608", "days_ago": 8, "scheduled_offset": -6},
+    {"machine_id": "MCH-TAB-10-01", "machine_name": "Blister Packing Machine", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 0, "batch": "BATCH-TAB-2610", "days_ago": 7, "scheduled_offset": -5},
+    {"machine_id": "MCH-TAB-10-02", "machine_name": "Bottle Filler", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 1, "batch": "BATCH-TAB-2610", "days_ago": 6, "scheduled_offset": -4},
+    {"machine_id": "MCH-TAB-10-03", "machine_name": "Self-Adhesive Labeller", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Scheduled", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": None, "batch": "BATCH-TAB-2611", "days_ago": -2, "scheduled_offset": -3},
+    {"machine_id": "MCH-TAB-10-04", "machine_name": "Cartoning Machine", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Scheduled", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": None, "batch": "BATCH-TAB-2611", "days_ago": -3, "scheduled_offset": -4},
+    {"machine_id": "MCH-CAP-01-01", "machine_name": "LAF Sampling Booth", "stage": "Dispensing", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Priya-Sharma", "verify": "Swab Test", "residue_limit": 10, "residue_found": 2, "batch": "BATCH-CAP-2601", "days_ago": 4, "scheduled_offset": -3},
+    {"machine_id": "MCH-CAP-01-02", "machine_name": "LAF Weighing Booth", "stage": "Dispensing", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Priya-Sharma", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 1, "batch": "BATCH-CAP-2601", "days_ago": 4, "scheduled_offset": -2},
+    {"machine_id": "MCH-CAP-02-01", "machine_name": "Vibro Sifter", "stage": "Sifting/Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Swab Test", "residue_limit": 15, "residue_found": 3, "batch": "BATCH-CAP-2602", "days_ago": 16, "scheduled_offset": -14},
+    {"machine_id": "MCH-CAP-02-02", "machine_name": "Conical Mill", "stage": "Sifting/Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Visual Inspection", "residue_limit": 15, "residue_found": 4, "batch": "BATCH-CAP-2602", "days_ago": 16, "scheduled_offset": -14},
+    {"machine_id": "MCH-CAP-03-01", "machine_name": "Rapid Mixer Granulator", "stage": "Granulation", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "TOC Analysis", "residue_limit": 5, "residue_found": 1, "batch": "BATCH-CAP-2603", "days_ago": 13, "scheduled_offset": -11},
+    {"machine_id": "MCH-CAP-03-02", "machine_name": "Binder Prep Vessel", "stage": "Granulation", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 2, "batch": "BATCH-CAP-2603", "days_ago": 13, "scheduled_offset": -11},
+    {"machine_id": "MCH-CAP-04-01", "machine_name": "Fluid Bed Dryer", "stage": "Drying", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Karan-Shah", "verify": "TOC Analysis", "residue_limit": 5, "residue_found": 0, "batch": "BATCH-CAP-2604", "days_ago": 11, "scheduled_offset": -9},
+    {"machine_id": "MCH-CAP-05-01", "machine_name": "Conical Mill", "stage": "Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Rajiv-Malhotra", "verify": "Swab Test", "residue_limit": 15, "residue_found": 5, "batch": "BATCH-CAP-2605", "days_ago": 10, "scheduled_offset": -8},
+    {"machine_id": "MCH-CAP-05-02", "machine_name": "Vibro Sifter", "stage": "Milling", "clean_type": "SOP-Based", "method": "Manual", "status": "In Progress", "technician": "Rajiv-Malhotra", "verify": "Visual Inspection", "residue_limit": 15, "residue_found": None, "batch": "BATCH-CAP-2606", "days_ago": 1, "scheduled_offset": -1},
+    {"machine_id": "MCH-CAP-06-01", "machine_name": "Octagonal Blender", "stage": "Blending", "clean_type": "Deep Clean", "method": "CIP", "status": "Completed", "technician": "Devansh-Kapoor", "verify": "Rinse Sample", "residue_limit": 5, "residue_found": 1, "batch": "BATCH-CAP-2607", "days_ago": 9, "scheduled_offset": -7},
+    {"machine_id": "MCH-CAP-07-01", "machine_name": "Capsule Hopper", "stage": "Capsule Filling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Ananya-Desai", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 2, "batch": "BATCH-CAP-2608", "days_ago": 8, "scheduled_offset": -6},
+    {"machine_id": "MCH-CAP-07-02", "machine_name": "Automatic Capsule Filler", "stage": "Capsule Filling", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Ananya-Desai", "verify": "Swab Test", "residue_limit": 10, "residue_found": 1, "batch": "BATCH-CAP-2608", "days_ago": 7, "scheduled_offset": -5},
+    {"machine_id": "MCH-CAP-10-01", "machine_name": "Blister Packing Machine", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 0, "batch": "BATCH-CAP-2610", "days_ago": 6, "scheduled_offset": -4},
+    {"machine_id": "MCH-CAP-10-02", "machine_name": "Bottle Filler", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 1, "batch": "BATCH-CAP-2610", "days_ago": 5, "scheduled_offset": -3},
+    {"machine_id": "MCH-CAP-10-03", "machine_name": "Self-Adhesive Labeller", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Scheduled", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": None, "batch": "BATCH-CAP-2611", "days_ago": -1, "scheduled_offset": -2},
+    {"machine_id": "MCH-CAP-10-04", "machine_name": "Cartoning Machine", "stage": "Packaging", "clean_type": "SOP-Based", "method": "Manual", "status": "Completed", "technician": "Sneha-Patel", "verify": "Visual Inspection", "residue_limit": 10, "residue_found": 2, "batch": "BATCH-CAP-2611", "days_ago": 4, "scheduled_offset": -2},
+]
+
+
+def _escape_tag(value: str) -> str:
+    return value.replace(",", "\\,").replace(" ", "\\ ").replace("=", "\\=")
+
+
+def _field_str(value) -> str:
+    if value is None:
+        return '""'
+    return f'"{value}"'
+
+
+def write_cleaning(rec: dict, days_ago: int):
+    rec_time = NOW - timedelta(days=days_ago)
+    sched_time = NOW - timedelta(days=abs(rec["scheduled_offset"]))
+    measurement = "cleaning_log"
+    record_id = f"CLN-{rec['machine_id'][-8:]}"
+    tags = (
+        f"record_id={_escape_tag(record_id)},"
+        f"equipment_id={_escape_tag(rec['machine_id'])},"
+        f"clean_type={_escape_tag(rec['clean_type'])},"
+        f"machine_id={_escape_tag(rec['machine_id'])},"
+        f"machine_name={_escape_tag(rec['machine_name'])},"
+        f"stage={_escape_tag(rec['stage'])},"
+        f"status={_escape_tag(rec['status'])},"
+        f"technician={_escape_tag(rec['technician'])}"
+    )
+    fields = (
+        f"cleaning_type={_field_str(rec['clean_type'])},"
+        f"cleaning_method={_field_str(rec['method'])},"
+        f"verification_method={_field_str(rec['verify'])},"
+        f"batch_no={_field_str(rec['batch'])},"
+        f"residue_limit_ppm={rec['residue_limit']}"
+    )
+    if rec['residue_found'] is not None:
+        fields += f",residue_found_ppm={rec['residue_found']}"
+    fields += (
+        f",scheduled_start={_field_str(sched_time.isoformat())}"
+        f",actual_end={_field_str(rec_time.isoformat() if rec['status'] == 'Completed' else '')}"
+    )
+    ts = int(rec_time.timestamp() * 1_000_000_000)
+    return f"{measurement},{tags} {fields} {ts}"
+
+
+def write_lines(lines: list[str]):
+    query = urlencode({"db": settings.INFLUXDB_BUCKET})
+    url = f"{settings.INFLUXDB_URL.rstrip('/')}/api/v3/write_lp?{query}"
+    headers = {"Content-Type": "text/plain; charset=utf-8"}
+    if settings.INFLUXDB_TOKEN:
+        headers["Authorization"] = f"Bearer {settings.INFLUXDB_TOKEN}"
+    body = "\n".join(lines)
+    request = Request(url, data=body.encode("utf-8"), headers=headers, method="POST")
+    with urlopen(request, timeout=10) as response:
+        response.read()
+    print(f"  Wrote {len(lines)} records to InfluxDB")
+
+
+def main():
+    print(f"Writing {len(CLEANING_RECORDS)} cleaning records to InfluxDB...")
+    lines = [write_cleaning(rec, rec["days_ago"]) for rec in CLEANING_RECORDS]
+    write_lines(lines)
+    print(f"Done. {len(lines)} cleaning records seeded.")
+
+
+if __name__ == "__main__":
+    main()

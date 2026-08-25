@@ -1,0 +1,174 @@
+manifest_version: 1.0.0
+manifest_id: customer-template
+ontology_version: 1.0.0
+customer:
+  name: Example Pharma Manufacturer
+  deployment_id: example-pharma-ahmedabad
+  region: IN-GJ
+  timezone: Asia/Kolkata
+
+product_scope:
+  base_product: production_shop_floor
+  enabled_core_modules:
+    - facilities
+    - assets
+    - maintenance
+    - workorders
+    - process_definitions
+    - documents
+    - agentos
+    - world_model_reasoning
+    - simulation
+    - action_layer
+    - agents
+    - feedback
+  add_on_modules:
+    wms:
+      enabled: false
+      source_of_truth: integration
+    iot:
+      enabled: false
+      source_of_truth: integration
+    changeover_management:
+      enabled: false
+      source_of_truth: integration
+    shift_management:
+      enabled: false
+      source_of_truth: integration
+    workstation_status:
+      enabled: false
+      source_of_truth: integration
+    order_management:
+      enabled: false
+      source_of_truth: integration
+    product_management:
+      enabled: false
+      source_of_truth: integration
+    customers:
+      enabled: false
+      source_of_truth: integration
+    suppliers:
+      enabled: false
+      source_of_truth: integration
+    supply_chain:
+      enabled: false
+      source_of_truth: integration
+
+factory:
+  plants:
+    - plant_id: PLANT-AHM-OSD
+      name: Ahmedabad OSD Plant
+      site_code: AHM-OSD
+      lines:
+        - line_id: LINE-OSD-001
+          name: OSD Line 1
+          line_type: oral_solid_dose
+          stages:
+            - stage_id: STAGE-DISP-001
+              name: Dispensing
+              stage_type: dispensing
+              workstations:
+                - workstation_id: WS-DISP-001
+                  name: Dispensing Booth 1
+                  workstation_type: dispensing_booth
+                  equipment:
+                    - equipment_type: weighing_scale
+                      count: 2
+                    - equipment_type: dust_extractor
+                      count: 1
+                  machines: []
+            - stage_id: STAGE-BLEND-001
+              name: Blending
+              stage_type: blending
+              workstations:
+                - workstation_id: WS-BLEND-001
+                  name: V-Blender Station 1
+                  workstation_type: blender_station
+                  machines:
+                    - machine_type: v_blender
+                      count: 1
+                  equipment:
+                    - equipment_type: temperature_probe
+                      count: 1
+
+systems:
+  erp:
+    vendor: sap
+    system_id: SAP-ECC-PROD
+    adapter_id: sap_erp
+  qms:
+    vendor: veeva
+    system_id: VEEVA-QUALITY
+    adapter_id: veeva_quality
+  lims:
+    vendor: generic_lims
+    system_id: LIMS-PROD
+    adapter_id: generic_lims
+  dms:
+    vendor: generic_dms
+    system_id: DMS-PROD
+    adapter_id: document_management
+  wms:
+    vendor: generic_wms
+    system_id: WMS-PROD
+    adapter_id: wms
+  cmms:
+    vendor: generic_cmms
+    system_id: CMMS-PROD
+    adapter_id: cmms
+  sop_source:
+    vendor: veeva
+    repository: qualitydocs
+    adapter_id: veeva_quality
+
+operator_roles:
+  - role_id: operator
+    title: Production Operator
+    permissions: [operator:read, execution:evidence:create]
+  - role_id: supervisor
+    title: Line Supervisor
+    permissions: [operator:read, approval:simulation]
+  - role_id: qa_reviewer
+    title: QA Reviewer
+    permissions: [operator:read, approval:actual_run, audit:read]
+  - role_id: process_engineer
+    title: Process Engineer
+    permissions: [engineer:read, simulation:request]
+
+approval_policy:
+  simulation_approval_roles: [supervisor, process_engineer]
+  actual_run_approval_roles: [qa_reviewer]
+  partial_approval_allowed: true
+  conflict_mutex:
+    enabled: true
+    dimensions: [equipment_id, machine_id, workstation_id, asset_id, parameter]
+
+adapter_bindings:
+  - adapter_id: sap_erp
+    enabled: true
+    connection_ref: secret://sap/prod
+    field_mapping_file: config/integration_adapters/sap_erp.yaml
+  - adapter_id: oracle_erp
+    enabled: false
+    connection_ref: secret://oracle/prod
+    field_mapping_file: config/integration_adapters/oracle_erp.yaml
+  - adapter_id: veeva_quality
+    enabled: true
+    connection_ref: secret://veeva/prod
+    field_mapping_file: config/integration_adapters/veeva_quality.yaml
+  - adapter_id: generic_lims
+    enabled: true
+    connection_ref: secret://lims/prod
+    field_mapping_file: config/integration_adapters/generic_lims.yaml
+  - adapter_id: document_management
+    enabled: true
+    connection_ref: secret://dms/prod
+    field_mapping_file: config/integration_adapters/document_management.yaml
+  - adapter_id: wms
+    enabled: true
+    connection_ref: secret://wms/prod
+    field_mapping_file: config/integration_adapters/wms.yaml
+  - adapter_id: cmms
+    enabled: true
+    connection_ref: secret://cmms/prod
+    field_mapping_file: config/integration_adapters/cmms.yaml

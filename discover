@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""discover — CLI tool for planning and executing questions via the API.
+
+Usage:
+    discover "question"              # Plan only
+    discover "question" --execute    # Plan and execute
+    discover "question" --act        # Execute directly (capability auto-classified)
+    discover "question" --simulate   # Simulate via simulation runtime
+    discover "question" --json       # Raw JSON output
+"""
+import sys
+import json
+import urllib.request
+import urllib.error
+
+BASE_URL = "http://localhost:8031/api/v1/agentos"
+
+
+def plan(question: str, port: int = 8031) -> dict:
+    """Call /plan API and parse nested answer."""
+    url = f"http://localhost:{port}/api/v1/agentos/plan"
+    payload = json.dumps({"question": question, "target": "execute"}).encode()
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        data = json.loads(resp.read().decode())
+        # API returns plan inside answer as JSON string
+        if "answer" in data and isinstance(data["answer"], str):
+            try:
+                data["parsed_answer"] = json.loads(data["answer"])
+            except json.JSONDecodeError:
+                pass
+        return data
+
+
+def execute(plan_data: dict, port: int = 8031) -> dict:
+    """Call /execute API with the plan response."""
+    url = f"http://localhost:{port}/api/v1/agentos/execute"
+    # Send the full plan data (needs intent_ir for execute endpoint)
+    payload = json.dumps(plan_data).encode()
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return json.loads(resp.read().decode())
+
+
+def main():
+    args = sys.argv[1:]
+    if not args:
+        print("Usage: discover \"question\" [--execute] [--act] [--simulate] [--json] [--port PORT]")
+        sys.exit(1)
+
+    question = args[0]
+    execute_mode = "--execute" in args
+    act_mode = "--act" in args
+    simulate_mode = "--simulate" in args
+    raw_json = "--json" in args
+    port = 8031
+    
+    for i, a in enumerate(args):
+        if a == "--port" and i + 1 < len(args):
+            port = int(args[i + 1])
+
+    # --simulate mode: simulate via simulation runtime
+    if simulate_mode:
+        print(f"Planning: {question}")
+        
+        plan_url = f"http://localhost:{port}/api/v1/agentos/plan"
+        plan_payload = json.dumps({"question": question, "target": "simulate"}).encode()
+        req = urllib.request.Request(plan_url, data=plan_payload, headers={"Content-Type": "application/json"}, method="POST")
+        
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                plan_data = json.loads(resp.read().decode())
+        except Exception as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        
+        graph = plan_data.get("graph", {})
+        print(f"  Plan: graph_id={graph.get('graph_id','?')}, nodes={len(graph.get('nodes',[]))}")
+        
+        print("Simulating...")
+        sim_url = f"http://localhost:{port}/api/v1/agentos/simulate"
+        req = urllib.request.Request(sim_url, data=json.dumps(plan_data).encode(), headers={"Content-Type": "application/json"}, method="POST")
+        
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = json.loads(resp.read().decode())
+        except Exception as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        
+        if raw_json:
+            print(json.dumps(data, indent=2))
+            return
+        
+        print(f"\n  Simulation ID: {data.get('simulation_id', '?')}")
+        print(f"  Grounding score: {data.get('grounding_score', 0):.2f}")
+        print(f"  Needs correction: {data.get('needs_correction', False)}")
+        return
+
+    # --act mode: execute directly via capability classification
+    if act_mode:
+        print(f"Classifying capability for: {question}")
+        
+        url = f"http://localhost:{port}/api/v1/agentos/execute-direct"
+        payload = json.dumps({"question": question}).encode()
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = json.loads(resp.read().decode())
+        except Exception as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        
+        if raw_json:
+            print(json.dumps(data, indent=2))
+            return
+        
+        # Extract answer from CapabilityResult format
+        answer = data.get("response", {}).get("answer", "") or data.get("answer", "?")
+        capability = data.get("capability", data.get("metadata", {}).get("capability", "?"))
+        print(f"\n  Capability: {capability}")
+        print(f"  Answer: {answer[:300]}")
+        print(f"  Success: {data.get('success', False)}")
+        print(f"  Latency: {data.get('elapsed_ms', 0):.0f}ms")
+        return
+
+    # Plan
+    print(f"Planning: {question}")
+    plan_data = plan(question, port)
+
+    if raw_json:
+        print(json.dumps(plan_data, indent=2))
+        if not execute_mode:
+            return
+
+    # Extract from nested answer if present
+    parsed = plan_data.get("parsed_answer", plan_data)
+    steps = parsed.get("steps") or parsed.get("nodes", [])
+    edges = parsed.get("edges", [])
+    order = parsed.get("execution_order", [])
+    
+    if not steps:
+        print("No steps generated.")
+        return
+
+    id_to_name = {n["id"]: n.get("name") or n.get("agent") or n["id"] for n in steps}
+
+    print(f"\nPlan: {plan_data.get('run_id', '?')}")
+    print(f"  Steps: {len(steps)}")
+    print(f"  Edges: {len(edges)}")
+    for i, batch in enumerate(order):
+        names = [id_to_name.get(nid, nid) for nid in batch]
+        print(f"  Step {i+1}: {' | '.join(names)}")
+
+    if not execute_mode:
+        return
+
+    # Execute
+    print("\nExecuting...")
+    exec_data = execute(plan_data, port)
+
+    if raw_json:
+        print(json.dumps(exec_data, indent=2))
+        return
+
+    print(f"\nExecute: {exec_data.get('run_id', '?')}")
+    print(f"  Answer: {exec_data.get('answer', '?')[:300]}")
+    print(f"  Latency: {exec_data.get('elapsed_ms', 0):.0f}ms")
+    print(f"  LLM: {exec_data.get('llm_answered', False)}")
+
+
+if __name__ == "__main__":
+    main()

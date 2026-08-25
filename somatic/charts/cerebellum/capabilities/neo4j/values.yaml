@@ -1,0 +1,115 @@
+capability:
+  name: neo4j
+  id: cap-db-neo4j-001
+  platform: Database/Graph
+  description: Neo4j graph database for entity relationships
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-27'
+  review_date: '2026-12-27'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - database
+  - neo4j
+  - graph
+  - cypher
+  references:
+  - src/cerebellum/capabilities/neo4j.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/neo4j
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: query
+  method: READ
+  path: /query
+  description: Execute a Cypher query
+  required_params:
+  - cypher
+  optional_params:
+  - params
+  paginated: false
+  pagination_cursor_field: ''
+- name: create_node
+  method: CREATE
+  path: /node
+  description: Create a node
+  required_params:
+  - labels
+  - properties
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: create_relationship
+  method: CREATE
+  path: /relationship
+  description: Create a relationship
+  required_params:
+  - start_id
+  - end_id
+  - type
+  optional_params:
+  - properties
+  paginated: false
+  pagination_cursor_field: ''
+- name: delete_node
+  method: DELETE
+  path: /node/{id}
+  description: Delete a node
+  required_params:
+  - id
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_neo4j_connect
+  - test_neo4j_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

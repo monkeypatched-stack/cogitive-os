@@ -1,0 +1,27 @@
+workload: architecture_review
+goal: >
+  Review the MonkeyBrain → ETASS → Domain Package three-layer architecture.
+  Evaluate coupling, cohesion, extension points, and governance boundaries.
+  Identify risks and recommend improvements.
+domain: software_engineering
+bounded_context: architecture
+reasoning: debate
+constraints:
+  - Domain packages must have zero imports from src/monkey_brain/
+  - ETASS must have zero imports from domain packages
+  - All cross-layer communication must go through typed contracts (AgentResult, ExecutionOutcome)
+  - No singleton abuse — registries are singletons, nothing else is
+evidence:
+  - Current import graph (packages/broca, packages/cerebellum, src/monkey_brain, domains/)
+  - ExecutionOutcome subscribers (policy, observer, learning, lemon)
+  - BrocaAgentRegistry discovery path including NANDA fallback
+success_criteria:
+  - Zero cross-layer import violations identified
+  - All extension points documented
+  - Risk register produced with at least 3 entries
+  - Recommended architectural decisions recorded as ADRs
+outputs:
+  - Architectural assessment (pass/fail per constraint)
+  - Risk register
+  - Recommended ADRs
+  - Dependency diagram

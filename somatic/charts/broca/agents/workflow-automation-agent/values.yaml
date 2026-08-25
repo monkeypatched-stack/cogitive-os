@@ -1,0 +1,79 @@
+agent:
+  name: workflow-automation-agent
+  id: agent-auto-001
+  kind: AutomationAgent
+  version: 1.0.0
+  status: active
+  description: Executes structured multi-step task workflows
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+identity:
+  role: Workflow Automation Agent
+  system_prompt: You are a deterministic workflow executor.. Follow the task plan
+    step-by-step. Do not skip steps.. If a step fails, invoke the fallback handler.
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.1
+  max_tokens: 4096
+triggers:
+- type: event
+  source: nats
+  subject: agent.automation.trigger
+- type: schedule
+  cron: 0 9 * * 1-5
+workflow:
+  mode: sequential
+  steps:
+  - id: validate_input
+    action: validate
+    depends_on: []
+    on_failure: abort
+  - id: fetch_context
+    action: tool_call
+    tool: data_fetcher
+    depends_on:
+    - validate_input
+    on_failure: retry
+  - id: execute_task
+    action: llm_generate
+    depends_on:
+    - fetch_context
+    on_failure: fallback
+  - id: emit_result
+    action: emit_event
+    depends_on:
+    - execute_task
+    on_failure: abort
+fallback:
+  strategy: human_escalation
+  escalation_topic: agent.escalation
+retrieval:
+  pipeline: []
+tools: []
+orchestration:
+  mode: sequential
+  max_iterations: 1
+  parallel_tool_calls: false
+  tool_call_timeout_ms: 0
+guardrails:
+  require_confirmation: []
+routing:
+  strategy: rule_based
+  fallback_agent: ''
+  agents: []
+aggregation:
+  strategy: concat
+  conflict_resolution: ''
+memory:
+  backend: redis
+  ttl_seconds: 3600
+  scope: session
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: http://otel-collector:4317
+retry:
+  max_attempts: 3
+  backoff_strategy: exponential
+  base_delay_ms: 500

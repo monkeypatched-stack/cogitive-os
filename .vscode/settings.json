@@ -1,0 +1,11 @@
+{
+    "python.defaultInterpreterPath": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+    "python.analysis.extraPaths": [
+        "./src/helpers",
+        "./packages/cerebellum",
+        "./packages/broca",
+        "./domains/manufacturing/knowledge"
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": []
+}

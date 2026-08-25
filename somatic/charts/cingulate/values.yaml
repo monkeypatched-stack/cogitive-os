@@ -1,0 +1,140 @@
+module:
+  name: cingulate
+  layer: 5
+  alias: Governance + Benchmark
+  biologicalRole: Decision conflict, attention
+  softwareRole: Benchmarks, policy enforcement, governance
+  source: soma/Governance/Governance.md
+  owns:
+  - governance_governance
+  - governance_architecture_validator
+  - governance_compliance
+  - governance_policy_registry
+  - benchmark_runner
+  - benchmark_scenario_runner
+  - benchmark_reporter
+  - benchmark_validator
+owns:
+- ArchitecturalGovernance
+- PolicyRegistry
+- ComplianceValidation
+- BenchmarkExecution
+- ScenarioValidation
+- MetricsCollection
+- ReportGeneration
+- ConstitutionalAudit
+neverOwns:
+- RuntimeExecution
+- CapabilityLogic
+- Planning
+- WorldModel
+governanceContract:
+  reviewProcess:
+  - "Constitution \u2192 Implementation \u2192 Architectural Audit \u2192 Review \u2192\
+    \ Revision \u2192 Approval \u2192 Merge"
+  auditQuestions:
+  - Is cognition outside the kernel?
+  - Is execution outside the runtime?
+  - Is policy outside kernel/rl?
+  - Are there duplicate abstractions?
+  - Is the Runtime making decisions?
+  - Is cerebellum leaking into the Kernel?
+  outcomes:
+    approved:
+      label: APPROVED
+      template: Conforms to Constitution v1.0.0
+    rejected:
+      label: REJECTED
+      examples:
+      - Planner leaks into Runtime.
+      - Execution policy exists outside kernel/rl.
+      - Cognition found inside the runtime.
+benchmarkContract:
+  groundTruth: Every benchmark executes against deterministic grounded data.
+  categories:
+  - FunctionalValidation
+  - RegressionTesting
+  - AccuracyTesting
+  - PerformanceTesting
+  - LoadTesting
+  - StressTesting
+  - ScalabilityTesting
+  - ReliabilityTesting
+  metricsPerScenario:
+  - Input
+  - ExpectedIntent
+  - ExpectedWorkflow
+  - ExpectedPipeline
+  - ExpectedCapabilitySequence
+  - ExpectedStateChanges
+  - ExpectedResponse
+principles:
+- id: 1
+  name: ConstitutionalReview
+  statement: 'Review is constitutional not functional. Ask: does it conform? Not:
+    does it compile?'
+- id: 2
+  name: GroundTruth
+  statement: Every benchmark executes against deterministic grounded data. Never dynamic.
+- id: 3
+  name: Repeatability
+  statement: Every benchmark produces reproducible results. Randomness is controlled.
+invariants:
+- id: CING-INV-001
+  rule: governance_never_executes
+  statement: cingulate/governance never executes pipelines or capabilities.
+  severity: critical
+  rejection: "REJECTED \u2014 governance module contains execution logic."
+- id: CING-INV-002
+  rule: benchmarks_use_ground_truth
+  statement: Benchmarks never generate expected outputs dynamically during execution.
+  severity: critical
+  rejection: "REJECTED \u2014 Benchmark uses dynamic expected outputs."
+deliverables:
+  governance:
+  - artifact: ArchitectureConformanceScore
+  - artifact: RemainingViolations
+  - artifact: DeletionRecommendations
+  - artifact: SimplificationOpportunities
+  - artifact: FinalRoadmap
+  benchmark:
+  - artifact: BenchmarkRunner
+  - artifact: ScenarioRunner
+  - artifact: ResultValidator
+  - artifact: PerformanceAnalyzer
+  - artifact: RegressionFramework
+  - artifact: ReportGenerator
+  - artifact: CIIntegration
+  - artifact: GroundTruthValidator
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: cingulate is governance and benchmark. It audits. It never
+      executes.'
+    constraint: CING-INV-001
+    auditGate: true
+  - step: 2
+    instruction: Map governance/ files to constitutional review responsibilities.
+  - step: 3
+    instruction: Map benchmark/ files to validation pipeline stages.
+  - step: 4
+    instruction: Verify the architecture_validator module checks all global INV-* invariants.
+  - step: 5
+    instruction: Verify benchmark runner uses ground truth datasets only.
+    constraint: CING-INV-002
+    auditGate: true
+  - step: 6
+    instruction: 'Produce governance deliverables: ConformanceScore, Violations, Recommendations.'
+  - step: 7
+    instruction: 'Produce benchmark deliverables: Runner, Validator, Reporter, CIIntegration.'
+  - step: 8
+    instruction: Run constitutional review gate.
+    auditGate: true
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 cingulate conforms to Governance + Benchmark Constitution\
+      \ v1.0.0"
+    rejected:
+    - "REJECTED \u2014 Governance module contains execution logic."
+    - "REJECTED \u2014 Benchmark uses dynamic expected outputs."

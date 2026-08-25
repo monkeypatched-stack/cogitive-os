@@ -1,0 +1,116 @@
+/* Orders & Wallet — own class prefix (lwe-ow-). Same visual language as
+ * every other workspace page (CommunicationPanel.css lwe-cw-, Negotiations
+ * Panel.css lwe-neg-, SecurityPanel.css lwe-sec-, LemonMetricsPanel.css
+ * lwe-lm-): same page bg, card/shadow, border, and status-color hexes.
+ * Density pass: this is an admin/operator console — optimized for
+ * scanning many rows, not marketing-card whitespace. No page-level <h2>
+ * here; DashboardFrame's own pagehead already supplies the title/Live
+ * badge/subtitle for this route (see OrdersWalletPanel.tsx's own note). */
+
+.lwe-ow-page {
+  display: flex; flex-direction: column; gap: 10px; height: 100%; min-height: 0;
+  padding: 14px 20px 18px; box-sizing: border-box; background: #F8FAFC; color: #1E293B; overflow-y: auto;
+}
+.lwe-ow-error { padding: 8px 12px; border-radius: 8px; background: #FEF2F2; color: #B91C1C; font-size: 12px; }
+.lwe-ow-muted { font-size: 12px; color: #94A3B8; font-style: italic; padding: 4px 0; }
+.lwe-ow-empty { font-size: 12px; color: #94A3B8; padding: 6px 0; }
+.lwe-ow-dim { font-size: 11px; color: #94A3B8; }
+
+.lwe-ow-select {
+  padding: 6px 10px; border: 1px solid #E8EAF0; border-radius: 7px; font-size: 12.5px; font-family: inherit;
+  background: #FFFFFF; color: #1E293B; min-width: 220px; align-self: flex-start; flex: none;
+}
+
+/* Compact horizontal actor bar — replaces the old tall actor card. */
+.lwe-ow-actor-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: none;
+  border: 1px solid #E8EAF0; border-radius: 10px; background: #FFFFFF; box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04);
+  padding: 7px 12px; font-size: 12px; color: #64748B;
+}
+.lwe-ow-actor-name { font-size: 13.5px; font-weight: 700; color: #1E293B; }
+.lwe-ow-actor-sep { color: #CBD5E1; }
+.lwe-ow-actor-id code { background: #F1F5F9; padding: 1px 5px; border-radius: 4px; font-size: 10.5px; color: #64748B; }
+
+/* Plain, always-visible sections — not accordions. Dense admin console:
+ * every section is on screen at once, the page itself scrolls if the
+ * actor has enough data to exceed one viewport.
+ * flex: none is load-bearing: .lwe-ow-page is a flex column with
+ * overflow-y: auto, and a flex child with no flex-shrink defaults to
+ * shrink:1 — without this, once total content exceeds the viewport,
+ * flexbox SQUEEZES every section short instead of letting the page
+ * scroll, which sliced table rows in half rather than showing them.
+ * Same fix CommunicationPanel.css's .lwe-cw-raw documents for the same
+ * reason. */
+.lwe-ow-section { flex: none; border: 1px solid #E8EAF0; border-radius: 12px; background: #FFFFFF; box-shadow: 0 1px 6px rgba(15, 23, 42, 0.04); overflow: hidden; }
+.lwe-ow-section-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-bottom: 1px solid #F1F5F9;
+}
+.lwe-ow-section-head h3 { margin: 0; font-size: 12.5px; font-weight: 700; }
+.lwe-ow-count { font-size: 10px; font-weight: 700; color: #4338CA; background: #EEF2FF; padding: 1px 8px; border-radius: 999px; }
+.lwe-ow-section-body { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; }
+
+.lwe-ow-table-wrap thead th { position: sticky; top: 0; z-index: 1; }
+
+/* Compact wallet stat row — replaces the old giant colored balance block. */
+.lwe-ow-wallet-row { display: flex; gap: 24px; align-items: baseline; padding: 4px 2px; }
+.lwe-ow-wallet-stat { display: flex; flex-direction: column; gap: 1px; }
+.lwe-ow-wallet-stat span { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94A3B8; }
+.lwe-ow-wallet-stat b { font-size: 20px; font-weight: 700; color: #1E293B; }
+.lwe-ow-wallet-updated b { font-size: 13px; font-weight: 600; color: #64748B; }
+
+.lwe-ow-txn-list { display: flex; flex-direction: column; gap: 0; }
+.lwe-ow-txn-row { display: grid; grid-template-columns: 70px 1fr auto; align-items: baseline; gap: 12px; padding: 4px 2px; border-bottom: 1px solid #F1F5F9; font-size: 12px; }
+.lwe-ow-txn-row:last-child { border-bottom: none; }
+.lwe-ow-txn-neg { color: #B91C1C; font-weight: 600; }
+.lwe-ow-txn-pos { color: #047857; font-weight: 600; }
+.lwe-ow-txn-balance { color: #64748B; font-variant-numeric: tabular-nums; }
+.lwe-ow-txn-time { color: #94A3B8; font-size: 10.5px; text-align: right; }
+
+/* Orders table — real <table> rows (not a card list), so columns align
+ * and many orders scan at a glance. */
+.lwe-ow-orders-table th:first-child, .lwe-ow-orders-table td:first-child { width: 20px; padding-right: 0; }
+.lwe-ow-order-row { cursor: pointer; }
+.lwe-ow-order-row:hover td { background: #F8FAFC; }
+.lwe-ow-order-caret { color: #94A3B8; font-size: 10px; }
+.lwe-ow-order-items { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lwe-ow-order-total { font-weight: 600; color: #1E293B; }
+.lwe-ow-order-time { color: #94A3B8; font-size: 11px; white-space: nowrap; }
+.lwe-ow-order-detail-row td { padding: 0; background: #F8FAFC; border-bottom: 1px solid #F1F5F9; }
+
+.lwe-ow-order-detail { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.lwe-ow-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; }
+.lwe-ow-detail-field { display: flex; flex-direction: column; gap: 1px; padding: 5px 9px; border: 1px solid #E8EAF0; border-radius: 7px; background: #FFFFFF; }
+.lwe-ow-detail-field span { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #9aa3af; }
+.lwe-ow-detail-field b { font-size: 11.5px; color: #303b4b; font-weight: 600; overflow-wrap: anywhere; }
+
+.lwe-ow-detail-security { display: flex; flex-wrap: wrap; gap: 14px; padding: 6px 9px; border: 1px solid #E8EAF0; border-radius: 7px; background: #FFFFFF; }
+.lwe-ow-sec-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4b5563; }
+
+.lwe-ow-world-changes { margin: 0; padding-left: 16px; font-size: 11px; color: #4b5563; line-height: 1.6; }
+
+.lwe-ow-order-footer { display: flex; justify-content: flex-end; }
+.lwe-ow-link-btn { background: none; border: none; color: #4338CA; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; font: inherit; }
+.lwe-ow-link-btn:hover { text-decoration: underline; }
+
+.lwe-ow-table-wrap { overflow-x: auto; border: 1px solid #E8EAF0; border-radius: 8px; }
+.lwe-ow-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #FFFFFF; }
+.lwe-ow-table th { text-align: left; padding: 5px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #94A3B8; background: #F8FAFC; border-bottom: 1px solid #E8EAF0; white-space: nowrap; }
+.lwe-ow-table td { padding: 5px 10px; border-bottom: 1px solid #F1F5F9; color: #334155; vertical-align: middle; }
+.lwe-ow-table code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 11px; background: #F1F5F9; padding: 1px 5px; border-radius: 4px; }
+
+.lwe-ow-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+.lwe-ow-pill-ok { background: #ECFDF5; color: #047857; }
+.lwe-ow-pill-bad { background: #FEF2F2; color: #B91C1C; }
+.lwe-ow-pill-neutral { background: #FFFBEB; color: #92400E; }
+.lwe-ow-pill-warn { background: #FFFBEB; color: #92400E; }
+
+.lwe-ow-policy-list { display: flex; flex-direction: column; gap: 6px; }
+.lwe-ow-policy-card { border: 1px solid #E8EAF0; border-radius: 8px; padding: 8px 10px; background: #F8FAFC; }
+.lwe-ow-policy-name { font-size: 12px; font-weight: 600; color: #1E293B; }
+.lwe-ow-policy-desc { font-size: 11px; color: #64748B; margin-top: 1px; }
+.lwe-ow-policy-rules { margin: 4px 0 0; padding-left: 16px; font-size: 11px; color: #334155; line-height: 1.5; }
+
+@media (max-width: 760px) {
+  .lwe-ow-order-items { max-width: 140px; }
+}

@@ -1,0 +1,31 @@
+workload: governance_review
+goal: >
+  Evaluate Batch B-2024-001 for release readiness.
+  Check yield, QA sign-off, deviation status, and calibration records.
+  Compose a release decision with evidence.
+domain: manufacturing
+bounded_context: production
+aggregate: batch
+entity: lot
+value_object: recipe
+reasoning: debate
+constraints:
+  - Batch yield must be >= 90%
+  - QA sign-off is mandatory before release
+  - Any open deviation must be resolved or formally deferred
+  - Calibration records for all process equipment must be current
+  - Change control for any process change must be approved
+evidence:
+  - Batch record from MES
+  - QA sign-off document
+  - Deviation log
+  - Equipment calibration ledger
+  - Change control tracker
+success_criteria:
+  - Release decision is documented with evidence references
+  - All invariants satisfied or explicitly waived with justification
+  - CAPA status confirmed for any open deviations
+outputs:
+  - Release decision (approved / rejected / conditional)
+  - Evidence summary (batch_id, yield_pct, qa_signed, deviations, calibration_status)
+  - Audit trail entry

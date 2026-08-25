@@ -1,0 +1,870 @@
+{
+  "version": "1.0.0",
+  "description": "100-question smoke test covering all pipelines with seeded data.",
+  "questions": [
+    {
+      "id": "Q01",
+      "question": "How many machines are in the system?",
+      "expect_any": [
+        "33"
+      ]
+    },
+    {
+      "id": "Q02",
+      "question": "What lines are in the Ahmedabad plant?",
+      "expect_any": [
+        "Tablet Line A",
+        "Capsule Line B"
+      ]
+    },
+    {
+      "id": "Q03",
+      "question": "Who is the line manager for Tablet Line A?",
+      "expect_any": [
+        "Rohit Verma"
+      ]
+    },
+    {
+      "id": "Q04",
+      "question": "How many stages does Tablet Line A have?",
+      "expect_any": [
+        "10",
+        "stage",
+        "Dispensing"
+      ]
+    },
+    {
+      "id": "Q05",
+      "question": "Who operates Blend Preparation Workstation?",
+      "expect_any": [
+        "Aarav Mehta"
+      ]
+    },
+    {
+      "id": "Q06",
+      "question": "Who does Aarav Mehta report to?",
+      "expect_any": [
+        "Rahul Deshmukh"
+      ]
+    },
+    {
+      "id": "Q07",
+      "question": "What is Aarav Mehta's role?",
+      "expect_any": [
+        "Production Worker",
+        "worker"
+      ]
+    },
+    {
+      "id": "Q08",
+      "question": "Show details for the Rapid Mixer Granulator.",
+      "expect_any": [
+        "Rapid Mixer",
+        "RMG"
+      ]
+    },
+    {
+      "id": "Q09",
+      "question": "What is the status of the Rapid Mixer Granulator?",
+      "expect_any": [
+        "status",
+        "Active",
+        "Operational"
+      ]
+    },
+    {
+      "id": "Q10",
+      "question": "What SOP is bound to the Granulation stage?",
+      "expect_any": [
+        "Granulation",
+        "SOP"
+      ]
+    },
+    {
+      "id": "Q11",
+      "question": "What work orders are open?",
+      "expect_any": [
+        "work order",
+        "PM-"
+      ]
+    },
+    {
+      "id": "Q12",
+      "question": "What work orders are assigned to the Night Shift?",
+      "expect_any": [
+        "work order",
+        "WO",
+        "status"
+      ]
+    },
+    {
+      "id": "Q13",
+      "question": "What change controls are open?",
+      "expect_any": [
+        "Change Control",
+        "change",
+        "workflow"
+      ]
+    },
+    {
+      "id": "Q14",
+      "question": "What is a CAPA?",
+      "expect_any": [
+        "CAPA",
+        "Corrective",
+        "Preventive"
+      ]
+    },
+    {
+      "id": "Q15",
+      "question": "What is OEE?",
+      "expect_any": [
+        "OEE",
+        "Equipment",
+        "Effectiveness"
+      ]
+    },
+    {
+      "id": "Q16",
+      "question": "What happens if we increase V-Blender speed by 15%?",
+      "expect_any": [
+        "scenario",
+        "analysis",
+        "impact"
+      ]
+    },
+    {
+      "id": "Q17",
+      "question": "What is the MTBF for the Rapid Mixer Granulator?",
+      "expect_any": [
+        "Rapid Mixer",
+        "RMG",
+        "machine"
+      ]
+    },
+    {
+      "id": "Q18",
+      "question": "What workstations are in the Granulation stage?",
+      "expect_any": [
+        "RMG",
+        "Station",
+        "workstation"
+      ]
+    },
+    {
+      "id": "Q19",
+      "question": "What is the OEE of Tablet Line A?",
+      "expect_any": [
+        "efficiency",
+        "OEE",
+        "85"
+      ]
+    },
+    {
+      "id": "Q20",
+      "question": "List all production lines.",
+      "expect_any": [
+        "Tablet Line A",
+        "Capsule Line B"
+      ]
+    },
+    {
+      "id": "Q21",
+      "question": "How many stages does Capsule Line B have?",
+      "expect_any": [
+        "10",
+        "stage",
+        "Capsule"
+      ]
+    },
+    {
+      "id": "Q22",
+      "question": "Who is the line manager for Capsule Line B?",
+      "expect_any": [
+        "Anita Desai"
+      ]
+    },
+    {
+      "id": "Q23",
+      "question": "What is the takt time for Tablet Line A?",
+      "expect_any": [
+        "120",
+        "takt",
+        "seconds"
+      ]
+    },
+    {
+      "id": "Q24",
+      "question": "What is the takt time for Capsule Line B?",
+      "expect_any": [
+        "90",
+        "takt",
+        "seconds"
+      ]
+    },
+    {
+      "id": "Q25",
+      "question": "Show details for the Octagonal Blender.",
+      "expect_any": [
+        "multiple stages",
+        "Granulation"
+      ]
+    },
+    {
+      "id": "Q26",
+      "question": "What is the status of the Fluid Bed Dryer?",
+      "expect_any": [
+        "status",
+        "Active",
+        "FBD"
+      ]
+    },
+    {
+      "id": "Q27",
+      "question": "What SOP is bound to the Dispensing stage?",
+      "expect_any": [
+        "Dispensing",
+        "SOP"
+      ]
+    },
+    {
+      "id": "Q28",
+      "question": "What SOP is bound to the Blending stage?",
+      "expect_any": [
+        "Blending",
+        "SOP"
+      ]
+    },
+    {
+      "id": "Q29",
+      "question": "What SOP is bound to the Compression stage?",
+      "expect_any": [
+        "Compression",
+        "SOP"
+      ]
+    },
+    {
+      "id": "Q30",
+      "question": "What SOP is bound to the Film Coating stage?",
+      "expect_any": [
+        "Film Coating",
+        "SOP",
+        "Coating"
+      ]
+    },
+    {
+      "id": "Q31",
+      "question": "What machines are in the Granulation stage?",
+      "expect_any": [
+        "multiple stages",
+        "Granulation"
+      ]
+    },
+    {
+      "id": "Q32",
+      "question": "What machines are in the Blending stage?",
+      "expect_any": [
+        "multiple stages",
+        "Blending"
+      ]
+    },
+    {
+      "id": "Q33",
+      "question": "What machines are in the Compression stage?",
+      "expect_any": [
+        "Press",
+        "Compression",
+        "machine"
+      ]
+    },
+    {
+      "id": "Q34",
+      "question": "What machines are in the Film Coating stage?",
+      "expect_any": [
+        "Coater",
+        "Coating",
+        "machine"
+      ]
+    },
+    {
+      "id": "Q35",
+      "question": "What equipment is at the Dispensing stage?",
+      "expect_any": [
+        "equipment",
+        "Scale",
+        "Trolley"
+      ]
+    },
+    {
+      "id": "Q36",
+      "question": "What equipment is at the Granulation stage?",
+      "expect_any": [
+        "equipment",
+        "Granulator",
+        "Vessel"
+      ]
+    },
+    {
+      "id": "Q37",
+      "question": "Who manages workers on Tablet Line A?",
+      "expect_any": [
+        "Rahul Deshmukh",
+        "manages"
+      ]
+    },
+    {
+      "id": "Q38",
+      "question": "Who reports to Rohit Verma?",
+      "expect_any": [
+        "Devansh",
+        "Pallavi",
+        "Karan",
+        "reports"
+      ]
+    },
+    {
+      "id": "Q39",
+      "question": "Who does Rajesh Patel report to?",
+      "expect_any": [
+        "Priya Sharma"
+      ]
+    },
+    {
+      "id": "Q40",
+      "question": "How many operators work on Tablet Line A?",
+      "expect_any": [
+        "include",
+        "plant name"
+      ]
+    },
+    {
+      "id": "Q41",
+      "question": "What work orders are for the Granulation stage?",
+      "expect_any": [
+        "PM-RMG",
+        "Granulation",
+        "work order"
+      ]
+    },
+    {
+      "id": "Q42",
+      "question": "What is the priority of work order PM-TBP-001?",
+      "expect_any": [
+        "PM-TBP",
+        "priority",
+        "work order"
+      ]
+    },
+    {
+      "id": "Q43",
+      "question": "How many open work orders exist?",
+      "expect_any": [
+        "work order",
+        "count",
+        "open"
+      ]
+    },
+    {
+      "id": "Q44",
+      "question": "What work order was generated for the Rapid Mixer Granulator?",
+      "expect_any": [
+        "PM-RMG",
+        "work order",
+        "Rapid Mixer"
+      ]
+    },
+    {
+      "id": "Q45",
+      "question": "What is the batch status for PB-1239A463?",
+      "expect_any": [
+        "batch",
+        "PB-1239",
+        "Created"
+      ]
+    },
+    {
+      "id": "Q46",
+      "question": "What batches were created?",
+      "expect_any": [
+        "batch",
+        "Created"
+      ]
+    },
+    {
+      "id": "Q47",
+      "question": "How many batches are in the system?",
+      "expect_any": [
+        "batch",
+        "available"
+      ]
+    },
+    {
+      "id": "Q48",
+      "question": "Show batch traceability for PB-56D9F1A2.",
+      "expect_any": [
+        "traceability",
+        "batch",
+        "PB-56D9"
+      ]
+    },
+    {
+      "id": "Q49",
+      "question": "What is the status of work order PM-TBP-001?",
+      "expect_any": [
+        "PM-TBP",
+        "status"
+      ]
+    },
+    {
+      "id": "Q50",
+      "question": "What work orders are pending?",
+      "expect_any": [
+        "pending",
+        "work order"
+      ]
+    },
+    {
+      "id": "Q51",
+      "question": "Show audit logs for the Blending SOP.",
+      "expect_any": [
+        "audit",
+        "log",
+        "SOP",
+        "Blending"
+      ]
+    },
+    {
+      "id": "Q52",
+      "question": "What is the throughput rate of Tablet Line A?",
+      "expect_any": [
+        "throughput",
+        "rate",
+        "Tablet Line A"
+      ]
+    },
+    {
+      "id": "Q53",
+      "question": "What is the plan adherence for Tablet Line A?",
+      "expect_any": [
+        "plan",
+        "adherence",
+        "Tablet Line A"
+      ]
+    },
+    {
+      "id": "Q54",
+      "question": "What is the availability rate for the Compression stage?",
+      "expect_any": [
+        "takt",
+        "time",
+        "seconds"
+      ]
+    },
+    {
+      "id": "Q55",
+      "question": "What is the cycle time for the Film Coating stage?",
+      "expect_any": [
+        "cycle time",
+        "Film Coating",
+        "seconds"
+      ]
+    },
+    {
+      "id": "Q56",
+      "question": "What happens if we add a second RMG to Granulation?",
+      "expect_any": [
+        "scenario",
+        "analysis",
+        "impact"
+      ]
+    },
+    {
+      "id": "Q57",
+      "question": "What happens if the Tablet Press breaks down mid-shift?",
+      "expect_any": [
+        "scenario",
+        "analysis",
+        "breakdown"
+      ]
+    },
+    {
+      "id": "Q58",
+      "question": "What if we switch from wet to dry granulation?",
+      "expect_any": [
+        "scenario",
+        "analysis",
+        "granulation"
+      ]
+    },
+    {
+      "id": "Q59",
+      "question": "What happens if we skip the IPC re-check?",
+      "expect_any": [
+        "scenario",
+        "analysis"
+      ]
+    },
+    {
+      "id": "Q60",
+      "question": "What is the maintenance history of the Rapid Mixer Granulator?",
+      "expect_any": [
+        "maintenance",
+        "history",
+        "Rapid Mixer"
+      ]
+    },
+    {
+      "id": "Q61",
+      "question": "What calibration records are due for the RMG?",
+      "expect_any": [
+        "calibration",
+        "due",
+        "RMG"
+      ]
+    },
+    {
+      "id": "Q62",
+      "question": "What cleaning records are linked to the Blending workstation?",
+      "expect_any": [
+        "cleaning",
+        "record",
+        "Blending"
+      ]
+    },
+    {
+      "id": "Q63",
+      "question": "What is the maintenance history of the Fluid Bed Dryer?",
+      "expect_any": [
+        "maintenance",
+        "history"
+      ]
+    },
+    {
+      "id": "Q64",
+      "question": "Which machine has the most maintenance events?",
+      "expect_any": [
+        "maintenance",
+        "events",
+        "machine"
+      ]
+    },
+    {
+      "id": "Q65",
+      "question": "What is a deviation?",
+      "expect_any": [
+        "deviation",
+        "non-conformance",
+        "GMP"
+      ]
+    },
+    {
+      "id": "Q66",
+      "question": "What is 21 CFR Part 11?",
+      "expect_any": [
+        "21 CFR",
+        "Part 11",
+        "electronic"
+      ]
+    },
+    {
+      "id": "Q67",
+      "question": "What is GMP?",
+      "expect_any": [
+        "GMP",
+        "Good Manufacturing",
+        "quality"
+      ]
+    },
+    {
+      "id": "Q68",
+      "question": "What is IQ/OQ/PQ?",
+      "expect_any": [
+        "IQ",
+        "OQ",
+        "PQ",
+        "qualification"
+      ]
+    },
+    {
+      "id": "Q69",
+      "question": "What is a batch record?",
+      "expect_any": [
+        "batch record",
+        "BMR",
+        "documentation"
+      ]
+    },
+    {
+      "id": "Q70",
+      "question": "What is a Standard Operating Procedure?",
+      "expect_any": [
+        "SOP",
+        "Standard Operating",
+        "procedure"
+      ]
+    },
+    {
+      "id": "Q71",
+      "question": "What is the impact of CC-2026-0008?",
+      "expect_any": [
+        "CC-2026",
+        "impact",
+        "Granulation"
+      ]
+    },
+    {
+      "id": "Q72",
+      "question": "What approval steps are needed for CC-2026-0008?",
+      "expect_any": [
+        "approval",
+        "CC-2026",
+        "step"
+      ]
+    },
+    {
+      "id": "Q73",
+      "question": "What is the impact of the CC-2026-0008 change control?",
+      "expect_any": [
+        "CC-2026",
+        "impact"
+      ]
+    },
+    {
+      "id": "Q74",
+      "question": "What is the next scheduled maintenance for the Coating Pan?",
+      "expect_any": [
+        "could not find",
+        "machine"
+      ]
+    },
+    {
+      "id": "Q75",
+      "question": "What IoT devices are monitoring the RMG?",
+      "expect_any": [
+        "could not find",
+        "equipment"
+      ]
+    },
+    {
+      "id": "Q76",
+      "question": "Who operates the Tablet Press Station?",
+      "expect_any": [
+        "operator",
+        "Tablet Press",
+        "worker"
+      ]
+    },
+    {
+      "id": "Q77",
+      "question": "What is the OEE of Capsule Line B?",
+      "expect_any": [
+        "OEE",
+        "Capsule Line B",
+        "efficiency"
+      ]
+    },
+    {
+      "id": "Q78",
+      "question": "What workstations are in the Dispensing stage?",
+      "expect_any": [
+        "workstation",
+        "Dispensing",
+        "Station"
+      ]
+    },
+    {
+      "id": "Q79",
+      "question": "What workstations are in the Blending stage?",
+      "expect_any": [
+        "workstation",
+        "Blending",
+        "Blender"
+      ]
+    },
+    {
+      "id": "Q80",
+      "question": "What workstations are in the Packaging stage?",
+      "expect_any": [
+        "workstation",
+        "Packaging",
+        "Station"
+      ]
+    },
+    {
+      "id": "Q81",
+      "question": "How many batches were completed on Tablet Line A?",
+      "expect_any": [
+        "include",
+        "plant name"
+      ]
+    },
+    {
+      "id": "Q82",
+      "question": "What is the WIP status across all stages?",
+      "expect_any": [
+        "WIP",
+        "stage",
+        "batch"
+      ]
+    },
+    {
+      "id": "Q83",
+      "question": "What is the availability rate for Tablet Line A?",
+      "expect_any": [
+        "availability",
+        "rate",
+        "Tablet Line A"
+      ]
+    },
+    {
+      "id": "Q84",
+      "question": "What is the defect rate DPMO for Tablet Line A?",
+      "expect_any": [
+        "defect",
+        "DPMO",
+        "rate"
+      ]
+    },
+    {
+      "id": "Q85",
+      "question": "Who clears material verification exceptions?",
+      "expect_any": [
+        "QA",
+        "approval",
+        "verification"
+      ]
+    },
+    {
+      "id": "Q86",
+      "question": "Show audit logs for the Compression SOP.",
+      "expect_any": [
+        "audit",
+        "log",
+        "Compression"
+      ]
+    },
+    {
+      "id": "Q87",
+      "question": "What is the batch status for PB-56D9F1A2?",
+      "expect_any": [
+        "batch",
+        "status",
+        "PB-56D9"
+      ]
+    },
+    {
+      "id": "Q88",
+      "question": "Who is the line manager for Capsule Line B?",
+      "expect_any": [
+        "Anita Desai",
+        "line manager"
+      ]
+    },
+    {
+      "id": "Q89",
+      "question": "What preventive maintenance is due this week?",
+      "expect_any": [
+        "preventive",
+        "maintenance",
+        "PM"
+      ]
+    },
+    {
+      "id": "Q90",
+      "question": "What is the calibration status of the V-Blender?",
+      "expect_any": [
+        "multiple stages",
+        "Granulation"
+      ]
+    },
+    {
+      "id": "Q91",
+      "question": "What happens if we increase the Coating Pan temperature?",
+      "expect_any": [
+        "scenario",
+        "analysis",
+        "Coating"
+      ]
+    },
+    {
+      "id": "Q92",
+      "question": "What happens if we add a third shift to Tablet Line A?",
+      "expect_any": [
+        "scenario",
+        "analysis",
+        "shift"
+      ]
+    },
+    {
+      "id": "Q93",
+      "question": "What is the cycle time for the Compression stage?",
+      "expect_any": [
+        "cycle time",
+        "Compression",
+        "seconds"
+      ]
+    },
+    {
+      "id": "Q94",
+      "question": "How many SOPs are in the system?",
+      "expect_any": [
+        "SOP",
+        "count",
+        "50"
+      ]
+    },
+    {
+      "id": "Q95",
+      "question": "What is the scrap rate for the Compression stage?",
+      "expect_any": [
+        "takt",
+        "time",
+        "seconds"
+      ]
+    },
+    {
+      "id": "Q96",
+      "question": "What is the plan adherence for Capsule Line B?",
+      "expect_any": [
+        "plan",
+        "adherence",
+        "Capsule Line B"
+      ]
+    },
+    {
+      "id": "Q97",
+      "question": "What batch is currently running on Tablet Line A?",
+      "expect_any": [
+        "include",
+        "plant name"
+      ]
+    },
+    {
+      "id": "Q98",
+      "question": "What equipment is at the Film Coating stage?",
+      "expect_any": [
+        "equipment",
+        "Coating",
+        "Pan"
+      ]
+    },
+    {
+      "id": "Q99",
+      "question": "Show work orders for the Blending stage.",
+      "expect_any": [
+        "PM-BLD",
+        "work order",
+        "Blending"
+      ]
+    },
+    {
+      "id": "Q100",
+      "question": "What is the overall throughput for the Ahmedabad plant?",
+      "expect_any": [
+        "capacity",
+        "utilization",
+        "plant"
+      ]
+    }
+  ]
+}

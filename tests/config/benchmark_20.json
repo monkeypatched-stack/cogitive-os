@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "description": "20-question benchmark — new phrasings, no assertion fixes.",
+  "questions": [
+    {"id": "B01", "question": "What equipment runs at the Granulation station?"},
+    {"id": "B02", "question": "Who is in charge of Capsule Line B?"},
+    {"id": "B03", "question": "List the machines used in Blending."},
+    {"id": "B04", "question": "What is the production rate of Tablet Line A?"},
+    {"id": "B05", "question": "Are there any open work orders for the RMG?"},
+    {"id": "B06", "question": "What SOPs apply to the Compression stage?"},
+    {"id": "B07", "question": "Who reports to the line manager of Tablet Line A?"},
+    {"id": "B08", "question": "How many batches has the facility produced?"},
+    {"id": "B09", "question": "What is a work order?"},
+    {"id": "B10", "question": "What happens if the Granulation stage runs overtime?"},
+    {"id": "B11", "question": "Which operator works at the Blender Loading Station?"},
+    {"id": "B12", "question": "What is the takt time for Capsule Line B?"},
+    {"id": "B13", "question": "Show me the Rapid Mixer Granulator details."},
+    {"id": "B14", "question": "What maintenance is scheduled for the Fluid Bed Dryer?"},
+    {"id": "B15", "question": "How many stages are in Capsule Line B?"},
+    {"id": "B16", "question": "What change controls are pending approval?"},
+    {"id": "B17", "question": "Who operates the Dispensing stage?"},
+    {"id": "B18", "question": "What is the OEE of Capsule Line B?"},
+    {"id": "B19", "question": "What workstations are at the Film Coating stage?"},
+    {"id": "B20", "question": "What if we reduce the Blending cycle time by 20%?"}
+  ]
+}

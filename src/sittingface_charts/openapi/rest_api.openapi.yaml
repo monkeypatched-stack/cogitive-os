@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: rest_api API
+  description: Generic REST API client with auth and rate limiting
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/rest_api
+  description: Capability endpoint
+paths:
+  /proxy:
+    read:
+      summary: Execute an HTTP request
+      operationId: rest_api_request
+      parameters:
+      - name: method
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: url
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: headers
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: body
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

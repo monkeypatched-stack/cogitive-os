@@ -1,0 +1,86 @@
+module:
+  name: sync
+  layer: 0
+  alias: Synchronization Layer
+  biologicalRole: Coordination
+  softwareRole: Secure bidirectional sync of state, capabilities, insights, policies
+  owns:
+  - sync_manager
+  - edge_node
+  - cloud_aggregator
+owns:
+- EdgeCloudSync
+- StateReplication
+- CapabilityDistribution
+- PolicyDistribution
+- ConflictResolution
+- OfflineFirstResilience
+- VersioningCompatibility
+neverOwns:
+- Execution
+- Cognition
+- CapabilityLogic
+- DirectFleetControl
+syncContract:
+  direction: "Bidirectional \u2014 Edge \u2194 Cloud"
+  edgeFirst: Edge executes autonomously. Cloud never in execution path.
+  cloudProvides:
+  - Aggregation
+  - ControlPlane
+  - FleetManagement
+  - Deployment
+  - Monitoring
+  - RegistrySynchronization
+principles:
+- id: 1
+  name: EdgeFirst
+  statement: Every edge node executes independently. Cloud is never in the execution
+    path.
+- id: 2
+  name: SecureBidirectional
+  statement: Sync is secure and bidirectional. State, capabilities, insights, policies.
+- id: 3
+  name: OfflineResilience
+  statement: Edge node functions fully without cloud connectivity.
+invariants:
+- id: SYNC-INV-001
+  rule: cloud_not_in_execution_path
+  statement: Cloud is never in the execution path. Edge executes autonomously.
+  severity: critical
+  rejection: "REJECTED \u2014 Cloud dependency found in execution path."
+- id: SYNC-INV-002
+  rule: sync_never_executes
+  statement: sync module never executes cognitive pipelines. It synchronizes state
+    only.
+  severity: critical
+  rejection: "REJECTED \u2014 Sync module contains execution logic."
+deliverables:
+- artifact: EdgeArchitecture
+- artifact: DeploymentModel
+- artifact: NodeLifecycle
+- artifact: SyncProtocol
+- artifact: ConflictResolutionStrategy
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: sync is the synchronization layer. Edge executes autonomously.'
+    constraint: SYNC-INV-001
+    auditGate: true
+  - step: 2
+    instruction: Map the sync_manager module, the edge_node module, the cloud_aggregator module to sync responsibilities.
+  - step: 3
+    instruction: Verify the edge_node module operates fully offline. No cloud dependency during
+      execution.
+    constraint: SYNC-INV-001
+    auditGate: true
+  - step: 4
+    instruction: Design conflict resolution for bidirectional state sync.
+  - step: 5
+    instruction: Produce EdgeArchitecture, DeploymentModel, NodeLifecycle, SyncProtocol.
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 sync conforms to Edge Architecture Constitution v1.0.0"
+    rejected:
+    - "REJECTED \u2014 Cloud found in execution path."
+    - "REJECTED \u2014 Sync module executes cognitive pipelines."

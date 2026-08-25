@@ -1,0 +1,64 @@
+workload: planner
+goal: >
+  Given a free-text goal and an optional service name, produce a structured YAML execution plan
+  that maps the goal to a sequence of monkeypatched make commands. Each step must declare its
+  dependencies so ExecutorAgent can run them in correct order.
+domain: software_engineering
+bounded_context: planning
+reasoning: step_by_step
+constraints:
+  - Output must be valid YAML only — no markdown fences, no prose outside the YAML
+  - The plan must have top-level keys: plan and steps
+  - plan.id must follow the pattern plan-<8-char-uuid>
+  - plan.status must be "pending" on generation
+  - Every step must have: id (integer), name (snake_case), command, description, depends_on (list)
+  - Commands must be valid monkeypatched make subcommands
+  - Steps must be topologically ordered — no step depends on a later step
+  - Use only the available monkeypatched make commands provided in context
+  - seed must always run after codegen and before serve — never skip it
+  - codegen must never run inside a simulation context (question_source=codegen is required)
+  - ddd-check has a built-in self-healing retry loop: if structural layer checks fail, it
+    invalidates the broken layers' cache and re-runs codegen automatically (up to --max-loops
+    times, default 2). The planner must NOT insert a separate codegen retry step — ddd-check
+    handles this internally. The pipeline step for ddd-check should pass --max-loops 2.
+policies:
+  - >
+    The canonical 14-step service pipeline for new service goals is:
+      1.  api              (generate API chart from spec)
+      2.  codegen          (generate DDD-layered service code)
+      3.  seed             (seed MongoDB with Pydantic-validated synthetic data)
+      4.  ddd-check        (validate DDD structure and bounded context rules)
+      5.  client           (generate typed client from API chart)
+      6.  chart-from-client (derive updated chart from client)
+      7.  compile-agent    (compile agent spec for the service)
+      8.  test-service     (run unit + integration tests)
+      9.  fix              (auto-fix failing tests with self-healing loop)
+      10. govern           (run Cingulate governance gate)
+      11. comply           (run compliance review)
+      12. simulate         (world-model G→A→R simulation — CONDITIONAL, see simulate_enabled flag)
+      13. create-agent     (register service as an ETASS agent)
+      14. serve            (start the service)
+  - >
+    simulate_enabled flag (default: true):
+      - If context.simulate_enabled is true (or absent): include step 12 (simulate).
+        simulate is read-only and never writes to bandit state or the event store.
+        It runs the full G→A→R adversarial loop (Generate → Attack → Repair) and
+        returns a confidence score + findings. The plan proceeds regardless of findings
+        unless confidence < 0.3, in which case it blocks and requests human review.
+      - If context.simulate_enabled is false: omit step 12 entirely. Steps 11 and 13
+        become direct neighbours. Use this for fast inner-loop iteration, hot-fixes,
+        or when the service has already passed simulation in a prior cycle.
+      - Never run simulate when question_source is "codegen" or "seed".
+  - For governance/compliance goals, use govern and comply commands
+  - For testing-only goals, use test-service with appropriate --max-loops
+  - steps[*].name must be snake_case and unique within the plan
+evidence:
+  - The goal and service name provided in the prompt
+  - The available monkeypatched make commands listed in context
+success_criteria:
+  - Output is a single valid YAML document with plan and steps keys
+  - All step dependencies reference valid step IDs that appear earlier in the list
+  - Every monkeypatched make command uses a valid subcommand from the available list
+  - seed step appears between codegen (step 2) and ddd-check (step 4)
+outputs:
+  - YAML only: a complete execution plan with plan metadata and ordered steps list

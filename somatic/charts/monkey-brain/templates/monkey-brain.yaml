@@ -1,0 +1,225 @@
+---
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalModule
+metadata:
+  name: {{ .Values.module.name }}
+  layer: {{ .Values.module.layer }}
+  alias: {{ .Values.module.alias | quote }}
+  biologicalRole: {{ .Values.module.biologicalRole | quote }}
+  softwareRole: {{ .Values.module.softwareRole | quote }}
+  description: {{ .Values.module.softwareRole | quote }}
+spec:
+  owns:
+    {{- range .Values.kernel.owns }}
+    - {{ . }}
+    {{- end }}
+    {{- range .Values.runtime.owns }}
+    - {{ . }}
+    {{- end }}
+  neverOwns:
+    - capability-execution
+    - integrations
+    - world-model
+    - observability
+  submodules:
+    {{- range $name, $sub := .Values.submodules }}
+    - {{ $name }}
+    {{- end }}
+  dependsOn:
+    - cerebellum
+    - introspection
+  exposes:
+    - /run
+    - /simulate
+    - /keys
+    - /prompt  # unified prompt — triggers self-healing on errors via self_healing_pipeline
+  consumes:
+    - cerebellum/registry
+    - introspection/metrics
+    - cortex/world_model
+
+---
+# ── Kernel Principles ──────────────────────────────────────────────────────
+{{- range .Values.kernel.principles }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalPrinciple
+metadata:
+  name: kernel-principle-{{ .id }}
+  module: monkey_brain/kernel
+  id: {{ .id }}
+  source: {{ $.Values.module.source | quote }}
+spec:
+  statement: {{ .statement | quote }}
+  {{- if .rationale }}
+  rationale: {{ .rationale | quote }}
+  {{- end }}
+---
+{{- end }}
+
+# ── Kernel Invariants ──────────────────────────────────────────────────────
+{{- range .Values.kernel.invariants }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalInvariant
+metadata:
+  name: {{ .id }}
+  module: monkey_brain/kernel
+  severity: {{ .severity }}
+spec:
+  rule: {{ .rule }}
+  rationale: {{ .statement | quote }}
+  auditCheck: {{ printf "Verify: %s" .statement | quote }}
+  rejection: {{ .rejection | quote }}
+---
+{{- end }}
+
+# ── Runtime Invariants ─────────────────────────────────────────────────────
+{{- range .Values.runtime.invariants }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalInvariant
+metadata:
+  name: {{ .id }}
+  module: monkey_brain/runtime
+  severity: {{ .severity }}
+spec:
+  rule: {{ .rule }}
+  rationale: {{ .statement | quote }}
+  auditCheck: {{ printf "Verify: %s" .statement | quote }}
+  rejection: {{ .rejection | quote }}
+---
+{{- end }}
+
+# ── Persistence Invariants ─────────────────────────────────────────────────
+{{- range .Values.persistence.invariants }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalInvariant
+metadata:
+  name: {{ .id }}
+  module: monkey_brain/persistence
+  severity: {{ .severity }}
+spec:
+  rule: {{ .rule }}
+  rationale: {{ .statement | quote }}
+  auditCheck: {{ printf "Verify: %s" .statement | quote }}
+  rejection: {{ .rejection | quote }}
+---
+{{- end }}
+
+# ── Kernel Deliverables ────────────────────────────────────────────────────
+{{- range .Values.kernel.deliverables }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalDeliverable
+metadata:
+  name: {{ .artifact | lower | replace " " "-" }}
+  module: monkey_brain/kernel
+spec:
+  artifact: {{ .artifact | quote }}
+  description: {{ .description | quote }}
+  acceptanceCriteria:
+    {{- range .acceptanceCriteria }}
+    - {{ . | quote }}
+    {{- end }}
+---
+{{- end }}
+
+# ── Runtime Deliverables ───────────────────────────────────────────────────
+{{- range .Values.runtime.deliverables }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalDeliverable
+metadata:
+  name: {{ .artifact | lower | replace " " "-" }}
+  module: monkey_brain/runtime
+spec:
+  artifact: {{ .artifact | quote }}
+  description: {{ .description | quote }}
+  acceptanceCriteria:
+    {{- range .acceptanceCriteria }}
+    - {{ . | quote }}
+    {{- end }}
+---
+{{- end }}
+
+# ── Compiled Prompt — Kernel ───────────────────────────────────────────────
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalPrompt
+metadata:
+  name: monkey-brain-kernel-prompt
+  module: monkey_brain/kernel
+  phase: "Phase 1 — Cognitive Kernel"
+spec:
+  preamble: "MonkeyBrain is a Cognitive Operating System. monkey_brain/kernel is the Cognitive Kernel. It owns cognition only."
+  cot:
+    steps:
+      {{- range .Values.kernel.cot.steps }}
+      - step: {{ .step }}
+        instruction: {{ .instruction | quote }}
+        {{- if .constraint }}
+        constraint: {{ .constraint | quote }}
+        {{- end }}
+        auditGate: {{ .auditGate | default false }}
+      {{- end }}
+  reviewGate:
+    mode: {{ .Values.reviewGate.mode }}
+    outcomes:
+      approved: {{ .Values.reviewGate.outcomes.approved | quote }}
+      rejected:
+        {{- range .Values.reviewGate.outcomes.rejected }}
+        - {{ . | quote }}
+        {{- end }}
+
+---
+# ── Compiled Prompt — Runtime ──────────────────────────────────────────────
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalPrompt
+metadata:
+  name: monkey-brain-runtime-prompt
+  module: monkey_brain/runtime
+  phase: "Phase 2 — Execution Runtime"
+spec:
+  preamble: "monkey_brain/runtime is the Execution Runtime. It executes pipelines. It never plans."
+  cot:
+    steps:
+      {{- range .Values.runtime.cot.steps }}
+      - step: {{ .step }}
+        instruction: {{ .instruction | quote }}
+        {{- if .constraint }}
+        constraint: {{ .constraint | quote }}
+        {{- end }}
+        auditGate: {{ .auditGate | default false }}
+      {{- end }}
+  reviewGate:
+    mode: {{ .Values.reviewGate.mode }}
+    outcomes:
+      approved: {{ .Values.reviewGate.outcomes.approved | quote }}
+      rejected:
+        {{- range .Values.reviewGate.outcomes.rejected }}
+        - {{ . | quote }}
+        {{- end }}
+
+---
+# ── Compiled Prompt — Persistence ─────────────────────────────────────────
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalPrompt
+metadata:
+  name: monkey-brain-persistence-prompt
+  module: monkey_brain/persistence
+  phase: "Persistence Architecture"
+spec:
+  preamble: "Persistence is a runtime subsystem, not a database abstraction. All writes route through PersistenceManager."
+  cot:
+    steps:
+      {{- range .Values.persistence.cot.steps }}
+      - step: {{ .step }}
+        instruction: {{ .instruction | quote }}
+        {{- if .constraint }}
+        constraint: {{ .constraint | quote }}
+        {{- end }}
+        auditGate: {{ .auditGate | default false }}
+      {{- end }}
+  reviewGate:
+    mode: {{ .Values.reviewGate.mode }}
+    outcomes:
+      approved: {{ .Values.reviewGate.outcomes.approved | quote }}
+      rejected:
+        {{- range .Values.reviewGate.outcomes.rejected }}
+        - {{ . | quote }}
+        {{- end }}

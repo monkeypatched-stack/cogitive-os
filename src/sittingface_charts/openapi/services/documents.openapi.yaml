@@ -1,0 +1,3516 @@
+openapi: 3.1.0
+info:
+  title: documents API
+  description: MonkeyBrain documents service API
+  version: 1.0.0
+paths:
+  /api/v1/document-metadata/:
+    get:
+      tags:
+      - Document Metadata
+      summary: List Document Metadata
+      operationId: list_document_metadata_api_v1_document_metadata__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Document Metadata
+      summary: Create Document Metadata
+      operationId: create_document_metadata_api_v1_document_metadata__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentMetadataCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/by-type/{document_type}:
+    get:
+      tags:
+      - Document Metadata
+      summary: List Document Metadata By Type
+      operationId: list_document_metadata_by_type_api_v1_document_metadata_by_type__document_type__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Type Api V1 Document Metadata
+                  By Type  Document Type  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/by-owner/{document_owner}:
+    get:
+      tags:
+      - Document Metadata
+      summary: List Document Metadata By Owner
+      operationId: list_document_metadata_by_owner_api_v1_document_metadata_by_owner__document_owner__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_owner
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Owner
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Owner Api V1 Document Metadata
+                  By Owner  Document Owner  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/by-department/{document_department}:
+    get:
+      tags:
+      - Document Metadata
+      summary: List Document Metadata By Department
+      operationId: list_document_metadata_by_department_api_v1_document_metadata_by_department__document_department__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_department
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Department
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Department Api V1 Document
+                  Metadata By Department  Document Department  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/by-project/{document_project}:
+    get:
+      tags:
+      - Document Metadata
+      summary: List Document Metadata By Project
+      operationId: list_document_metadata_by_project_api_v1_document_metadata_by_project__document_project__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_project
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Project
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Project Api V1 Document
+                  Metadata By Project  Document Project  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/by-tag/{tag}:
+    get:
+      tags:
+      - Document Metadata
+      summary: List Document Metadata By Tag
+      operationId: list_document_metadata_by_tag_api_v1_document_metadata_by_tag__tag__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tag
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Tag Api V1 Document Metadata
+                  By Tag  Tag  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/by-status/{document_status}:
+    get:
+      tags:
+      - Document Metadata
+      summary: List Document Metadata By Status
+      operationId: list_document_metadata_by_status_api_v1_document_metadata_by_status__document_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_status
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Status Api V1 Document Metadata
+                  By Status  Document Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/count:
+    get:
+      tags:
+      - Document Metadata
+      summary: Count Document Metadata
+      operationId: count_document_metadata_api_v1_document_metadata_count_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Type
+      - name: document_owner
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Owner
+      - name: document_department
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Department
+      - name: document_project
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Project
+      - name: document_status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Status
+      - name: tag
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/upload:
+    post:
+      tags:
+      - Document Metadata
+      summary: Create Document Metadata With Upload
+      operationId: create_document_metadata_with_upload_api_v1_document_metadata_upload_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_create_document_metadata_with_upload_api_v1_document_metadata_upload_post'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/document-metadata/{document_id}/upload:
+    post:
+      tags:
+      - Document Metadata
+      summary: Upload Document File
+      operationId: upload_document_file_api_v1_document_metadata__document_id__upload_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_document_file_api_v1_document_metadata__document_id__upload_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/{document_id}/view-link:
+    get:
+      tags:
+      - Document Metadata
+      summary: Get Document View Link
+      operationId: get_document_view_link_api_v1_document_metadata__document_id__view_link_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      - name: expires_in
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 604800
+          minimum: 60
+          default: 3600
+          title: Expires In
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentViewLinkResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/{document_id}/view:
+    get:
+      tags:
+      - Document Metadata
+      summary: View Document File
+      operationId: view_document_file_api_v1_document_metadata__document_id__view_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/{document_id}/public-view:
+    get:
+      tags:
+      - Document Metadata
+      summary: Public View Document File
+      operationId: public_view_document_file_api_v1_document_metadata__document_id__public_view_get
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/{document_id}/download:
+    get:
+      tags:
+      - Document Metadata
+      summary: Download Document File
+      operationId: download_document_file_api_v1_document_metadata__document_id__download_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/{document_id}/public-download:
+    get:
+      tags:
+      - Document Metadata
+      summary: Public Download Document File
+      operationId: public_download_document_file_api_v1_document_metadata__document_id__public_download_get
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-metadata/{document_id}:
+    get:
+      tags:
+      - Document Metadata
+      summary: Get Document Metadata
+      operationId: get_document_metadata_api_v1_document_metadata__document_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Document Metadata
+      summary: Update Document Metadata
+      operationId: update_document_metadata_api_v1_document_metadata__document_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentMetadataUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Document Metadata
+      summary: Delete Document Metadata
+      operationId: delete_document_metadata_api_v1_document_metadata__document_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/:
+    get:
+      tags:
+      - Documents
+      summary: List Document Metadata
+      operationId: list_document_metadata_api_v1_documents__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Documents
+      summary: Create Document Metadata
+      operationId: create_document_metadata_api_v1_documents__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentMetadataCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/by-type/{document_type}:
+    get:
+      tags:
+      - Documents
+      summary: List Document Metadata By Type
+      operationId: list_document_metadata_by_type_api_v1_documents_by_type__document_type__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_type
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Type Api V1 Documents By
+                  Type  Document Type  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/by-owner/{document_owner}:
+    get:
+      tags:
+      - Documents
+      summary: List Document Metadata By Owner
+      operationId: list_document_metadata_by_owner_api_v1_documents_by_owner__document_owner__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_owner
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Owner
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Owner Api V1 Documents By
+                  Owner  Document Owner  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/by-department/{document_department}:
+    get:
+      tags:
+      - Documents
+      summary: List Document Metadata By Department
+      operationId: list_document_metadata_by_department_api_v1_documents_by_department__document_department__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_department
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Department
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Department Api V1 Documents
+                  By Department  Document Department  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/by-project/{document_project}:
+    get:
+      tags:
+      - Documents
+      summary: List Document Metadata By Project
+      operationId: list_document_metadata_by_project_api_v1_documents_by_project__document_project__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_project
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Project
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Project Api V1 Documents
+                  By Project  Document Project  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/by-tag/{tag}:
+    get:
+      tags:
+      - Documents
+      summary: List Document Metadata By Tag
+      operationId: list_document_metadata_by_tag_api_v1_documents_by_tag__tag__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: tag
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Tag Api V1 Documents By
+                  Tag  Tag  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/by-status/{document_status}:
+    get:
+      tags:
+      - Documents
+      summary: List Document Metadata By Status
+      operationId: list_document_metadata_by_status_api_v1_documents_by_status__document_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_status
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+                title: Response List Document Metadata By Status Api V1 Documents
+                  By Status  Document Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/count:
+    get:
+      tags:
+      - Documents
+      summary: Count Document Metadata
+      operationId: count_document_metadata_api_v1_documents_count_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Type
+      - name: document_owner
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Owner
+      - name: document_department
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Department
+      - name: document_project
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Project
+      - name: document_status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Status
+      - name: tag
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tag
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/upload:
+    post:
+      tags:
+      - Documents
+      summary: Create Document Metadata With Upload
+      operationId: create_document_metadata_with_upload_api_v1_documents_upload_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_create_document_metadata_with_upload_api_v1_documents_upload_post'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/documents/{document_id}/upload:
+    post:
+      tags:
+      - Documents
+      summary: Upload Document File
+      operationId: upload_document_file_api_v1_documents__document_id__upload_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_document_file_api_v1_documents__document_id__upload_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/{document_id}/view-link:
+    get:
+      tags:
+      - Documents
+      summary: Get Document View Link
+      operationId: get_document_view_link_api_v1_documents__document_id__view_link_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      - name: expires_in
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 604800
+          minimum: 60
+          default: 3600
+          title: Expires In
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentViewLinkResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/{document_id}/view:
+    get:
+      tags:
+      - Documents
+      summary: View Document File
+      operationId: view_document_file_api_v1_documents__document_id__view_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/{document_id}/public-view:
+    get:
+      tags:
+      - Documents
+      summary: Public View Document File
+      operationId: public_view_document_file_api_v1_documents__document_id__public_view_get
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/{document_id}/download:
+    get:
+      tags:
+      - Documents
+      summary: Download Document File
+      operationId: download_document_file_api_v1_documents__document_id__download_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/{document_id}/public-download:
+    get:
+      tags:
+      - Documents
+      summary: Public Download Document File
+      operationId: public_download_document_file_api_v1_documents__document_id__public_download_get
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/documents/{document_id}:
+    get:
+      tags:
+      - Documents
+      summary: Get Document Metadata
+      operationId: get_document_metadata_api_v1_documents__document_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Documents
+      summary: Update Document Metadata
+      operationId: update_document_metadata_api_v1_documents__document_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentMetadataUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Documents
+      summary: Delete Document Metadata
+      operationId: delete_document_metadata_api_v1_documents__document_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-workflows/:
+    get:
+      tags:
+      - Document Workflows
+      summary: List Document Workflows
+      operationId: list_document_workflows_api_v1_document_workflows__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocumentWorkflowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Document Workflows
+      summary: Create Document Workflow
+      operationId: create_document_workflow_api_v1_document_workflows__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentWorkflowCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentWorkflowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-workflows/by-document/{document_id}:
+    get:
+      tags:
+      - Document Workflows
+      summary: List Document Workflows By Document
+      operationId: list_document_workflows_by_document_api_v1_document_workflows_by_document__document_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Document Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentWorkflowResponse'
+                title: Response List Document Workflows By Document Api V1 Document
+                  Workflows By Document  Document Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-workflows/by-status/{workflow_status}:
+    get:
+      tags:
+      - Document Workflows
+      summary: List Document Workflows By Status
+      operationId: list_document_workflows_by_status_api_v1_document_workflows_by_status__workflow_status__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workflow_status
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/DocumentWorkflowStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentWorkflowResponse'
+                title: Response List Document Workflows By Status Api V1 Document
+                  Workflows By Status  Workflow Status  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-workflows/by-assignee/{assignee_id}:
+    get:
+      tags:
+      - Document Workflows
+      summary: List Document Workflows By Assignee
+      operationId: list_document_workflows_by_assignee_api_v1_document_workflows_by_assignee__assignee_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: assignee_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Assignee Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentWorkflowResponse'
+                title: Response List Document Workflows By Assignee Api V1 Document
+                  Workflows By Assignee  Assignee Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-workflows/{workflow_id}:
+    get:
+      tags:
+      - Document Workflows
+      summary: Get Document Workflow
+      operationId: get_document_workflow_api_v1_document_workflows__workflow_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentWorkflowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Document Workflows
+      summary: Update Document Workflow
+      operationId: update_document_workflow_api_v1_document_workflows__workflow_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentWorkflowUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentWorkflowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Document Workflows
+      summary: Delete Document Workflow
+      operationId: delete_document_workflow_api_v1_document_workflows__workflow_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-workflows/{workflow_id}/steps:
+    post:
+      tags:
+      - Document Workflows
+      summary: Add Document Workflow Step
+      operationId: add_document_workflow_step_api_v1_document_workflows__workflow_id__steps_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentWorkflowStep'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentWorkflowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/document-workflows/{workflow_id}/steps/{step_id}:
+    patch:
+      tags:
+      - Document Workflows
+      summary: Update Document Workflow Step
+      operationId: update_document_workflow_step_api_v1_document_workflows__workflow_id__steps__step_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workflow Id
+      - name: step_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Step Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentWorkflowStepUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentWorkflowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/report-templates/:
+    get:
+      tags:
+      - Report Templates
+      summary: List Report Templates
+      operationId: list_report_templates_api_v1_report_templates__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: template_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Template Type
+      - name: process_definition_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Process Definition Id
+      - name: batch_execution_record_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Execution Record Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReportTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Report Templates
+      summary: Create Report Template
+      operationId: create_report_template_api_v1_report_templates__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportTemplateCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/report-templates/{report_template_id}:
+    get:
+      tags:
+      - Report Templates
+      summary: Get Report Template
+      operationId: get_report_template_api_v1_report_templates__report_template_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: report_template_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Report Template Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Report Templates
+      summary: Update Report Template
+      operationId: update_report_template_api_v1_report_templates__report_template_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: report_template_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Report Template Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportTemplateUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportTemplateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Report Templates
+      summary: Delete Report Template
+      operationId: delete_report_template_api_v1_report_templates__report_template_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: report_template_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Report Template Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    Body_create_document_metadata_with_upload_api_v1_document_metadata_upload_post:
+      properties:
+        document_name:
+          type: string
+          title: Document Name
+        document_type:
+          $ref: '#/components/schemas/DocumentType'
+        document_version:
+          type: string
+          title: Document Version
+        document_owner:
+          type: string
+          title: Document Owner
+        document_preparer:
+          type: string
+          title: Document Preparer
+        document_reviewer:
+          type: string
+          title: Document Reviewer
+        document_approver:
+          type: string
+          title: Document Approver
+        document_due_date:
+          type: string
+          title: Document Due Date
+        created_by:
+          type: string
+          title: Created By
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+        document_url:
+          type: string
+          title: Document Url
+          default: pending-upload
+        document_status:
+          $ref: '#/components/schemas/DocumentStatus'
+          default: Draft
+        document_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Id
+        document_tags:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Tags
+        tags:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tags
+        document_department:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Department
+        document_project:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Project
+        document_confidentiality:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Confidentiality
+        document_retention_period:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Retention Period
+        document_description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Description
+        last_modified_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Modified By
+      type: object
+      required:
+      - document_name
+      - document_type
+      - document_version
+      - document_owner
+      - document_preparer
+      - document_reviewer
+      - document_approver
+      - document_due_date
+      - created_by
+      - file
+      title: Body_create_document_metadata_with_upload_api_v1_document_metadata_upload_post
+    Body_create_document_metadata_with_upload_api_v1_documents_upload_post:
+      properties:
+        document_name:
+          type: string
+          title: Document Name
+        document_type:
+          $ref: '#/components/schemas/DocumentType'
+        document_version:
+          type: string
+          title: Document Version
+        document_owner:
+          type: string
+          title: Document Owner
+        document_preparer:
+          type: string
+          title: Document Preparer
+        document_reviewer:
+          type: string
+          title: Document Reviewer
+        document_approver:
+          type: string
+          title: Document Approver
+        document_due_date:
+          type: string
+          title: Document Due Date
+        created_by:
+          type: string
+          title: Created By
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+        document_url:
+          type: string
+          title: Document Url
+          default: pending-upload
+        document_status:
+          $ref: '#/components/schemas/DocumentStatus'
+          default: Draft
+        document_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Id
+        document_tags:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Tags
+        tags:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tags
+        document_department:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Department
+        document_project:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Project
+        document_confidentiality:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Confidentiality
+        document_retention_period:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Retention Period
+        document_description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Description
+        last_modified_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Modified By
+      type: object
+      required:
+      - document_name
+      - document_type
+      - document_version
+      - document_owner
+      - document_preparer
+      - document_reviewer
+      - document_approver
+      - document_due_date
+      - created_by
+      - file
+      title: Body_create_document_metadata_with_upload_api_v1_documents_upload_post
+    Body_upload_document_file_api_v1_document_metadata__document_id__upload_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_document_file_api_v1_document_metadata__document_id__upload_post
+    Body_upload_document_file_api_v1_documents__document_id__upload_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_document_file_api_v1_documents__document_id__upload_post
+    Comment:
+      properties:
+        comment_id:
+          type: string
+          title: Comment Id
+        comment_text:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Comment Text
+        commented_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Commented By
+        commented_at:
+          type: string
+          format: date-time
+          title: Commented At
+      type: object
+      required:
+      - comment_text
+      - commented_by
+      title: Comment
+    DocumentMetadataCreate:
+      properties:
+        document_id:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document ID
+        document_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Name
+        document_type:
+          $ref: '#/components/schemas/DocumentType'
+        document_version:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Document Version
+        document_tags:
+          items:
+            type: string
+            maxLength: 50
+            minLength: 1
+          type: array
+          title: Document Tags
+        document_url:
+          type: string
+          maxLength: 2083
+          minLength: 1
+          title: Document Url
+        document_status:
+          $ref: '#/components/schemas/DocumentStatus'
+        document_owner:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Owner
+        document_preparer:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Preparer
+        document_reviewer:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Reviewer
+        document_approver:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Approver
+        document_due_date:
+          type: string
+          format: date-time
+          title: Document Due Date
+        document_department:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Department
+        document_project:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Project
+        document_confidentiality:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Confidentiality
+        document_retention_period:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Retention Period
+        document_description:
+          anyOf:
+          - type: string
+            maxLength: 1024
+            minLength: 1
+          - type: 'null'
+          title: Document Description
+        comments:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Comment'
+            type: array
+          - type: 'null'
+          title: Comments
+        created_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Created By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        last_modified_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Last Modified By
+        last_modified_at:
+          type: string
+          format: date-time
+          title: Last Modified At
+        storage_backend:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Backend
+        file_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Original File Name
+        content_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Content Type
+        file_size:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: File Size in Bytes
+        s3_bucket:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Bucket
+        s3_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Object Key
+        s3_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Object URL
+        local_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Local File Path
+        storage_error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Error
+      type: object
+      required:
+      - document_name
+      - document_type
+      - document_version
+      - document_url
+      - document_status
+      - document_owner
+      - document_preparer
+      - document_reviewer
+      - document_approver
+      - document_due_date
+      - created_by
+      - last_modified_by
+      title: DocumentMetadataCreate
+      description: Schema for creating document metadata.
+    DocumentMetadataResponse:
+      properties:
+        document_id:
+          type: string
+          title: Document Id
+        document_name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Name
+        document_type:
+          $ref: '#/components/schemas/DocumentType'
+        document_version:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Document Version
+        document_tags:
+          items:
+            type: string
+            maxLength: 50
+            minLength: 1
+          type: array
+          title: Document Tags
+        document_url:
+          type: string
+          maxLength: 2083
+          minLength: 1
+          title: Document Url
+        document_status:
+          $ref: '#/components/schemas/DocumentStatus'
+        document_owner:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Owner
+        document_preparer:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Preparer
+        document_reviewer:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Reviewer
+        document_approver:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Document Approver
+        document_due_date:
+          type: string
+          format: date-time
+          title: Document Due Date
+        document_department:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Department
+        document_project:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Project
+        document_confidentiality:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Confidentiality
+        document_retention_period:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Retention Period
+        document_description:
+          anyOf:
+          - type: string
+            maxLength: 1024
+            minLength: 1
+          - type: 'null'
+          title: Document Description
+        comments:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Comment'
+            type: array
+          - type: 'null'
+          title: Comments
+        created_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Created By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        last_modified_by:
+          type: string
+          maxLength: 255
+          minLength: 1
+          title: Last Modified By
+        last_modified_at:
+          type: string
+          format: date-time
+          title: Last Modified At
+        storage_backend:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Backend
+        file_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Original File Name
+        content_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Content Type
+        file_size:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: File Size in Bytes
+        s3_bucket:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Bucket
+        s3_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Object Key
+        s3_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Object URL
+        local_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Local File Path
+        storage_error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Error
+      type: object
+      required:
+      - document_id
+      - document_name
+      - document_type
+      - document_version
+      - document_url
+      - document_status
+      - document_owner
+      - document_preparer
+      - document_reviewer
+      - document_approver
+      - document_due_date
+      - created_by
+      - last_modified_by
+      title: DocumentMetadataResponse
+    DocumentMetadataUpdate:
+      properties:
+        document_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Name
+        document_type:
+          anyOf:
+          - $ref: '#/components/schemas/DocumentType'
+          - type: 'null'
+        document_version:
+          anyOf:
+          - type: string
+            maxLength: 50
+            minLength: 1
+          - type: 'null'
+          title: Document Version
+        document_tags:
+          anyOf:
+          - items:
+              type: string
+              maxLength: 50
+              minLength: 1
+            type: array
+          - type: 'null'
+          title: Document Tags
+        document_url:
+          anyOf:
+          - type: string
+            maxLength: 2083
+            minLength: 1
+          - type: 'null'
+          title: Document Url
+        document_status:
+          anyOf:
+          - $ref: '#/components/schemas/DocumentStatus'
+          - type: 'null'
+        document_owner:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Owner
+        document_preparer:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Preparer
+        document_reviewer:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Reviewer
+        document_approver:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Approver
+        document_due_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Document Due Date
+        document_department:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Department
+        document_project:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Project
+        document_confidentiality:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Confidentiality
+        document_retention_period:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Document Retention Period
+        document_description:
+          anyOf:
+          - type: string
+            maxLength: 1024
+            minLength: 1
+          - type: 'null'
+          title: Document Description
+        comments:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Comment'
+            type: array
+          - type: 'null'
+          title: Comments
+        created_by:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Created By
+        created_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Created At
+        last_modified_by:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          - type: 'null'
+          title: Last Modified By
+        last_modified_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Modified At
+        storage_backend:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Backend
+        file_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Name
+        content_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Content Type
+        file_size:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: File Size
+        s3_bucket:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Bucket
+        s3_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Key
+        s3_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: S3 Url
+        local_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Local Path
+        storage_error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Error
+      type: object
+      title: DocumentMetadataUpdate
+    DocumentStatus:
+      type: string
+      enum:
+      - Draft
+      - In Review
+      - Approved
+      - Rejected
+      title: DocumentStatus
+    DocumentType:
+      type: string
+      enum:
+      - Report
+      - Invoice
+      - Memo
+      - Contract
+      - Other
+      title: DocumentType
+    DocumentViewLinkResponse:
+      properties:
+        document_id:
+          type: string
+          title: Document Id
+        storage_backend:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Storage Backend
+        view_url:
+          type: string
+          title: View Url
+        expires_in:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Expires In
+      type: object
+      required:
+      - document_id
+      - view_url
+      title: DocumentViewLinkResponse
+    DocumentWorkflowCreate:
+      properties:
+        document_id:
+          type: string
+          minLength: 1
+          title: Document Id
+        workflow_name:
+          type: string
+          minLength: 1
+          title: Workflow Name
+        workflow_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workflow Type
+        status:
+          $ref: '#/components/schemas/DocumentWorkflowStatus'
+          default: Draft
+        current_step_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Current Step Id
+        initiated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Initiated By
+        owner_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Owner Id
+        reviewer_ids:
+          items:
+            type: string
+          type: array
+          title: Reviewer Ids
+        approver_ids:
+          items:
+            type: string
+          type: array
+          title: Approver Ids
+        steps:
+          items:
+            $ref: '#/components/schemas/DocumentWorkflowStep'
+          type: array
+          title: Steps
+        due_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Due At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - document_id
+      - workflow_name
+      title: DocumentWorkflowCreate
+      description: Schema for creating a document workflow.
+    DocumentWorkflowResponse:
+      properties:
+        document_id:
+          type: string
+          minLength: 1
+          title: Document Id
+        workflow_name:
+          type: string
+          minLength: 1
+          title: Workflow Name
+        workflow_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workflow Type
+        status:
+          $ref: '#/components/schemas/DocumentWorkflowStatus'
+          default: Draft
+        current_step_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Current Step Id
+        initiated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Initiated By
+        owner_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Owner Id
+        reviewer_ids:
+          items:
+            type: string
+          type: array
+          title: Reviewer Ids
+        approver_ids:
+          items:
+            type: string
+          type: array
+          title: Approver Ids
+        steps:
+          items:
+            $ref: '#/components/schemas/DocumentWorkflowStep'
+          type: array
+          title: Steps
+        due_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Due At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        workflow_id:
+          type: string
+          title: Workflow Id
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - document_id
+      - workflow_name
+      - workflow_id
+      - updated_at
+      title: DocumentWorkflowResponse
+    DocumentWorkflowStatus:
+      type: string
+      enum:
+      - Draft
+      - In-Review
+      - Approved
+      - Rejected
+      - Cancelled
+      - Completed
+      title: DocumentWorkflowStatus
+    DocumentWorkflowStep:
+      properties:
+        step_id:
+          type: string
+          title: Step Id
+        step_name:
+          type: string
+          minLength: 1
+          title: Step Name
+        sequence:
+          type: integer
+          minimum: 1.0
+          title: Sequence
+        assignee_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assignee Id
+        assignee_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assignee Name
+        status:
+          $ref: '#/components/schemas/DocumentWorkflowStepStatus'
+          default: Pending
+        due_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Due At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        comments:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comments
+      type: object
+      required:
+      - step_name
+      - sequence
+      title: DocumentWorkflowStep
+    DocumentWorkflowStepStatus:
+      type: string
+      enum:
+      - Pending
+      - In-Progress
+      - Approved
+      - Rejected
+      - Skipped
+      title: DocumentWorkflowStepStatus
+    DocumentWorkflowStepUpdate:
+      properties:
+        step_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Step Name
+        sequence:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Sequence
+        assignee_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assignee Id
+        assignee_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assignee Name
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/DocumentWorkflowStepStatus'
+          - type: 'null'
+        due_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Due At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        comments:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Comments
+      type: object
+      title: DocumentWorkflowStepUpdate
+    DocumentWorkflowUpdate:
+      properties:
+        document_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Id
+        workflow_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workflow Name
+        workflow_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workflow Type
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/DocumentWorkflowStatus'
+          - type: 'null'
+        current_step_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Current Step Id
+        initiated_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Initiated By
+        owner_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Owner Id
+        reviewer_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Reviewer Ids
+        approver_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Approver Ids
+        steps:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/DocumentWorkflowStep'
+            type: array
+          - type: 'null'
+          title: Steps
+        due_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Due At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      title: DocumentWorkflowUpdate
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PaginatedDocumentMetadataResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/DocumentMetadataResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedDocumentMetadataResponse
+    PaginatedDocumentWorkflowResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/DocumentWorkflowResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedDocumentWorkflowResponse
+    PaginatedReportTemplateResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ReportTemplateResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedReportTemplateResponse
+    ReportTemplateCreate:
+      properties:
+        report_template_id:
+          type: string
+          minLength: 1
+          title: Report Template Id
+        name:
+          type: string
+          minLength: 1
+          title: Name
+        template_type:
+          type: string
+          enum:
+          - MBMR
+          - BMR
+          - BPR
+          - Yield
+          - IPC
+          - Log
+          title: Template Type
+        version:
+          type: string
+          minLength: 1
+          title: Version
+        revision:
+          type: string
+          minLength: 1
+          title: Revision
+          default: A
+        status:
+          type: string
+          enum:
+          - Draft
+          - In Review
+          - Approved
+          - Effective
+          - Retired
+          title: Status
+          default: Draft
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        document_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Template Id
+        process_definition_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Process Definition Id
+        batch_execution_record_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Execution Record Id
+        source_collections:
+          items:
+            type: string
+          type: array
+          title: Source Collections
+        required_record_ids:
+          items:
+            type: string
+          type: array
+          title: Required Record Ids
+        output_formats:
+          items:
+            type: string
+            enum:
+            - PDF
+            - HTML
+            - CSV
+            - JSON
+          type: array
+          title: Output Formats
+        sections:
+          items:
+            $ref: '#/components/schemas/ReportTemplateSection'
+          type: array
+          title: Sections
+        retention_period:
+          type: string
+          title: Retention Period
+          default: 10 years
+        gxp_controlled:
+          type: boolean
+          title: Gxp Controlled
+          default: true
+        part11_signature_required:
+          type: boolean
+          title: Part11 Signature Required
+          default: true
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        effective_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Effective At
+        signature_ids:
+          items:
+            type: string
+          type: array
+          title: Signature Ids
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - report_template_id
+      - name
+      - template_type
+      - version
+      title: ReportTemplateCreate
+    ReportTemplateResponse:
+      properties:
+        report_template_id:
+          type: string
+          minLength: 1
+          title: Report Template Id
+        name:
+          type: string
+          minLength: 1
+          title: Name
+        template_type:
+          type: string
+          enum:
+          - MBMR
+          - BMR
+          - BPR
+          - Yield
+          - IPC
+          - Log
+          title: Template Type
+        version:
+          type: string
+          minLength: 1
+          title: Version
+        revision:
+          type: string
+          minLength: 1
+          title: Revision
+          default: A
+        status:
+          type: string
+          enum:
+          - Draft
+          - In Review
+          - Approved
+          - Effective
+          - Retired
+          title: Status
+          default: Draft
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        document_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Template Id
+        process_definition_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Process Definition Id
+        batch_execution_record_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Execution Record Id
+        source_collections:
+          items:
+            type: string
+          type: array
+          title: Source Collections
+        required_record_ids:
+          items:
+            type: string
+          type: array
+          title: Required Record Ids
+        output_formats:
+          items:
+            type: string
+            enum:
+            - PDF
+            - HTML
+            - CSV
+            - JSON
+          type: array
+          title: Output Formats
+        sections:
+          items:
+            $ref: '#/components/schemas/ReportTemplateSection'
+          type: array
+          title: Sections
+        retention_period:
+          type: string
+          title: Retention Period
+          default: 10 years
+        gxp_controlled:
+          type: boolean
+          title: Gxp Controlled
+          default: true
+        part11_signature_required:
+          type: boolean
+          title: Part11 Signature Required
+          default: true
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        effective_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Effective At
+        signature_ids:
+          items:
+            type: string
+          type: array
+          title: Signature Ids
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - report_template_id
+      - name
+      - template_type
+      - version
+      title: ReportTemplateResponse
+    ReportTemplateSection:
+      properties:
+        section_id:
+          type: string
+          minLength: 1
+          title: Section Id
+        sequence:
+          type: integer
+          minimum: 1.0
+          title: Sequence
+        title:
+          type: string
+          minLength: 1
+          title: Title
+        source_collection:
+          type: string
+          minLength: 1
+          title: Source Collection
+        source_fields:
+          items:
+            type: string
+          type: array
+          title: Source Fields
+        required:
+          type: boolean
+          title: Required
+          default: true
+        signature_required:
+          type: boolean
+          title: Signature Required
+          default: false
+        reviewer_required:
+          type: boolean
+          title: Reviewer Required
+          default: false
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+      type: object
+      required:
+      - section_id
+      - sequence
+      - title
+      - source_collection
+      title: ReportTemplateSection
+    ReportTemplateUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        template_type:
+          anyOf:
+          - type: string
+            enum:
+            - MBMR
+            - BMR
+            - BPR
+            - Yield
+            - IPC
+            - Log
+          - type: 'null'
+          title: Template Type
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        revision:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revision
+        status:
+          anyOf:
+          - type: string
+            enum:
+            - Draft
+            - In Review
+            - Approved
+            - Effective
+            - Retired
+          - type: 'null'
+          title: Status
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        document_template_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Document Template Id
+        process_definition_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Process Definition Id
+        batch_execution_record_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Batch Execution Record Id
+        source_collections:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Source Collections
+        required_record_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Required Record Ids
+        output_formats:
+          anyOf:
+          - items:
+              type: string
+              enum:
+              - PDF
+              - HTML
+              - CSV
+              - JSON
+            type: array
+          - type: 'null'
+          title: Output Formats
+        sections:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ReportTemplateSection'
+            type: array
+          - type: 'null'
+          title: Sections
+        retention_period:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Retention Period
+        gxp_controlled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Gxp Controlled
+        part11_signature_required:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Part11 Signature Required
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        effective_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Effective At
+        signature_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Signature Ids
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      title: ReportTemplateUpdate
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

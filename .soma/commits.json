@@ -1,0 +1,24 @@
+[
+  {
+    "commit_id": "e5f35dbd11ae",
+    "message": "Initial chart state",
+    "author": "soma-cli",
+    "timestamp": "2026-06-27T19:33:42.162985+00:00",
+    "charts": {
+      "cortex": "02b06272a11028b8",
+      "capabilities": "f0d7b490fddaf0c4",
+      "plasticity": "8eca546e6338546d",
+      "deepdive": "62756932b5340e2b",
+      "cerebellum": "1ca51d43bef72204",
+      "meta": "89fa61d3466b64c6",
+      "soma": "7d4704ab2b1c9b6d",
+      "introspection": "05d0334a3a1c1722",
+      "homeostasis": "b158a7f2e8ecc10d",
+      "broca": "c7ec33d494eb2385",
+      "monkey-brain": "51a1ea682b87761c",
+      "sync": "c985bb989a6a1e6b",
+      "cingulate": "7caf0252c25e233f"
+    },
+    "parent": null
+  }
+]

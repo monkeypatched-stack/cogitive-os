@@ -1,0 +1,70 @@
+.lwe-sf-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 18px;
+  padding: 20px 22px 22px;
+  box-sizing: border-box;
+  background: #F8FAFC;
+  color: #1E293B;
+}
+
+.lwe-sf-heading h2 { margin: 0; font-size: 19px; font-weight: 600; color: #1E293B; }
+.lwe-sf-heading p { margin: 4px 0 0; font-size: 12.5px; font-weight: 400; color: #64748B; max-width: 640px; }
+
+.lwe-sf-error { padding: 10px 14px; border-radius: 10px; background: #FEF2F2; color: #B91C1C; font-size: 12.5px; }
+
+.lwe-sf-empty { display: flex; align-items: center; gap: 10px; color: #94A3B8; font-size: 13px; padding: 40px 0; }
+.lwe-sf-spinner { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid #E2E8F0; border-top-color: #2563EB; animation: lwe-sf-spin 800ms linear infinite; }
+@keyframes lwe-sf-spin { to { transform: rotate(360deg); } }
+
+.lwe-sf-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 900px;
+}
+
+.lwe-sf-card {
+  padding: 20px;
+  border: 1px solid #E8EAF0;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+}
+
+.lwe-sf-card-label { font-size: 12px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; }
+.lwe-sf-card-value { font-size: 34px; font-weight: 600; color: #1E293B; margin: 6px 0 12px; }
+.lwe-sf-card-breakdown { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: #64748B; }
+.lwe-sf-card-breakdown strong { color: #334155; font-weight: 600; }
+
+.lwe-sf-hint { font-size: 11.5px; color: #94A3B8; max-width: 640px; }
+
+.lwe-sf-graph-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lwe-sf-graph-heading h3 { margin: 0; font-size: 14px; font-weight: 600; color: #1E293B; }
+
+.lwe-sf-legend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lwe-sf-legend-chip { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+.lwe-sf-legend-chip b { font-weight: 700; }
+.lwe-sf-legend-edge-hint { font-size: 10.5px; color: #94A3B8; }
+
+.lwe-sf-graph-card {
+  flex: 1 1 auto;
+  min-height: 360px;
+  border: 1px solid #E8EAF0;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.lwe-sf-svg { display: block; width: 100%; height: 100%; }
+.lwe-sf-edge { stroke: #94A3B8; stroke-width: 1; transition: opacity 150ms ease; }
+.lwe-sf-node-label { font-size: 11px; font-weight: 600; fill: #1E293B; paint-order: stroke; stroke: #FFFFFF; stroke-width: 3px; }

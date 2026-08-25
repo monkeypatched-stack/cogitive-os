@@ -1,0 +1,31 @@
+workload: client_charter
+goal: >
+  Analyse the provided API client source code and produce a somatic capability chart (values.yaml)
+  that registers the API client as a first-class MonkeyBrain ICapability. The chart must capture
+  the endpoint base URL, auth scheme, every HTTP operation (name, method, path, schemas), rate
+  limits, error handling policy, and constitutional invariants.
+domain: software_engineering
+bounded_context: codegen
+reasoning: step_by_step
+constraints:
+  - The chart type must be "capability" — use the top-level "capability:" key, not "agent:" or "module:"
+  - Every operation in the operations list must have name, method, path, description, auth_required
+  - The auth block must reflect the client's authentication scheme (type: bearer for JWT)
+  - endpoint.base_url must be extracted or inferred from the client source
+  - Output must be valid YAML only — no markdown fences, no prose outside the YAML
+  - Invariant IDs must follow the pattern <SERVICE>CLIENT-CAP-<NNN>
+  - The chart must include preamble, invariants, and reviewGate sections
+policies:
+  - capability.name must be kebab-case ending with "-client"
+  - operations must be ordered: list methods first, then single-resource reads, then mutations, then deletes
+  - rate_limit.max_retries must be 3 and retry_on_status must include 429, 500, 502, 503
+evidence:
+  - The client source files provided in context (client.py, models.py, exceptions.py)
+  - The endpoint operations visible in the router or described in the client methods
+success_criteria:
+  - Output is a single valid YAML document conforming to the MonkeyBrain capability chart schema
+  - All public client methods are represented as operations with method + path
+  - auth type is correctly identified (bearer/api_key/none)
+outputs:
+  - YAML only: a complete somatic capability chart (values.yaml) with keys:
+    capability, auth, endpoint, operations, rate_limit, error_handling, preamble, invariants, reviewGate

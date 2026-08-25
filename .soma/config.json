@@ -1,0 +1,74 @@
+{
+  "model": "ollama/gemma3:latest",
+  "provider": "ollama",
+  "spec_repo": "/Users/prashunjaveri/Code/monkeypatched",
+
+  "databases": {
+    "mongodb": {
+      "url": "mongodb://localhost:27017",
+      "database": "agentos",
+      "port": 27017
+    },
+    "redis": {
+      "url": "redis://localhost:6379",
+      "port": 6379
+    },
+    "neo4j": {
+      "uri": "bolt://localhost:7687",
+      "user": "neo4j",
+      "password": "",
+      "port": 7687
+    },
+    "influxdb": {
+      "url": "http://localhost:8181",
+      "org": "agentos",
+      "bucket": "events",
+      "port": 8181
+    },
+    "elasticsearch": {
+      "url": "http://localhost:9200",
+      "port": 9200
+    },
+    "nats": {
+      "url": "nats://localhost:4222",
+      "port": 4222
+    },
+    "ollama": {
+      "url": "http://localhost:11434",
+      "port": 11434,
+      "model": "gemma3:latest"
+    }
+  },
+
+  "llm": {
+    "backend": "ollama",
+    "ollama_base_url": "http://127.0.0.1:11434",
+    "ollama_model": "gemma3:latest",
+    "openrouter_model": "openai/gpt-4o-mini",
+    "claude_model": "claude-sonnet-4-6",
+    "spec_discovery_provider": "auto"
+  },
+
+  "kernel": {
+    "exploration_rate": 0.1,
+    "learning_rate": 0.1,
+    "discount_factor": 0.95
+  },
+
+  "service": {
+    "name": "monkeybrain",
+    "port": 8031,
+    "environment": "development"
+  },
+
+  "services": {
+    "auth": {
+      "enabled": true,
+      "url": "http://localhost:8010"
+    },
+    "agentos": {
+      "enabled": true,
+      "url": "http://localhost:8031"
+    }
+  }
+}

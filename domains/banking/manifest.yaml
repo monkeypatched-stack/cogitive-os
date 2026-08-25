@@ -1,0 +1,33 @@
+name: banking
+version: "0.1.0"
+description: "Banking bounded context — account opening, KYC, AML, transaction monitoring"
+bounded_context:
+  name: banking
+  aggregates:
+    - Account
+    - KYCRecord
+    - AMLAlert
+    - Transaction
+    - Customer
+  entities:
+    - Account
+    - KYCRecord
+    - AMLAlert
+    - Transaction
+    - Customer
+    - Document
+    - Beneficiary
+  value_objects:
+    - AccountType
+    - KYCStatus
+    - AMLRiskLevel
+    - TransactionType
+  events:
+    - AccountOpened
+    - AccountClosed
+    - KYCSubmitted
+    - KYCApproved
+    - KYCRejected
+    - AMLAlertRaised
+    - TransactionMonitored
+    - SuspiciousActivityReported

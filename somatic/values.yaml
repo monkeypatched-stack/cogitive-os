@@ -1,0 +1,237 @@
+# =============================================================================
+# AgentOS Constitution — Global Values
+# Module names are canonical: they match src/ directory names exactly.
+# =============================================================================
+
+global:
+  constitution:
+    version: "1.0.0"
+    system: MonkeyBrain
+    paradigm: Cognitive Operating System
+    methodology: Constitution Driven Development
+
+  # Layered architecture — layer numbers match the architecture diagram
+  layers:
+    0:
+      name: soma
+      label: "SOMA (Executable Architecture)"
+      role: "The substrate — constitution source docs"
+    1:
+      name: monkey_brain
+      label: "RUNTIME (MONKEY_BRAIN) KERNEL"
+      role: "Execute, schedule, manage"
+      alias: "Deadpool + Wolverine"
+      submodules:
+        - kernel
+        - runtime
+        - dlm
+        - persistence
+        - api
+    2:
+      name: cognitive_core
+      label: "COGNITIVE CORE & INTERFACE"
+      role: "Reason, understand, interact"
+      modules:
+        - cortex
+        - broca
+        - introspection
+    3:
+      name: cerebellum
+      label: "CAPABILITIES (CEREBELLUM)"
+      role: "Skills, tools, workflows"
+      alias: Cerberus
+      submodules:
+        - capabilities
+        - adapter
+        - registry
+        - peripheral
+    4:
+      name: applications
+      label: "APPLICATIONS & AGENTS"
+      role: "What users build"
+    5:
+      name: operations
+      label: "OPERATIONS & INTELLIGENCE"
+      role: "Run, observe, improve"
+      modules:
+        - homeostasis
+        - deepdive
+        - cingulate
+        - plasticity
+
+  # Brain module registry — keyed by src/ directory name
+  modules:
+    monkey_brain:
+      layer: 1
+      alias: "Deadpool / Wolverine"
+      biologicalRole: "Central nervous system"
+      softwareRole: "Kernel, scheduler, runtime"
+      submodules:
+        - kernel
+        - runtime
+        - dlm
+        - persistence
+        - api
+
+    cortex:
+      layer: 2
+      alias: Xavier
+      biologicalRole: "Reasoning and memory"
+      softwareRole: "World model, knowledge graph"
+      submodules:
+        - world_model
+        - digital_twin
+        - simulator
+        - prediction
+        - replay
+        - counterfactual
+        - feedback
+        - reward
+        - loss
+        - experience
+
+    broca:
+      layer: 2
+      alias: Broca
+      biologicalRole: "Speech production"
+      softwareRole: "Natural language interface"
+      submodules:
+        - agent
+
+    introspection:
+      layer: 2
+      alias: Lemon
+      biologicalRole: "Self-awareness"
+      softwareRole: "Observability, tracing, debugging"
+      submodules:
+        - alerting
+        - health
+        - logging
+        - metrics
+        - tracing
+        - lemon
+
+    cerebellum:
+      layer: 3
+      alias: Cerberus
+      biologicalRole: "Learned motor skills"
+      softwareRole: "Capabilities, workflows, tools"
+      submodules:
+        - capabilities/ai
+        - capabilities/api
+        - capabilities/agent
+        - capabilities/browser
+        - capabilities/cloud
+        - capabilities/communication
+        - capabilities/database
+        - capabilities/enterprise
+        - capabilities/event_streaming
+        - capabilities/infrastructure
+        - capabilities/productivity
+        - capabilities/robotics
+        - capabilities/runtime
+        - capabilities/search
+        - capabilities/source_control
+        - capabilities/storage
+        - capabilities/workflow
+
+    homeostasis:
+      layer: 5
+      alias: "Control Plane"
+      biologicalRole: "Maintaining equilibrium"
+      softwareRole: "Fleet management, health, orchestration"
+      submodules:
+        - control_plane
+
+    deepdive:
+      layer: 5
+      alias: "Aggregation Layer"
+      biologicalRole: "Higher-order analysis"
+      softwareRole: "Analytics, BI, trends"
+      submodules:
+        - aggregation
+        - digital_twin_aggregator
+        - fleet_analytics
+        - knowledge_aggregator
+        - elasticsearch_adapter
+
+    cingulate:
+      layer: 5
+      alias: "Governance + Benchmark"
+      biologicalRole: "Decision conflict, attention"
+      softwareRole: "Benchmarks, policy, governance"
+      submodules:
+        - governance
+        - benchmark
+
+    plasticity:
+      layer: 5
+      alias: "Learning + Testing"
+      biologicalRole: "Learning and adaptation"
+      softwareRole: "Tests, synthetic data, evaluation"
+      submodules:
+        - seed
+        - testing
+
+    sync:
+      layer: 0
+      alias: "Sync Layer"
+      biologicalRole: "Coordination"
+      softwareRole: "Edge-cloud bidirectional sync"
+      submodules:
+        - sync_manager
+        - edge_node
+        - cloud_aggregator
+
+  # Top-level architectural invariants — never overridable
+  invariants:
+    - id: INV-001
+      rule: cognition_stays_in_monkey_brain_kernel
+      statement: "Cognition lives only in monkey_brain/kernel. Never in runtime, cerebellum, or cortex."
+      severity: critical
+    - id: INV-002
+      rule: execution_stays_in_monkey_brain_runtime
+      statement: "Execution lives only in monkey_brain/runtime. Never in kernel or cerebellum."
+      severity: critical
+    - id: INV-003
+      rule: capabilities_stay_in_cerebellum
+      statement: "All integrations and drivers live only in cerebellum. Never in monkey_brain."
+      severity: critical
+    - id: INV-004
+      rule: world_model_stays_in_cortex
+      statement: "Digital twins, simulation, prediction live only in cortex. Never duplicated."
+      severity: critical
+    - id: INV-005
+      rule: observability_stays_in_introspection
+      statement: "Metrics, tracing, logging live only in introspection. Never inline in other modules."
+      severity: critical
+    - id: INV-006
+      rule: no_duplicate_abstractions
+      statement: "No abstraction may exist in more than one module."
+      severity: critical
+    - id: INV-007
+      rule: no_heuristic_routing
+      statement: "Routing must be policy-driven via monkey_brain/kernel/rl. Never heuristic."
+      severity: high
+    - id: INV-008
+      rule: runtime_never_plans
+      statement: "monkey_brain/runtime never performs planning. Planning belongs to kernel."
+      severity: critical
+    - id: INV-009
+      rule: delete_before_adding
+      statement: "Reduce abstractions. Delete before adding. YAGNI."
+      severity: high
+    - id: INV-010
+      rule: architecture_is_authoritative
+      statement: "If implementation conflicts with constitution, implementation must change."
+      severity: critical
+
+  # Prompt compiler configuration
+  compiler:
+    mode: cot
+    preambleRef: meta
+    outputFormat: structured
+    reviewGate:
+      mode: constitutional
+      passLabel: APPROVED
+      failLabel: REJECTED

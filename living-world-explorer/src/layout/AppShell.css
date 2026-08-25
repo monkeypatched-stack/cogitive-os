@@ -1,0 +1,60 @@
+.lwe-app-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.lwe-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.lwe-overview-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--lwe-surface);
+  border-top: 1px solid var(--lwe-border);
+}
+
+.lwe-overview-panel-heading {
+  flex: none;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--lwe-text-muted);
+  background: var(--lwe-surface-alt);
+  border-bottom: 1px solid var(--lwe-border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.lwe-overview-panel > .lwe-body {
+  min-height: 0;
+}
+
+.lwe-resize-handle {
+  background: var(--lwe-border);
+  transition: background 0.15s ease;
+  flex: none;
+  align-self: stretch;
+}
+
+.lwe-resize-handle:hover,
+.lwe-resize-handle:active {
+  background: var(--lwe-accent);
+}
+
+.lwe-resize-handle-horizontal {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.lwe-resize-handle-vertical {
+  height: 4px;
+  cursor: row-resize;
+}

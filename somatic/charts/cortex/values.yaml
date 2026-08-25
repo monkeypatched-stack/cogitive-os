@@ -1,0 +1,113 @@
+module:
+  name: cortex
+  layer: 2
+  alias: Xavier
+  biologicalRole: Reasoning and memory
+  softwareRole: World model, knowledge graph, digital twins, simulation
+  source: soma/Artificial Intelligence/World Model.md
+  owns:
+  - world_model
+  - world_model_simulation
+  - world_state
+  - simulator
+  - prediction
+  - replay
+  - counterfactual
+  - digital_twin
+  - experience
+  - feedback
+  - reward
+  - loss
+  - cost
+  - xavier
+owns:
+- DigitalTwins
+- Simulation
+- Prediction
+- Replay
+- CounterfactualExecution
+- WorldModelState
+- Reward
+- Loss
+- Experience
+- Feedback
+neverOwns:
+- PipelineExecution
+- CapabilityExecution
+- Planning
+- NaturalLanguageProcessing
+- Persistence (canonical)
+simulatorContract:
+  injects:
+  - Kernel
+  - Runtime
+  neverDuplicates:
+  - Kernel
+  - Runtime
+  rule: Simulation executes identical pipelines to production.
+principles:
+- id: 1
+  name: SimulatorInjectsKernelRuntime
+  statement: The simulator injects Kernel and Runtime. It never duplicates either.
+- id: 2
+  name: IdenticalPipelines
+  statement: Simulation executes identical pipelines to production. No separate sim-only
+    path.
+- id: 3
+  name: CounterfactualSupport
+  statement: cortex supports what-if execution without modifying production state.
+- id: 4
+  name: WorldModelIsPassive
+  statement: The world model observes. It never triggers execution.
+invariants:
+- id: CORTEX-INV-001
+  rule: simulator_does_not_duplicate_kernel
+  statement: the simulator module never duplicates the kernel logic.
+  severity: critical
+  rejection: "REJECTED \u2014 Simulator duplicates kernel."
+- id: CORTEX-INV-002
+  rule: no_execution_in_cortex
+  statement: cortex never executes production pipelines. It simulates them.
+  severity: critical
+  rejection: "REJECTED \u2014 cortex contains production execution."
+- id: CORTEX-INV-003
+  rule: world_model_is_read_only
+  statement: the world_model module is a read-consistent view. It never initiates writes.
+  severity: high
+  rejection: "REJECTED \u2014 World model initiates writes."
+deliverables:
+- artifact: SimulationArchitecture
+- artifact: PredictionAPIs
+- artifact: ReplayAPIs
+- artifact: DigitalTwinFramework
+- artifact: CounterfactualEngine
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: cortex maintains the world model. It reasons about state.
+      It never executes.'
+    constraint: CORTEX-INV-002
+    auditGate: true
+  - step: 2
+    instruction: Every submodule maps to exactly one world-model responsibility.
+  - step: 3
+    instruction: "Verify the simulator module injects kernel and runtime \u2014 never reimplements\
+      \ them."
+    constraint: CORTEX-INV-001
+    auditGate: true
+  - step: 4
+    instruction: Verify the world_model module is a consistent read view. No writes initiated.
+    constraint: CORTEX-INV-003
+    auditGate: true
+  - step: 5
+    instruction: Verify the prediction module and the replay module use production pipeline contracts.
+  - step: 6
+    instruction: 'Produce: SimulationArchitecture, PredictionAPIs, ReplayAPIs.'
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 cortex conforms to World Model Constitution v1.0.0"
+    rejected:
+    - "REJECTED \u2014 Simulator duplicates kernel."
+    - "REJECTED \u2014 cortex executes production pipelines."
+    - "REJECTED \u2014 World model initiates writes."

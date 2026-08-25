@@ -1,0 +1,1834 @@
+openapi: 3.1.0
+info:
+  title: customers API
+  description: MonkeyBrain customers service API
+  version: 1.0.0
+paths:
+  /api/v1/customer-details/:
+    get:
+      tags:
+      - Customer Details
+      summary: List Customer Details
+      operationId: list_customer_details_api_v1_customer_details__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Customer Details
+      summary: Create Customer Details
+      operationId: create_customer_details_api_v1_customer_details__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerDetailsCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customer-details/{customer_id}:
+    get:
+      tags:
+      - Customer Details
+      summary: Get Customer Details
+      operationId: get_customer_details_api_v1_customer_details__customer_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Customer Details
+      summary: Update Customer Details
+      operationId: update_customer_details_api_v1_customer_details__customer_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerDetailsUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Customer Details
+      summary: Delete Customer Details
+      operationId: delete_customer_details_api_v1_customer_details__customer_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customer-metadata/:
+    get:
+      tags:
+      - Customer Metadata
+      summary: List Customer Metadata
+      operationId: list_customer_metadata_api_v1_customer_metadata__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Customer Metadata
+      summary: Create Customer Metadata
+      operationId: create_customer_metadata_api_v1_customer_metadata__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerMetadataCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customer-metadata/{customer_id}:
+    get:
+      tags:
+      - Customer Metadata
+      summary: Get Customer Metadata
+      operationId: get_customer_metadata_api_v1_customer_metadata__customer_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Customer Metadata
+      summary: Update Customer Metadata
+      operationId: update_customer_metadata_api_v1_customer_metadata__customer_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerMetadataUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerMetadataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Customer Metadata
+      summary: Delete Customer Metadata
+      operationId: delete_customer_metadata_api_v1_customer_metadata__customer_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customer-order-metrics/:
+    get:
+      tags:
+      - Customer Order Metrics
+      summary: List Customer Order Metrics
+      operationId: list_customer_order_metrics_api_v1_customer_order_metrics__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Customer Order Metrics
+      summary: Create Customer Order Metrics
+      operationId: create_customer_order_metrics_api_v1_customer_order_metrics__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerOrderMetricsCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customer-order-metrics/{customer_id}:
+    get:
+      tags:
+      - Customer Order Metrics
+      summary: Get Customer Order Metrics
+      operationId: get_customer_order_metrics_api_v1_customer_order_metrics__customer_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Customer Order Metrics
+      summary: Update Customer Order Metrics
+      operationId: update_customer_order_metrics_api_v1_customer_order_metrics__customer_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerOrderMetricsUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Customer Order Metrics
+      summary: Delete Customer Order Metrics
+      operationId: delete_customer_order_metrics_api_v1_customer_order_metrics__customer_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customer-payment-data/:
+    get:
+      tags:
+      - Customer Payment Data
+      summary: List Customer Payment Data
+      operationId: list_customer_payment_data_api_v1_customer_payment_data__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerPaymentDataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Customer Payment Data
+      summary: Create Customer Payment Data
+      operationId: create_customer_payment_data_api_v1_customer_payment_data__post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentDataCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPaymentDataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/customer-payment-data/{customer_id}:
+    get:
+      tags:
+      - Customer Payment Data
+      summary: Get Customer Payment Data
+      operationId: get_customer_payment_data_api_v1_customer_payment_data__customer_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPaymentDataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Customer Payment Data
+      summary: Update Customer Payment Data
+      operationId: update_customer_payment_data_api_v1_customer_payment_data__customer_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerPaymentDataUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPaymentDataResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Customer Payment Data
+      summary: Delete Customer Payment Data
+      operationId: delete_customer_payment_data_api_v1_customer_payment_data__customer_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: customer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Customer Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    CustomerDetailsCreate:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+        company_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Name
+        company_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Type
+        company_size:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Size
+        industry_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Industry Type
+      type: object
+      title: CustomerDetailsCreate
+    CustomerDetailsResponse:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+        company_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Name
+        company_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Type
+        company_size:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Size
+        industry_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Industry Type
+      type: object
+      title: CustomerDetailsResponse
+    CustomerDetailsUpdate:
+      properties:
+        company_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Name
+        company_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Type
+        company_size:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Company Size
+        industry_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Industry Type
+      type: object
+      title: CustomerDetailsUpdate
+    CustomerMetadataCreate:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+          default: ''
+        account_manager:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Account Manager
+          default: ''
+        support_contact:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Support Contact
+          default: ''
+        contact_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contact Name
+          default: ''
+        job_title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Job Title
+          default: ''
+        preferred_communication_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preferred Communication Method
+          default: ''
+        email_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email Address
+          default: ''
+        phone_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone Number
+          default: ''
+        mobile_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mobile Number
+          default: ''
+        revenue:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revenue
+          default: ''
+        website:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Website
+          default: ''
+        year_founded:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Year Founded
+          default: ''
+        customer_since:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Since
+          default: ''
+        lead_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Time
+          default: ''
+        warranty_information:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Warranty Information
+          default: ''
+        account_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Account Status
+          default: ''
+        special_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Special Requirements
+          default: ''
+        preferred_shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preferred Shipping Method
+          default: ''
+        region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Region
+          default: ''
+        shipping_contact_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Contact Name
+          default: ''
+        shipping_contact_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Contact Number
+          default: ''
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+          default: ''
+        shipping_city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping City
+          default: ''
+        shipping_state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping State
+          default: ''
+        shipping_zipcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Zipcode
+          default: ''
+        shipping_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Country
+          default: ''
+        notes_comments:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes Comments
+          default: ''
+      type: object
+      title: CustomerMetadataCreate
+    CustomerMetadataResponse:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+          default: ''
+        account_manager:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Account Manager
+          default: ''
+        support_contact:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Support Contact
+          default: ''
+        contact_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contact Name
+          default: ''
+        job_title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Job Title
+          default: ''
+        preferred_communication_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preferred Communication Method
+          default: ''
+        email_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email Address
+          default: ''
+        phone_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone Number
+          default: ''
+        mobile_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mobile Number
+          default: ''
+        revenue:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revenue
+          default: ''
+        website:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Website
+          default: ''
+        year_founded:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Year Founded
+          default: ''
+        customer_since:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Since
+          default: ''
+        lead_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Time
+          default: ''
+        warranty_information:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Warranty Information
+          default: ''
+        account_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Account Status
+          default: ''
+        special_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Special Requirements
+          default: ''
+        preferred_shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preferred Shipping Method
+          default: ''
+        region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Region
+          default: ''
+        shipping_contact_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Contact Name
+          default: ''
+        shipping_contact_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Contact Number
+          default: ''
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+          default: ''
+        shipping_city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping City
+          default: ''
+        shipping_state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping State
+          default: ''
+        shipping_zipcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Zipcode
+          default: ''
+        shipping_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Country
+          default: ''
+        notes_comments:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes Comments
+          default: ''
+      type: object
+      title: CustomerMetadataResponse
+    CustomerMetadataUpdate:
+      properties:
+        account_manager:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Account Manager
+        support_contact:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Support Contact
+        contact_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Contact Name
+        job_title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Job Title
+        preferred_communication_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preferred Communication Method
+        email_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email Address
+        phone_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone Number
+        mobile_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mobile Number
+        revenue:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revenue
+        website:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Website
+        year_founded:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Year Founded
+        customer_since:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Since
+        lead_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Time
+        warranty_information:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Warranty Information
+        account_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Account Status
+        special_requirements:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Special Requirements
+        preferred_shipping_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preferred Shipping Method
+        region:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Region
+        shipping_contact_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Contact Name
+        shipping_contact_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Contact Number
+        shipping_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Address
+        shipping_city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping City
+        shipping_state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping State
+        shipping_zipcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Zipcode
+        shipping_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shipping Country
+        notes_comments:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes Comments
+      type: object
+      title: CustomerMetadataUpdate
+    CustomerOrderMetricsCreate:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+        profit_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profit Per Order
+        revenue_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revenue Per Order
+        cost_to_serve_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cost To Serve Per Order
+        customer_lifetime_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Lifetime Value
+        return_on_fulfillment_cost:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return On Fulfillment Cost
+        gross_profit_margin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gross Profit Margin
+        inventory_turnover_ratio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inventory Turnover Ratio
+        order_profitability_index:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Profitability Index
+        average_order_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Average Order Value
+        customer_retention_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Retention Rate
+        order_fill_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Fill Rate
+        on_time_delivery_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: On Time Delivery Rate
+        order_cycle_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Cycle Time
+        late_order_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Late Order Rate
+        perfect_order_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Perfect Order Rate
+        return_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return Rate
+        backorder_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Backorder Rate
+        order_accuracy_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Accuracy Rate
+        first_time_fill_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: First Time Fill Rate
+        customer_satisfaction_score:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Satisfaction Score
+        order_margin_per_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Margin Per Unit
+        cost_of_goods_sold:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cost Of Goods Sold
+        order_processing_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Processing Time
+      type: object
+      title: CustomerOrderMetricsCreate
+    CustomerOrderMetricsResponse:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+        profit_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profit Per Order
+        revenue_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revenue Per Order
+        cost_to_serve_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cost To Serve Per Order
+        customer_lifetime_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Lifetime Value
+        return_on_fulfillment_cost:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return On Fulfillment Cost
+        gross_profit_margin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gross Profit Margin
+        inventory_turnover_ratio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inventory Turnover Ratio
+        order_profitability_index:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Profitability Index
+        average_order_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Average Order Value
+        customer_retention_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Retention Rate
+        order_fill_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Fill Rate
+        on_time_delivery_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: On Time Delivery Rate
+        order_cycle_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Cycle Time
+        late_order_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Late Order Rate
+        perfect_order_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Perfect Order Rate
+        return_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return Rate
+        backorder_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Backorder Rate
+        order_accuracy_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Accuracy Rate
+        first_time_fill_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: First Time Fill Rate
+        customer_satisfaction_score:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Satisfaction Score
+        order_margin_per_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Margin Per Unit
+        cost_of_goods_sold:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cost Of Goods Sold
+        order_processing_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Processing Time
+      type: object
+      title: CustomerOrderMetricsResponse
+    CustomerOrderMetricsUpdate:
+      properties:
+        profit_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profit Per Order
+        revenue_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revenue Per Order
+        cost_to_serve_per_order:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cost To Serve Per Order
+        customer_lifetime_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Lifetime Value
+        return_on_fulfillment_cost:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return On Fulfillment Cost
+        gross_profit_margin:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Gross Profit Margin
+        inventory_turnover_ratio:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inventory Turnover Ratio
+        order_profitability_index:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Profitability Index
+        average_order_value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Average Order Value
+        customer_retention_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Retention Rate
+        order_fill_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Fill Rate
+        on_time_delivery_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: On Time Delivery Rate
+        order_cycle_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Cycle Time
+        late_order_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Late Order Rate
+        perfect_order_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Perfect Order Rate
+        return_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return Rate
+        backorder_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Backorder Rate
+        order_accuracy_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Accuracy Rate
+        first_time_fill_rate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: First Time Fill Rate
+        customer_satisfaction_score:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Satisfaction Score
+        order_margin_per_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Margin Per Unit
+        cost_of_goods_sold:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cost Of Goods Sold
+        order_processing_time:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Order Processing Time
+      type: object
+      title: CustomerOrderMetricsUpdate
+    CustomerPaymentDataCreate:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        tax_identification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Identification Number
+        credit_limit:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Credit Limit
+        payment_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Method
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        billing_city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing City
+        billing_state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing State
+        billing_zipcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Zipcode
+        billing_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Country
+      type: object
+      title: CustomerPaymentDataCreate
+    CustomerPaymentDataResponse:
+      properties:
+        customer_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Id
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        tax_identification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Identification Number
+        credit_limit:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Credit Limit
+        payment_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Method
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        billing_city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing City
+        billing_state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing State
+        billing_zipcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Zipcode
+        billing_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Country
+      type: object
+      title: CustomerPaymentDataResponse
+    CustomerPaymentDataUpdate:
+      properties:
+        payment_terms:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Terms
+        tax_identification_number:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tax Identification Number
+        credit_limit:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Credit Limit
+        payment_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Payment Method
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+        billing_address:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Address
+        billing_city:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing City
+        billing_state:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing State
+        billing_zipcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Zipcode
+        billing_country:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Billing Country
+      type: object
+      title: CustomerPaymentDataUpdate
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PaginatedCustomerDetailsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/CustomerDetailsResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedCustomerDetailsResponse
+    PaginatedCustomerMetadataResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/CustomerMetadataResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedCustomerMetadataResponse
+    PaginatedCustomerOrderMetricsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/CustomerOrderMetricsResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedCustomerOrderMetricsResponse
+    PaginatedCustomerPaymentDataResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/CustomerPaymentDataResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedCustomerPaymentDataResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

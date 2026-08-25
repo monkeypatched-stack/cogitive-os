@@ -1,0 +1,183 @@
+/* Ontology Explorer — Neo4j-Bloom-style semantic graph browser. Same
+ * design language as the World State Graph (clean whitespace, soft
+ * shadows, rounded cards, thin semantic edges), denser toolbar since this
+ * is a power-user tool, not an operational dashboard. */
+
+.lwe-onto-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 10px;
+  padding: 20px 22px 22px;
+  box-sizing: border-box;
+  background: #F8FAFC;
+  color: #1E293B;
+}
+
+.lwe-onto-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex: none;
+}
+
+.lwe-onto-heading h2 { margin: 0; font-size: 19px; font-weight: 600; color: #1E293B; }
+.lwe-onto-heading p { margin: 4px 0 0; font-size: 12.5px; font-weight: 400; color: #64748B; max-width: 640px; }
+.lwe-onto-heading-meta {
+  flex: none; padding: 6px 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid #E8EAF0;
+  color: #475569; font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+
+.lwe-onto-error { flex: none; padding: 10px 14px; border-radius: 10px; background: #FEF2F2; color: #B91C1C; font-size: 12.5px; }
+
+/* ── Toolbars ────────────────────────────────────────────────────────── */
+
+.lwe-onto-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  flex-wrap: wrap;
+}
+
+.lwe-onto-search {
+  flex: none;
+  width: 320px;
+  padding: 8px 12px;
+  border: 1px solid #E8EAF0;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #1E293B;
+  font-size: 12.5px;
+}
+.lwe-onto-search:focus-visible { outline: 2px solid #2563EB; outline-offset: 1px; }
+
+.lwe-onto-query-hints { display: flex; gap: 6px; flex-wrap: wrap; }
+.lwe-onto-hint-chip {
+  padding: 5px 10px; border-radius: 999px; border: 1px dashed #CBD5E1; background: transparent;
+  color: #64748B; font-size: 11px; cursor: pointer;
+}
+.lwe-onto-hint-chip:hover { background: #F1F5F9; border-color: #94A3B8; }
+
+.lwe-onto-control-group { display: flex; align-items: center; gap: 5px; }
+.lwe-onto-control-label { font-size: 11px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.03em; margin-right: 3px; }
+
+.lwe-onto-toggle-btn {
+  padding: 6px 10px; border-radius: 8px; border: 1px solid #E8EAF0; background: #FFFFFF;
+  color: #475569; font-size: 11.5px; font-weight: 500; cursor: pointer;
+}
+.lwe-onto-toggle-btn.is-active { background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8; }
+.lwe-onto-toggle-btn:hover:not(.is-active) { background: #F8FAFC; }
+
+.lwe-onto-toolbar select {
+  padding: 6px 10px; border: 1px solid #E8EAF0; border-radius: 8px; background: #FFFFFF; color: #1E293B; font-size: 11.5px;
+}
+
+.lwe-onto-filters { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.lwe-onto-filter-chip {
+  --chip-fg: #475569; --chip-bg: #F1F5F9;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border: 1px solid transparent; border-radius: 999px;
+  background: var(--chip-bg); color: var(--chip-fg); font-size: 11.5px; font-weight: 500; cursor: pointer;
+}
+.lwe-onto-filter-chip span { opacity: 0.7; font-weight: 400; }
+.lwe-onto-filter-chip.is-off { background: #FFFFFF; border-color: #E8EAF0; color: #94A3B8; opacity: 0.6; }
+
+.lwe-onto-predicate-chip {
+  padding: 4px 9px; border-radius: 6px; border: 1px solid #E8EAF0; background: #F8FAFC;
+  color: #334155; font-size: 10.5px; font-weight: 500; cursor: pointer;
+}
+.lwe-onto-predicate-chip.is-off { opacity: 0.4; text-decoration: line-through; }
+
+.lwe-onto-actions-bar { padding: 8px 10px; background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 10px; }
+.lwe-onto-action-btn {
+  padding: 6px 11px; border-radius: 7px; border: 1px solid #E8EAF0; background: #FFFFFF;
+  color: #334155; font-size: 11.5px; font-weight: 500; cursor: pointer;
+}
+.lwe-onto-action-btn.is-primary { background: #2563EB; border-color: #2563EB; color: #FFFFFF; }
+.lwe-onto-action-btn:hover { filter: brightness(0.97); }
+
+.lwe-onto-path-summary {
+  flex: none; padding: 8px 12px; border-radius: 8px; background: #F0FDF4; border: 1px solid #BBF7D0;
+  color: #166534; font-size: 12px; font-weight: 500;
+}
+
+/* ── Graph card ──────────────────────────────────────────────────────── */
+
+.lwe-onto-graph-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #E8EAF0;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.lwe-onto-canvas { position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; background: #F8FAFC; cursor: grab; overflow: hidden; }
+.lwe-onto-canvas:active { cursor: grabbing; }
+.lwe-onto-svg { display: block; width: 100%; height: 100%; }
+
+.lwe-onto-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #94A3B8; font-size: 13px; }
+.lwe-onto-empty-icon { font-size: 30px; opacity: 0.5; }
+.lwe-onto-spinner { width: 26px; height: 26px; border-radius: 50%; border: 2.5px solid #E2E8F0; border-top-color: #2563EB; animation: lwe-onto-spin 800ms linear infinite; }
+@keyframes lwe-onto-spin { to { transform: rotate(360deg); } }
+
+.lwe-onto-edge { fill: none; stroke-width: 2; stroke-linecap: round; transition: opacity 150ms ease, stroke 150ms ease; }
+.lwe-onto-edge-label { font-size: 9px; font-weight: 500; text-anchor: middle; pointer-events: none; }
+
+.lwe-onto-node { cursor: pointer; outline: none; transition: opacity 150ms ease; }
+.lwe-onto-node-card { transition: stroke 150ms ease, transform 200ms cubic-bezier(0.34, 1.4, 0.64, 1); }
+.lwe-onto-node:hover .lwe-onto-node-card { filter: brightness(0.99); }
+.lwe-onto-node.is-selected .lwe-onto-node-card { transform: scale(1.04); transform-origin: center; }
+.lwe-onto-node:focus-visible .lwe-onto-node-card { stroke: #2563EB; stroke-width: 2; }
+.lwe-onto-node.is-onpath .lwe-onto-node-card { stroke: #2563EB; }
+
+.lwe-onto-node-icon path, .lwe-onto-node-icon circle { fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.lwe-onto-node-name { fill: #1E293B; font-size: 12.5px; font-weight: 600; }
+.lwe-onto-node-badge { font-size: 9px; font-weight: 500; }
+.lwe-onto-node-metric { fill: #2563EB; font-size: 10px; font-weight: 600; }
+
+/* ── Right-side inspector ────────────────────────────────────────────── */
+
+.lwe-onto-inspector {
+  flex: none; width: 300px; min-width: 300px; border-left: 1px solid #E8EAF0; background: #FFFFFF;
+  display: flex; flex-direction: column; overflow-y: auto; animation: lwe-onto-slide-in 250ms ease;
+}
+@keyframes lwe-onto-slide-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+
+.lwe-onto-inspector-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 16px 16px 12px; border-bottom: 1px solid #F1F5F9; }
+.lwe-onto-inspector-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 500; margin-bottom: 6px; }
+.lwe-onto-inspector-header h3 { margin: 0; font-size: 16px; font-weight: 600; color: #1E293B; }
+.lwe-onto-inspector-close { flex: none; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #E8EAF0; border-radius: 50%; background: #FFFFFF; color: #64748B; cursor: pointer; }
+.lwe-onto-inspector-close:hover { background: #F1F5F9; }
+
+.lwe-onto-inspector-body { padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+.lwe-onto-inspector-section-title { font-size: 11px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+.lwe-onto-inspector-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin: 0; }
+.lwe-onto-inspector-fields dt { font-size: 10.5px; font-weight: 400; color: #94A3B8; margin-bottom: 2px; }
+.lwe-onto-inspector-fields dd { margin: 0; font-size: 12.5px; font-weight: 500; color: #1E293B; word-break: break-word; }
+.lwe-onto-mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px !important; word-break: break-all; }
+
+.lwe-onto-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.lwe-onto-inline-chip { padding: 4px 10px; border-radius: 999px; background: #F1F5F9; color: #475569; font-size: 11px; font-weight: 500; }
+
+.lwe-onto-relations-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+.lwe-onto-relations-list li { font-size: 11.5px; color: #475569; }
+.lwe-onto-relation-predicate { display: inline-block; padding: 2px 7px; border-radius: 5px; background: #F1F5F9; color: #334155; font-size: 10px; font-weight: 500; margin-right: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lwe-onto-node, .lwe-onto-node-card, .lwe-onto-edge, .lwe-onto-inspector { transition: none !important; animation: none !important; }
+}
+
+@media (max-width: 1000px) {
+  .lwe-onto-graph-card { flex-direction: column; }
+  .lwe-onto-inspector { width: 100%; min-width: 0; border-left: 0; border-top: 1px solid #E8EAF0; max-height: 40%; }
+}

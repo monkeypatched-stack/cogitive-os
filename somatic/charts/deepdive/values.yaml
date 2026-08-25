@@ -1,0 +1,61 @@
+module:
+  name: deepdive
+  layer: 5
+  alias: Aggregation Layer
+  biologicalRole: Higher-order analysis
+  softwareRole: Evidence, analytics, BI, root cause analysis
+  owns:
+  - aggregation
+  - fleet_analytics
+  - knowledge_aggregator
+  - digital_twin_aggregator
+  - elasticsearch_adapter
+owns:
+- FleetAnalytics
+- KnowledgeAggregation
+- DigitalTwinAggregation
+- LongTermStorage
+- EnterpriseDashboards
+- CrossSiteLearning
+neverOwns:
+- Cognition
+- Execution
+- PipelineControl
+- FleetControl
+principles:
+- id: 1
+  name: AggregationNeverCognition
+  statement: deepdive aggregates and analyzes. It never performs cognition.
+- id: 2
+  name: AggregationNeverControls
+  statement: deepdive never controls execution. It observes fleet output.
+invariants:
+- id: DEEP-INV-001
+  rule: no_execution_control_in_deepdive
+  statement: deepdive never controls execution or cognition.
+  severity: critical
+  rejection: "REJECTED \u2014 deepdive contains execution control logic."
+deliverables:
+- artifact: AggregationAPIs
+- artifact: KnowledgeSynchronization
+- artifact: AnalyticsArchitecture
+- artifact: EnterpriseDashboards
+cot:
+  steps:
+  - step: 1
+    instruction: 'Assert: deepdive aggregates fleet data. It never controls or executes.'
+    constraint: DEEP-INV-001
+    auditGate: true
+  - step: 2
+    instruction: Every submodule maps to a distinct aggregation responsibility.
+  - step: 3
+    instruction: "Verify the elasticsearch_adapter module is read-only \u2014 analytics only,\
+      \ no writes."
+  - step: 4
+    instruction: Produce AggregationAPIs, KnowledgeSynchronization, AnalyticsArchitecture.
+reviewGate:
+  mode: constitutional
+  outcomes:
+    approved: "APPROVED \u2014 deepdive conforms to Aggregation Constitution v1.0.0"
+    rejected:
+    - "REJECTED \u2014 deepdive controls execution."

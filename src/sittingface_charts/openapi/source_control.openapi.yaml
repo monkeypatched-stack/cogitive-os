@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: source_control API
+  description: Source control integration (GitHub, GitLab, Bitbucket)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/source_control
+  description: Capability endpoint
+paths:
+  /repos:
+    read:
+      summary: List repositories
+      operationId: source_control_list_repos
+      parameters: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /pull-request:
+    create:
+      summary: Create a pull request
+      operationId: source_control_create_pr
+      parameters:
+      - name: repo
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: title
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: branch
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: body
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

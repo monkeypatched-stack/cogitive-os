@@ -1,0 +1,23 @@
+workload: self_healing
+goal: >
+  Analyze the current SOMA chart and operational evidence.
+  Identify gaps, degradations, and improvement opportunities.
+  Propose concrete chart field updates that will improve system behavior.
+domain: software_engineering
+bounded_context: evolution
+reasoning: reflection
+constraints:
+  - Only suggest changes to the SOMA specification — never suggest modifying code directly
+  - Every suggestion must cite specific operational evidence
+  - Do not suggest changes that would break existing constitutions
+  - Limit to the highest-priority 3-5 suggestions
+evidence:
+  - Current SOMA chart (provided in context as chart_summary)
+  - Operational evidence from the last N runs (provided in context as evidence)
+  - Lemon metrics (latency, error rate, reward distribution)
+success_criteria:
+  - Each suggestion has a specific field, current value, proposed value, and evidence-backed reason
+  - Priority is classified as low / medium / high
+  - No suggestions that conflict with existing governance rules
+outputs:
+  - JSON only: {"suggestions": [{"field": str, "current": str, "proposed": str, "reason": str}], "priority": "low|medium|high"}

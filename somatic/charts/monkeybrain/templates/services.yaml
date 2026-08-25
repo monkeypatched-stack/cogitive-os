@@ -1,0 +1,97 @@
+{{- range $name, $svc := .Values.services }}
+{{- if $svc.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-{{ $name }}
+  labels:
+    {{- include "monkeybrain.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "monkeybrain.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "monkeybrain.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $name }}
+    spec:
+      initContainers:
+        - name: uv-install
+          image: ghcr.io/astral-sh/uv:latest
+          command: ["uv", "pip", "install", "--system", "-r", "/app/requirements.txt"]
+          volumeMounts:
+            - name: app-code
+              mountPath: /app
+      containers:
+        - name: {{ $name }}
+          image: "{{ $.Values.serviceDefaults.image.registry }}{{ $.Values.serviceDefaults.image.repository }}-{{ $name }}:{{ $.Values.serviceDefaults.image.tag }}"
+          imagePullPolicy: {{ $.Values.serviceDefaults.image.pullPolicy }}
+          ports:
+            - containerPort: {{ $svc.port }}
+              protocol: TCP
+          envFrom:
+            {{- if and (or (eq $name "auth") (eq $name "agentos")) $.Values.ztaa }}
+            - secretRef:
+                name: {{ $.Release.Name }}-ztaa-secrets
+                optional: true
+            {{- end }}
+          env:
+            - name: MONGODB_URL
+              value: {{ include "monkeybrain.mongodbUrl" $ }}
+            - name: DB_NAME
+              value: "demo"
+            - name: REDIS_URL
+              value: {{ include "monkeybrain.redisUrl" $ }}
+            {{- with $svc.env }}
+            {{- range $key, $value := . }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              # Gate 8: /live only exists on agentos (see deploy/k8s/deployment.yaml
+              # for the rationale). Every other service in this shared template
+              # only has /health, so the path is per-service-configurable
+              # (values.yaml: services.<name>.livenessPath) rather than a blanket
+              # switch — the latter would 404-restart-loop every non-agentos pod.
+              path: {{ $svc.livenessPath | default "/health" }}
+              port: {{ $svc.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: {{ $svc.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml $.Values.serviceDefaults.resources | nindent 12 }}
+      volumes:
+        - name: app-code
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ $name }}
+  labels:
+    {{- include "monkeybrain.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.port }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "monkeybrain.selectorLabels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+{{- end }}
+{{- end }}

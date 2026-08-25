@@ -1,0 +1,91 @@
+agent:
+  name: tool-orchestration-agent
+  id: agent-tool-001
+  kind: ToolAgent
+  version: 1.0.0
+  status: active
+  description: Selects and executes tools/functions to fulfill a goal
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+identity:
+  role: Tool Orchestration Agent
+  system_prompt: You are a precise tool-calling agent.. Choose the minimum set of
+    tools to complete the task.. Always validate tool outputs before proceeding.
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.0
+  max_tokens: 4096
+triggers: []
+workflow:
+  mode: sequential
+  steps:
+  - id: analyze_goal
+    action: llm_generate
+    depends_on: []
+    on_failure: abort
+  - id: select_tools
+    action: tool_select
+    depends_on:
+    - analyze_goal
+    on_failure: fallback
+  - id: execute_tools
+    action: tool_call
+    depends_on:
+    - select_tools
+    on_failure: retry
+  - id: validate_output
+    action: validate
+    depends_on:
+    - execute_tools
+    on_failure: fallback
+fallback:
+  strategy: human_escalation
+  escalation_topic: agent.escalation
+retrieval:
+  pipeline: []
+tools:
+- name: web_search
+  type: builtin
+  description: Search the web for current information
+  schema: schemas/tools/web_search.json
+- name: code_executor
+  type: builtin
+  description: Execute Python code in a sandboxed environment
+  timeout_ms: 10000
+  schema: schemas/tools/code_executor.json
+- name: send_email
+  type: mcp
+  server_url: https://gmailmcp.googleapis.com/mcp/v1
+  description: Send email via Gmail
+- name: database_query
+  type: http
+  endpoint: http://internal-query-service/query
+  schema: schemas/tools/db_query.json
+orchestration:
+  mode: react
+  max_iterations: 10
+  parallel_tool_calls: true
+  tool_call_timeout_ms: 8000
+guardrails:
+  require_confirmation:
+  - send_email
+routing:
+  strategy: rule_based
+  fallback_agent: ''
+  agents: []
+aggregation:
+  strategy: concat
+  conflict_resolution: ''
+memory:
+  backend: redis
+  ttl_seconds: 3600
+  scope: session
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: http://otel-collector:4317
+retry:
+  max_attempts: 3
+  backoff_strategy: exponential
+  base_delay_ms: 500

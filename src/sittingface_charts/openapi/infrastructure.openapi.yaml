@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: infrastructure API
+  description: Container and orchestration management (Docker, K8s)
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/infrastructure
+  description: Capability endpoint
+paths:
+  /containers:
+    read:
+      summary: List containers
+      operationId: infrastructure_list_containers
+      parameters: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /deploy:
+    create:
+      summary: Deploy a service
+      operationId: infrastructure_deploy
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: image
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: replicas
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

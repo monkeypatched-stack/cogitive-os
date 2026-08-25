@@ -1,0 +1,121 @@
+capability:
+  name: mongodb
+  id: cap-db-mongodb-001
+  platform: Database/Document
+  description: MongoDB document database driver for CRUD operations and change streams
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-27'
+  review_date: '2026-12-27'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - database
+  - mongodb
+  - document
+  - nosql
+  - motor
+  - pymongo
+  references:
+  - src/cerebellum/capabilities/mongodb.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/mongodb
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: find
+  method: READ
+  path: /{collection}/find
+  description: Query documents
+  required_params:
+  - collection
+  optional_params:
+  - filter
+  - projection
+  - sort
+  - limit
+  paginated: false
+  pagination_cursor_field: ''
+- name: insert_one
+  method: CREATE
+  path: /{collection}/insert
+  description: Insert a document
+  required_params:
+  - collection
+  - document
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+- name: update_one
+  method: UPDATE
+  path: /{collection}/update
+  description: Update a document
+  required_params:
+  - collection
+  - filter
+  - update
+  optional_params:
+  - upsert
+  paginated: false
+  pagination_cursor_field: ''
+- name: delete_one
+  method: DELETE
+  path: /{collection}/delete
+  description: Delete a document
+  required_params:
+  - collection
+  - filter
+  optional_params: []
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_mongodb_connect
+  - test_mongodb_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

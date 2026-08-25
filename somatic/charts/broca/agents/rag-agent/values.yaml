@@ -1,0 +1,85 @@
+agent:
+  name: rag-agent
+  id: agent-rag-001
+  kind: RetrievalAgent
+  version: 1.0.0
+  status: active
+  description: Retrieves and synthesizes knowledge from indexed sources
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+identity:
+  role: Knowledge Retrieval Agent
+  system_prompt: You answer questions grounded strictly in retrieved context.. If
+    the context does not contain the answer, say so.. Never hallucinate facts.
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.2
+  max_tokens: 4096
+triggers: []
+workflow:
+  mode: sequential
+  steps:
+  - id: embed_query
+    action: embed
+    depends_on: []
+    on_failure: abort
+  - id: search_sources
+    action: search
+    depends_on:
+    - embed_query
+    on_failure: retry
+  - id: rerank_results
+    action: rerank
+    depends_on:
+    - search_sources
+    on_failure: retry
+  - id: synthesize_answer
+    action: llm_generate
+    depends_on:
+    - rerank_results
+    on_failure: fallback
+fallback:
+  strategy: human_escalation
+  escalation_topic: agent.escalation
+retrieval:
+  pipeline:
+  - stage: embed
+    model: text-embedding-3-small
+    provider: openai
+  - stage: search
+    top_k: 10
+    score_threshold: 0.75
+  - stage: rerank
+    model: cohere-rerank-v3
+    top_n: 5
+  - stage: augment
+    strategy: context_window_stuffing
+    max_tokens: 2000
+tools: []
+orchestration:
+  mode: sequential
+  max_iterations: 1
+  parallel_tool_calls: false
+  tool_call_timeout_ms: 0
+guardrails:
+  require_confirmation: []
+routing:
+  strategy: rule_based
+  fallback_agent: ''
+  agents: []
+aggregation:
+  strategy: concat
+  conflict_resolution: ''
+memory:
+  backend: redis
+  ttl_seconds: 3600
+  scope: session
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: http://otel-collector:4317
+retry:
+  max_attempts: 3
+  backoff_strategy: exponential
+  base_delay_ms: 500

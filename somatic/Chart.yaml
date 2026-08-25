@@ -1,0 +1,84 @@
+apiVersion: v2
+name: agentos-constitution
+description: |
+  MonkeyBrain Constitutional Compiler — Umbrella Helm Chart.
+  Module names match the src/ directory tree exactly.
+  helm template | prompt-compiler → CoT prompts per module.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - agentos
+  - monkeybrain
+  - constitution-driven-development
+  - cognitive-os
+maintainers:
+  - name: Prashun Javeri
+    email: prashun@monkeypatched.com
+
+dependencies:
+  - name: meta
+    version: "1.0.0"
+    repository: "file://charts/meta"
+    tags: [global]
+
+  # Layer 1 — Runtime Kernel
+  - name: monkey-brain
+    version: "1.0.0"
+    repository: "file://charts/monkey-brain"
+    tags: [kernel, runtime]
+
+  # Layer 2 — Cognitive Core
+  - name: cortex
+    version: "1.0.0"
+    repository: "file://charts/cortex"
+    tags: [cognitive-core, world-model]
+
+  - name: broca
+    version: "1.0.0"
+    repository: "file://charts/broca"
+    tags: [cognitive-core, nlp]
+
+  - name: introspection
+    version: "1.0.0"
+    repository: "file://charts/introspection"
+    tags: [cognitive-core, observability]
+
+  # Layer 3 — Capabilities
+  - name: cerebellum
+    version: "1.0.0"
+    repository: "file://charts/cerebellum"
+    tags: [capabilities]
+
+  # Layer 5 — Operations & Intelligence
+  - name: homeostasis
+    version: "1.0.0"
+    repository: "file://charts/homeostasis"
+    tags: [operations, control-plane]
+
+  - name: deepdive
+    version: "1.0.0"
+    repository: "file://charts/deepdive"
+    tags: [operations, aggregation]
+
+  - name: cingulate
+    version: "1.0.0"
+    repository: "file://charts/cingulate"
+    tags: [operations, governance, benchmark]
+
+  - name: plasticity
+    version: "1.0.0"
+    repository: "file://charts/plasticity"
+    tags: [operations, learning, testing]
+
+  # Edge Sync
+  - name: sync
+    version: "1.0.0"
+    repository: "file://charts/sync"
+    tags: [edge, sync]
+
+  # Constitution source
+  - name: soma
+    version: "1.0.0"
+    repository: "file://charts/soma"
+    tags: [constitution, source]

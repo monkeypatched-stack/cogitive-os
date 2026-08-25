@@ -1,0 +1,132 @@
+capability:
+  name: finance
+  id: cap-fin-001
+  platform: Finance
+  description: Finance integrations (Loans, Fraud Detection, Risk Assessment, Payments)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - finance
+  - loans
+  - fraud
+  - risk
+  - payments
+  references:
+  - src/cerebellum/capabilities/finance.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/finance
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: process_loan_application
+  method: CREATE
+  path: /loans
+  description: Process a loan application
+  required_params:
+  - applicant_id
+  - amount
+  - term
+  optional_params:
+  - purpose
+  - collateral
+  paginated: false
+  pagination_cursor_field: ''
+- name: detect_fraud
+  method: READ
+  path: /fraud/detect
+  description: Detect fraudulent transactions
+  required_params:
+  - transaction_id
+  optional_params:
+  - historical_data
+  paginated: false
+  pagination_cursor_field: ''
+- name: assess_risk
+  method: READ
+  path: /risk/assess
+  description: Assess risk profile
+  required_params:
+  - entity_id
+  - entity_type
+  optional_params:
+  - historical_data
+  paginated: false
+  pagination_cursor_field: ''
+- name: process_payment
+  method: CREATE
+  path: /payments
+  description: Process a payment
+  required_params:
+  - payer_id
+  - payee_id
+  - amount
+  optional_params:
+  - currency
+  - reference
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_transactions
+  method: READ
+  path: /transactions
+  description: List transactions
+  required_params: []
+  optional_params:
+  - account_id
+  - date_range
+  paginated: true
+  pagination_cursor_field: cursor
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_finance_connect
+  - test_finance_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

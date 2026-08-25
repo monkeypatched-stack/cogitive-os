@@ -1,0 +1,72 @@
+---
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalModule
+metadata:
+  name: {{ .Values.module.name }}
+  layer: {{ .Values.module.layer }}
+  alias: {{ .Values.module.alias | quote }}
+  biologicalRole: {{ .Values.module.biologicalRole | quote }}
+  softwareRole: {{ .Values.module.softwareRole | quote }}
+spec:
+  owns:
+    {{- range .Values.owns }}
+    - {{ . }}
+    {{- end }}
+  neverOwns:
+    {{- range .Values.neverOwns }}
+    - {{ . }}
+    {{- end }}
+
+---
+{{- range .Values.principles }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalPrinciple
+metadata:
+  name: {{ printf "%s-principle-%d" $.Values.module.name .id }}
+  module: {{ $.Values.module.name }}
+  id: {{ .id }}
+spec:
+  statement: {{ .statement | quote }}
+---
+{{- end }}
+
+{{- range .Values.invariants }}
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalInvariant
+metadata:
+  name: {{ .id }}
+  module: {{ $.Values.module.name }}
+  severity: {{ .severity }}
+spec:
+  rule: {{ .rule }}
+  rationale: {{ .statement | quote }}
+  auditCheck: {{ printf "Verify: %s" .statement | quote }}
+  rejection: {{ .rejection | quote }}
+---
+{{- end }}
+
+apiVersion: constitution.agentos.io/v1
+kind: ConstitutionalPrompt
+metadata:
+  name: {{ printf "%s-prompt" .Values.module.name }}
+  module: {{ .Values.module.name }}
+spec:
+  preamble: {{ printf "Module: %s — %s" .Values.module.name .Values.module.softwareRole | quote }}
+  cot:
+    steps:
+      {{- range .Values.cot.steps }}
+      - step: {{ .step }}
+        instruction: {{ .instruction | quote }}
+        {{- if .constraint }}
+        constraint: {{ .constraint | quote }}
+        {{- end }}
+        auditGate: {{ .auditGate | default false }}
+      {{- end }}
+  reviewGate:
+    mode: {{ .Values.reviewGate.mode }}
+    outcomes:
+      approved: {{ .Values.reviewGate.outcomes.approved | quote }}
+      rejected:
+        {{- range .Values.reviewGate.outcomes.rejected }}
+        - {{ . | quote }}
+        {{- end }}

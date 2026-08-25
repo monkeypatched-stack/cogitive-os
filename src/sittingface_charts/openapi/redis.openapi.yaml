@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: redis API
+  description: Redis key-value store for caching and session state
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/redis
+  description: Capability endpoint
+paths:
+  /{key}:
+    delete:
+      summary: Delete a key
+      operationId: redis_delete
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /{key}/expire:
+    update:
+      summary: Set TTL on a key
+      operationId: redis_expire
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: ttl
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

@@ -1,0 +1,148 @@
+global:
+  imageRegistry: ""
+  imagePullPolicy: IfNotPresent
+
+mongodb:
+  enabled: true
+  auth:
+    rootPassword: "rootpassword"
+    databases: ["demo"]
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+
+serviceDefaults:
+  image:
+    registry: ""
+    repository: monkeybrain
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+ztaa:
+  # ZTAA env vars injected into auth + agentos services.
+  # Sensitive values (ACCESS_TOKEN_SECRET, KEYCLOAK_CLIENT_SECRET) must be
+  # supplied via a Kubernetes Secret — see templates/ztaa-secret.yaml.
+  mtlsEnabled: "false"
+  mtlsCaCertPath: ""
+  opaUrl: ""
+  opaTimeoutSeconds: "2"
+  natsUrl: ""
+  keycloakIssuer: ""
+  keycloakAudience: ""
+  keycloakJwksUrl: ""
+  spiffeEndpointSocket: ""
+  spiffeId: ""
+  pcpBundleRefreshSeconds: "300"
+  auditMongodbEnabled: ""
+  auditCollection: "audit_records"
+
+services:
+  auth:
+    enabled: true
+    port: 8010
+    env:
+      MTLS_ENABLED: "{{ .Values.ztaa.mtlsEnabled }}"
+      MTLS_CA_CERT_PATH: "{{ .Values.ztaa.mtlsCaCertPath }}"
+      NATS_URL: "{{ .Values.ztaa.natsUrl }}"
+      OPA_URL: "{{ .Values.ztaa.opaUrl }}"
+  assets:
+    enabled: false
+    port: 8011
+  customers:
+    enabled: false
+    port: 8012
+  events:
+    enabled: false
+    port: 8013
+  facilities:
+    enabled: false
+    port: 8014
+  floor-layout:
+    enabled: false
+    port: 8015
+  inventory:
+    enabled: false
+    port: 8016
+  iot:
+    enabled: false
+    port: 8017
+  orders:
+    enabled: false
+    port: 8018
+  pm:
+    enabled: false
+    port: 8019
+  procurement:
+    enabled: false
+    port: 8020
+  products:
+    enabled: false
+    port: 8021
+  shipping:
+    enabled: false
+    port: 8022
+  shifts:
+    enabled: false
+    port: 8023
+  suppliers:
+    enabled: false
+    port: 8024
+  taxonomy:
+    enabled: false
+    port: 8025
+  process-definition:
+    enabled: false
+    port: 8000
+  workorders:
+    enabled: false
+    port: 8027
+  changeover:
+    enabled: false
+    port: 8028
+  documents:
+    enabled: false
+    port: 8029
+  file:
+    enabled: false
+    port: 8030
+  module-control:
+    enabled: false
+    port: 8032
+  agentos:
+    enabled: true
+    port: 8031
+    # Gate 8: agentos is the only service with a real /live endpoint
+    # (src/monkey_brain/api/main.py) — see templates/services.yaml.
+    livenessPath: /live
+    env:
+      MTLS_ENABLED: "{{ .Values.ztaa.mtlsEnabled }}"
+      MTLS_CA_CERT_PATH: "{{ .Values.ztaa.mtlsCaCertPath }}"
+      OPA_URL: "{{ .Values.ztaa.opaUrl }}"
+      OPA_TIMEOUT_SECONDS: "{{ .Values.ztaa.opaTimeoutSeconds }}"
+      NATS_URL: "{{ .Values.ztaa.natsUrl }}"
+      KEYCLOAK_ISSUER: "{{ .Values.ztaa.keycloakIssuer }}"
+      KEYCLOAK_AUDIENCE: "{{ .Values.ztaa.keycloakAudience }}"
+      KEYCLOAK_JWKS_URL: "{{ .Values.ztaa.keycloakJwksUrl }}"
+      SPIFFE_ENDPOINT_SOCKET: "{{ .Values.ztaa.spiffeEndpointSocket }}"
+      SPIFFE_ID: "{{ .Values.ztaa.spiffeId }}"
+      PCP_BUNDLE_REFRESH_SECONDS: "{{ .Values.ztaa.pcpBundleRefreshSeconds }}"
+      AUDIT_MONGODB_ENABLED: "{{ .Values.ztaa.auditMongodbEnabled }}"
+      AUDIT_COLLECTION: "{{ .Values.ztaa.auditCollection }}"
+
+ingress:
+  enabled: false
+  className: nginx
+  hosts:
+    - host: monkeybrain.local
+      paths:
+        - path: /
+          pathType: Prefix

@@ -1,0 +1,87 @@
+pack:
+  name: monkeybrain-architecture
+  description: >
+    Core architectural facts about the MonkeyBrain Cognitive Operating System —
+    the Kernel/Runtime/Process Manager layer. Intended for KnowledgePack /
+    KnowledgeItem ingestion (src/knowledge/pack.py, src/knowledge/item.py) so
+    QA agents can answer questions about the system's own architecture.
+  version: "1.0.0"
+
+items:
+  - id: mb-arch-001
+    content: >
+      MonkeyBrain boots a single Kernel, which owns a Runtime Registry, an
+      Event Bus, and a Process Manager. The Kernel boots four independent
+      runtimes in order: CognitiveRuntime, SimulationRuntime, ComparatorRuntime,
+      CodeGenRuntime. Only CognitiveRuntime owns heavyweight subsystems
+      (Wolverine, Policy, Observer, Learning, ExecutionGraph, GraphStore,
+      DomainRegistry) — the other three are lightweight and share the Kernel's
+      injected Lemon (observability) and PersistenceManager (memory management)
+      rather than building their own.
+    modality: document
+    source: session-architecture-notes
+    provenance: 0.95
+    freshness: 1.0
+    completeness: 0.7
+    consistency: 0.9
+
+  - id: mb-arch-002
+    content: >
+      Every runtime follows the same OS-process analogy: Process maps to
+      CognitiveRuntime (or Simulation/Comparator/CodeGen), Process Context
+      maps to ExecutionContext, Executable maps to IntentIR. The lifecycle is
+      compile_intent() -> build_execution_runtime() -> execute_cognitive_workload(),
+      mirroring compiling a program, loading it into a process, and running it.
+    modality: document
+    source: session-architecture-notes
+    provenance: 0.95
+    freshness: 1.0
+    completeness: 0.8
+    consistency: 0.9
+
+  - id: mb-arch-003
+    content: >
+      The Process Manager (kernel/process/manager.py) owns the lifecycle of a
+      Runtime Process — one compile-to-execute run of a Workload's
+      ExecutionGraph, produced by any of the four runtimes. It layers a
+      process-level state machine (CREATED -> INITIALIZED -> RUNNING ->
+      {WAITING, SUSPENDED, COMPLETED, COMPENSATING, FAILED, TERMINATED}) above
+      ExecutionGraph's existing per-node NodeState, and reuses GraphScheduler's
+      existing self-healing retry mechanism rather than reimplementing it.
+    modality: document
+    source: session-architecture-notes
+    provenance: 0.95
+    freshness: 1.0
+    completeness: 0.75
+    consistency: 0.9
+
+  - id: mb-arch-004
+    content: >
+      CodeGenRuntime is the 4th runtime — it walks the full SDLC
+      (Specification -> Requirements -> Architecture -> Design ->
+      Implementation -> Review -> Testing -> Packaging -> Release) as an
+      ExecutionGraph of Broca agents rather than kernel capabilities. Its
+      Implementation stage fans out into DDD construct checks (domain,
+      aggregate, entity, value_object, repository, policy) and DDD compliance
+      checks (SOC2/GDPR/ISO27001 by default), all gating entry into Review.
+    modality: document
+    source: session-architecture-notes
+    provenance: 0.95
+    freshness: 1.0
+    completeness: 0.75
+    consistency: 0.9
+
+  - id: mb-arch-005
+    content: >
+      SittingFace is a knowledge-base repo, not an owned subsystem — it stays
+      external to CognitiveRuntime, which explores it via
+      explore_knowledge_base(query) rather than owning it. The SomaticCompiler
+      loads charts from somatic/charts/ and can be searched by keyword across
+      every chart's name, type, and nested field values (module descriptions,
+      owns/neverOwns boundaries, capability tags, invariant statements).
+    modality: document
+    source: session-architecture-notes
+    provenance: 0.95
+    freshness: 1.0
+    completeness: 0.7
+    consistency: 0.9

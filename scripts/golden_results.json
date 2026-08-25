@@ -1,0 +1,3897 @@
+{
+  "questions_file": "/Users/prashunjaveri/Code/monkeypatched/config/sentinel_x_golden_questions_ahmedabad.json",
+  "total": 432,
+  "passed": 0,
+  "failed": 432,
+  "pass_rate": 0.0,
+  "results": [
+    {
+      "id": "S1_PT_01",
+      "question": "Which production line does Blend Preparation Workstation belong to?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.51,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_PT_02",
+      "question": "Which plant owns Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_PT_03",
+      "question": "How many stages are in Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_PT_04",
+      "question": "What is the takt time for Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_PT_05",
+      "question": "What is the capacity utilization of the Tablet Manufacturing Plant?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_PT_06",
+      "question": "Which workstations are in the Granulation stage of the Tablet Manufacturing Plant Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_PT_07",
+      "question": "Where is the Tablet Manufacturing Plant located?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_01",
+      "question": "What is the current vibration reading of V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_02",
+      "question": "Show details for V-Blender VB-01.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.07,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_03",
+      "question": "Which workstation is V-Blender VB-01 assigned to?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_04",
+      "question": "Which machines are assigned to Blend Preparation Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_05",
+      "question": "What IoT devices are monitoring V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.05,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_06",
+      "question": "What is the status of V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_07",
+      "question": "Are any machine parts for V-Blender VB-01 low in stock?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.08,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_AM_08",
+      "question": "How many machines are in the Granulation stage of the Tablet Manufacturing Plant Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WO_01",
+      "question": "Who operates Blend Preparation Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WO_02",
+      "question": "Who does Aarav Mehta report to?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WO_03",
+      "question": "Who reports to Rahul Deshmukh?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WO_04",
+      "question": "What is Aarav Mehta's role?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WO_05",
+      "question": "Who manages workers on Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WO_06",
+      "question": "What stage is Aarav Mehta assigned to?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.01,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_SOP_01",
+      "question": "What SOP is bound to Blend Preparation Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_SOP_02",
+      "question": "What does the Blending SOP say about vibration limits?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_SOP_03",
+      "question": "What are the required approval roles for Blending SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_SOP_04",
+      "question": "What constraints are defined for execution at Blend Preparation Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_SOP_05",
+      "question": "What process parameters are defined in Blending SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_SOP_06",
+      "question": "What happens if we operate V-Blender VB-01 above the SOP maximum vibration?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WOL_01",
+      "question": "What work order was generated for V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WOL_02",
+      "question": "What is the status of work order WO-MAINT-2026-0042?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WOL_03",
+      "question": "What events are logged under work order WO-MAINT-2026-0042?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WOL_04",
+      "question": "How many open work orders exist for Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WOL_05",
+      "question": "What is the next scheduled maintenance date for V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_01",
+      "question": "What is the impact on batch BATCH-2026-001 due to the V-Blender vibration anomaly?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_02",
+      "question": "What MBMR template is bound to batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_03",
+      "question": "What IPC results are linked to batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_04",
+      "question": "What is the yield reconciliation status for batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_05",
+      "question": "What equipment usage is recorded in the BMR package for batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_06",
+      "question": "Do we have cleaning records, IPC, yield, and signatures complete for batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_07",
+      "question": "What is the batch release status for BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_BRT_08",
+      "question": "Show the full traceability chain for batch BATCH-2026-001.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_QA_01",
+      "question": "What approvals are pending for Blend Preparation Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_QA_02",
+      "question": "Who needs to sign off before V-Blender VB-01 can resume operation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_QA_03",
+      "question": "Are there any rejected approvals for Blending SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_QA_04",
+      "question": "What is the approval workflow for resuming a halted workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_QA_05",
+      "question": "Show audit logs for Blending SOP.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_KPI_01",
+      "question": "What is the OEE of the Tablet Manufacturing Plant Tablet Line A today?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.12,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_KPI_02",
+      "question": "What is the availability rate for Tablet Line A right now?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_KPI_03",
+      "question": "What is the plan adherence for Tablet Line A this shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_KPI_04",
+      "question": "What is the current WIP in the Granulation stage?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_KPI_05",
+      "question": "What is the maintenance compliance rate for Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_01",
+      "question": "What happens if we continue operating V-Blender VB-01 at 15% above the vibration threshold?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_02",
+      "question": "What happens if we stop V-Blender VB-01 and restart after 30 minutes?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_03",
+      "question": "What happens if QA approval for resumption is delayed by 4 hours?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_04",
+      "question": "What happens if we replace the V-Blender VB-01 bearing during the maintenance window?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.09,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_05",
+      "question": "What happens if the vibration anomaly recurs within 48 hours of repair?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_06",
+      "question": "What happens if we skip the IPC re-check after restarting V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_07",
+      "question": "What happens if we transfer batch BATCH-2026-001 to the Compression stage without completing Granulation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_08",
+      "question": "What happens if we reduce the blending RPM by 10% to reduce vibration without stopping?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_09",
+      "question": "What happens if we run a second V-Blender in parallel to recover lost production time?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_WI_10",
+      "question": "What happens if the vibration anomaly turns out to be caused by a loose foundation bolt and not bearing wear?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_MP_01",
+      "question": "What cleaning records are linked to Blend Preparation Workstation?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_MP_02",
+      "question": "What is the MTBF for V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_MP_03",
+      "question": "What calibration records are due or pending for devices on V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_MP_04",
+      "question": "What is the maintenance history of V-Blender VB-01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_CC_01",
+      "question": "What change controls are currently open for Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_CC_02",
+      "question": "What approval steps are required for a change control on V-Blender VB-01 maintenance procedure?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_CC_03",
+      "question": "What is the impact assessment for replacing V-Blender VB-01's bearing type?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_ED_01",
+      "question": "What is a machine?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_ED_02",
+      "question": "What is a workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_ED_03",
+      "question": "What is a work order?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_ED_04",
+      "question": "What is a Standard Operating Procedure?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_ED_05",
+      "question": "What is a batch record?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S1_ED_06",
+      "question": "What is a change control?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_01",
+      "question": "What MBMR template is bound to batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_02",
+      "question": "What executed BPR record was generated for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_03",
+      "question": "What IPC results are recorded for the Compression stage of batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_04",
+      "question": "What is the yield reconciliation result for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_05",
+      "question": "What equipment usage ledger is included in the BMR package for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.14,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_06",
+      "question": "What report templates are bound to the batch record package for BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_07",
+      "question": "What CPP/CQA registry entries are linked to batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.1,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_08",
+      "question": "Are cleaning, IPC, yield, equipment usage, and signatures all complete for BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_09",
+      "question": "Show the full traceability chain for batch BATCH-2026-002.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_BRT_10",
+      "question": "What is missing to generate the final BMR for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_QA_01",
+      "question": "What is the batch release status for BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_QA_02",
+      "question": "Who signed the latest approval for Compression SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_QA_03",
+      "question": "What are the required approval steps for batch release of BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_QA_04",
+      "question": "What happens if QA approval for batch BATCH-2026-002 is delayed by 8 hours?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_QA_05",
+      "question": "Are there any deviations recorded for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_WI_01",
+      "question": "What happens if the tablet weight variation IPC result for BATCH-2026-002 exceeds the USP limit?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_WI_02",
+      "question": "What happens if yield reconciliation for batch BATCH-2026-002 shows a 5% loss vs theoretical?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_WI_03",
+      "question": "What happens if the QA electronic signature system is unavailable during batch release?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_WI_04",
+      "question": "What happens if Compression stage IPC is skipped for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_WI_05",
+      "question": "What happens if we release batch BATCH-2026-002 before the 21 CFR Part 11 electronic signature is applied?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_SOP_01",
+      "question": "What SOP governs the Compression stage at the Tablet Manufacturing Plant Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_SOP_02",
+      "question": "What are the Compression process parameters defined in the SOP for BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_SOP_03",
+      "question": "What constraints are defined for batch release at the Compression stage?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_KPI_01",
+      "question": "What is the scrap rate for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_KPI_02",
+      "question": "What is the defect rate DPMO for batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.05,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_KPI_03",
+      "question": "What is the cycle time for the Compression stage on Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_ED_01",
+      "question": "What is an IPC check?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_ED_02",
+      "question": "What is yield reconciliation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_ED_03",
+      "question": "What is a CPP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S2_ED_04",
+      "question": "What is a CQA?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_SOP_01",
+      "question": "What is the current impeller speed defined in Wet Granulation SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_SOP_02",
+      "question": "What are the approval requirements for modifying Wet Granulation SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_SOP_03",
+      "question": "What version history exists for Wet Granulation SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_SOP_04",
+      "question": "What happens if SOP conflicts with the proposed SOP v1.3 during parallel operation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_SOP_05",
+      "question": "What SOP is currently active for Granulation Processing Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_CC_01",
+      "question": "What is the status of change control CC-2026-0008?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_CC_02",
+      "question": "What are the approval steps for change control CC-2026-0008?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_CC_03",
+      "question": "What is the impact assessment for changing impeller speed to 180 RPM in CC-2026-0008?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_CC_04",
+      "question": "Show all open change controls awaiting Rahul Deshmukh's approval.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_CC_05",
+      "question": "What batches will be affected if CC-2026-0008 is approved and implemented?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_QA_01",
+      "question": "What QA checks are required before implementing the SOP change from CC-2026-0008?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_QA_02",
+      "question": "What happens if the Plant Manager rejects change control CC-2026-0008?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_QA_03",
+      "question": "Show audit logs for Wet Granulation SOP.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_BRT_01",
+      "question": "What batches were produced under Wet Granulation SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_WI_01",
+      "question": "What happens if we operate Granulation Processing Workstation at 180 RPM before CC-2026-0008 is approved?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_WI_02",
+      "question": "What happens if the validation batch at 180 RPM fails IPC for granule size distribution?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_WI_03",
+      "question": "What happens if we increase impeller speed gradually from 150 to 180 RPM across 5 batches instead of a step change?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_WI_04",
+      "question": "What happens if confidence in the 180 RPM change falls below the execution threshold during simulation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_WI_05",
+      "question": "What happens if no similar historical granulation parameter changes exist in the knowledge base?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_KPI_01",
+      "question": "What is the throughput rate of Granulation Processing Workstation at current SOP settings?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_KPI_02",
+      "question": "What is the plan adherence impact if the CC-2026-0008 validation takes 5 days?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_ED_01",
+      "question": "What is a production line?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S3_ED_02",
+      "question": "What is a stage?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WO_01",
+      "question": "Who is currently assigned to Blend Preparation Workstation on the Day Shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WO_02",
+      "question": "What is the shift schedule for Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WO_03",
+      "question": "Who is the Night Shift operator assigned to Blend Preparation Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WO_04",
+      "question": "How many operators are working on Tablet Line A during the Day Shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WO_05",
+      "question": "What training certifications does Aarav Mehta hold for Blend Preparation Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WO_06",
+      "question": "What tasks are pending for Aarav Mehta before shift handover?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WO_07",
+      "question": "What work orders are open on Blend Preparation Workstation that the Night Shift must be aware of?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_SOP_01",
+      "question": "What SOP governs the shift handover procedure at the Tablet Manufacturing Plant Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_SOP_02",
+      "question": "What are the required handover documentation items per the Shift Handover SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WOL_01",
+      "question": "How many work orders are open across Tablet Line A at end of Day Shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WOL_02",
+      "question": "What is the priority of WO-MAINT-2026-0042 \u2014 should it be resolved before Night Shift begins?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.12,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_KPI_01",
+      "question": "What is the plan adherence for the Day Shift on Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_KPI_02",
+      "question": "How many batches were completed on Tablet Line A during the Day Shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_KPI_03",
+      "question": "What is the WIP status across all stages of the Tablet Manufacturing Plant Tablet Line A at shift end?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WI_01",
+      "question": "What happens if the Night Shift operator is not trained on V-Blender VB-01 maintenance alert protocols?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WI_02",
+      "question": "What happens if the shift handover documentation is not completed before the Day Shift operator leaves?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WI_03",
+      "question": "What happens if demand spikes by 30% next week and we need to add a third shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_WI_04",
+      "question": "What happens if we optimize the line schedule for throughput instead of OEE?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.18,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_ED_01",
+      "question": "What is a worker?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.06,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S4_ED_02",
+      "question": "What is a plant?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_01",
+      "question": "What is the current OEE of the Tablet Manufacturing Plant Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_02",
+      "question": "What is the availability rate for the Compression stage?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_03",
+      "question": "What is the throughput rate for Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_04",
+      "question": "What is the yield rate for Tablet Line A this quarter?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_05",
+      "question": "What is the planned vs actual production for Tablet Line A this week?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_06",
+      "question": "What is the Compression stage cycle time and how does it compare to takt time?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_07",
+      "question": "What is the maintenance compliance rate for Tablet Line A this quarter?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_KPI_08",
+      "question": "What is the defect rate DPMO for Tablet Line A this month?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_01",
+      "question": "What happens if we improve Compression availability from 78% to 90%?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_02",
+      "question": "What happens if we add a second Rotary Tablet Press to Compression stage?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_03",
+      "question": "What happens if we shorten planned maintenance windows for the Rotary Tablet Press by 50%?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_04",
+      "question": "What happens if energy prices increase by 20%?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_05",
+      "question": "What happens if we optimize the line schedule for OEE instead of throughput?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_06",
+      "question": "What happens if demand spikes by 25% next month?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_07",
+      "question": "What happens if the Compression stage becomes the permanent bottleneck?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_08",
+      "question": "What happens if we retrieve trajectories from similar lines and they disagree on the optimal maintenance schedule?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_09",
+      "question": "What happens if execution is attempted for OEE improvement actions without proper grounding in historical data?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_WI_10",
+      "question": "What happens if we defer all preventive maintenance for 2 weeks to maximize throughput?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_AM_01",
+      "question": "What is the MTBF for the Rotary Tablet Press?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.05,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_AM_02",
+      "question": "What is the equipment reliability index for Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_ED_01",
+      "question": "What is OEE?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_ED_02",
+      "question": "What is a production KPI?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S5_ED_03",
+      "question": "What is MTBF?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_MP_01",
+      "question": "What is the next scheduled maintenance date for Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_MP_02",
+      "question": "What calibration records are due or pending for Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_MP_03",
+      "question": "What cleaning records are linked to Granulation Processing Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_MP_04",
+      "question": "What is the MTBF for Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_MP_05",
+      "question": "What is the MTTR for Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_MP_06",
+      "question": "What maintenance tasks are included in PM-2026-Q2 for Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_WOL_01",
+      "question": "Has a work order been created for PM-2026-Q2 on Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_WOL_02",
+      "question": "What events are typically logged under a PM work order for granulation equipment?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_AM_01",
+      "question": "What IoT devices are attached to Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_AM_02",
+      "question": "What equipment is assigned to Granulation Processing Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_WI_01",
+      "question": "What happens if the 4-hour PM window for Rapid Mixer Granulator RMG-01 01 extends to 8 hours?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_WI_02",
+      "question": "What happens if calibration for the Rapid Mixer Granulator RMG-01 temperature sensor fails during PM?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_WI_03",
+      "question": "What happens if PM-2026-Q2 is deferred by 2 weeks due to a production priority?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_WI_04",
+      "question": "What happens if we optimize for minimum maintenance downtime instead of maximum equipment reliability?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_SOP_01",
+      "question": "What SOP governs the PM procedure for Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_SOP_02",
+      "question": "What QA verification is required after PM completion on Rapid Mixer Granulator RMG-01 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_QA_01",
+      "question": "What approvals are required before Rapid Mixer Granulator RMG-01 01 can be returned to production after PM?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_ED_01",
+      "question": "What is a production KPI?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S6_ED_02",
+      "question": "What is a material?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_QA_01",
+      "question": "What approvals are pending for batch release of BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_QA_02",
+      "question": "What is the OOS investigation status for batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_QA_03",
+      "question": "Who is the designated approver for batch release of BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_QA_04",
+      "question": "Are there any rejected approvals in the history of BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_QA_05",
+      "question": "Show the full audit log for batch BATCH-2026-001.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_QA_06",
+      "question": "What is the batch release status for BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_QA_07",
+      "question": "What are the required approval steps for batch release of BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_BRT_01",
+      "question": "What IPC result triggered the OOS flag for batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_BRT_02",
+      "question": "What CPP values were recorded at Compression for batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_BRT_03",
+      "question": "What is the yield reconciliation for batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_BRT_04",
+      "question": "Show the full traceability chain for batch BATCH-2026-001.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_SOP_01",
+      "question": "What does the Compression SOP specify for tablet hardness limits for Paracetamol 650mg?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_SOP_02",
+      "question": "What SOP governs OOS investigation procedures at the Tablet Manufacturing Plant Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_WI_01",
+      "question": "What happens if the OOS investigation for BATCH-2026-001 concludes it was a laboratory error?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_WI_02",
+      "question": "What happens if the OOS investigation for BATCH-2026-001 confirms a true Compression CPP failure?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_WI_03",
+      "question": "What happens if approval is requested for BATCH-2026-001 but the OOS investigation is not yet closed?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_WI_04",
+      "question": "What happens if we skip the OOS investigation and release batch BATCH-2026-001?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_WI_05",
+      "question": "What happens if the OOS investigation takes 10 business days \u2014 what is the downstream dispatch impact?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_WI_06",
+      "question": "What happens if tablet hardness variance increases by 15% across all future batches at Compression?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_WI_07",
+      "question": "What happens if Rahul Deshmukh is unavailable to approve batch release for 3 days?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_KPI_01",
+      "question": "How many batches are currently on hold pending QA release at the Tablet Manufacturing Plant Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_CC_01",
+      "question": "Should a change control be raised following the BATCH-2026-001 OOS investigation if a root cause in Compression process is found?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_ED_01",
+      "question": "What is an OOS investigation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_ED_02",
+      "question": "What is a CAPA?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S7_ED_03",
+      "question": "What is an electronic signature in the context of 21 CFR Part 11?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_01",
+      "question": "What is an API?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_02",
+      "question": "What is a granulation process?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_03",
+      "question": "What is GMP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_04",
+      "question": "What is 21 CFR Part 11?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_05",
+      "question": "What is IQ/OQ/PQ?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_06",
+      "question": "What is a CAPA?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_07",
+      "question": "What is FMEA?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_08",
+      "question": "What is SPC?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_09",
+      "question": "What is OEE?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_10",
+      "question": "What is TPM?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_11",
+      "question": "What is a deviation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_12",
+      "question": "What is a change control?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_13",
+      "question": "What is an electronic batch record?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_14",
+      "question": "What is ALCOA+?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_15",
+      "question": "What is data integrity?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_16",
+      "question": "What is dissolution testing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_17",
+      "question": "What is content uniformity?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_18",
+      "question": "What is a stability study?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_19",
+      "question": "What is process validation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_20",
+      "question": "What is cleaning validation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_21",
+      "question": "What is a certificate of analysis?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_22",
+      "question": "What is a master formula?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_23",
+      "question": "What is line clearance?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_24",
+      "question": "What is a quarantine hold?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_25",
+      "question": "What is a root cause analysis?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_26",
+      "question": "What is a Pareto chart?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_27",
+      "question": "What is a control chart?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_28",
+      "question": "What is a fishbone diagram?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_29",
+      "question": "What is lean manufacturing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_ED_30",
+      "question": "What is six sigma?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_01",
+      "question": "What documents are required for batch release?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_02",
+      "question": "What is the difference between a BMR and a BPR?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_03",
+      "question": "What documents are required for equipment qualification?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_04",
+      "question": "What is included in a stability study protocol?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_05",
+      "question": "What are the requirements for SOP version control?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_06",
+      "question": "What information must be included in a deviation report?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_07",
+      "question": "What are the requirements for an audit trail?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.06,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_08",
+      "question": "What documents are required for a change control?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_09",
+      "question": "What is the difference between IQ, OQ, and PQ?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_10",
+      "question": "What information is required in a Certificate of Conformance?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_11",
+      "question": "What are the requirements for data integrity (ALCOA+)?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_12",
+      "question": "What documents are required for process validation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_13",
+      "question": "What is included in a cleaning validation protocol?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_14",
+      "question": "What are the requirements for a stability study?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_15",
+      "question": "What information is required in a batch record correction?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_16",
+      "question": "What documents are required for regulatory filing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_17",
+      "question": "What is the difference between an NDA and an ANDA?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_18",
+      "question": "What information is included in a Certificate of Analysis?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_19",
+      "question": "What is included in a Batch Manufacturing Record?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_20",
+      "question": "What information is included in a master formula?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.07,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_DOC_21",
+      "question": "What are the requirements for electronic records under 21 CFR Part 11?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_01",
+      "question": "What are the steps in wet granulation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_02",
+      "question": "What is the difference between wet and dry granulation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_03",
+      "question": "What parameters are controlled during tablet compression?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_04",
+      "question": "What quality checks are performed during blending?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_05",
+      "question": "What are the stages of film coating?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_06",
+      "question": "What is the purpose of lubrication in tablet manufacturing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_07",
+      "question": "What factors affect tablet hardness?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_08",
+      "question": "What is the significance of dissolution testing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_09",
+      "question": "How is content uniformity measured?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_10",
+      "question": "What are the acceptance criteria for weight variation?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_11",
+      "question": "What is the role of disintegration testing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_12",
+      "question": "What parameters are monitored during capsule filling?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_13",
+      "question": "What is the purpose of micronization?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_14",
+      "question": "What are the steps in aseptic processing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_15",
+      "question": "What environmental conditions are required for clean room operations?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_16",
+      "question": "What is the purpose of HEPA filtration?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_17",
+      "question": "How is sterility testing performed?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_18",
+      "question": "What are the requirements for environmental monitoring?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_19",
+      "question": "What is the difference between terminal sterilization and aseptic processing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_PROC_20",
+      "question": "What are the stages of pharmaceutical packaging?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_01",
+      "question": "What are the key requirements of GMP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_02",
+      "question": "What does 21 CFR Part 11 require for electronic records?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_03",
+      "question": "What is the purpose of EU GMP Annex 11?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_04",
+      "question": "What are the ICH guidelines for stability testing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_05",
+      "question": "What is the role of WHO GMP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_06",
+      "question": "What are the requirements for data integrity?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_07",
+      "question": "What is the purpose of an audit trail?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_08",
+      "question": "What are the requirements for electronic signatures?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.01,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_09",
+      "question": "What is the difference between GMP and GLP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_10",
+      "question": "What are the requirements for process validation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_11",
+      "question": "What is the purpose of a deviation investigation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_12",
+      "question": "What are the steps in a CAPA process?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_13",
+      "question": "What is the role of a Qualified Person (QP)?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_14",
+      "question": "What are the requirements for supplier qualification?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_15",
+      "question": "What is the purpose of a self-inspection program?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_16",
+      "question": "What are the requirements for personnel training in GMP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_17",
+      "question": "What is the purpose of a quality management system (QMS)?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_18",
+      "question": "What are the requirements for document control?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_19",
+      "question": "What is the role of a quality review (Product Quality Review)?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_20",
+      "question": "What are the requirements for complaint handling?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_21",
+      "question": "What are the ALCOA+ data integrity principles?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_22",
+      "question": "What are the steps in a change control process?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_23",
+      "question": "What are the requirements for cleaning validation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_24",
+      "question": "What is an environmental monitoring program?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_25",
+      "question": "How is an out of specification (OOS) investigation conducted?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_26",
+      "question": "What are the stages of equipment qualification (IQ/OQ/PQ)?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_27",
+      "question": "What are the stability testing requirements for pharmaceutical products?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_28",
+      "question": "What are the requirements for purified water system compliance?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_29",
+      "question": "What is a contamination control strategy?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_30",
+      "question": "What are the procedures for a product recall?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_31",
+      "question": "What is Computer System Validation (CSV)?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_32",
+      "question": "What are the requirements for a batch manufacturing record?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_33",
+      "question": "What does GxP compliance encompass?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_34",
+      "question": "What is risk management according to ICH Q9?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_35",
+      "question": "How are deviations classified in pharmaceutical manufacturing?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_36",
+      "question": "What are hold time studies and why are they required?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "NEW_COMP_37",
+      "question": "What are the preventive maintenance compliance requirements?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_PT_01",
+      "question": "Where does Tablet Coating Workstation reside in the factory line structure?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_AM_01",
+      "question": "Which field elements monitor the inlet and exhaust air dynamics of Coating Pan 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_SOP_01",
+      "question": "What are the authorized operating temperature bounds for the enteric coating step?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_WOL_01",
+      "question": "What ticket was generated when the exhaust air temperature dropped past the secondary alert boundary?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_BRT_01",
+      "question": "How does the inlet air temperature deviation alter the compliance state of Batch BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_WI_01",
+      "question": "What happens if the operator fails to clear the exhaust duct restriction within 15 minutes of the alarm?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_WI_02",
+      "question": "What happens if we bypass the automated system interlock to complete the coating run manually?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_QA_01",
+      "question": "What remediation workflow signatures are required to lift the processing hold on Tablet Coating Workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_KPI_01",
+      "question": "How does this specific temperature drop event modify the Quality metric of Tablet Line A?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_ED_01",
+      "question": "What is a Critical Quality Attribute in the context of the coating process stage?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_CC_01",
+      "question": "Should a change control be raised if the coating SOP temperature parameters need updating based on this anomaly?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_MP_01",
+      "question": "What is the next scheduled maintenance date for Coating Pan 01?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_WO_01",
+      "question": "Who operates Tablet Coating Workstation during the current shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_WO_02",
+      "question": "Who does the Tablet Coating Workstation operator report to?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S8_KPI_02",
+      "question": "What is the plan adherence for the Coating stage this shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_PT_01",
+      "question": "Which digital gateway handles communication between Packaging Line 1 field devices and the ERP layer?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_AM_01",
+      "question": "What is the firmware architecture baseline of the serialization inspection camera on Packaging Line 1?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_WO_01",
+      "question": "Which specific support team must be mobilized to handle a serialization data stream drop?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_SOP_01",
+      "question": "Does the packaging SOP permit line operation during a short data interface buffering period?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_WOL_01",
+      "question": "Can a standard user close an IT-related automation work order ticket?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_BRT_01",
+      "question": "What happens to the unique barcodes printed during the 45-second network drop interval?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_WI_01",
+      "question": "What happens if we resume the line without performing a server reconciliation check on the last 100 containers?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_WI_02",
+      "question": "What happens if the local camera cache fills up before the server data connection is restored?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_QA_01",
+      "question": "Who must authorize the validation of barcode print quality after an automation network restore?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_KPI_01",
+      "question": "How does an IT infrastructure outage impact the calculated OEE metric?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_CC_01",
+      "question": "Is a change control required when the serialization system firmware is updated?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_ED_01",
+      "question": "What is a track and trace system?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_WO_02",
+      "question": "Who is the current operator assigned to Packaging Line 1?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S9_SOP_02",
+      "question": "What are the handover requirements when a serialization issue is discovered mid-shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_PT_01",
+      "question": "Which containment area governs raw material Raw Material Preparation tasks prior to granulation processing steps?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_AM_01",
+      "question": "When was the weighing scale at Raw Material Preparation Workstation 1 last calibrated with standard reference masses?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_WO_01",
+      "question": "Who is the current operator logged into the Raw Material Preparation balance terminal interface?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_SOP_01",
+      "question": "What does the material verification protocol require if a container barcode cannot be scanned?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_WOL_01",
+      "question": "Can minor scale balance variations be adjusted by the line operator mid-shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_BRT_01",
+      "question": "How does a raw material container label mismatch impact the active batch ledger?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_WI_01",
+      "question": "What happens if an operator manually pours material into the vessel without a successful barcode match?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_WI_02",
+      "question": "What happens if the Raw Material Preparation cleanroom exhaust filter differential pressure exceeds its limit during weight operations?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_QA_01",
+      "question": "Who is required to clear a material verification exception flag before production can resume?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_ED_01",
+      "question": "What is a Master Batch Manufacturing Record template?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_CC_01",
+      "question": "Is a change control required when a new raw material supplier is introduced?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_MP_01",
+      "question": "What is the calibration schedule for the weighing scale at Raw Material Preparation Workstation 1?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_KPI_01",
+      "question": "What is the Raw Material Preparation accuracy rate for raw materials this week?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "S10_WO_02",
+      "question": "Who manages the workers at Raw Material Preparation Workstation 1?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_01",
+      "question": "What should an operator do when they first notice a machine parameter deviation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_02",
+      "question": "What immediate containment actions are required when a quality deviation is detected?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_03",
+      "question": "How does an operator determine if a deviation is advantageous or disadvantageous?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_04",
+      "question": "What error codes should an operator check on their workstation equipment?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_05",
+      "question": "What is the operator's responsibility when a work order is generated?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_06",
+      "question": "How does an operator document observations about equipment performance?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_07",
+      "question": "What training must an operator complete before operating a new piece of equipment?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_08",
+      "question": "What should an operator do if they cannot resolve an issue within their authority?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_09",
+      "question": "How does an operator verify that line clearance has been completed before starting a new batch?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "OP_ROLE_10",
+      "question": "What records must an operator sign at the end of each shift?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_01",
+      "question": "How does a line manager assess the scope of a deviation across multiple workstations?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.04,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_02",
+      "question": "What is the line manager's responsibility for work order dispatch and tracking?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_03",
+      "question": "How does a line manager determine if a deviation affects critical quality attributes?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_04",
+      "question": "What protocol should a line manager follow for advantageous deviations?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_05",
+      "question": "How does a line manager communicate anomalies to Plant Manager and QA?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_06",
+      "question": "What is the line manager's role in batch disposition decisions?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.05,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_07",
+      "question": "How does a line manager coordinate maintenance activities during production?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_08",
+      "question": "What KPIs does a line manager monitor during a shift?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.05,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_09",
+      "question": "How does a line manager handle shift handover documentation?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "LM_ROLE_10",
+      "question": "What is the line manager's role in approving or rejecting work order closure?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_01",
+      "question": "How does a plant manager assess production and business impact of an anomaly?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_02",
+      "question": "What is the plant manager's role in CAPA initiation and oversight?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_03",
+      "question": "How does a plant manager determine if an anomaly indicates a systemic issue?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_04",
+      "question": "What is the protocol for SOP evolution following an advantageous deviation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_05",
+      "question": "What preventive strategies should a plant manager implement to prevent future anomalies?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_06",
+      "question": "How does a plant manager balance production targets with quality compliance?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_07",
+      "question": "What resource allocation decisions does a plant manager make during a crisis?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_08",
+      "question": "How does a plant manager review and approve change controls?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_09",
+      "question": "What reports does a plant manager review at the end of each production cycle?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "PM_ROLE_10",
+      "question": "How does a plant manager drive continuous improvement across the facility?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_01",
+      "question": "How does the MES accurately capture deviation timestamps and parameter values?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_02",
+      "question": "What is the validation process after a work order is marked fixed by maintenance?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_03",
+      "question": "How is knowledge from deviation analysis fed back into worker training?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_04",
+      "question": "How does the preventive maintenance schedule incorporate lessons from deviations?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_05",
+      "question": "What is the data flow from sensor detection to work order generation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_06",
+      "question": "How do electronic batch records ensure 21 CFR Part 11 compliance?",
+      "answer": "'NoneType' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'NoneType' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_07",
+      "question": "What is the role of the quality management system in deviation tracking?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_08",
+      "question": "How does the system prevent unauthorized changes to approved SOPs?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_09",
+      "question": "What audit trail requirements apply to all manufacturing data?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "XF_10",
+      "question": "How does the system handle concurrent batch operations at the same workstation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "QA_ROLE_01",
+      "question": "How does a QA officer determine batch disposition after a deviation investigation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "QA_ROLE_02",
+      "question": "What is the QA officer's role during an OOS investigation?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "QA_ROLE_03",
+      "question": "How does a QA officer validate that corrective actions from a CAPA are effective?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "QA_ROLE_04",
+      "question": "What documentation must a QA officer review before approving batch release?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "QA_ROLE_05",
+      "question": "How does a QA officer handle a situation where an operator refuses to follow an SOP?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "QA_ROLE_06",
+      "question": "What is the QA officer's responsibility during a regulatory inspection?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "MAINT_ROLE_01",
+      "question": "How does a maintenance technician prioritize competing work orders?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "MAINT_ROLE_02",
+      "question": "What documentation must a maintenance technician complete after equipment repair?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.09,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "MAINT_ROLE_03",
+      "question": "How does a maintenance technician verify equipment is safe to return to production?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "MAINT_ROLE_04",
+      "question": "What is the maintenance technician's role during preventive maintenance activities?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "MAINT_ROLE_05",
+      "question": "How does a maintenance technician handle an emergency breakdown during production?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "MAINT_ROLE_06",
+      "question": "What calibration records must a maintenance technician verify before signing off?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "MAINT_ROLE_07",
+      "question": "How does a maintenance technician escalate a safety concern found during equipment inspection?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_01",
+      "question": "Create a new batch execution record for batch BATCH-2026-002.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.01,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_02",
+      "question": "What is the current status of batch execution record BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_03",
+      "question": "Update the batch execution record for BATCH-2026-002 to mark Granulation stage complete.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_04",
+      "question": "Put batch BATCH-2026-002 on hold due to temperature deviation.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_05",
+      "question": "Close the batch execution record for BATCH-2026-002 after QA release.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_06",
+      "question": "Delete the batch execution record for BATCH-2026-002.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_07",
+      "question": "Show all batch execution records for batch BATCH-2026-002.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_08",
+      "question": "What stages are pending completion in batch execution record BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_09",
+      "question": "Create batch execution records for batches BATCH-2026-001 and BATCH-2026-002.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_10",
+      "question": "What is the yield reconciliation result for batch execution record BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_11",
+      "question": "Show the batch execution timeline for BATCH-2026-002 from Raw Material Preparation to Packaging.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_12",
+      "question": "What IPC results are recorded during the batch execution of BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.02,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_13",
+      "question": "What equipment was used during the batch execution of BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_14",
+      "question": "Show the batch execution deviation log for BATCH-2026-002.",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "id": "BATCH_EXEC_15",
+      "question": "What is the batch release status for execution record BATCH-2026-002?",
+      "answer": "'str' object has no attribute 'get'",
+      "hits": 0,
+      "passed": false,
+      "time": 0.03,
+      "error": "'str' object has no attribute 'get'"
+    }
+  ]
+}

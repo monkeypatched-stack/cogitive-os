@@ -1,0 +1,32 @@
+name: healthcare
+version: "0.1.0"
+description: "Healthcare bounded context — patient scheduling, hospital operations, pharmacy, laboratory"
+bounded_context:
+  name: healthcare
+  aggregates:
+    - Patient
+    - Appointment
+    - Prescription
+    - LabOrder
+    - Bed
+  entities:
+    - Patient
+    - Appointment
+    - Prescription
+    - LabOrder
+    - Bed
+    - Doctor
+    - Medication
+  value_objects:
+    - AppointmentStatus
+    - BedStatus
+    - PrescriptionStatus
+    - LabResult
+  events:
+    - AppointmentScheduled
+    - PatientAdmitted
+    - PatientDischarged
+    - PrescriptionFilled
+    - LabResultReady
+    - BedAssigned
+    - BedReleased

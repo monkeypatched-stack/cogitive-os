@@ -1,0 +1,136 @@
+/* Lemon Metrics — every counter/gauge/histogram the runtime actually
+ * exports, charted rather than left as plain number cards. Own class
+ * prefix (lwe-lm-). Same visual language as every other workspace this
+ * session built (CommunicationPanel.css's lwe-cw-, NegotiationsPanel.css's
+ * lwe-neg-): same page bg, card/shadow, border, and status-color hexes. */
+
+.lwe-lm-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 14px;
+  padding: 20px 22px 22px;
+  box-sizing: border-box;
+  background: #F8FAFC;
+  color: #1E293B;
+  overflow-y: auto;
+}
+
+.lwe-lm-heading { flex: none; }
+.lwe-lm-heading h2 { margin: 0; font-size: 19px; font-weight: 600; }
+.lwe-lm-heading p { margin: 4px 0 0; font-size: 12.5px; color: #64748B; max-width: 720px; }
+.lwe-lm-error { flex: none; padding: 10px 14px; border-radius: 10px; background: #FEF2F2; color: #B91C1C; font-size: 12.5px; }
+
+.lwe-lm-section {
+  flex: none;
+  border: 1px solid #E8EAF0;
+  border-radius: 14px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+.lwe-lm-section-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid #F1F5F9;
+}
+.lwe-lm-section-head h3 { margin: 0; font-size: 13.5px; font-weight: 600; color: #1E293B; }
+.lwe-lm-section-count { font-size: 10.5px; font-weight: 700; color: #4338CA; background: #EEF2FF; padding: 2px 9px; border-radius: 999px; }
+.lwe-lm-section-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 16px; }
+
+.lwe-lm-subhead { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94A3B8; margin: 0 0 6px; }
+
+/* ── Legend (shared, ≤4 series direct-labeled + swatch) ─────────────── */
+.lwe-lm-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; font-size: 11px; color: #64748B; }
+.lwe-lm-legend-item { display: inline-flex; align-items: center; gap: 5px; }
+.lwe-lm-dot { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+
+/* ── Bar list (single-series magnitude across categories) ───────────── */
+.lwe-lm-barlist { display: flex; flex-direction: column; gap: 7px; }
+.lwe-lm-bar-row { display: grid; grid-template-columns: minmax(120px, 220px) 1fr auto; align-items: center; gap: 10px; }
+.lwe-lm-bar-label { font-size: 12px; color: #1E293B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lwe-lm-bar-sub { font-size: 10px; color: #94A3B8; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lwe-lm-bar-track { position: relative; height: 8px; border-radius: 4px; background: #F1F5F9; overflow: hidden; }
+.lwe-lm-bar-fill { position: absolute; top: 0; left: 0; bottom: 0; border-radius: 4px; min-width: 2px; }
+.lwe-lm-bar-value { font-size: 12px; font-variant-numeric: tabular-nums; color: #334155; white-space: nowrap; text-align: right; min-width: 64px; }
+
+.lwe-lm-bar-accent { background: #4338CA; }
+.lwe-lm-bar-success { background: #047857; }
+.lwe-lm-bar-danger { background: #B91C1C; }
+.lwe-lm-bar-warning { background: #92400E; }
+
+/* ── Split / stacked bar (status segments of one measure) ───────────── */
+.lwe-lm-split-row { display: grid; grid-template-columns: minmax(120px, 220px) 1fr; align-items: center; gap: 10px; }
+.lwe-lm-split-track { position: relative; height: 10px; border-radius: 5px; background: #F1F5F9; overflow: hidden; display: flex; }
+.lwe-lm-split-fill { height: 100%; min-width: 2px; }
+.lwe-lm-split-fill + .lwe-lm-split-fill { margin-left: 2px; }
+.lwe-lm-split-empty { font-size: 11px; color: #94A3B8; font-style: italic; }
+
+/* ── Histogram range bar (min→max track, p50/p95 markers) ───────────── */
+.lwe-lm-hist-row { display: grid; grid-template-columns: minmax(120px, 220px) 1fr auto; align-items: center; gap: 10px; }
+.lwe-lm-hist-track { position: relative; height: 8px; border-radius: 4px; background: #F1F5F9; }
+.lwe-lm-hist-range { position: absolute; top: 3px; bottom: 3px; left: 0; right: 0; border-radius: 2px; background: #C7D2FE; }
+.lwe-lm-hist-p50 { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #1E293B; transform: translateX(-1px); }
+.lwe-lm-hist-p95 { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #B91C1C; transform: translateX(-1px); }
+.lwe-lm-hist-value { font-size: 11px; font-variant-numeric: tabular-nums; color: #64748B; white-space: nowrap; text-align: right; min-width: 96px; }
+.lwe-lm-hist-legend { font-size: 10.5px; color: #94A3B8; margin-bottom: 4px; }
+.lwe-lm-hist-legend b { color: #1E293B; font-weight: 600; }
+
+/* ── Meter (single ratio against a limit; fill = severity, track = same
+ * ramp, lighter step — see marks-and-anatomy.md) ───────────────────── */
+.lwe-lm-meter-row { display: grid; grid-template-columns: minmax(120px, 220px) 1fr auto; align-items: center; gap: 10px; }
+.lwe-lm-meter-track { position: relative; height: 12px; border-radius: 6px; overflow: hidden; }
+.lwe-lm-meter-fill { height: 100%; border-radius: 6px; min-width: 6px; transition: width 300ms ease; }
+.lwe-lm-meter-value { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; min-width: 56px; }
+
+/* ── Sparkline (interactive line chart — crosshair + tooltip readout) ── */
+.lwe-lm-spark-wrap { display: flex; flex-direction: column; gap: 4px; }
+.lwe-lm-spark-svg { display: block; width: 100%; height: 64px; cursor: crosshair; touch-action: none; }
+.lwe-lm-spark-crosshair { stroke: #C7D2FE; stroke-width: 1; }
+.lwe-lm-spark-readout { display: flex; align-items: baseline; gap: 8px; }
+.lwe-lm-spark-value { font-size: 15px; font-weight: 700; color: #1E293B; font-variant-numeric: tabular-nums; }
+.lwe-lm-spark-time { font-size: 10.5px; color: #94A3B8; }
+.lwe-lm-spark-empty { font-size: 11.5px; color: #94A3B8; font-style: italic; padding: 8px 0; }
+
+/* ── Stat tile (single current value + optional trend sparkline) ────── */
+.lwe-lm-stat-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.lwe-lm-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.lwe-lm-stat {
+  flex: 1 1 180px; max-width: 260px; min-width: 0; display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid #E8EAF0; border-radius: 10px; background: #F8FAFC; padding: 10px 12px;
+}
+.lwe-lm-stat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.lwe-lm-stat-value { font-size: 17px; font-weight: 700; color: #1E293B; font-variant-numeric: tabular-nums; }
+.lwe-lm-mini-spark { display: block; width: 100%; height: 28px; }
+
+/* ── All Metrics: namespace groups (collapsible, same raw-data escape
+ * hatch every other workspace page already uses) ───────────────────── */
+.lwe-lm-all { display: flex; flex-direction: column; gap: 8px; }
+.lwe-lm-group { border: 1px solid #E8EAF0; border-radius: 8px; overflow: hidden; }
+.lwe-lm-group summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #F8FAFC;
+}
+.lwe-lm-group summary::-webkit-details-marker { display: none; }
+.lwe-lm-group summary::before { content: '▸'; font-size: 10px; color: #94A3B8; margin-right: 8px; transition: transform 0.15s ease; }
+.lwe-lm-group[open] summary::before { transform: rotate(90deg); }
+.lwe-lm-group[open] summary { border-bottom: 1px solid #E8EAF0; }
+.lwe-lm-group-count { font-size: 10.5px; font-weight: 600; color: #94A3B8; }
+.lwe-lm-group-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Pipeline Stages drawers (per-stage telemetry, companion to the
+ * static ArchitectureDiagram) — reuses .lwe-lm-group's collapsible shell,
+ * adds a status badge next to the stage title. ─────────────────────── */
+.lwe-lm-stage-badge { font-size: 9.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: none; letter-spacing: normal; }
+.lwe-lm-stage-badge-data { color: #4338CA; background: #EEF2FF; }
+.lwe-lm-stage-badge-quiet { color: #64748B; background: #F1F5F9; }
+.lwe-lm-stage-badge-gap { color: #B91C1C; background: #FEF2F2; }
+.lwe-lm-stage-metrics { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.lwe-lm-stage-metric { display: flex; flex-direction: column; gap: 2px; min-width: 96px; }
+.lwe-lm-stage-metric-value { font-size: 14px; font-weight: 700; color: #1E293B; font-variant-numeric: tabular-nums; }
+.lwe-lm-stage-nodata-strong { color: #B91C1C; font-style: normal; font-weight: 600; }
+
+@media (max-width: 640px) {
+  .lwe-lm-bar-row, .lwe-lm-hist-row { grid-template-columns: 1fr; row-gap: 3px; }
+  .lwe-lm-bar-value, .lwe-lm-hist-value { text-align: left; }
+}

@@ -1,0 +1,48 @@
+# Reproducible-build lockfile for monkeybrain-runtime.
+#
+# SCOPE / HOW THIS WAS GENERATED:
+# Pinned to the exact versions verified working in the dev sandbox this was
+# generated in (2026-07-23), for the subset of pyproject.toml's `dependencies`
+# that are genuinely resolvable third-party PyPI packages.
+#
+# NOT covered here — regenerate/extend on a real deployment host before relying
+# on this as a complete lock:
+#   1. Internal first-party packages (not on any public registry `uv`/`pip` can
+#      resolve from this sandbox — `uv lock` fails on them with "not found in
+#      the package registry"): monkeybrain-cerebellum, monkeybrain-broca,
+#      monkeybrain-introspection, monkeybrain-cortex, monkeybrain-homeostasis,
+#      monkeybrain-deepdive, monkeybrain-cingulate, monkeybrain-plasticity,
+#      monkeybrain-sync, sittingface, soma-cli. Pin these from wherever your
+#      private index / vendored source actually publishes them.
+#   2. External packages this sandbox doesn't have installed at all (so no
+#      verified-working version could be captured here): redis, boto3, aiohttp,
+#      bcrypt, paho-mqtt, and the PyPI package named `lemon` (note: that's
+#      lemon.markets, a stock-trading API client — unrelated to this repo's own
+#      src/introspection/lemon.py observability module; verify this dependency
+#      is even still needed before pinning it).
+#
+# To regenerate/extend on a host with the full dependency set installed:
+#   pip freeze | grep -iE '^(redis|boto3|aiohttp|bcrypt|paho-mqtt)==' >> requirements-lock.txt
+#
+# Install with: pip install -r requirements-lock.txt
+
+fastapi==0.137.1
+uvicorn==0.49.0
+motor==3.7.1
+pydantic==2.13.4
+pydantic-settings==2.14.1
+pymongo==4.17.0
+python-jose==3.5.0
+neo4j==6.2.0
+nats-py==2.15.0
+influxdb-client==1.50.0
+python-multipart==0.0.32
+httpx==0.28.1
+PyYAML==6.0.3
+numpy==2.4.6
+scipy==1.17.1
+typer==0.25.1
+rich==15.0.0
+watchfiles==1.2.0
+networkx==3.6.1
+phart==2.0.6

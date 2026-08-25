@@ -1,0 +1,2664 @@
+{
+  "version": "2.0.0",
+  "description": "Auto-generated grounded smoke test suite from live MongoDB data.",
+  "defaults": {
+    "target_count": 287,
+    "endpoint": "/api/v1/agentos/query",
+    "top_k": 8,
+    "traversal_depth": 1,
+    "path_limit_per_hit": 5,
+    "role": "admin",
+    "user_id": "grounded-smoke-runner",
+    "use_retrieval": false,
+    "use_memory": false,
+    "bypass_cache": true
+  },
+  "questions": [
+    {
+      "id": "q0001_assets",
+      "category": "assets",
+      "question": "What is the status of Cap Sealer?",
+      "expect_any": [
+        "Cap Sealer",
+        "status"
+      ]
+    },
+    {
+      "id": "q0002_assets",
+      "category": "assets",
+      "question": "Which workstation is Cap Sealer assigned to?",
+      "expect_any": [
+        "Cap Sealer",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0003_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Cap Sealer.",
+      "expect_any": [
+        "Cap Sealer",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0004_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Cap Sealer?",
+      "expect_any": [
+        "Cap Sealer",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0005_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Cap Sealer.",
+      "expect_any": [
+        "Cap Sealer",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0006_assets",
+      "category": "assets",
+      "question": "What is the status of Overhead Stirrer?",
+      "expect_any": [
+        "Overhead Stirrer",
+        "status"
+      ]
+    },
+    {
+      "id": "q0007_assets",
+      "category": "assets",
+      "question": "Which workstation is Overhead Stirrer assigned to?",
+      "expect_any": [
+        "Overhead Stirrer",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0008_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Overhead Stirrer.",
+      "expect_any": [
+        "Overhead Stirrer",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0009_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Overhead Stirrer?",
+      "expect_any": [
+        "Overhead Stirrer",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0010_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Overhead Stirrer.",
+      "expect_any": [
+        "Overhead Stirrer",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0011_assets",
+      "category": "assets",
+      "question": "What is the status of Floor Scale?",
+      "expect_any": [
+        "Floor Scale",
+        "status"
+      ]
+    },
+    {
+      "id": "q0012_assets",
+      "category": "assets",
+      "question": "Which workstation is Floor Scale assigned to?",
+      "expect_any": [
+        "Floor Scale",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0013_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Floor Scale.",
+      "expect_any": [
+        "Floor Scale",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0014_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Floor Scale?",
+      "expect_any": [
+        "Floor Scale",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0015_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Floor Scale.",
+      "expect_any": [
+        "Floor Scale",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0016_assets",
+      "category": "assets",
+      "question": "What is the status of Lubricant Dispenser?",
+      "expect_any": [
+        "Lubricant Dispenser",
+        "status"
+      ]
+    },
+    {
+      "id": "q0017_assets",
+      "category": "assets",
+      "question": "Which workstation is Lubricant Dispenser assigned to?",
+      "expect_any": [
+        "Lubricant Dispenser",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0018_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Lubricant Dispenser.",
+      "expect_any": [
+        "Lubricant Dispenser",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0019_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Lubricant Dispenser?",
+      "expect_any": [
+        "Lubricant Dispenser",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0020_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Lubricant Dispenser.",
+      "expect_any": [
+        "Lubricant Dispenser",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0021_assets",
+      "category": "assets",
+      "question": "What is the status of SS Bin?",
+      "expect_any": [
+        "SS Bin",
+        "status"
+      ]
+    },
+    {
+      "id": "q0022_assets",
+      "category": "assets",
+      "question": "Which workstation is SS Bin assigned to?",
+      "expect_any": [
+        "SS Bin",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0023_workorders",
+      "category": "workorders",
+      "question": "Show work orders for SS Bin.",
+      "expect_any": [
+        "SS Bin",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0024_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for SS Bin?",
+      "expect_any": [
+        "SS Bin",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0025_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for SS Bin.",
+      "expect_any": [
+        "SS Bin",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0026_assets",
+      "category": "assets",
+      "question": "What is the status of Bin Lifter?",
+      "expect_any": [
+        "Bin Lifter",
+        "status"
+      ]
+    },
+    {
+      "id": "q0027_assets",
+      "category": "assets",
+      "question": "Which workstation is Bin Lifter assigned to?",
+      "expect_any": [
+        "Bin Lifter",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0028_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Bin Lifter.",
+      "expect_any": [
+        "Bin Lifter",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0029_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Bin Lifter?",
+      "expect_any": [
+        "Bin Lifter",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0030_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Bin Lifter.",
+      "expect_any": [
+        "Bin Lifter",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0031_assets",
+      "category": "assets",
+      "question": "What is the status of Hot Water Generator?",
+      "expect_any": [
+        "Hot Water Generator",
+        "status"
+      ]
+    },
+    {
+      "id": "q0032_assets",
+      "category": "assets",
+      "question": "Which workstation is Hot Water Generator assigned to?",
+      "expect_any": [
+        "Hot Water Generator",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0033_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Hot Water Generator.",
+      "expect_any": [
+        "Hot Water Generator",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0034_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Hot Water Generator?",
+      "expect_any": [
+        "Hot Water Generator",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0035_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Hot Water Generator.",
+      "expect_any": [
+        "Hot Water Generator",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0036_assets",
+      "category": "assets",
+      "question": "What is the status of Impeller Motor?",
+      "expect_any": [
+        "Impeller Motor",
+        "status"
+      ]
+    },
+    {
+      "id": "q0037_assets",
+      "category": "assets",
+      "question": "Which workstation is Impeller Motor assigned to?",
+      "expect_any": [
+        "Impeller Motor",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0038_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Impeller Motor.",
+      "expect_any": [
+        "Impeller Motor",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0039_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Impeller Motor?",
+      "expect_any": [
+        "Impeller Motor",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0040_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Impeller Motor.",
+      "expect_any": [
+        "Impeller Motor",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0041_assets",
+      "category": "assets",
+      "question": "What is the status of Dust Collector?",
+      "expect_any": [
+        "Dust Collector",
+        "status"
+      ]
+    },
+    {
+      "id": "q0042_assets",
+      "category": "assets",
+      "question": "Which workstation is Dust Collector assigned to?",
+      "expect_any": [
+        "Dust Collector",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0043_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Dust Collector.",
+      "expect_any": [
+        "Dust Collector",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0044_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Dust Collector?",
+      "expect_any": [
+        "Dust Collector",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0045_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Dust Collector.",
+      "expect_any": [
+        "Dust Collector",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0046_assets",
+      "category": "assets",
+      "question": "What is the status of Chopper Motor?",
+      "expect_any": [
+        "Chopper Motor",
+        "status"
+      ]
+    },
+    {
+      "id": "q0047_assets",
+      "category": "assets",
+      "question": "Which workstation is Chopper Motor assigned to?",
+      "expect_any": [
+        "Chopper Motor",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0048_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Chopper Motor.",
+      "expect_any": [
+        "Chopper Motor",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0049_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Chopper Motor?",
+      "expect_any": [
+        "Chopper Motor",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0050_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Chopper Motor.",
+      "expect_any": [
+        "Chopper Motor",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0051_assets",
+      "category": "assets",
+      "question": "What is the status of Tablet Counter?",
+      "expect_any": [
+        "Tablet Counter",
+        "status"
+      ]
+    },
+    {
+      "id": "q0052_assets",
+      "category": "assets",
+      "question": "Which workstation is Tablet Counter assigned to?",
+      "expect_any": [
+        "Tablet Counter",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0053_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Tablet Counter.",
+      "expect_any": [
+        "Tablet Counter",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0054_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Tablet Counter?",
+      "expect_any": [
+        "Tablet Counter",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0055_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Tablet Counter.",
+      "expect_any": [
+        "Tablet Counter",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0056_assets",
+      "category": "assets",
+      "question": "What is the status of AHU?",
+      "expect_any": [
+        "AHU",
+        "status"
+      ]
+    },
+    {
+      "id": "q0057_assets",
+      "category": "assets",
+      "question": "Which workstation is AHU assigned to?",
+      "expect_any": [
+        "AHU",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0058_workorders",
+      "category": "workorders",
+      "question": "Show work orders for AHU.",
+      "expect_any": [
+        "AHU",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0059_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for AHU?",
+      "expect_any": [
+        "AHU",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0060_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for AHU.",
+      "expect_any": [
+        "AHU",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0061_assets",
+      "category": "assets",
+      "question": "What is the status of Dust Extractor?",
+      "expect_any": [
+        "Dust Extractor",
+        "status"
+      ]
+    },
+    {
+      "id": "q0062_assets",
+      "category": "assets",
+      "question": "Which workstation is Dust Extractor assigned to?",
+      "expect_any": [
+        "Dust Extractor",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0063_workorders",
+      "category": "workorders",
+      "question": "Show work orders for Dust Extractor.",
+      "expect_any": [
+        "Dust Extractor",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0064_workorders",
+      "category": "workorders",
+      "question": "What is the latest work order for Dust Extractor?",
+      "expect_any": [
+        "Dust Extractor",
+        "work order",
+        "latest"
+      ]
+    },
+    {
+      "id": "q0065_maintenance",
+      "category": "maintenance",
+      "question": "Show maintenance events for Dust Extractor.",
+      "expect_any": [
+        "Dust Extractor",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0066_assets",
+      "category": "assets",
+      "question": "How many machines are in the system?",
+      "expect_any": [
+        "machine",
+        "machines"
+      ]
+    },
+    {
+      "id": "q0067_assets",
+      "category": "assets",
+      "question": "List all machines.",
+      "expect_any": [
+        "machine",
+        "machines"
+      ]
+    },
+    {
+      "id": "q0068_assets",
+      "category": "assets",
+      "question": "Which machines are operational?",
+      "expect_any": [
+        "machine",
+        "operational",
+        "status"
+      ]
+    },
+    {
+      "id": "q0069_assets",
+      "category": "assets",
+      "question": "What is the status of Rotary Tablet Press?",
+      "expect_any": [
+        "Rotary Tablet Press",
+        "status"
+      ]
+    },
+    {
+      "id": "q0070_assets",
+      "category": "assets",
+      "question": "Which workstation is Rotary Tablet Press assigned to?",
+      "expect_any": [
+        "Rotary Tablet Press",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0071_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Rotary Tablet Press?",
+      "expect_any": [
+        "Rotary Tablet Press",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0072_assets",
+      "category": "assets",
+      "question": "What is the status of Coating Solution Vessel?",
+      "expect_any": [
+        "Coating Solution Vessel",
+        "status"
+      ]
+    },
+    {
+      "id": "q0073_assets",
+      "category": "assets",
+      "question": "Which workstation is Coating Solution Vessel assigned to?",
+      "expect_any": [
+        "Coating Solution Vessel",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0074_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Coating Solution Vessel?",
+      "expect_any": [
+        "Coating Solution Vessel",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0075_assets",
+      "category": "assets",
+      "question": "What is the status of Analytical Balance?",
+      "expect_any": [
+        "Analytical Balance",
+        "status"
+      ]
+    },
+    {
+      "id": "q0076_assets",
+      "category": "assets",
+      "question": "Which workstation is Analytical Balance assigned to?",
+      "expect_any": [
+        "Analytical Balance",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0077_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Analytical Balance?",
+      "expect_any": [
+        "Analytical Balance",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0078_assets",
+      "category": "assets",
+      "question": "What is the status of LOD Moisture Analyzer?",
+      "expect_any": [
+        "LOD Moisture Analyzer",
+        "status"
+      ]
+    },
+    {
+      "id": "q0079_assets",
+      "category": "assets",
+      "question": "Which workstation is LOD Moisture Analyzer assigned to?",
+      "expect_any": [
+        "LOD Moisture Analyzer",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0080_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for LOD Moisture Analyzer?",
+      "expect_any": [
+        "LOD Moisture Analyzer",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0081_assets",
+      "category": "assets",
+      "question": "What is the status of LAF Weighing Booth?",
+      "expect_any": [
+        "LAF Weighing Booth",
+        "status"
+      ]
+    },
+    {
+      "id": "q0082_assets",
+      "category": "assets",
+      "question": "Which workstation is LAF Weighing Booth assigned to?",
+      "expect_any": [
+        "LAF Weighing Booth",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0083_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for LAF Weighing Booth?",
+      "expect_any": [
+        "LAF Weighing Booth",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0084_assets",
+      "category": "assets",
+      "question": "What is the status of Thermometer?",
+      "expect_any": [
+        "Thermometer",
+        "status"
+      ]
+    },
+    {
+      "id": "q0085_assets",
+      "category": "assets",
+      "question": "Which workstation is Thermometer assigned to?",
+      "expect_any": [
+        "Thermometer",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0086_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Thermometer?",
+      "expect_any": [
+        "Thermometer",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0087_assets",
+      "category": "assets",
+      "question": "What is the status of Octagonal / Double Cone Blender?",
+      "expect_any": [
+        "Octagonal / Double Cone Blender",
+        "status"
+      ]
+    },
+    {
+      "id": "q0088_assets",
+      "category": "assets",
+      "question": "Which workstation is Octagonal / Double Cone Blender assigned to?",
+      "expect_any": [
+        "Octagonal / Double Cone Blender",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0089_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Octagonal / Double Cone Blender?",
+      "expect_any": [
+        "Octagonal / Double Cone Blender",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0090_assets",
+      "category": "assets",
+      "question": "What is the status of Timer?",
+      "expect_any": [
+        "Timer",
+        "status"
+      ]
+    },
+    {
+      "id": "q0091_assets",
+      "category": "assets",
+      "question": "Which workstation is Timer assigned to?",
+      "expect_any": [
+        "Timer",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0092_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Timer?",
+      "expect_any": [
+        "Timer",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0093_assets",
+      "category": "assets",
+      "question": "What is the status of Load Cell?",
+      "expect_any": [
+        "Load Cell",
+        "status"
+      ]
+    },
+    {
+      "id": "q0094_assets",
+      "category": "assets",
+      "question": "Which workstation is Load Cell assigned to?",
+      "expect_any": [
+        "Load Cell",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0095_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Load Cell?",
+      "expect_any": [
+        "Load Cell",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0096_assets",
+      "category": "assets",
+      "question": "What is the status of Vibro Sifter?",
+      "expect_any": [
+        "Vibro Sifter",
+        "status"
+      ]
+    },
+    {
+      "id": "q0097_assets",
+      "category": "assets",
+      "question": "Which workstation is Vibro Sifter assigned to?",
+      "expect_any": [
+        "Vibro Sifter",
+        "workstation"
+      ]
+    },
+    {
+      "id": "q0098_maintenance",
+      "category": "maintenance",
+      "question": "What calibration records exist for Vibro Sifter?",
+      "expect_any": [
+        "Vibro Sifter",
+        "calibration"
+      ]
+    },
+    {
+      "id": "q0099_assets",
+      "category": "assets",
+      "question": "How many equipment records are in the system?",
+      "expect_any": [
+        "equipment"
+      ]
+    },
+    {
+      "id": "q0100_assets",
+      "category": "assets",
+      "question": "Which equipment is due for maintenance?",
+      "expect_any": [
+        "equipment",
+        "maintenance",
+        "due"
+      ]
+    },
+    {
+      "id": "q0101_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CM-002?",
+      "expect_any": [
+        "CM-002",
+        "status"
+      ]
+    },
+    {
+      "id": "q0102_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CM-002.",
+      "expect_any": [
+        "CM-002",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0103_workorders",
+      "category": "workorders",
+      "question": "Is work order CM-002 todo?",
+      "expect_any": [
+        "CM-002",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0104_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CAL-HRD-001?",
+      "expect_any": [
+        "CAL-HRD-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0105_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CAL-HRD-001.",
+      "expect_any": [
+        "CAL-HRD-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0106_workorders",
+      "category": "workorders",
+      "question": "Is work order CAL-HRD-001 todo?",
+      "expect_any": [
+        "CAL-HRD-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0107_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CAL-CWG-002?",
+      "expect_any": [
+        "CAL-CWG-002",
+        "status"
+      ]
+    },
+    {
+      "id": "q0108_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CAL-CWG-002.",
+      "expect_any": [
+        "CAL-CWG-002",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0109_workorders",
+      "category": "workorders",
+      "question": "Is work order CAL-CWG-002 todo?",
+      "expect_any": [
+        "CAL-CWG-002",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0110_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CAL-MOI-001?",
+      "expect_any": [
+        "CAL-MOI-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0111_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CAL-MOI-001.",
+      "expect_any": [
+        "CAL-MOI-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0112_workorders",
+      "category": "workorders",
+      "question": "Is work order CAL-MOI-001 todo?",
+      "expect_any": [
+        "CAL-MOI-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0113_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order PM-RMG-001?",
+      "expect_any": [
+        "PM-RMG-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0114_workorders",
+      "category": "workorders",
+      "question": "Show details for work order PM-RMG-001.",
+      "expect_any": [
+        "PM-RMG-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0115_workorders",
+      "category": "workorders",
+      "question": "Is work order PM-RMG-001 todo?",
+      "expect_any": [
+        "PM-RMG-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0116_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order PM-LAF-001?",
+      "expect_any": [
+        "PM-LAF-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0117_workorders",
+      "category": "workorders",
+      "question": "Show details for work order PM-LAF-001.",
+      "expect_any": [
+        "PM-LAF-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0118_workorders",
+      "category": "workorders",
+      "question": "Is work order PM-LAF-001 todo?",
+      "expect_any": [
+        "PM-LAF-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0119_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CAL-PRE-001?",
+      "expect_any": [
+        "CAL-PRE-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0120_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CAL-PRE-001.",
+      "expect_any": [
+        "CAL-PRE-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0121_workorders",
+      "category": "workorders",
+      "question": "Is work order CAL-PRE-001 todo?",
+      "expect_any": [
+        "CAL-PRE-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0122_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CAL-TMP-001?",
+      "expect_any": [
+        "CAL-TMP-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0123_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CAL-TMP-001.",
+      "expect_any": [
+        "CAL-TMP-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0124_workorders",
+      "category": "workorders",
+      "question": "Is work order CAL-TMP-001 todo?",
+      "expect_any": [
+        "CAL-TMP-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0125_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order PRD-002?",
+      "expect_any": [
+        "PRD-002",
+        "status"
+      ]
+    },
+    {
+      "id": "q0126_workorders",
+      "category": "workorders",
+      "question": "Show details for work order PRD-002.",
+      "expect_any": [
+        "PRD-002",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0127_workorders",
+      "category": "workorders",
+      "question": "Is work order PRD-002 completed?",
+      "expect_any": [
+        "PRD-002",
+        "Completed"
+      ]
+    },
+    {
+      "id": "q0128_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order PM-AHU-002?",
+      "expect_any": [
+        "PM-AHU-002",
+        "status"
+      ]
+    },
+    {
+      "id": "q0129_workorders",
+      "category": "workorders",
+      "question": "Show details for work order PM-AHU-002.",
+      "expect_any": [
+        "PM-AHU-002",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0130_workorders",
+      "category": "workorders",
+      "question": "Is work order PM-AHU-002 todo?",
+      "expect_any": [
+        "PM-AHU-002",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0131_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CM-001?",
+      "expect_any": [
+        "CM-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0132_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CM-001.",
+      "expect_any": [
+        "CM-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0133_workorders",
+      "category": "workorders",
+      "question": "Is work order CM-001 todo?",
+      "expect_any": [
+        "CM-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0134_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CAL-CLM-001?",
+      "expect_any": [
+        "CAL-CLM-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0135_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CAL-CLM-001.",
+      "expect_any": [
+        "CAL-CLM-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0136_workorders",
+      "category": "workorders",
+      "question": "Is work order CAL-CLM-001 todo?",
+      "expect_any": [
+        "CAL-CLM-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0137_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order PM-CFM-001?",
+      "expect_any": [
+        "PM-CFM-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0138_workorders",
+      "category": "workorders",
+      "question": "Show details for work order PM-CFM-001.",
+      "expect_any": [
+        "PM-CFM-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0139_workorders",
+      "category": "workorders",
+      "question": "Is work order PM-CFM-001 todo?",
+      "expect_any": [
+        "PM-CFM-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0140_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order PM-ACT-001?",
+      "expect_any": [
+        "PM-ACT-001",
+        "status"
+      ]
+    },
+    {
+      "id": "q0141_workorders",
+      "category": "workorders",
+      "question": "Show details for work order PM-ACT-001.",
+      "expect_any": [
+        "PM-ACT-001",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0142_workorders",
+      "category": "workorders",
+      "question": "Is work order PM-ACT-001 todo?",
+      "expect_any": [
+        "PM-ACT-001",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0143_workorders",
+      "category": "workorders",
+      "question": "What is the status of work order CAL-TMP-004?",
+      "expect_any": [
+        "CAL-TMP-004",
+        "status"
+      ]
+    },
+    {
+      "id": "q0144_workorders",
+      "category": "workorders",
+      "question": "Show details for work order CAL-TMP-004.",
+      "expect_any": [
+        "CAL-TMP-004",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0145_workorders",
+      "category": "workorders",
+      "question": "Is work order CAL-TMP-004 todo?",
+      "expect_any": [
+        "CAL-TMP-004",
+        "Todo"
+      ]
+    },
+    {
+      "id": "q0146_workorders",
+      "category": "workorders",
+      "question": "How many work orders are open?",
+      "expect_any": [
+        "work order",
+        "open"
+      ]
+    },
+    {
+      "id": "q0147_workorders",
+      "category": "workorders",
+      "question": "List all pending work orders.",
+      "expect_any": [
+        "work order",
+        "pending"
+      ]
+    },
+    {
+      "id": "q0148_workorders",
+      "category": "workorders",
+      "question": "What statuses are valid for a work order?",
+      "expect_any": [
+        "status",
+        "valid",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0149_workorders",
+      "category": "workorders",
+      "question": "What events were created for the latest work order?",
+      "expect_any": [
+        "event",
+        "work order"
+      ]
+    },
+    {
+      "id": "q0150_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-EFEC838C.",
+      "expect_any": [
+        "PB-EFEC838C",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0151_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-EFEC838C?",
+      "expect_any": [
+        "PB-EFEC838C",
+        "status"
+      ]
+    },
+    {
+      "id": "q0152_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-EFEC838C for?",
+      "expect_any": [
+        "PB-EFEC838C",
+        "Metformin 500mg Tablets"
+      ]
+    },
+    {
+      "id": "q0153_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-A6E28A2B.",
+      "expect_any": [
+        "PB-A6E28A2B",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0154_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-A6E28A2B?",
+      "expect_any": [
+        "PB-A6E28A2B",
+        "status"
+      ]
+    },
+    {
+      "id": "q0155_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-A6E28A2B for?",
+      "expect_any": [
+        "PB-A6E28A2B",
+        "Cetirizine 10mg Tablets"
+      ]
+    },
+    {
+      "id": "q0156_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-BADF31B9.",
+      "expect_any": [
+        "PB-BADF31B9",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0157_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-BADF31B9?",
+      "expect_any": [
+        "PB-BADF31B9",
+        "status"
+      ]
+    },
+    {
+      "id": "q0158_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-BADF31B9 for?",
+      "expect_any": [
+        "PB-BADF31B9",
+        "Atorvastatin 10mg Tablets"
+      ]
+    },
+    {
+      "id": "q0159_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-2E8792CD.",
+      "expect_any": [
+        "PB-2E8792CD",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0160_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-2E8792CD?",
+      "expect_any": [
+        "PB-2E8792CD",
+        "status"
+      ]
+    },
+    {
+      "id": "q0161_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-2E8792CD for?",
+      "expect_any": [
+        "PB-2E8792CD",
+        "Atorvastatin 10mg Tablets"
+      ]
+    },
+    {
+      "id": "q0162_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-143AACA6.",
+      "expect_any": [
+        "PB-143AACA6",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0163_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-143AACA6?",
+      "expect_any": [
+        "PB-143AACA6",
+        "status"
+      ]
+    },
+    {
+      "id": "q0164_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-143AACA6 for?",
+      "expect_any": [
+        "PB-143AACA6",
+        "Paracetamol 500mg Tablets"
+      ]
+    },
+    {
+      "id": "q0165_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-339FBA28.",
+      "expect_any": [
+        "PB-339FBA28",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0166_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-339FBA28?",
+      "expect_any": [
+        "PB-339FBA28",
+        "status"
+      ]
+    },
+    {
+      "id": "q0167_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-339FBA28 for?",
+      "expect_any": [
+        "PB-339FBA28",
+        "Atorvastatin 10mg Tablets"
+      ]
+    },
+    {
+      "id": "q0168_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-5D2E2749.",
+      "expect_any": [
+        "PB-5D2E2749",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0169_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-5D2E2749?",
+      "expect_any": [
+        "PB-5D2E2749",
+        "status"
+      ]
+    },
+    {
+      "id": "q0170_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-5D2E2749 for?",
+      "expect_any": [
+        "PB-5D2E2749",
+        "Metformin 500mg Tablets"
+      ]
+    },
+    {
+      "id": "q0171_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-0EC9C02E.",
+      "expect_any": [
+        "PB-0EC9C02E",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0172_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-0EC9C02E?",
+      "expect_any": [
+        "PB-0EC9C02E",
+        "status"
+      ]
+    },
+    {
+      "id": "q0173_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-0EC9C02E for?",
+      "expect_any": [
+        "PB-0EC9C02E",
+        "Metformin 500mg Tablets"
+      ]
+    },
+    {
+      "id": "q0174_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-29424FDB.",
+      "expect_any": [
+        "PB-29424FDB",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0175_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-29424FDB?",
+      "expect_any": [
+        "PB-29424FDB",
+        "status"
+      ]
+    },
+    {
+      "id": "q0176_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-29424FDB for?",
+      "expect_any": [
+        "PB-29424FDB",
+        "Cetirizine 10mg Tablets"
+      ]
+    },
+    {
+      "id": "q0177_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for PB-44E15AE7.",
+      "expect_any": [
+        "PB-44E15AE7",
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0178_batch_records",
+      "category": "batch_records",
+      "question": "What is the status of batch PB-44E15AE7?",
+      "expect_any": [
+        "PB-44E15AE7",
+        "status"
+      ]
+    },
+    {
+      "id": "q0179_batch_records",
+      "category": "batch_records",
+      "question": "Which product is batch PB-44E15AE7 for?",
+      "expect_any": [
+        "PB-44E15AE7",
+        "Metformin 500mg Tablets"
+      ]
+    },
+    {
+      "id": "q0180_batch_records",
+      "category": "batch_records",
+      "question": "List recent batch records.",
+      "expect_any": [
+        "batch",
+        "record"
+      ]
+    },
+    {
+      "id": "q0181_batch_records",
+      "category": "batch_records",
+      "question": "Show batch execution records for the latest production batch.",
+      "expect_any": [
+        "batch",
+        "execution"
+      ]
+    },
+    {
+      "id": "q0182_batch_records",
+      "category": "batch_records",
+      "question": "Which batch release workflows are pending?",
+      "expect_any": [
+        "batch",
+        "release",
+        "pending"
+      ]
+    },
+    {
+      "id": "q0183_batch_records",
+      "category": "batch_records",
+      "question": "Show yield reconciliation for the latest batch.",
+      "expect_any": [
+        "yield",
+        "reconciliation",
+        "batch"
+      ]
+    },
+    {
+      "id": "q0184_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Sifting - Vibro Sifter Station.",
+      "expect_any": [
+        "Sifting - Vibro Sifter Station",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0185_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Sifting - Vibro Sifter Station SOP?",
+      "expect_any": [
+        "Sifting - Vibro Sifter Station",
+        "step"
+      ]
+    },
+    {
+      "id": "q0186_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Sifting - Vibro Sifter Station SOP?",
+      "expect_any": [
+        "Sifting - Vibro Sifter Station",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0187_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Granulation - Binder Prep.",
+      "expect_any": [
+        "Granulation - Binder Prep",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0188_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Granulation - Binder Prep SOP?",
+      "expect_any": [
+        "Granulation - Binder Prep",
+        "step"
+      ]
+    },
+    {
+      "id": "q0189_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Granulation - Binder Prep SOP?",
+      "expect_any": [
+        "Granulation - Binder Prep",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0190_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Coating - Coating Pan.",
+      "expect_any": [
+        "Coating - Coating Pan",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0191_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Coating - Coating Pan SOP?",
+      "expect_any": [
+        "Coating - Coating Pan",
+        "step"
+      ]
+    },
+    {
+      "id": "q0192_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Coating - Coating Pan SOP?",
+      "expect_any": [
+        "Coating - Coating Pan",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0193_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Blending - Blender Loading.",
+      "expect_any": [
+        "Blending - Blender Loading",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0194_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Blending - Blender Loading SOP?",
+      "expect_any": [
+        "Blending - Blender Loading",
+        "step"
+      ]
+    },
+    {
+      "id": "q0195_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Blending - Blender Loading SOP?",
+      "expect_any": [
+        "Blending - Blender Loading",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0196_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Sizing - Sieve Station.",
+      "expect_any": [
+        "Sizing - Sieve Station",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0197_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Sizing - Sieve Station SOP?",
+      "expect_any": [
+        "Sizing - Sieve Station",
+        "step"
+      ]
+    },
+    {
+      "id": "q0198_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Sizing - Sieve Station SOP?",
+      "expect_any": [
+        "Sizing - Sieve Station",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0199_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Inspection - Polishing.",
+      "expect_any": [
+        "Inspection - Polishing",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0200_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Inspection - Polishing SOP?",
+      "expect_any": [
+        "Inspection - Polishing",
+        "step"
+      ]
+    },
+    {
+      "id": "q0201_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Inspection - Polishing SOP?",
+      "expect_any": [
+        "Inspection - Polishing",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0202_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Drying - FBD Loading.",
+      "expect_any": [
+        "Drying - FBD Loading",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0203_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Drying - FBD Loading SOP?",
+      "expect_any": [
+        "Drying - FBD Loading",
+        "step"
+      ]
+    },
+    {
+      "id": "q0204_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Drying - FBD Loading SOP?",
+      "expect_any": [
+        "Drying - FBD Loading",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0205_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Sifting - Co-Mill Station.",
+      "expect_any": [
+        "Sifting - Co-Mill Station",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0206_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Sifting - Co-Mill Station SOP?",
+      "expect_any": [
+        "Sifting - Co-Mill Station",
+        "step"
+      ]
+    },
+    {
+      "id": "q0207_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Sifting - Co-Mill Station SOP?",
+      "expect_any": [
+        "Sifting - Co-Mill Station",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0208_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Dispensing - Material Staging.",
+      "expect_any": [
+        "Dispensing - Material Staging",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0209_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Dispensing - Material Staging SOP?",
+      "expect_any": [
+        "Dispensing - Material Staging",
+        "step"
+      ]
+    },
+    {
+      "id": "q0210_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Dispensing - Material Staging SOP?",
+      "expect_any": [
+        "Dispensing - Material Staging",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0211_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Blending - Lubrication.",
+      "expect_any": [
+        "Blending - Lubrication",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0212_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Blending - Lubrication SOP?",
+      "expect_any": [
+        "Blending - Lubrication",
+        "step"
+      ]
+    },
+    {
+      "id": "q0213_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Blending - Lubrication SOP?",
+      "expect_any": [
+        "Blending - Lubrication",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0214_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Summarize the SOP: Dedusting - Deduster Station.",
+      "expect_any": [
+        "Dedusting - Deduster Station",
+        "SOP"
+      ]
+    },
+    {
+      "id": "q0215_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What are the steps in the Dedusting - Deduster Station SOP?",
+      "expect_any": [
+        "Dedusting - Deduster Station",
+        "step"
+      ]
+    },
+    {
+      "id": "q0216_process_and_sop",
+      "category": "process_and_sop",
+      "question": "Who approves the Dedusting - Deduster Station SOP?",
+      "expect_any": [
+        "Dedusting - Deduster Station",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0217_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What steps are in the Dedusting - Deduster Station process?",
+      "expect_any": [
+        "Dedusting - Deduster Station",
+        "step"
+      ]
+    },
+    {
+      "id": "q0218_process_and_sop",
+      "category": "process_and_sop",
+      "question": "What constraints apply to Dedusting - Deduster Station?",
+      "expect_any": [
+        "Dedusting - Deduster Station",
+        "constraint"
+      ]
+    },
+    {
+      "id": "q0219_assets",
+      "category": "assets",
+      "question": "What is the stock level for Blower Motor?",
+      "expect_any": [
+        "Blower Motor",
+        "stock"
+      ]
+    },
+    {
+      "id": "q0220_assets",
+      "category": "assets",
+      "question": "Which parts are used in MCH-TAB-01-02?",
+      "expect_any": [
+        "MCH-TAB-01-02",
+        "part"
+      ]
+    },
+    {
+      "id": "q0221_assets",
+      "category": "assets",
+      "question": "What is the stock level for HEPA Filter?",
+      "expect_any": [
+        "HEPA Filter",
+        "stock"
+      ]
+    },
+    {
+      "id": "q0222_assets",
+      "category": "assets",
+      "question": "Which parts are used in MCH-CAP-01-01?",
+      "expect_any": [
+        "MCH-CAP-01-01",
+        "part"
+      ]
+    },
+    {
+      "id": "q0223_assets",
+      "category": "assets",
+      "question": "What is the stock level for Mesh Screen Set?",
+      "expect_any": [
+        "Mesh Screen Set",
+        "stock"
+      ]
+    },
+    {
+      "id": "q0224_assets",
+      "category": "assets",
+      "question": "Which parts are used in MCH-TAB-02-01?",
+      "expect_any": [
+        "MCH-TAB-02-01",
+        "part"
+      ]
+    },
+    {
+      "id": "q0225_assets",
+      "category": "assets",
+      "question": "What is the stock level for UV Lamp?",
+      "expect_any": [
+        "UV Lamp",
+        "stock"
+      ]
+    },
+    {
+      "id": "q0226_assets",
+      "category": "assets",
+      "question": "What is the stock level for Rubber Ball Set?",
+      "expect_any": [
+        "Rubber Ball Set",
+        "stock"
+      ]
+    },
+    {
+      "id": "q0227_assets",
+      "category": "assets",
+      "question": "What is the stock level for Spring Set?",
+      "expect_any": [
+        "Spring Set",
+        "stock"
+      ]
+    },
+    {
+      "id": "q0228_assets",
+      "category": "assets",
+      "question": "Which parts are used in MCH-CAP-02-01?",
+      "expect_any": [
+        "MCH-CAP-02-01",
+        "part"
+      ]
+    },
+    {
+      "id": "q0229_assets",
+      "category": "assets",
+      "question": "Which parts are used in MCH-CAP-01-02?",
+      "expect_any": [
+        "MCH-CAP-01-02",
+        "part"
+      ]
+    },
+    {
+      "id": "q0230_assets",
+      "category": "assets",
+      "question": "What is the stock level for Differential Pressure Gauge?",
+      "expect_any": [
+        "Differential Pressure Gauge",
+        "stock"
+      ]
+    },
+    {
+      "id": "q0231_assets",
+      "category": "assets",
+      "question": "Which machine parts are low stock?",
+      "expect_any": [
+        "part",
+        "stock",
+        "machine"
+      ]
+    },
+    {
+      "id": "q0232_assets",
+      "category": "assets",
+      "question": "List all machine parts.",
+      "expect_any": [
+        "part",
+        "machine"
+      ]
+    },
+    {
+      "id": "q0233_workers",
+      "category": "workers",
+      "question": "What is the role of Karan Shah?",
+      "expect_any": [
+        "Karan Shah",
+        "role"
+      ]
+    },
+    {
+      "id": "q0234_workers",
+      "category": "workers",
+      "question": "What is the role of Devansh Kapoor?",
+      "expect_any": [
+        "Devansh Kapoor",
+        "role"
+      ]
+    },
+    {
+      "id": "q0235_workers",
+      "category": "workers",
+      "question": "What is the role of Priya Sharma?",
+      "expect_any": [
+        "Priya Sharma",
+        "role"
+      ]
+    },
+    {
+      "id": "q0236_workers",
+      "category": "workers",
+      "question": "What is the role of Aarav Mehta?",
+      "expect_any": [
+        "Aarav Mehta",
+        "role"
+      ]
+    },
+    {
+      "id": "q0237_workers",
+      "category": "workers",
+      "question": "Which workers are at the STAGE-04 stage?",
+      "expect_any": [
+        "STAGE-04",
+        "worker"
+      ]
+    },
+    {
+      "id": "q0238_workers",
+      "category": "workers",
+      "question": "What is the role of Rajesh Patel?",
+      "expect_any": [
+        "Rajesh Patel",
+        "role"
+      ]
+    },
+    {
+      "id": "q0239_workers",
+      "category": "workers",
+      "question": "What is the role of Rohit Verma?",
+      "expect_any": [
+        "Rohit Verma",
+        "role"
+      ]
+    },
+    {
+      "id": "q0240_workers",
+      "category": "workers",
+      "question": "What is the role of Pallavi Joshi?",
+      "expect_any": [
+        "Pallavi Joshi",
+        "role"
+      ]
+    },
+    {
+      "id": "q0241_workers",
+      "category": "workers",
+      "question": "What is the role of Rahul Deshmukh?",
+      "expect_any": [
+        "Rahul Deshmukh",
+        "role"
+      ]
+    },
+    {
+      "id": "q0242_workers",
+      "category": "workers",
+      "question": "Who reports to the line manager?",
+      "expect_any": [
+        "manager",
+        "reports",
+        "worker"
+      ]
+    },
+    {
+      "id": "q0243_workers",
+      "category": "workers",
+      "question": "Which workers are assigned to the blending stage?",
+      "expect_any": [
+        "worker",
+        "blending",
+        "assigned"
+      ]
+    },
+    {
+      "id": "q0244_workers",
+      "category": "workers",
+      "question": "List all workers in the system.",
+      "expect_any": [
+        "worker",
+        "workers"
+      ]
+    },
+    {
+      "id": "q0245_compliance",
+      "category": "compliance",
+      "question": "Show pending approvals.",
+      "expect_any": [
+        "approval",
+        "pending"
+      ]
+    },
+    {
+      "id": "q0246_compliance",
+      "category": "compliance",
+      "question": "Show recent Part 11 audit events.",
+      "expect_any": [
+        "audit",
+        "Part 11"
+      ]
+    },
+    {
+      "id": "q0247_compliance",
+      "category": "compliance",
+      "question": "Which change controls are open?",
+      "expect_any": [
+        "change control",
+        "open"
+      ]
+    },
+    {
+      "id": "q0248_compliance",
+      "category": "compliance",
+      "question": "List all compliance records.",
+      "expect_any": [
+        "compliance",
+        "record"
+      ]
+    },
+    {
+      "id": "q0249_integration_backed",
+      "category": "integration_backed",
+      "question": "What warehouse inventory movements are visible from WMS integration?",
+      "expect_any": [
+        "warehouse",
+        "inventory",
+        "WMS"
+      ]
+    },
+    {
+      "id": "q0250_integration_backed",
+      "category": "integration_backed",
+      "question": "What maintenance events came from CMMS integration?",
+      "expect_any": [
+        "maintenance",
+        "CMMS"
+      ]
+    },
+    {
+      "id": "q0251_integration_backed",
+      "category": "integration_backed",
+      "question": "What controlled documents came from the document management integration?",
+      "expect_any": [
+        "document",
+        "integration"
+      ]
+    },
+    {
+      "id": "q0252_integration_backed",
+      "category": "integration_backed",
+      "question": "What LIMS sample results are available for the latest batch?",
+      "expect_any": [
+        "LIMS",
+        "sample",
+        "batch"
+      ]
+    },
+    {
+      "id": "q0253_world_model_reasoning",
+      "category": "world_model_reasoning",
+      "question": "If I increase blender speed by 10%, what impact will it have on content uniformity?",
+      "expect_any": [
+        "Recommendation",
+        "Throughput",
+        "Quality",
+        "Approval"
+      ]
+    },
+    {
+      "id": "q0254_world_model_reasoning",
+      "category": "world_model_reasoning",
+      "question": "What happens if a machine is taken offline for maintenance during a batch run?",
+      "expect_any": [
+        "impact",
+        "batch",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "q0255_world_model_reasoning",
+      "category": "world_model_reasoning",
+      "question": "What is the cascading impact of a blending stage failure?",
+      "expect_any": [
+        "impact",
+        "failure",
+        "stage"
+      ]
+    },
+    {
+      "id": "q0256_world_model_reasoning",
+      "category": "world_model_reasoning",
+      "question": "Can we add a preventive work order for a high-temperature scenario?",
+      "expect_any": [
+        "preventive",
+        "work order",
+        "approval"
+      ]
+    },
+    {
+      "id": "q0257_negative_controls",
+      "category": "negative_controls",
+      "question": "Who won the cricket match yesterday?",
+      "expect_any": [
+        "not have",
+        "unsupported",
+        "local system",
+        "graph intent",
+        "cannot"
+      ]
+    },
+    {
+      "id": "q0258_negative_controls",
+      "category": "negative_controls",
+      "question": "What is the weather in Mumbai?",
+      "expect_any": [
+        "not have",
+        "unsupported",
+        "local system",
+        "graph intent",
+        "cannot"
+      ]
+    },
+    {
+      "id": "q0259_negative_controls",
+      "category": "negative_controls",
+      "question": "yes",
+      "expect_any": [
+        "full graph question",
+        "ask the full",
+        "clarify"
+      ]
+    },
+    {
+      "id": "q0260_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What is located at Sifting/Milling Room Bay 2?",
+      "expect_any": [
+        "Sifting/Milling Room Bay 2",
+        "location"
+      ]
+    },
+    {
+      "id": "q0261_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What bays are in the system?",
+      "expect_any": [
+        "bay",
+        "location"
+      ]
+    },
+    {
+      "id": "q0262_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What is located at Coating Room Bay 1?",
+      "expect_any": [
+        "Coating Room Bay 1",
+        "location"
+      ]
+    },
+    {
+      "id": "q0263_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What is located at Compression Room?",
+      "expect_any": [
+        "Compression Room",
+        "location"
+      ]
+    },
+    {
+      "id": "q0264_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What rooms are in the system?",
+      "expect_any": [
+        "room",
+        "location"
+      ]
+    },
+    {
+      "id": "q0265_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What is located at Drying Room Bay 2?",
+      "expect_any": [
+        "Drying Room Bay 2",
+        "location"
+      ]
+    },
+    {
+      "id": "q0266_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What is located at Second Floor — Filling to Packaging?",
+      "expect_any": [
+        "Second Floor — Filling to Packaging",
+        "location"
+      ]
+    },
+    {
+      "id": "q0267_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What floors are in the system?",
+      "expect_any": [
+        "floor",
+        "location"
+      ]
+    },
+    {
+      "id": "q0268_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "What is located at Dispensing Room Bay 3?",
+      "expect_any": [
+        "Dispensing Room Bay 3",
+        "location"
+      ]
+    },
+    {
+      "id": "q0269_shop_floor_topology",
+      "category": "shop_floor_topology",
+      "question": "List all plant locations.",
+      "expect_any": [
+        "location",
+        "plant"
+      ]
+    },
+    {
+      "id": "q0270_assets",
+      "category": "assets",
+      "question": "What machines are in the Utilities & Support family?",
+      "expect_any": [
+        "Utilities & Support",
+        "family",
+        "machine"
+      ]
+    },
+    {
+      "id": "q0271_assets",
+      "category": "assets",
+      "question": "What machines are in the Secondary Manufacturing family?",
+      "expect_any": [
+        "Secondary Manufacturing",
+        "family",
+        "machine"
+      ]
+    },
+    {
+      "id": "q0272_assets",
+      "category": "assets",
+      "question": "What machines are in the Packaging family?",
+      "expect_any": [
+        "Packaging",
+        "family",
+        "machine"
+      ]
+    },
+    {
+      "id": "q0273_assets",
+      "category": "assets",
+      "question": "What machines are in the Quality Control family?",
+      "expect_any": [
+        "Quality Control",
+        "family",
+        "machine"
+      ]
+    },
+    {
+      "id": "q0274_assets",
+      "category": "assets",
+      "question": "What equipment belongs to class HVAC Systems?",
+      "expect_any": [
+        "HVAC Systems",
+        "class",
+        "equipment"
+      ]
+    },
+    {
+      "id": "q0275_assets",
+      "category": "assets",
+      "question": "What equipment belongs to class Monitoring Instruments?",
+      "expect_any": [
+        "Monitoring Instruments",
+        "class",
+        "equipment"
+      ]
+    },
+    {
+      "id": "q0276_assets",
+      "category": "assets",
+      "question": "What equipment belongs to class Cleaning Systems?",
+      "expect_any": [
+        "Cleaning Systems",
+        "class",
+        "equipment"
+      ]
+    },
+    {
+      "id": "q0277_assets",
+      "category": "assets",
+      "question": "What equipment belongs to class Granulation Equipment?",
+      "expect_any": [
+        "Granulation Equipment",
+        "class",
+        "equipment"
+      ]
+    },
+    {
+      "id": "q0278_production_kpi",
+      "category": "production_kpi",
+      "question": "Show Quality and Cost KPIs.",
+      "expect_any": [
+        "Quality",
+        "KPI",
+        "Cost"
+      ]
+    },
+    {
+      "id": "q0279_production_kpi",
+      "category": "production_kpi",
+      "question": "What is the overall equipment effectiveness (OEE)?",
+      "expect_any": [
+        "OEE",
+        "effectiveness",
+        "equipment"
+      ]
+    },
+    {
+      "id": "q0280_production_kpi",
+      "category": "production_kpi",
+      "question": "What is the throughput rate for the latest production run?",
+      "expect_any": [
+        "throughput",
+        "production"
+      ]
+    },
+    {
+      "id": "q0281_production_kpi",
+      "category": "production_kpi",
+      "question": "Which production line has the highest efficiency?",
+      "expect_any": [
+        "line",
+        "efficiency"
+      ]
+    },
+    {
+      "id": "q0282_production_kpi",
+      "category": "production_kpi",
+      "question": "What is the yield rate for the latest OSD production?",
+      "expect_any": [
+        "yield",
+        "OSD",
+        "production"
+      ]
+    },
+    {
+      "id": "q0283_documents",
+      "category": "documents",
+      "question": "Summarize the indexed blender speed SOP document.",
+      "expect_any": [
+        "SOP",
+        "blender",
+        "document"
+      ]
+    },
+    {
+      "id": "q0284_documents",
+      "category": "documents",
+      "question": "What uploaded document evidence supports blender speed changes?",
+      "expect_any": [
+        "document",
+        "evidence",
+        "blender"
+      ]
+    },
+    {
+      "id": "q0285_documents",
+      "category": "documents",
+      "question": "List all controlled documents in the system.",
+      "expect_any": [
+        "document",
+        "controlled"
+      ]
+    },
+    {
+      "id": "q0286_module_control_boundary",
+      "category": "module_control_boundary",
+      "question": "Are warehouse, IoT, order modules hidden unless enabled?",
+      "expect_any": [
+        "hidden",
+        "enabled",
+        "Module Control"
+      ]
+    },
+    {
+      "id": "q0287_module_control_boundary",
+      "category": "module_control_boundary",
+      "question": "Which integrations can add nodes to the graph?",
+      "expect_any": [
+        "SAP",
+        "Oracle",
+        "Veeva",
+        "LIMS",
+        "WMS",
+        "CMMS",
+        "integration"
+      ]
+    }
+  ]
+}

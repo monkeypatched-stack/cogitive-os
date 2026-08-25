@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: agents API
+  description: External agent discovery and communication
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/agents
+  description: Capability endpoint
+paths:
+  /discover:
+    read:
+      summary: Discover available agents
+      operationId: agents_discover
+      parameters: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /invoke:
+    create:
+      summary: Invoke an external agent
+      operationId: agents_invoke
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: task
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

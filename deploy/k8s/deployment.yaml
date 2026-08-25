@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentos
+  namespace: monkeybrain
+  labels:
+    app: agentos
+    component: cognitive-runtime
+spec:
+  # Pinned at 1, not an oversight: MB_WORLD_TENSOR_PATH (kernel/compile/
+  # world_tensor.py) is a process-global singleton that loads once at
+  # boot and does last-write-wins saves to a single local file — real,
+  # active state at this configuration since MB_WORLD_TENSOR=true in
+  # agentos-config. RunStore/TimelineStore ARE genuinely Redis-backed
+  # and multi-worker-safe (see kernel/timeline/store.py), but that does
+  # NOT cover this file, so raising replicas today would silently drop
+  # learned world-tensor transitions from whichever pod loses the last
+  # write, not just fail to scale. Raise only after world_tensor.py
+  # gains a shared (Redis-backed, same pattern as RunStore) store.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentos
+  template:
+    metadata:
+      labels:
+        app: agentos
+    spec:
+      # Gate 11 (production readiness): default is 30s. Real, live-observed
+      # planetary ticks and /actors/{id}/execute calls run 30-90s+ (serial,
+      # LLM-planner-bound — see docs/adr/016-performance-gate9.md); the
+      # default grace period risks a SIGKILL mid-tick on every rolling
+      # deploy or node drain. 120s covers the common case with margin.
+      # /compare's rare, heavier pipeline (server-declared ceiling: 600s,
+      # predict.py's COMPARE_TOTAL_TIMEOUT) is NOT fully covered by this —
+      # a pod terminated mid-/compare can still be cut off. Not raised to
+      # 600s+ because that would make every rolling deploy/scale-down
+      # operation wait up to 10 minutes per pod; documented trade-off, not
+      # an oversight.
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: agentos
+          image: monkeybrain/agentos:latest
+          ports:
+            - containerPort: 8031
+              name: http
+          envFrom:
+            - configMapRef:
+                name: agentos-config
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          livenessProbe:
+            # /live (Gate 8): depends on nothing but the ASGI server
+            # itself responding — the correct, minimal liveness check.
+            # Was /health, which additionally depends on Lemon having
+            # booted correctly; a Lemon-internals problem is a real but
+            # different failure mode that shouldn't by itself restart
+            # the pod. /health remains available as a more detailed
+            # status endpoint (still no external-dependency gating).
+            httpGet:
+              path: /live
+              port: 8031
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8031
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            # Confirmed live this session: a full boot (real Mongo/
+            # Redis/Neo4j connections, ~295 agents registered) commonly
+            # takes 30-77s+ depending on load. Without a startupProbe,
+            # livenessProbe's initialDelaySeconds=15 + failureThreshold=3
+            # * periodSeconds=30 gives ~105s before a slow-but-healthy
+            # boot gets killed and restart-looped — too tight for the
+            # slower end of what's actually been observed.
+            httpGet:
+              path: /live
+              port: 8031
+            periodSeconds: 5
+            failureThreshold: 30
+            timeoutSeconds: 5
+          env:
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agentos-secrets
+                  key: neo4j-password
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          # Was emptyDir (state lost on every restart/reschedule) — a real
+          # correctness bug for a runtime whose whole point is a persistent
+          # world. See pvc.yaml for why ReadWriteOnce is the right access
+          # mode here, not a shortcut.
+          persistentVolumeClaim:
+            claimName: agentos-data

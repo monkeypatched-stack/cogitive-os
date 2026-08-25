@@ -1,0 +1,52 @@
+capability:
+  name: placeholder
+  id: cap-placeholder-001
+  platform: Unknown
+  description: "Placeholder capability"
+  version: "1.0.0"
+  status: inactive
+  authored_by: "Prashun Javeri"
+  approved_by: "Prashun Javeri"
+  effective_date: "2026-06-27"
+  review_date: "2026-12-27"
+  module_id: "cerebellum"
+  module_name: "Cerebellum"
+  plant_id: ""
+  line_id: ""
+  stage_id: ""
+  tags: [placeholder]
+  document_ids: []
+
+auth:
+  type: none
+  header_name: ""
+  format_template: ""
+  scopes: []
+  refresh_endpoint: ""
+  ttl_seconds: null
+
+endpoint:
+  base_url: ""
+  protocol: http
+  version: "1.0.0"
+  tls_verify: false
+  timeout_seconds: 30
+
+operations: []
+
+rate_limit:
+  requests_per_hour: 1000
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status: [500, 502, 503]
+
+error_handling:
+  transient_statuses: [500, 502, 503, 504]
+  permanent_statuses: [400, 401, 403, 404]
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+
+tests:
+  test_scenarios: []

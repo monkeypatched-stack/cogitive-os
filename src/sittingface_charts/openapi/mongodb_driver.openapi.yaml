@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: mongodb_driver API
+  description: MongoDB async driver wrapper
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/mongodb_driver
+  description: Capability endpoint
+paths:
+  /connect:
+    create:
+      summary: Connect to MongoDB
+      operationId: mongodb_driver_connect
+      parameters:
+      - name: url
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /disconnect:
+    delete:
+      summary: Disconnect from MongoDB
+      operationId: mongodb_driver_disconnect
+      parameters: []
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

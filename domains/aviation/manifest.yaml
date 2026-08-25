@@ -1,0 +1,32 @@
+name: aviation
+version: "0.1.0"
+description: "Aviation bounded context — flight operations, crew scheduling, aircraft maintenance"
+bounded_context:
+  name: aviation
+  aggregates:
+    - Flight
+    - Crew
+    - Aircraft
+    - MaintenanceRecord
+    - Airport
+  entities:
+    - Flight
+    - Crew
+    - Aircraft
+    - MaintenanceRecord
+    - Airport
+    - Gate
+    - Runway
+  value_objects:
+    - FlightStatus
+    - CrewRole
+    - AircraftType
+    - MaintenanceType
+  events:
+    - FlightScheduled
+    - FlightDeparted
+    - FlightArrived
+    - FlightDelayed
+    - CrewAssigned
+    - MaintenanceCompleted
+    - AircraftInspected

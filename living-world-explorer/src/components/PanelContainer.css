@@ -1,0 +1,43 @@
+.lwe-panel {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--lwe-surface);
+  overflow: hidden;
+}
+
+.lwe-panel-title {
+  flex: none;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lwe-text-muted);
+  border-bottom: 1px solid var(--lwe-border);
+  background: var(--lwe-surface-alt);
+}
+
+.lwe-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Only the "no content yet" placeholder centers itself — real panel
+ * content (e.g. WorldTree) manages its own internal layout and needs
+ * the body to behave like a plain, unpadded flex container instead. */
+.lwe-panel-body:has(.lwe-panel-placeholder) {
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.lwe-panel-placeholder {
+  color: var(--lwe-text-muted);
+  font-size: 13px;
+  font-style: italic;
+}

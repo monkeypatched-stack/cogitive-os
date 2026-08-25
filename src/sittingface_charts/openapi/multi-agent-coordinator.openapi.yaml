@@ -1,0 +1,71 @@
+openapi: 3.0.3
+info:
+  title: multi-agent-coordinator API
+  description: 'Routes tasks to specialist sub-agents and aggregates results
+
+
+    Role: Multi-Agent Coordinator
+
+
+    Model: anthropic/claude-sonnet-4-6'
+  version: 1.0.0
+paths:
+  /query:
+    post:
+      summary: Send a query to multi-agent-coordinator
+      operationId: multi-agent-coordinator_query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - query
+              properties:
+                query:
+                  type: string
+                  maxLength: 4096
+                session_id:
+                  type: string
+                context:
+                  type: object
+      responses:
+        '200':
+          description: Agent response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                  confidence:
+                    type: number
+                  tools_used:
+                    type: array
+                    items:
+                      type: string
+  /health:
+    get:
+      summary: multi-agent-coordinator health check
+      responses:
+        '200':
+          description: Healthy
+  /tools:
+    get:
+      summary: List available tools for multi-agent-coordinator
+      responses:
+        '200':
+          description: Tool list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    description:
+                      type: string

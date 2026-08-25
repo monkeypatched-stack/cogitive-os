@@ -1,0 +1,31 @@
+name: robotics_amr
+version: "0.1.0"
+description: "Robotics and AMR bounded context — fleet management, mission planning, dispatch, charging, navigation"
+bounded_context:
+  name: robotics_amr
+  aggregates:
+    - Robot
+    - Mission
+    - Fleet
+    - ChargingStation
+    - NavigationPath
+  entities:
+    - Robot
+    - Mission
+    - Fleet
+    - ChargingStation
+    - NavigationPath
+    - Sensor
+    - Obstacle
+  value_objects:
+    - RobotStatus
+    - MissionPriority
+    - BatteryLevel
+    - Coordinate
+  events:
+    - RobotDispatched
+    - MissionCompleted
+    - RobotCharging
+    - ObstacleDetected
+    - PathRecalculated
+    - FleetRebalanced

@@ -1,0 +1,3235 @@
+openapi: 3.1.0
+info:
+  title: changeover API
+  description: MonkeyBrain changeover service API
+  version: 1.0.0
+paths:
+  /api/v1/changeovers/matrix:
+    get:
+      tags:
+      - Changeover Matrix
+      summary: List Matrix Entries
+      operationId: list_matrix_entries_api_v1_changeovers_matrix_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChangeoverMatrixEntryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Changeover Matrix
+      summary: Create Matrix Entry
+      operationId: create_matrix_entry_api_v1_changeovers_matrix_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverMatrixEntryCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverMatrixEntryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/matrix/by-workstation/{workstation_id}:
+    get:
+      tags:
+      - Changeover Matrix
+      summary: List Matrix Entries By Workstation
+      operationId: list_matrix_entries_by_workstation_api_v1_changeovers_matrix_by_workstation__workstation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverMatrixEntryResponse'
+                title: Response List Matrix Entries By Workstation Api V1 Changeovers
+                  Matrix By Workstation  Workstation Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/matrix/{entry_id}:
+    get:
+      tags:
+      - Changeover Matrix
+      summary: Get Matrix Entry
+      operationId: get_matrix_entry_api_v1_changeovers_matrix__entry_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Entry Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverMatrixEntryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Changeover Matrix
+      summary: Update Matrix Entry
+      operationId: update_matrix_entry_api_v1_changeovers_matrix__entry_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Entry Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverMatrixEntryUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverMatrixEntryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Changeover Matrix
+      summary: Delete Matrix Entry
+      operationId: delete_matrix_entry_api_v1_changeovers_matrix__entry_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: entry_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Entry Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/procedures:
+    get:
+      tags:
+      - Changeover Procedures
+      summary: List Procedures
+      operationId: list_procedures_api_v1_changeovers_procedures_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChangeoverProcedureResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Changeover Procedures
+      summary: Create Procedure
+      operationId: create_procedure_api_v1_changeovers_procedures_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverProcedureCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverProcedureResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/procedures/by-factory/{factory_id}:
+    get:
+      tags:
+      - Changeover Procedures
+      summary: List Procedures By Factory
+      operationId: list_procedures_by_factory_api_v1_changeovers_procedures_by_factory__factory_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: factory_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Factory Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverProcedureResponse'
+                title: Response List Procedures By Factory Api V1 Changeovers Procedures
+                  By Factory  Factory Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/procedures/by-plant/{plant_id}:
+    get:
+      tags:
+      - Changeover Procedures
+      summary: List Procedures By Plant
+      operationId: list_procedures_by_plant_api_v1_changeovers_procedures_by_plant__plant_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: plant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Plant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverProcedureResponse'
+                title: Response List Procedures By Plant Api V1 Changeovers Procedures
+                  By Plant  Plant Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/procedures/{procedure_id}:
+    get:
+      tags:
+      - Changeover Procedures
+      summary: Get Procedure
+      operationId: get_procedure_api_v1_changeovers_procedures__procedure_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: procedure_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Procedure Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverProcedureResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Changeover Procedures
+      summary: Update Procedure
+      operationId: update_procedure_api_v1_changeovers_procedures__procedure_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: procedure_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Procedure Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverProcedureUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverProcedureResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Changeover Procedures
+      summary: Delete Procedure
+      operationId: delete_procedure_api_v1_changeovers_procedures__procedure_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: procedure_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Procedure Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/procedures/{procedure_id}/tasks/{task_id}:
+    patch:
+      tags:
+      - Changeover Procedures
+      summary: Update Procedure Task
+      operationId: update_procedure_task_api_v1_changeovers_procedures__procedure_id__tasks__task_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: procedure_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Procedure Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverTaskUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverProcedureResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/procedures/{procedure_id}/tasks/{task_id}/complete:
+    patch:
+      tags:
+      - Changeover Procedures
+      summary: Set Procedure Task Complete
+      operationId: set_procedure_task_complete_api_v1_changeovers_procedures__procedure_id__tasks__task_id__complete_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: procedure_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Procedure Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      - name: value
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Value
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverProcedureResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/windows:
+    get:
+      tags:
+      - Changeover Windows
+      summary: List Windows
+      operationId: list_windows_api_v1_changeovers_windows_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChangeoverWindowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Changeover Windows
+      summary: Create Window
+      operationId: create_window_api_v1_changeovers_windows_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverWindowCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverWindowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/windows/by-workstation/{workstation_id}:
+    get:
+      tags:
+      - Changeover Windows
+      summary: List Windows By Workstation
+      operationId: list_windows_by_workstation_api_v1_changeovers_windows_by_workstation__workstation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverWindowResponse'
+                title: Response List Windows By Workstation Api V1 Changeovers Windows
+                  By Workstation  Workstation Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/windows/{window_id}/calendar-booking:
+    post:
+      tags:
+      - Changeover Windows
+      summary: Add Window To Calendar
+      operationId: add_window_to_calendar_api_v1_changeovers_windows__window_id__calendar_booking_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: window_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Window Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverWindowCalendarBookingCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarBookingResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/windows/{window_id}:
+    get:
+      tags:
+      - Changeover Windows
+      summary: Get Window
+      operationId: get_window_api_v1_changeovers_windows__window_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: window_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Window Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverWindowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Changeover Windows
+      summary: Update Window
+      operationId: update_window_api_v1_changeovers_windows__window_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: window_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Window Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverWindowUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverWindowResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Changeover Windows
+      summary: Delete Window
+      operationId: delete_window_api_v1_changeovers_windows__window_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: window_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Window Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/kpis:
+    get:
+      tags:
+      - Changeover KPIs
+      summary: List Kpis
+      operationId: list_kpis_api_v1_changeovers_kpis_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChangeoverKPIResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Changeover KPIs
+      summary: Create Kpi
+      operationId: create_kpi_api_v1_changeovers_kpis_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverKPICreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverKPIResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/kpis/by-workstation/{workstation_id}:
+    get:
+      tags:
+      - Changeover KPIs
+      summary: List Kpis By Workstation
+      operationId: list_kpis_by_workstation_api_v1_changeovers_kpis_by_workstation__workstation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverKPIResponse'
+                title: Response List Kpis By Workstation Api V1 Changeovers Kpis By
+                  Workstation  Workstation Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/kpis/{kpi_id}:
+    get:
+      tags:
+      - Changeover KPIs
+      summary: Get Kpi
+      operationId: get_kpi_api_v1_changeovers_kpis__kpi_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: kpi_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Kpi Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverKPIResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Changeover KPIs
+      summary: Update Kpi
+      operationId: update_kpi_api_v1_changeovers_kpis__kpi_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: kpi_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Kpi Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverKPIUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverKPIResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Changeover KPIs
+      summary: Delete Kpi
+      operationId: delete_kpi_api_v1_changeovers_kpis__kpi_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: kpi_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Kpi Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers:
+    get:
+      tags:
+      - Changeover Events
+      summary: List Events
+      operationId: list_events_api_v1_changeovers_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Changeover Events
+      summary: Create Event
+      operationId: create_event_api_v1_changeovers_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverEventCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/events:
+    get:
+      tags:
+      - Changeover Events
+      summary: List Events
+      operationId: list_events_api_v1_changeovers_events_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Changeover Events
+      summary: Create Event
+      operationId: create_event_api_v1_changeovers_events_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverEventCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/by-workstation/{workstation_id}:
+    get:
+      tags:
+      - Changeover Events
+      summary: List Events By Workstation
+      operationId: list_events_by_workstation_api_v1_changeovers_by_workstation__workstation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverEventResponse'
+                title: Response List Events By Workstation Api V1 Changeovers By Workstation  Workstation
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/events/by-workstation/{workstation_id}:
+    get:
+      tags:
+      - Changeover Events
+      summary: List Events By Workstation
+      operationId: list_events_by_workstation_api_v1_changeovers_events_by_workstation__workstation_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: workstation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Workstation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverEventResponse'
+                title: Response List Events By Workstation Api V1 Changeovers Events
+                  By Workstation  Workstation Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/by-status/{status_value}:
+    get:
+      tags:
+      - Changeover Events
+      summary: List Events By Status
+      operationId: list_events_by_status_api_v1_changeovers_by_status__status_value__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: status_value
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Status Value
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverEventResponse'
+                title: Response List Events By Status Api V1 Changeovers By Status  Status
+                  Value  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/events/by-status/{status_value}:
+    get:
+      tags:
+      - Changeover Events
+      summary: List Events By Status
+      operationId: list_events_by_status_api_v1_changeovers_events_by_status__status_value__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: status_value
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Status Value
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeoverEventResponse'
+                title: Response List Events By Status Api V1 Changeovers Events By
+                  Status  Status Value  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/{event_id}:
+    get:
+      tags:
+      - Changeover Events
+      summary: Get Event
+      operationId: get_event_api_v1_changeovers__event_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Changeover Events
+      summary: Update Event
+      operationId: update_event_api_v1_changeovers__event_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverEventUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Changeover Events
+      summary: Delete Event
+      operationId: delete_event_api_v1_changeovers__event_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/events/{event_id}:
+    get:
+      tags:
+      - Changeover Events
+      summary: Get Event
+      operationId: get_event_api_v1_changeovers_events__event_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Changeover Events
+      summary: Update Event
+      operationId: update_event_api_v1_changeovers_events__event_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverEventUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Changeover Events
+      summary: Delete Event
+      operationId: delete_event_api_v1_changeovers_events__event_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/{event_id}/tasks:
+    post:
+      tags:
+      - Changeover Events
+      summary: Add Event Task
+      operationId: add_event_task_api_v1_changeovers__event_id__tasks_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverTaskCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/events/{event_id}/tasks:
+    post:
+      tags:
+      - Changeover Events
+      summary: Add Event Task
+      operationId: add_event_task_api_v1_changeovers_events__event_id__tasks_post
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverTaskCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/{event_id}/tasks/{task_id}:
+    patch:
+      tags:
+      - Changeover Events
+      summary: Update Event Task
+      operationId: update_event_task_api_v1_changeovers__event_id__tasks__task_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverTaskUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/changeovers/events/{event_id}/tasks/{task_id}:
+    patch:
+      tags:
+      - Changeover Events
+      summary: Update Event Task
+      operationId: update_event_task_api_v1_changeovers_events__event_id__tasks__task_id__patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeoverTaskUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeoverEventResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /health:
+    get:
+      tags:
+      - Health
+      summary: Health Check
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    CalendarBookingResponse:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        calendar_id:
+          type: string
+          minLength: 1
+          title: Calendar Id
+        title:
+          type: string
+          maxLength: 160
+          minLength: 1
+          title: Title
+        start_at:
+          type: string
+          format: date-time
+          title: Start At
+        end_at:
+          type: string
+          format: date-time
+          title: End At
+        booked_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Booked By
+        attendee_ids:
+          items:
+            type: string
+          type: array
+          title: Attendee Ids
+        description:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Description
+        status:
+          type: string
+          enum:
+          - booked
+          - cancelled
+          title: Status
+          default: booked
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - calendar_id
+      - title
+      - start_at
+      - end_at
+      title: CalendarBookingResponse
+    ChangeoverEventCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        factory_id:
+          type: string
+          title: Factory Id
+        procedure_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Procedure Id
+          description: Source ChangeoverProcedure template
+        shift_schedule_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shift Schedule Id
+          description: Shift during which the changeover occurs
+        changeover_type:
+          $ref: '#/components/schemas/ChangeoverType'
+        trigger:
+          $ref: '#/components/schemas/ChangeoverTrigger'
+          default: scheduled
+        status:
+          $ref: '#/components/schemas/ChangeoverStatus'
+          default: planned
+        from_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Product Id
+        to_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: To Product Id
+        planned_start:
+          type: string
+          format: date-time
+          title: Planned Start
+        planned_end:
+          type: string
+          format: date-time
+          title: Planned End
+        actual_start:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Actual Start
+        actual_end:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Actual End
+        lead_operator_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Operator Id
+        team_member_ids:
+          items:
+            type: string
+          type: array
+          title: Team Member Ids
+        tasks:
+          items:
+            $ref: '#/components/schemas/ChangeoverTask-Input'
+          type: array
+          title: Tasks
+        downtime_minutes:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Downtime Minutes
+          description: Unplanned stoppage time added during changeover
+        quality_check_passed:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Quality Check Passed
+          description: First-article / first-off quality result after changeover
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 800
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - workstation_id
+      - factory_id
+      - changeover_type
+      - planned_start
+      - planned_end
+      title: ChangeoverEventCreate
+    ChangeoverEventResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        factory_id:
+          type: string
+          title: Factory Id
+        procedure_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Procedure Id
+          description: Source ChangeoverProcedure template
+        shift_schedule_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shift Schedule Id
+          description: Shift during which the changeover occurs
+        changeover_type:
+          $ref: '#/components/schemas/ChangeoverType'
+        trigger:
+          $ref: '#/components/schemas/ChangeoverTrigger'
+          default: scheduled
+        status:
+          $ref: '#/components/schemas/ChangeoverStatus'
+          default: planned
+        from_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Product Id
+        to_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: To Product Id
+        planned_start:
+          type: string
+          format: date-time
+          title: Planned Start
+        planned_end:
+          type: string
+          format: date-time
+          title: Planned End
+        actual_start:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Actual Start
+        actual_end:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Actual End
+        lead_operator_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Operator Id
+        team_member_ids:
+          items:
+            type: string
+          type: array
+          title: Team Member Ids
+        tasks:
+          items:
+            $ref: '#/components/schemas/ChangeoverTask-Output'
+          type: array
+          title: Tasks
+        downtime_minutes:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Downtime Minutes
+          description: Unplanned stoppage time added during changeover
+        quality_check_passed:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Quality Check Passed
+          description: First-article / first-off quality result after changeover
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 800
+          - type: 'null'
+          title: Notes
+        planned_duration_minutes:
+          type: number
+          title: Planned Duration Minutes
+          readOnly: true
+        actual_duration_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Actual Duration Minutes
+          readOnly: true
+        variance_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Variance Minutes
+          readOnly: true
+        completion_pct:
+          type: number
+          title: Completion Pct
+          readOnly: true
+        is_running_late:
+          type: boolean
+          title: Is Running Late
+          readOnly: true
+      type: object
+      required:
+      - workstation_id
+      - factory_id
+      - changeover_type
+      - planned_start
+      - planned_end
+      - planned_duration_minutes
+      - actual_duration_minutes
+      - variance_minutes
+      - completion_pct
+      - is_running_late
+      title: ChangeoverEventResponse
+    ChangeoverEventUpdate:
+      properties:
+        workstation_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workstation Id
+        factory_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Factory Id
+        procedure_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Procedure Id
+        shift_schedule_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Shift Schedule Id
+        changeover_type:
+          anyOf:
+          - $ref: '#/components/schemas/ChangeoverType'
+          - type: 'null'
+        trigger:
+          anyOf:
+          - $ref: '#/components/schemas/ChangeoverTrigger'
+          - type: 'null'
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/ChangeoverStatus'
+          - type: 'null'
+        from_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Product Id
+        to_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: To Product Id
+        planned_start:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Planned Start
+        planned_end:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Planned End
+        actual_start:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Actual Start
+        actual_end:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Actual End
+        lead_operator_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lead Operator Id
+        team_member_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Team Member Ids
+        tasks:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ChangeoverTask-Input'
+            type: array
+          - type: 'null'
+          title: Tasks
+        downtime_minutes:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Downtime Minutes
+        quality_check_passed:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Quality Check Passed
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 800
+          - type: 'null'
+          title: Notes
+      type: object
+      title: ChangeoverEventUpdate
+    ChangeoverKPICreate:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        workstation_id:
+          type: string
+          format: uuid
+          title: Workstation Id
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        total_changeovers:
+          type: integer
+          minimum: 0.0
+          title: Total Changeovers
+          default: 0
+        completed:
+          type: integer
+          minimum: 0.0
+          title: Completed
+          default: 0
+        aborted:
+          type: integer
+          minimum: 0.0
+          title: Aborted
+          default: 0
+        avg_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Actual Minutes
+        avg_planned_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Planned Minutes
+        avg_variance_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Variance Minutes
+        best_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Best Actual Minutes
+        worst_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Worst Actual Minutes
+        on_time_rate_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: On Time Rate Pct
+        total_downtime_minutes:
+          type: number
+          minimum: 0.0
+          title: Total Downtime Minutes
+          default: 0.0
+        generated_at:
+          type: string
+          format: date-time
+          title: Generated At
+      type: object
+      required:
+      - workstation_id
+      - period_start
+      - period_end
+      title: ChangeoverKPICreate
+    ChangeoverKPIResponse:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        workstation_id:
+          type: string
+          format: uuid
+          title: Workstation Id
+        period_start:
+          type: string
+          format: date
+          title: Period Start
+        period_end:
+          type: string
+          format: date
+          title: Period End
+        total_changeovers:
+          type: integer
+          minimum: 0.0
+          title: Total Changeovers
+          default: 0
+        completed:
+          type: integer
+          minimum: 0.0
+          title: Completed
+          default: 0
+        aborted:
+          type: integer
+          minimum: 0.0
+          title: Aborted
+          default: 0
+        avg_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Actual Minutes
+        avg_planned_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Planned Minutes
+        avg_variance_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Variance Minutes
+        best_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Best Actual Minutes
+        worst_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Worst Actual Minutes
+        on_time_rate_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: On Time Rate Pct
+        total_downtime_minutes:
+          type: number
+          minimum: 0.0
+          title: Total Downtime Minutes
+          default: 0.0
+        generated_at:
+          type: string
+          format: date-time
+          title: Generated At
+        oee_impact_hours:
+          type: number
+          title: Oee Impact Hours
+          readOnly: true
+      type: object
+      required:
+      - workstation_id
+      - period_start
+      - period_end
+      - oee_impact_hours
+      title: ChangeoverKPIResponse
+    ChangeoverKPIUpdate:
+      properties:
+        workstation_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Workstation Id
+        period_start:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period Start
+        period_end:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Period End
+        total_changeovers:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Total Changeovers
+        completed:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Completed
+        aborted:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Aborted
+        avg_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Actual Minutes
+        avg_planned_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Planned Minutes
+        avg_variance_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Avg Variance Minutes
+        best_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Best Actual Minutes
+        worst_actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Worst Actual Minutes
+        on_time_rate_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: On Time Rate Pct
+        total_downtime_minutes:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: 'null'
+          title: Total Downtime Minutes
+        generated_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Generated At
+      type: object
+      title: ChangeoverKPIUpdate
+    ChangeoverMatrixEntryCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        from_product_id:
+          type: string
+          title: From Product Id
+        to_product_id:
+          type: string
+          title: To Product Id
+        standard_minutes:
+          type: integer
+          minimum: 1.0
+          title: Standard Minutes
+          description: Target changeover duration (minutes)
+        best_achieved_minutes:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Best Achieved Minutes
+          description: Best actual time ever recorded - used for SMED benchmarking
+        requires_cleaning:
+          type: boolean
+          title: Requires Cleaning
+          default: false
+        requires_tooling:
+          type: boolean
+          title: Requires Tooling
+          default: false
+        min_operators:
+          type: integer
+          minimum: 1.0
+          title: Min Operators
+          default: 1
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 400
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - workstation_id
+      - from_product_id
+      - to_product_id
+      - standard_minutes
+      title: ChangeoverMatrixEntryCreate
+    ChangeoverMatrixEntryResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        from_product_id:
+          type: string
+          title: From Product Id
+        to_product_id:
+          type: string
+          title: To Product Id
+        standard_minutes:
+          type: integer
+          minimum: 1.0
+          title: Standard Minutes
+          description: Target changeover duration (minutes)
+        best_achieved_minutes:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Best Achieved Minutes
+          description: Best actual time ever recorded - used for SMED benchmarking
+        requires_cleaning:
+          type: boolean
+          title: Requires Cleaning
+          default: false
+        requires_tooling:
+          type: boolean
+          title: Requires Tooling
+          default: false
+        min_operators:
+          type: integer
+          minimum: 1.0
+          title: Min Operators
+          default: 1
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 400
+          - type: 'null'
+          title: Notes
+      type: object
+      required:
+      - workstation_id
+      - from_product_id
+      - to_product_id
+      - standard_minutes
+      title: ChangeoverMatrixEntryResponse
+    ChangeoverMatrixEntryUpdate:
+      properties:
+        workstation_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workstation Id
+        from_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Product Id
+        to_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: To Product Id
+        standard_minutes:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Standard Minutes
+        best_achieved_minutes:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Best Achieved Minutes
+        requires_cleaning:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Requires Cleaning
+        requires_tooling:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Requires Tooling
+        min_operators:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Min Operators
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 400
+          - type: 'null'
+          title: Notes
+      type: object
+      title: ChangeoverMatrixEntryUpdate
+    ChangeoverProcedureCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        plant_id:
+          type: string
+          title: Plant Id
+        name:
+          type: string
+          maxLength: 120
+          minLength: 2
+          title: Name
+        changeover_type:
+          $ref: '#/components/schemas/ChangeoverType'
+        from_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Product Id
+          description: None = applies to any source product
+        to_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: To Product Id
+          description: None = applies to any target product
+        applicable_workstation_ids:
+          items:
+            type: string
+          type: array
+          title: Applicable Workstation Ids
+          description: Empty list = applies to all workstations
+        tasks:
+          items:
+            $ref: '#/components/schemas/ChangeoverTask-Input'
+          type: array
+          minItems: 1
+          title: Tasks
+        version:
+          type: string
+          pattern: ^\d+\.\d+$
+          title: Version
+          default: '1.0'
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        active:
+          type: boolean
+          title: Active
+          default: true
+        status:
+          $ref: '#/components/schemas/ChangeoverStatus'
+          default: planned
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - plant_id
+      - name
+      - changeover_type
+      - tasks
+      title: ChangeoverProcedureCreate
+    ChangeoverProcedureResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        plant_id:
+          type: string
+          title: Plant Id
+        name:
+          type: string
+          maxLength: 120
+          minLength: 2
+          title: Name
+        changeover_type:
+          $ref: '#/components/schemas/ChangeoverType'
+        from_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Product Id
+          description: None = applies to any source product
+        to_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: To Product Id
+          description: None = applies to any target product
+        applicable_workstation_ids:
+          items:
+            type: string
+          type: array
+          title: Applicable Workstation Ids
+          description: Empty list = applies to all workstations
+        tasks:
+          items:
+            $ref: '#/components/schemas/ChangeoverTask-Output'
+          type: array
+          minItems: 1
+          title: Tasks
+        version:
+          type: string
+          pattern: ^\d+\.\d+$
+          title: Version
+          default: '1.0'
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        active:
+          type: boolean
+          title: Active
+          default: true
+        status:
+          $ref: '#/components/schemas/ChangeoverStatus'
+          default: planned
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        total_estimated_minutes:
+          type: integer
+          title: Total Estimated Minutes
+          readOnly: true
+        internal_minutes:
+          type: integer
+          title: Internal Minutes
+          readOnly: true
+        external_minutes:
+          type: integer
+          title: External Minutes
+          readOnly: true
+        completed_task_count:
+          type: integer
+          title: Completed Task Count
+          readOnly: true
+        completion_percent:
+          type: number
+          title: Completion Percent
+          readOnly: true
+      type: object
+      required:
+      - plant_id
+      - name
+      - changeover_type
+      - tasks
+      - total_estimated_minutes
+      - internal_minutes
+      - external_minutes
+      - completed_task_count
+      - completion_percent
+      title: ChangeoverProcedureResponse
+    ChangeoverProcedureUpdate:
+      properties:
+        plant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Plant Id
+        name:
+          anyOf:
+          - type: string
+            maxLength: 120
+            minLength: 2
+          - type: 'null'
+          title: Name
+        changeover_type:
+          anyOf:
+          - $ref: '#/components/schemas/ChangeoverType'
+          - type: 'null'
+        from_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: From Product Id
+        to_product_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: To Product Id
+        applicable_workstation_ids:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Applicable Workstation Ids
+        tasks:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ChangeoverTask-Input'
+            type: array
+            minItems: 1
+          - type: 'null'
+          title: Tasks
+        version:
+          anyOf:
+          - type: string
+            pattern: ^\d+\.\d+$
+          - type: 'null'
+          title: Version
+        approved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approved By
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Active
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/ChangeoverStatus'
+          - type: 'null'
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+      type: object
+      title: ChangeoverProcedureUpdate
+    ChangeoverStatus:
+      type: string
+      enum:
+      - planned
+      - in_progress
+      - completed
+      - aborted
+      - overdue
+      title: ChangeoverStatus
+    ChangeoverTask-Input:
+      properties:
+        id:
+          type: string
+          title: Id
+        sequence:
+          type: integer
+          minimum: 1.0
+          title: Sequence
+          description: Execution order (1-based)
+        title:
+          type: string
+          maxLength: 120
+          minLength: 2
+          title: Title
+        description:
+          anyOf:
+          - type: string
+            maxLength: 600
+          - type: 'null'
+          title: Description
+        category:
+          $ref: '#/components/schemas/TaskCategory'
+          default: internal
+        estimated_minutes:
+          type: integer
+          minimum: 1.0
+          title: Estimated Minutes
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+          description: Employee ID responsible for this task
+        tools_required:
+          items:
+            type: string
+          type: array
+          title: Tools Required
+          examples:
+          - - Torque wrench 40 Nm
+            - Hex key set
+        is_complete:
+          type: boolean
+          title: Is Complete
+          default: false
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+          default: pending
+        started_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Started At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        blocked_reason:
+          anyOf:
+          - type: string
+            maxLength: 300
+          - type: 'null'
+          title: Blocked Reason
+      type: object
+      required:
+      - sequence
+      - title
+      - estimated_minutes
+      title: ChangeoverTask
+      description: One atomic step inside a changeover procedure or a live changeover.
+    ChangeoverTask-Output:
+      properties:
+        id:
+          type: string
+          title: Id
+        sequence:
+          type: integer
+          minimum: 1.0
+          title: Sequence
+          description: Execution order (1-based)
+        title:
+          type: string
+          maxLength: 120
+          minLength: 2
+          title: Title
+        description:
+          anyOf:
+          - type: string
+            maxLength: 600
+          - type: 'null'
+          title: Description
+        category:
+          $ref: '#/components/schemas/TaskCategory'
+          default: internal
+        estimated_minutes:
+          type: integer
+          minimum: 1.0
+          title: Estimated Minutes
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+          description: Employee ID responsible for this task
+        tools_required:
+          items:
+            type: string
+          type: array
+          title: Tools Required
+          examples:
+          - - Torque wrench 40 Nm
+            - Hex key set
+        is_complete:
+          type: boolean
+          title: Is Complete
+          default: false
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+          default: pending
+        started_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Started At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        blocked_reason:
+          anyOf:
+          - type: string
+            maxLength: 300
+          - type: 'null'
+          title: Blocked Reason
+        actual_minutes:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Actual Minutes
+          readOnly: true
+        is_overdue:
+          type: boolean
+          title: Is Overdue
+          readOnly: true
+      type: object
+      required:
+      - sequence
+      - title
+      - estimated_minutes
+      - actual_minutes
+      - is_overdue
+      title: ChangeoverTask
+      description: One atomic step inside a changeover procedure or a live changeover.
+    ChangeoverTaskCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        sequence:
+          type: integer
+          minimum: 1.0
+          title: Sequence
+          description: Execution order (1-based)
+        title:
+          type: string
+          maxLength: 120
+          minLength: 2
+          title: Title
+        description:
+          anyOf:
+          - type: string
+            maxLength: 600
+          - type: 'null'
+          title: Description
+        category:
+          $ref: '#/components/schemas/TaskCategory'
+          default: internal
+        estimated_minutes:
+          type: integer
+          minimum: 1.0
+          title: Estimated Minutes
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+          description: Employee ID responsible for this task
+        tools_required:
+          items:
+            type: string
+          type: array
+          title: Tools Required
+          examples:
+          - - Torque wrench 40 Nm
+            - Hex key set
+        is_complete:
+          type: boolean
+          title: Is Complete
+          default: false
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+          default: pending
+        started_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Started At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        blocked_reason:
+          anyOf:
+          - type: string
+            maxLength: 300
+          - type: 'null'
+          title: Blocked Reason
+      type: object
+      required:
+      - sequence
+      - title
+      - estimated_minutes
+      title: ChangeoverTaskCreate
+    ChangeoverTaskUpdate:
+      properties:
+        sequence:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Sequence
+        title:
+          anyOf:
+          - type: string
+            maxLength: 120
+            minLength: 2
+          - type: 'null'
+          title: Title
+        description:
+          anyOf:
+          - type: string
+            maxLength: 600
+          - type: 'null'
+          title: Description
+        category:
+          anyOf:
+          - $ref: '#/components/schemas/TaskCategory'
+          - type: 'null'
+        estimated_minutes:
+          anyOf:
+          - type: integer
+            minimum: 1.0
+          - type: 'null'
+          title: Estimated Minutes
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+        tools_required:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tools Required
+        is_complete:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Complete
+        status:
+          anyOf:
+          - $ref: '#/components/schemas/TaskStatus'
+          - type: 'null'
+        started_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Started At
+        completed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Completed At
+        blocked_reason:
+          anyOf:
+          - type: string
+            maxLength: 300
+          - type: 'null'
+          title: Blocked Reason
+      type: object
+      title: ChangeoverTaskUpdate
+    ChangeoverTrigger:
+      type: string
+      enum:
+      - scheduled
+      - unplanned
+      - quality_reject
+      - shift_handover
+      - customer_order
+      title: ChangeoverTrigger
+    ChangeoverType:
+      type: string
+      enum:
+      - product_switch
+      - tooling_change
+      - cleaning
+      - calibration
+      - material_change
+      - format_change
+      - full_turnaround
+      title: ChangeoverType
+      description: What kind of changeover is this?
+    ChangeoverWindowCalendarBookingCreate:
+      properties:
+        calendar_id:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Calendar Id
+        title:
+          anyOf:
+          - type: string
+            maxLength: 160
+            minLength: 1
+          - type: 'null'
+          title: Title
+        booked_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Booked By
+        attendee_ids:
+          items:
+            type: string
+          type: array
+          title: Attendee Ids
+        description:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Description
+        include_buffer:
+          type: boolean
+          title: Include Buffer
+          default: true
+      type: object
+      title: ChangeoverWindowCalendarBookingCreate
+    ChangeoverWindowCreate:
+      properties:
+        id:
+          type: string
+          title: Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        factory_id:
+          type: string
+          title: Factory Id
+        event_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Event Id
+          description: Linked ChangeoverEvent once created
+        calendar_booking_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Calendar Booking Id
+          description: Linked calendar booking once added to calendar
+        start_dt:
+          type: string
+          format: date-time
+          title: Start Dt
+        end_dt:
+          type: string
+          format: date-time
+          title: End Dt
+        buffer_minutes:
+          type: integer
+          maximum: 120.0
+          minimum: 0.0
+          title: Buffer Minutes
+          description: Safety buffer after planned end
+          default: 0
+        locked:
+          type: boolean
+          title: Locked
+          description: Locked windows cannot be moved by auto-scheduler
+          default: false
+      type: object
+      required:
+      - workstation_id
+      - factory_id
+      - start_dt
+      - end_dt
+      title: ChangeoverWindowCreate
+    ChangeoverWindowResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        workstation_id:
+          type: string
+          title: Workstation Id
+        factory_id:
+          type: string
+          title: Factory Id
+        event_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Event Id
+          description: Linked ChangeoverEvent once created
+        calendar_booking_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Calendar Booking Id
+          description: Linked calendar booking once added to calendar
+        start_dt:
+          type: string
+          format: date-time
+          title: Start Dt
+        end_dt:
+          type: string
+          format: date-time
+          title: End Dt
+        buffer_minutes:
+          type: integer
+          maximum: 120.0
+          minimum: 0.0
+          title: Buffer Minutes
+          description: Safety buffer after planned end
+          default: 0
+        locked:
+          type: boolean
+          title: Locked
+          description: Locked windows cannot be moved by auto-scheduler
+          default: false
+        total_blocked_minutes:
+          type: number
+          title: Total Blocked Minutes
+          readOnly: true
+        earliest_production_resume:
+          type: string
+          format: date-time
+          title: Earliest Production Resume
+          readOnly: true
+      type: object
+      required:
+      - workstation_id
+      - factory_id
+      - start_dt
+      - end_dt
+      - total_blocked_minutes
+      - earliest_production_resume
+      title: ChangeoverWindowResponse
+    ChangeoverWindowUpdate:
+      properties:
+        workstation_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Workstation Id
+        factory_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Factory Id
+        event_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Event Id
+        calendar_booking_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Calendar Booking Id
+        start_dt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Start Dt
+        end_dt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Dt
+        buffer_minutes:
+          anyOf:
+          - type: integer
+            maximum: 120.0
+            minimum: 0.0
+          - type: 'null'
+          title: Buffer Minutes
+        locked:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Locked
+      type: object
+      title: ChangeoverWindowUpdate
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PaginatedChangeoverEventResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ChangeoverEventResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedChangeoverEventResponse
+    PaginatedChangeoverKPIResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ChangeoverKPIResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedChangeoverKPIResponse
+    PaginatedChangeoverMatrixEntryResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ChangeoverMatrixEntryResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedChangeoverMatrixEntryResponse
+    PaginatedChangeoverProcedureResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ChangeoverProcedureResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedChangeoverProcedureResponse
+    PaginatedChangeoverWindowResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+        results:
+          items:
+            $ref: '#/components/schemas/ChangeoverWindowResponse'
+          type: array
+          title: Results
+      type: object
+      required:
+      - total
+      - page
+      - page_size
+      - results
+      title: PaginatedChangeoverWindowResponse
+    TaskCategory:
+      type: string
+      enum:
+      - internal
+      - external
+      - parallel
+      title: TaskCategory
+      description: SMED-style internal/external task classification.
+    TaskStatus:
+      type: string
+      enum:
+      - pending
+      - in_progress
+      - done
+      - skipped
+      - blocked
+      title: TaskStatus
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer

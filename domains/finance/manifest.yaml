@@ -1,0 +1,32 @@
+name: finance
+version: "0.1.0"
+description: "Finance bounded context — loans, fraud detection, risk assessment, payments"
+bounded_context:
+  name: finance
+  aggregates:
+    - Loan
+    - Transaction
+    - RiskProfile
+    - FraudCase
+    - Payment
+  entities:
+    - Loan
+    - Transaction
+    - RiskProfile
+    - FraudCase
+    - Payment
+    - Account
+    - CreditScore
+  value_objects:
+    - LoanStatus
+    - RiskLevel
+    - FraudScore
+    - PaymentMethod
+  events:
+    - LoanApplied
+    - LoanApproved
+    - LoanDenied
+    - TransactionFlagged
+    - FraudDetected
+    - PaymentProcessed
+    - RiskAssessed

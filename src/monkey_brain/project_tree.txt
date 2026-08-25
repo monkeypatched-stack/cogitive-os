@@ -1,0 +1,144 @@
+.
+├── __init__.py
+├── dlm
+│   ├── __init__.py
+│   ├── dlm.py
+│   ├── gc.py
+│   ├── lifecycle.py
+│   ├── orphans.py
+│   ├── storage.py
+│   └── ttl.py
+├── drivers
+│   ├── __init__.py
+│   ├── adapter.py
+│   ├── capability.py
+│   ├── operator
+│   │   └── base.py
+│   ├── peripheral.py
+│   ├── registry.py
+│   └── resolve_entity_capability.py
+├── kernel
+│   ├── __init__.py
+│   ├── capability_interface.py
+│   ├── capability.py
+│   ├── classifier
+│   │   ├── __init__.py
+│   │   ├── embed_classifier.py
+│   │   └── intent_examples.py
+│   ├── dag_registry.py
+│   ├── dag.py
+│   ├── execution_state.py
+│   ├── goal_bootstrap.py
+│   ├── goal_planner.py
+│   ├── goals
+│   │   ├── __init__.py
+│   │   ├── goal_classifier.py
+│   │   ├── goal_registry.py
+│   │   └── goal.py
+│   ├── intent_bootstrap.py
+│   ├── intents
+│   │   ├── __init__.py
+│   │   ├── event_adapter.py
+│   │   ├── graph_adapter.py
+│   │   ├── helpers.py
+│   │   ├── intent_registry.py
+│   │   ├── intent_router.py
+│   │   ├── nlp_pipeline.py
+│   │   ├── predicates
+│   │   │   ├── approval_create.py
+│   │   │   ├── approval_decision.py
+│   │   │   ├── approval_hold.py
+│   │   │   ├── approval_query.py
+│   │   │   ├── batch_close.py
+│   │   │   ├── batch_creation.py
+│   │   │   ├── batch_delete.py
+│   │   │   ├── batch_hold.py
+│   │   │   ├── batch_record.py
+│   │   │   ├── batch_update.py
+│   │   │   ├── change_control.py
+│   │   │   ├── compliance_audit.py
+│   │   │   ├── decision_intelligence.py
+│   │   │   ├── drug_research.py
+│   │   │   ├── fuzzy_match.py
+│   │   │   ├── production_kpi.py
+│   │   │   ├── sop_create.py
+│   │   │   ├── sop_query.py
+│   │   │   ├── sop_update.py
+│   │   │   ├── warehouse_shipping.py
+│   │   │   ├── work_order_create.py
+│   │   │   ├── work_order_delete.py
+│   │   │   ├── work_order_hold.py
+│   │   │   ├── work_order_query.py
+│   │   │   ├── work_order_status.py
+│   │   │   ├── work_order_update.py
+│   │   │   └── worker.py
+│   │   ├── telemetry_adapter.py
+│   │   └── utils.py
+│   ├── learning.py
+│   ├── logical_plan.py
+│   ├── loss.py
+│   ├── nlp
+│   │   ├── __init__.py
+│   │   ├── compat.py
+│   │   ├── models.py
+│   │   ├── question_analyzer.py
+│   │   └── spacy_parser.py
+│   ├── observer.py
+│   ├── operators.py
+│   ├── parser
+│   │   ├── __init__.py
+│   │   ├── ast.py
+│   │   ├── extractors
+│   │   │   ├── __init__.py
+│   │   │   ├── entities.py
+│   │   │   ├── filters.py
+│   │   │   ├── projections.py
+│   │   │   └── verbs.py
+│   │   ├── parser.py
+│   │   └── rules.py
+│   ├── pipeline.py
+│   ├── planner.py
+│   ├── policy.py
+│   └── rl
+│       ├── __init__.py
+│       ├── learner.py
+│       ├── policy.py
+│       ├── reward.py
+│       └── transition.py
+├── lemon
+│   ├── __init__.py
+│   ├── alerting.py
+│   ├── health.py
+│   ├── lemon.py
+│   ├── logging.py
+│   ├── metrics.py
+│   └── tracing.py
+├── models.py
+├── persistence
+│   ├── __init__.py
+│   ├── adapters.py
+│   ├── events.py
+│   ├── manager.py
+│   ├── mongodb_adapter.py
+│   ├── redis_adapter.py
+│   └── reducer.py
+├── project_tree.txt
+└── runtime
+    ├── __init__.py
+    ├── context.py
+    ├── depedencies.py
+    ├── executor.py
+    ├── main.py
+    ├── memory.py
+    ├── result.py
+    ├── routers.py
+    ├── routes
+    │   ├── run.py
+    │   ├── simulate.py
+    │   └── talk.py
+    ├── runtime.py
+    ├── scheduler.py
+    ├── stream.py
+    └── thread_pool.py
+
+17 directories, 125 files

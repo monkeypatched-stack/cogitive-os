@@ -1,0 +1,32 @@
+name: supply_chain
+version: "0.1.0"
+description: "Supply chain bounded context — procurement, vendor management, distribution, logistics"
+bounded_context:
+  name: supply_chain
+  aggregates:
+    - PurchaseOrder
+    - Vendor
+    - Shipment
+    - Warehouse
+    - Route
+  entities:
+    - PurchaseOrder
+    - Vendor
+    - Shipment
+    - Warehouse
+    - Route
+    - Inventory
+    - Container
+  value_objects:
+    - OrderStatus
+    - VendorRating
+    - ShippingMethod
+    - WarehouseZone
+  events:
+    - PurchaseOrderCreated
+    - PurchaseOrderApproved
+    - VendorOnboarded
+    - ShipmentDispatched
+    - ShipmentReceived
+    - InventoryReplenished
+    - RouteOptimized

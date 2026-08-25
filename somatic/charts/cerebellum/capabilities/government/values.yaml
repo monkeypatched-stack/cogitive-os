@@ -1,0 +1,133 @@
+capability:
+  name: government
+  id: cap-gov-001
+  platform: Government
+  description: Government integrations (Permit Processing, Citizen Services, Case Management)
+  version: 1.0.0
+  status: active
+  authored_by: MonkeyBrain
+  approved_by: MonkeyBrain
+  effective_date: '2026-07-10'
+  review_date: '2027-01-10'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - government
+  - permits
+  - citizen_services
+  - cases
+  references:
+  - src/cerebellum/capabilities/government.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/government
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: process_permit
+  method: CREATE
+  path: /permits
+  description: Process a permit application
+  required_params:
+  - applicant_id
+  - permit_type
+  - location
+  optional_params:
+  - documents
+  - notes
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_permits
+  method: READ
+  path: /permits
+  description: List permits
+  required_params: []
+  optional_params:
+  - status
+  - type
+  - applicant_id
+  paginated: true
+  pagination_cursor_field: cursor
+- name: handle_citizen_request
+  method: CREATE
+  path: /citizen/requests
+  description: Handle citizen service request
+  required_params:
+  - citizen_id
+  - request_type
+  - description
+  optional_params:
+  - department
+  paginated: false
+  pagination_cursor_field: ''
+- name: manage_case
+  method: UPDATE
+  path: /cases/{case_id}
+  description: Manage case
+  required_params:
+  - case_id
+  - action
+  optional_params:
+  - notes
+  - assignee
+  paginated: false
+  pagination_cursor_field: ''
+- name: list_cases
+  method: READ
+  path: /cases
+  description: List cases
+  required_params: []
+  optional_params:
+  - status
+  - priority
+  - agency
+  paginated: true
+  pagination_cursor_field: cursor
+rate_limit:
+  requests_per_hour: 1000
+  requests_per_minute: null
+  burst_capacity: null
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  mock_responses: {}
+  integration_tests:
+  - test_government_connect
+  - test_government_execute
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

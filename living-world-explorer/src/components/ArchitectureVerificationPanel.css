@@ -1,0 +1,52 @@
+.lwe-av-panel {
+  /* This has overflow:hidden, which (per spec) gives a flex item an
+   * automatic minimum size of 0 — without flex:none, a parent flex
+   * column under vertical pressure shrinks this to near-nothing instead
+   * of overflowing/scrolling. Same fix as CommunicationPanel.css's
+   * .lwe-cw-raw, for the same reason; this component is reused inside
+   * other flex-column workspace pages too. */
+  flex: none;
+  border: 1px solid #E8EAF0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+.lwe-av-panel summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  background: #F8FAFC;
+}
+.lwe-av-panel summary::-webkit-details-marker { display: none; }
+.lwe-av-panel summary::before { content: '▸'; font-size: 10px; color: #94A3B8; transition: transform 0.15s ease; }
+.lwe-av-panel[open] summary::before { transform: rotate(90deg); }
+.lwe-av-panel[open] summary { border-bottom: 1px solid #E8EAF0; }
+
+.lwe-av-disclaimer {
+  padding: 8px 14px;
+  font-size: 11px;
+  color: #94A3B8;
+  font-style: italic;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.lwe-av-table-wrap { overflow-x: auto; }
+.lwe-av-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.lwe-av-table th {
+  text-align: left; padding: 7px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: #94A3B8; border-bottom: 1px solid #E8EAF0; white-space: nowrap;
+}
+.lwe-av-table td { padding: 7px 10px; border-bottom: 1px solid #F8FAFC; color: #334155; vertical-align: top; }
+.lwe-av-component { font-weight: 600; color: #1E293B; max-width: 220px; }
+.lwe-av-note { font-size: 10.5px; color: #94A3B8; display: block; margin-top: 2px; }
+.lwe-av-icon { font-size: 13px; }
+.lwe-av-icon.ok { color: #047857; }
+.lwe-av-icon.warn { color: #B45309; }
+.lwe-av-icon.bad { color: #B91C1C; }
+.lwe-av-runtime-path { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10px; color: #64748B; max-width: 320px; }

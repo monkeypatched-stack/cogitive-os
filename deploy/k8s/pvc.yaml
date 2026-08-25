@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: agentos-data
+  namespace: monkeybrain
+  labels:
+    app: agentos
+    component: cognitive-runtime
+spec:
+  # ReadWriteOnce is correct, not a shortcut: MB_WORLD_TENSOR_PATH
+  # (kernel/compile/world_tensor.py) is a process-global, load-once/
+  # save-on-write local JSON file with no cross-writer coordination —
+  # two pods mounting it concurrently (even under an RWX-capable storage
+  # class) would silently last-write-wins clobber each other's learned
+  # world state. Safe only because this deployment is (and, until that
+  # file is migrated to a shared store, must stay) replicas: 1 — see the
+  # comment on deployment.yaml's `replicas` field.
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi

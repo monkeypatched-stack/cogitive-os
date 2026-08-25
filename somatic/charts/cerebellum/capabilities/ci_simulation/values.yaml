@@ -1,0 +1,77 @@
+capability:
+  name: ci_simulation
+  id: cap-ci-sim-001
+  platform: Pipeline/CI
+  description: Runs simulation through cortex world model via OpenClaw/n8n
+  version: 1.0.0
+  status: active
+  authored_by: Prashun Javeri
+  approved_by: Prashun Javeri
+  effective_date: '2026-06-28'
+  review_date: '2026-12-28'
+  module_id: cerebellum
+  module_name: Cerebellum
+  plant_id: ''
+  line_id: ''
+  stage_id: ''
+  tags:
+  - pipeline
+  - ci
+  - simulation
+  references:
+  - src/cerebellum/capabilities/pipeline/pipeline.py
+  document_ids: []
+  notes: ''
+  remarks: ''
+auth:
+  type: none
+  header_name: ''
+  format_template: ''
+  scopes: []
+  refresh_endpoint: ''
+  ttl_seconds: null
+endpoint:
+  base_url: http://localhost:8000/ci_simulation
+  protocol: http
+  version: 1.0.0
+  tls_verify: false
+  timeout_seconds: 30
+operations:
+- name: simulate
+  method: POST
+  path: /simulate
+  description: Run simulation
+  required_params:
+  - prompt
+  optional_params:
+  - context
+  paginated: false
+  pagination_cursor_field: ''
+rate_limit:
+  requests_per_hour: 1000
+  strategy: fixed_window
+  backoff_multiplier: 2.0
+  max_retries: 3
+  retry_on_status:
+  - 500
+  - 502
+  - 503
+error_handling:
+  transient_statuses:
+  - 500
+  - 502
+  - 503
+  - 504
+  permanent_statuses:
+  - 400
+  - 401
+  - 403
+  - 404
+  retry_delay_ms: 1000
+  circuit_breaker_threshold: 5
+  circuit_breaker_window_seconds: 60
+tests:
+  test_scenarios:
+  - happy_path
+  - timeout
+  - error

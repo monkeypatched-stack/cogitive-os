@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: neo4j API
+  description: Neo4j graph database for entity relationships
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/neo4j
+  description: Capability endpoint
+paths:
+  /query:
+    read:
+      summary: Execute a Cypher query
+      operationId: neo4j_query
+      parameters:
+      - name: cypher
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: params
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /node:
+    create:
+      summary: Create a node
+      operationId: neo4j_create_node
+      parameters:
+      - name: labels
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: properties
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /relationship:
+    create:
+      summary: Create a relationship
+      operationId: neo4j_create_relationship
+      parameters:
+      - name: start_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: end_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: properties
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /node/{id}:
+    delete:
+      summary: Delete a node
+      operationId: neo4j_delete_node
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

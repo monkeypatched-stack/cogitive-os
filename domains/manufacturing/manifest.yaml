@@ -1,0 +1,36 @@
+name: manufacturing
+version: "0.1.0"
+description: "Pharmaceutical manufacturing bounded context — work orders, batches, SOPs, change controls, calibration, maintenance"
+bounded_context:
+  name: manufacturing
+  aggregates:
+    - WorkOrder
+    - Batch
+    - SOP
+    - ChangeControl
+    - CalibrationRecord
+    - MaintenanceEvent
+  entities:
+    - WorkOrder
+    - Batch
+    - SOP
+    - ChangeControl
+    - CalibrationRecord
+    - MaintenanceEvent
+    - Equipment
+    - Machine
+    - Worker
+  value_objects:
+    - WorkOrderStatus
+    - BatchStatus
+    - Priority
+    - CalibrationResult
+  events:
+    - WorkOrderCreated
+    - WorkOrderCompleted
+    - BatchReleased
+    - BatchOnHold
+    - SOPApproved
+    - ChangeControlSubmitted
+    - CalibrationPerformed
+    - MaintenanceCompleted

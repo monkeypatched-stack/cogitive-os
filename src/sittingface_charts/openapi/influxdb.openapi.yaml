@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: influxdb API
+  description: InfluxDB time-series database for events and metrics
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/influxdb
+  description: Capability endpoint
+paths:
+  /write_lp:
+    create:
+      summary: Write line protocol data
+      operationId: influxdb_write_lp
+      parameters:
+      - name: lines
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /query_sql:
+    read:
+      summary: Query with SQL
+      operationId: influxdb_query_sql
+      parameters:
+      - name: sql
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /query:
+    read:
+      summary: Query with InfluxQL
+      operationId: influxdb_query_influxql
+      parameters:
+      - name: query
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+components:
+  securitySchemes: {}

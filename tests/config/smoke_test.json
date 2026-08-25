@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "description": "20-question smoke test based on seeded data.",
+  "questions": [
+    {"id": "Q01", "question": "How many machines are in the system?", "expected_intent": "count", "expect_any": ["33"]},
+    {"id": "Q02", "question": "What lines are in the Ahmedabad plant?", "expected_intent": "plant_topology", "expect_any": ["Tablet Line A", "Capsule Line B"]},
+    {"id": "Q03", "question": "Who is the line manager for Tablet Line A?", "expected_intent": "line", "expect_any": ["Rohit Verma", "line manager"]},
+    {"id": "Q04", "question": "How many stages does Tablet Line A have?", "expected_intent": "line_stage", "expect_any": ["stage", "Dispensing", "Granulation"]},
+    {"id": "Q05", "question": "Who operates Blend Preparation Workstation?", "expected_intent": "worker", "expect_any": ["Aarav Mehta"]},
+    {"id": "Q06", "question": "Who does Aarav Mehta report to?", "expected_intent": "worker", "expect_any": ["Rahul Deshmukh"]},
+    {"id": "Q07", "question": "What is Aarav Mehta's role?", "expected_intent": "worker", "expect_any": ["Production Worker", "worker"]},
+    {"id": "Q08", "question": "Show details for the Rapid Mixer Granulator.", "expected_intent": "asset_management", "expect_any": ["Rapid Mixer Granulator", "RMG"]},
+    {"id": "Q09", "question": "What is the status of the Rapid Mixer Granulator?", "expected_intent": "asset_management", "expect_any": ["status", "Active"]},
+    {"id": "Q10", "question": "What SOP is bound to the Granulation stage?", "expected_intent": "sop_compliance", "expect_any": ["Granulation", "SOP", "RMG"]},
+    {"id": "Q11", "question": "What work orders are open?", "expected_intent": "work_order_query", "expect_any": ["PM-", "status", "Todo"]},
+    {"id": "Q12", "question": "What work orders are assigned to the Night Shift?", "expected_intent": "work_order_query", "expect_any": ["work order", "WO", "status", "assigned"]},
+    {"id": "Q13", "question": "What change controls are open?", "expected_intent": "change_control", "expect_any": ["Change Control", "change", "workflow"]},
+    {"id": "Q14", "question": "What is a CAPA?", "expected_intent": "knowledge_base", "expect_any": ["CAPA", "Corrective", "Preventive"]},
+    {"id": "Q15", "question": "What is OEE?", "expected_intent": "knowledge_base", "expect_any": ["OEE", "Equipment", "Effectiveness"]},
+    {"id": "Q16", "question": "What happens if we increase V-Blender speed by 15%?", "expected_intent": "simulation", "expect_any": ["scenario", "analysis", "impact"]},
+    {"id": "Q17", "question": "What is the MTBF for the Rapid Mixer Granulator?", "expected_intent": "maintenance", "expect_any": ["Rapid Mixer", "RMG", "machine"]},
+    {"id": "Q18", "question": "What workstations are in the Granulation stage?", "expected_intent": "stage_workstation", "expect_any": ["RMG", "Station", "workstation"]},
+    {"id": "Q19", "question": "What is the OEE of Tablet Line A?", "expected_intent": "production_kpi", "expect_any": ["efficiency", "OEE", "85"]},
+    {"id": "Q20", "question": "List all production lines.", "expected_intent": "line", "expect_any": ["Tablet Line A", "Capsule Line B"]}
+  ]
+}

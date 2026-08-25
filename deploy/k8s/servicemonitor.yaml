@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: agentos
+  namespace: monkeybrain
+  labels:
+    app: agentos
+spec:
+  selector:
+    matchLabels:
+      app: agentos
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

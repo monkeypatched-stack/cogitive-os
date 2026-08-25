@@ -1,0 +1,98 @@
+agent:
+  name: security-reviewer
+  id: agent-cing-sec-001
+  kind: ReviewerAgent
+  version: "1.0.0"
+  status: active
+  description: "Reviews code for security vulnerabilities, secrets exposure, and auth weaknesses"
+  authored_by: "Prashun Javeri"
+  approved_by: "Prashun Javeri"
+
+identity:
+  role: "Security Reviewer"
+  system_prompt: "You are a security reviewer for MonkeyBrain. You scan for hardcoded secrets, insecure auth patterns, SQL injection, XSS, SSRF, and other OWASP Top 10 vulnerabilities. Verify that all secrets are encrypted at rest, tokens have proper expiry, and CORS is restrictive. Flag any data exposure risks."
+
+model:
+  provider: anthropic
+  name: claude-sonnet-4-6
+  temperature: 0.0
+  max_tokens: 4096
+
+triggers:
+  - type: event
+    source: nats
+    subject: "cingulate.security.review"
+
+workflow:
+  mode: sequential
+  steps:
+    - id: load_security_rules
+      action: load
+      depends_on: []
+      on_failure: abort
+    - id: scan_secrets
+      action: scan
+      depends_on: [load_security_rules]
+      on_failure: abort
+    - id: check_vulnerabilities
+      action: llm_generate
+      depends_on: [scan_secrets]
+      on_failure: abort
+    - id: emit_verdict
+      action: emit_event
+      depends_on: [check_vulnerabilities]
+      on_failure: abort
+
+fallback:
+  strategy: log_and_escalate
+  escalation_topic: "cingulate.security.escalation"
+
+retrieval:
+  pipeline: []
+
+tools:
+  - name: file_reader
+    type: builtin
+    description: "Read source files from the repository"
+    schema: "schemas/tools/file_reader.json"
+  - name: grep
+    type: builtin
+    description: "Search codebase for patterns"
+    schema: "schemas/tools/grep.json"
+  - name: secret_scanner
+    type: builtin
+    description: "Scan for hardcoded secrets and API keys"
+    schema: "schemas/tools/secret_scanner.json"
+
+orchestration:
+  mode: sequential
+  max_iterations: 1
+  parallel_tool_calls: false
+  tool_call_timeout_ms: 5000
+
+guardrails:
+  require_confirmation: []
+
+routing:
+  strategy: rule_based
+  fallback_agent: ""
+  agents: []
+
+aggregation:
+  strategy: concat
+  conflict_resolution: ""
+
+memory:
+  backend: redis
+  ttl_seconds: 7200
+  scope: session
+
+observability:
+  tracing: true
+  log_level: info
+  metrics_endpoint: "http://otel-collector:4317"
+
+retry:
+  max_attempts: 2
+  backoff_strategy: exponential
+  base_delay_ms: 1000
