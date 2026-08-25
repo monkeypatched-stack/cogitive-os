@@ -15,7 +15,22 @@ than reconstructing them from scratch on every call. See
 [Feature Set](#feature-set) below for what that means concretely, and
 [Architecture](docs/architecture.md) for how it's actually built.
 
-FastAPI entry point: `src/monkey_brain/api/main.py`, port 8031.
+CognitiveOS manages intelligence as a governed runtime resource, separating:
+
+Kernel → preserves invariants and governance
+Runtime → performs cognition
+Agents → reason and act
+Capabilities → normalized executable resources
+Providers → integrate external ecosystems
+World Model → represents current reality
+Simulation / Prediction → proposes expected consequences
+Reality → verifies those expectations
+Learning loops → correct specific forms of drift
+Cognitive Mesh → connects independently adapting subsystems
+Knowledge Packs / SittingFace → package and version domain knowledge
+
+That decomposition is explicitly summarized in the final architectural principles.
+
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/29fecbd3-8922-45d7-b80d-eb351a1a9fea" />
 
