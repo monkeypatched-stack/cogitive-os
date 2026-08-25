@@ -29,6 +29,7 @@ Learning loops → correct specific forms of drift
 Cognitive Mesh → connects independently adapting subsystems
 Knowledge Packs / SittingFace → package and version domain knowledge
 
+
 That decomposition is explicitly summarized in the final architectural principles.
 
 
