@@ -7,7 +7,7 @@ name = "monkeybrain-runtime"
 version = "1.0.5"
 description = "MonkeyBrain — Cognitive Operating System for industrial decision intelligence"
 readme = "README.md"
-license = { text = "Proprietary" }
+license = { text = "AGPL-3.0-or-later" }
 requires-python = ">=3.11"
 authors = [{ name = "Prashun Javeri" }]
 keywords = ["ai", "industrial", "decision-intelligence", "cognitive-os", "agent"]

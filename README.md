@@ -36,5 +36,24 @@ curl http://localhost:8031/live
 
 See [`docs/deployment.md`](docs/deployment.md) for prerequisites and
 the Kubernetes/Helm paths.
+
+## License
+
+Copyright (C) 2026 Prashun Javeri. See [`NOTICE`](NOTICE) for the full
+copyright/license notice.
+
+Dual-licensed:
+
+- **Community**: [GNU Affero General Public License v3.0](LICENSE)
+  (AGPLv3). Free to use, modify, and self-host. If you modify this
+  software and make it available to users over a network, AGPLv3
+  requires you to make your complete modified source available to
+  those users under the same license.
+- **Enterprise**: a separate commercial license is available for
+  organizations that need terms AGPLv3 doesn't provide (no
+  network-copyleft obligation, warranty/support commitments, etc.).
+  See [`LICENSE-ENTERPRISE.md`](LICENSE-ENTERPRISE.md) — **that
+  document is currently a template**, not a signable agreement; the
+  commercial terms (pricing, support, warranty) haven't been finalized.
 # cogitive-os
 # cogitive-os
