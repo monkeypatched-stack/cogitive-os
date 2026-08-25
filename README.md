@@ -197,8 +197,6 @@ Compare, Learn, and LearnTransitions in the diagram above are two real
 pieces of code that run every tick — 
 
 **Compare — grading the prediction against what really happened**
-(`kernel/comparator_runtime.py::ComparatorRuntime`, called from the
-Compare stage in `kernel/pipeline/comparison/integration.py`)
 
 Every tick, after an action runs, the Comparator checks the Predict
 stage's forecast against what actually happened — did the plan run in
