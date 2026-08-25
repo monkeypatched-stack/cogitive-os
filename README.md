@@ -201,21 +201,24 @@ flowchart TD
     class SEC security
 ```
 
-### Learning: the Comparator Loss and the Transition Model
+### Learning: How the System Scores Itself and Updates Its Beliefs
 
-Compare, Learn, and LearnTransitions in the diagram above are two real,
-live computations — both traced to actual call sites in the running
-pipeline, not to the separate, disconnected sparse-tensor implementation
-described at the end of this section.
+Compare, Learn, and LearnTransitions in the diagram above are two real
+pieces of code that run every tick — not the separate, disconnected
+sparse-tensor code described at the end of this section, which looks
+similar but never actually runs.
 
-**Compare — the loss hierarchy**
+**Compare — grading the prediction against what really happened**
 (`kernel/comparator_runtime.py::ComparatorRuntime`, called from the
 Compare stage in `kernel/pipeline/comparison/integration.py`)
 
-Every tick, the Comparator diffs the Predict stage's forecast against
-what Execute actually did — as a graph (nodes/edges), execution order,
-world state, operations, events, artifacts, latency, reward, and
-confidence — and folds each diff into one weighted score:
+Every tick, after an action runs, the Comparator checks the Predict
+stage's forecast against what actually happened — did the plan run in
+the shape expected, did the world end up in the state expected, were
+the right events and artifacts produced, was the reward what was
+expected. Each of those checks produces a 0–1 similarity score, and
+they're combined into a few numbers that describe how wrong the
+system was:
 
 ```python
 comparison_score = round(
@@ -240,25 +243,35 @@ policy_loss    = round(reward_diff, 4)
 actor_loss     = round(min(1.0, world_loss * 0.7 + policy_loss * 0.3), 4)
 ```
 
-`latency_diff`, `reward_diff`, and `confidence_diff` are each a
-normalized numeric diff — `|expected − observed| / max(|expected|,
-|observed|, 1.0)`, clamped to `[0, 1]`. `topology_loss` is "did the plan
-execute the shape I predicted"; `epistemic_loss` is "was I right about
-the world"; `world_loss` combines them; `policy_loss` is reward
-miscalibration; `actor_loss` is the actor's overall miss, weighted 70%
-world / 30% policy.
+`latency_diff`, `reward_diff`, and `confidence_diff` are each just
+"how far off was I" as a fraction: `|expected − observed| / max(|expected|,
+|observed|, 1.0)`, capped at 1. In plain terms:
 
-**Learn / LearnTransitions — the exponential moving average**
+- **`topology_loss`** — did the plan execute in the shape predicted?
+- **`epistemic_loss`** — was the system right about what state the
+  world would end up in?
+- **`world_loss`** — the two above, combined.
+- **`policy_loss`** — how wrong was the expected reward?
+- **`actor_loss`** — the actor's overall miss for this tick: mostly
+  how wrong it was about the world (70%), partly how wrong it was
+  about the reward (30%).
+
+All of these are losses — 0 means "predicted it perfectly," 1 means
+"completely wrong."
+
+**Learn / LearnTransitions — updating what the system believes will
+happen next time**
 (`kernel/pipeline/prediction/transitions.py::TransitionModel.
 learn_from_execution`, invoked from `kernel/pipeline/comparison/
 integration.py::_learn_transitions`)
 
-This is the module that backs the Predict stage — `kernel/pipeline/
-prediction/`, not the separate `kernel/predict/` package below. For
-each executed action the Comparator supplied real per-node evidence
-for (an unexecuted or unevidenced step is skipped, never learned as a
-failure), the per-`(goal_key, action_key)` transition probability is
-blended:
+This is the same module that powers the Predict stage —
+`kernel/pipeline/prediction/`, not the separate, unused `kernel/predict/`
+package described below. After the Comparator confirms what really
+happened for an action (steps it has no evidence for are skipped
+entirely — never counted as a failure), the system nudges its belief
+about "if I try this action again for this goal, how likely is it to
+succeed":
 
 ```python
 observed_prob = min(0.95, confidence) if success else max(0.05, 1.0 - confidence)
@@ -268,17 +281,23 @@ if confidence < 0.3:
 blended_p = old_p * (1 - learning_rate) + observed_prob * learning_rate
 ```
 
-Called with `confidence=0.85` and `learning_rate=0.15` — a flat, high
-confidence in the *observation* (gated on the Comparator having a real
-verified record), independent of how accurate the prior prediction
-was. A first-ever observation for a `(goal_key, action_key)` pair
-seeds a new transition instead of blending into one.
+In other words: take the old probability, keep 85% of it, and blend in
+15% of what was just observed. The 0.85/0.15 split (`confidence=0.85`,
+`learning_rate=0.15`) means the system trusts each new, verified
+observation a fair amount but doesn't overreact to any single result —
+beliefs shift gradually as evidence accumulates. This confidence is
+about trusting the *observation itself* (the Comparator confirmed it
+really happened), not about how accurate the earlier prediction was.
+The very first observation for a given goal+action just becomes the
+starting belief, with nothing to blend against yet.
 
-**What `SparseTransitionTensor` is, and why it's not in this loop**
+**What `SparseTransitionTensor` is, and why it doesn't actually run**
 
-`kernel/compile/tensor.py::SparseTransitionTensor` is a separate,
-fully-implemented sparse tensor `W[d, i, j, f]` (domain × from-state ×
-to-state × feature) with its own genuine Bellman/Q-learning update:
+`kernel/compile/tensor.py::SparseTransitionTensor` is a separate, fully
+built piece of code that stores the same kind of information in a
+sparse tensor `W[d, i, j, f]` (domain × from-state × to-state ×
+feature) and updates it with a classic reinforcement-learning formula
+(Bellman/Q-learning):
 
 ```python
 # Q ← Q + α(r + γ·maxₖ Q(j→k) − Q)
@@ -286,15 +305,16 @@ nq = next_best_q if next_best_q is not None else self._max_out_q(j)
 cell.q += self._lr * (reward + self._discount * nq - cell.q)
 ```
 
-(`learning_rate=0.1`, `discount=0.95` by default.) Its only caller is
-`kernel/compile/society_runtime.py::CompileSocietyRuntime`, which is
-never instantiated anywhere in the real boot path (`api/main.py` →
-`PlanetaryRuntime` → `SocietyRuntime` builds the live pipeline above,
-not `CompileSocietyRuntime`) — confirmed by grepping the whole tree
-for a real constructor call and finding none outside the class's own
-definition. It's real, working code sitting in a parallel `kernel/
-compile/` architecture the live runtime doesn't wire in — the loss and
-EMA formulas above are what actually runs.
+(Defaults: `learning_rate=0.1`, `discount=0.95`.) It's genuine,
+working code — but nothing in the live system ever calls it. Its only
+caller is `kernel/compile/society_runtime.py::CompileSocietyRuntime`,
+and that class is never created anywhere along the real startup path
+(`api/main.py` → `PlanetaryRuntime` → `SocietyRuntime` is what actually
+boots and builds the pipeline above). A full search of the codebase
+for anywhere that creates a `CompileSocietyRuntime` turns up nothing
+outside its own definition. So it sits unused in a parallel `kernel/
+compile/` folder — the loss and belief-update formulas earlier in this
+section are the ones actually running.
 
 ## Example: Buying Groceries
 
