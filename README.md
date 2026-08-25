@@ -194,9 +194,7 @@ flowchart TD
 ### Learning: How the System Scores Itself and Updates Its Beliefs
 
 Compare, Learn, and LearnTransitions in the diagram above are two real
-pieces of code that run every tick — not the separate, disconnected
-sparse-tensor code described at the end of this section, which looks
-similar but never actually runs.
+pieces of code that run every tick — 
 
 **Compare — grading the prediction against what really happened**
 (`kernel/comparator_runtime.py::ComparatorRuntime`, called from the
