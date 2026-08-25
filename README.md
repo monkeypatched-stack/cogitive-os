@@ -2,43 +2,22 @@
 
 Most agent systems build agents that can call tools. Monkeypatched
 builds the operating system that lets autonomous actors exist inside a
-changing world.
+changing world — entities that continuously ground their decisions in
+the world's current state, act on it, update both their own local
+state and the shared global state as a result, and learn from what
+actually happens.
 
-CognitiveOS enables autonomous entities to interact with the world in
-a state-aware way — continuously grounding decisions in changing world
-state, updating local and global state through action, and learning
-from the results.
-
-A persistent, per-actor cognitive runtime, not a stateless request/
-response tool-caller: each actor keeps its own beliefs, memory, goals,
-and execution history inside a shared, persistent world, across every
-tick — not reconstructed fresh per call. See
+That's what sets CognitiveOS apart: it's a persistent, per-actor
+cognitive runtime, not a stateless request/response tool-caller. Each
+actor carries its own beliefs, memory, goals, and execution history
+forward inside a shared, persistent world, across every tick, rather
+than reconstructing them from scratch on every call. See
 [Feature Set](#feature-set) below for what that means concretely, and
 [Architecture](docs/architecture.md) for how it's actually built.
 
 FastAPI entry point: `src/monkey_brain/api/main.py`, port 8031.
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/29fecbd3-8922-45d7-b80d-eb351a1a9fea" />
-
-
-## Documentation
-
-- [Install & Run](docs/install-and-run.md) — clone, install (Docker
-  Compose or native), boot, verify, and your first real request.
-- [Architecture](docs/architecture.md) — layering, geography/society
-  split, world/policy split, timelines, and how it all actually fits
-  together, as verified live across Gates 3-9.
-- [OpenAPI spec](docs/openapi.md) — live and frozen spec, 337 paths /
-  384 operations (snapshot as of 2026-08-26; the live endpoint is
-  always the current count).
-- [Examples](docs/examples.md) — real request/response pairs, captured
-  live, not hand-written.
-- [Deployment guide](docs/deployment.md) — Docker Compose, Kubernetes,
-  Helm.
-- [Troubleshooting guide](docs/troubleshooting.md) — real issues hit
-  and diagnosed during this build.
-- [Architecture Decision Records](docs/adr/) — the full decision record
-  for Gates 3 through 11 (006-018).
 
 ## How It Works
 
@@ -772,3 +751,22 @@ commercial services agreement.
 Customers may incur separate costs for LLM/API usage from their chosen
 model providers. Such costs are independent of CognitiveOS licensing
 and Monkeypatched professional-services fees.
+
+## Documentation
+
+- [Install & Run](docs/install-and-run.md) — clone, install (Docker
+  Compose or native), boot, verify, and your first real request.
+- [Architecture](docs/architecture.md) — layering, geography/society
+  split, world/policy split, timelines, and how it all actually fits
+  together, as verified live across Gates 3-9.
+- [OpenAPI spec](docs/openapi.md) — live and frozen spec, 337 paths /
+  384 operations (snapshot as of 2026-08-26; the live endpoint is
+  always the current count).
+- [Examples](docs/examples.md) — real request/response pairs, captured
+  live, not hand-written.
+- [Deployment guide](docs/deployment.md) — Docker Compose, Kubernetes,
+  Helm.
+- [Troubleshooting guide](docs/troubleshooting.md) — real issues hit
+  and diagnosed during this build.
+- [Architecture Decision Records](docs/adr/) — the full decision record
+  for Gates 3 through 11 (006-018).
