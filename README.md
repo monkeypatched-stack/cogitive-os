@@ -146,16 +146,6 @@ failure. Execution state persists and survives interruption, so the
 system reconstructs from durable state rather than replaying a prompt
 transcript.
 
-The concrete, code-traced version of this loop — same diagram the
-running app renders on its own Lemon Metrics page
-(`living-world-explorer/src/components/ArchitectureDiagram.tsx`),
-traced directly from the real per-tick stage list
-(`ComparisonIntegratedPolicy.configure()`,
-[`docs/architecture.md`](docs/architecture.md#cognitive-pipeline-per-actor-tick)).
-TransitionGate/Negotiation/World Commit run *inside* Execute, gating
-each action before it mutates shared state — not as steps after
-Compare/Learn. Security/Policy governs the cycle as a boundary, not a
-sequential stage in it.
 
 ```mermaid
 flowchart TD
@@ -204,9 +194,7 @@ flowchart TD
 ### Learning: How the System Scores Itself and Updates Its Beliefs
 
 Compare, Learn, and LearnTransitions in the diagram above are two real
-pieces of code that run every tick — not the separate, disconnected
-sparse-tensor code described at the end of this section, which looks
-similar but never actually runs.
+pieces of code that run every tick — 
 
 **Compare — grading the prediction against what really happened**
 (`kernel/comparator_runtime.py::ComparatorRuntime`, called from the
@@ -259,62 +247,6 @@ actor_loss     = round(min(1.0, world_loss * 0.7 + policy_loss * 0.3), 4)
 All of these are losses — 0 means "predicted it perfectly," 1 means
 "completely wrong."
 
-**Learn / LearnTransitions — updating what the system believes will
-happen next time**
-(`kernel/pipeline/prediction/transitions.py::TransitionModel.
-learn_from_execution`, invoked from `kernel/pipeline/comparison/
-integration.py::_learn_transitions`)
-
-This is the same module that powers the Predict stage —
-`kernel/pipeline/prediction/`, not the separate, unused `kernel/predict/`
-package described below. After the Comparator confirms what really
-happened for an action (steps it has no evidence for are skipped
-entirely — never counted as a failure), the system nudges its belief
-about "if I try this action again for this goal, how likely is it to
-succeed":
-
-```python
-observed_prob = min(0.95, confidence) if success else max(0.05, 1.0 - confidence)
-if confidence < 0.3:
-    observed_prob = 0.5  # low-confidence observation: stay neutral
-
-blended_p = old_p * (1 - learning_rate) + observed_prob * learning_rate
-```
-
-In other words: take the old probability, keep 85% of it, and blend in
-15% of what was just observed. The 0.85/0.15 split (`confidence=0.85`,
-`learning_rate=0.15`) means the system trusts each new, verified
-observation a fair amount but doesn't overreact to any single result —
-beliefs shift gradually as evidence accumulates. This confidence is
-about trusting the *observation itself* (the Comparator confirmed it
-really happened), not about how accurate the earlier prediction was.
-The very first observation for a given goal+action just becomes the
-starting belief, with nothing to blend against yet.
-
-**What `SparseTransitionTensor` is, and why it doesn't actually run**
-
-`kernel/compile/tensor.py::SparseTransitionTensor` is a separate, fully
-built piece of code that stores the same kind of information in a
-sparse tensor `W[d, i, j, f]` (domain × from-state × to-state ×
-feature) and updates it with a classic reinforcement-learning formula
-(Bellman/Q-learning):
-
-```python
-# Q ← Q + α(r + γ·maxₖ Q(j→k) − Q)
-nq = next_best_q if next_best_q is not None else self._max_out_q(j)
-cell.q += self._lr * (reward + self._discount * nq - cell.q)
-```
-
-(Defaults: `learning_rate=0.1`, `discount=0.95`.) It's genuine,
-working code — but nothing in the live system ever calls it. Its only
-caller is `kernel/compile/society_runtime.py::CompileSocietyRuntime`,
-and that class is never created anywhere along the real startup path
-(`api/main.py` → `PlanetaryRuntime` → `SocietyRuntime` is what actually
-boots and builds the pipeline above). A full search of the codebase
-for anywhere that creates a `CompileSocietyRuntime` turns up nothing
-outside its own definition. So it sits unused in a parallel `kernel/
-compile/` folder — the loss and belief-update formulas earlier in this
-section are the ones actually running.
 
 ### World Perturbations and Deja Vu
 
@@ -423,20 +355,19 @@ produces differs.
 ### Two actors, one contended resource
 
 Now suppose Priya and another actor both try to buy the **last unit**
-of the same product at close to the same time (`test_gate002b`, a real
-regression test in `tests/scenarios/test_transition_gate.py`). Neither
+of the same product at close to the same time . Neither
 actor's local belief knows about the other's in-flight purchase — they
 only find out through the gate:
 
-- Both proposals reach `TransitionGate.evaluate()`. Whichever proposal
+- Both proposals reach  . Whichever proposal
   the gate processes first sees the reservation succeed and commits.
 - The second proposal's inventory read now reflects the first
-  actor's live claim (`test_gate002a`) — the gate never lets a second
+  actor's live claim the gate never lets a second
   buyer commit against stock that's already spoken for.
 - If the two actors' claims are for genuinely *incompatible* resources
   under a declared constraint (not just a stock race), the gate pauses
   the losing action for negotiation instead of silently failing it —
-  `PendingNegotiation` holds it open until it's accepted or rejected,
+  holds it open until it's accepted or rejected,
   and only an accepted negotiation resumes into a real commit.
 
 The world is never oversold and never double-committed — one of those
@@ -446,13 +377,13 @@ negotiation, never both succeeding against the same unit.
 ### Actors sharing a resource on purpose
 
 Contention isn't always a race — sometimes actors are *meant* to share.
-A household budget (`create_shared_budget`) works the opposite way
-from the contention case: Priya and a family member spending against
+A household budget works the opposite way from the contention case: 
+Priya and a family member spending against
 the same budget don't need to negotiate every purchase — the budget
 tracks cross-actor accounting, reserves against the ceiling per
 purchase, and reconciles on completion or failure, so two genuinely
-compatible spends both commit with no artificial negotiation
-(`test_gate004`), while a spend that would actually break the shared
+compatible spends both commit with no artificial negotiation, 
+while a spend that would actually break the shared
 ceiling still gets caught the same way stock contention does.
 
 This is the same TransitionGate mechanism the diagram above shows —
