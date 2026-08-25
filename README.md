@@ -40,6 +40,63 @@ FastAPI entry point: `src/monkey_brain/api/main.py`, port 8031.
 - [Architecture Decision Records](docs/adr/) — the full decision record
   for Gates 3 through 11 (006-018).
 
+## How It Works
+
+The canonical CognitiveOS execution model — static structure, not live
+data; same diagram the running app renders on its own Lemon Metrics
+page (`living-world-explorer/src/components/ArchitectureDiagram.tsx`),
+traced directly from the real per-tick stage list
+(`ComparisonIntegratedPolicy.configure()`,
+[`docs/architecture.md`](docs/architecture.md#cognitive-pipeline-per-actor-tick)).
+TransitionGate/Negotiation/World Commit run *inside* Execute, gating
+each action before it mutates shared state — not as steps after
+Compare/Learn. Security/Policy governs the cycle as a boundary, not a
+sequential stage in it.
+
+```mermaid
+flowchart TD
+    G[Goal] --> W[World State]
+    W --> O[Observe]
+    O --> B[Believe]
+    B --> P[Plan]
+    P --> PR[Predict]
+    PR --> D[Decide]
+
+    D -->|keep| E[Execute]
+    D -->|stale / invalid| RP[Replan]
+    RP --> P
+
+    E --> TG[TransitionGate]
+    TG -->|negotiation required| N[Negotiation]
+    TG -->|no negotiation required| C[World Commit]
+    N --> C
+
+    C --> OO[Observe Outcome]
+    OO --> CMP[Compare]
+    CMP --> L[Learn]
+    L --> LT[LearnTransitions]
+
+    LT --> NEXT[Next Cognitive Cycle]
+    NEXT --> O
+
+    PR -.->|predicted outcome| CMP
+    OO -.->|actual outcome| CMP
+
+    SEC[Security / Policy<br/>Identity · Authorization · Delegation · Consent<br/>Capability Access · Policy Decisions] -. governs .-> E
+    SEC -. governs .-> TG
+    SEC -. governs .-> C
+
+    classDef loop fill:#EEF2FF,stroke:#4338CA,stroke-width:1px,color:#1E293B
+    classDef gate fill:#FAFAFF,stroke:#8B5CF6,stroke-width:1px,color:#1E293B
+    classDef compare fill:#ECFDF5,stroke:#047857,stroke-width:1px,color:#1E293B
+    classDef security fill:#FDF4FF,stroke:#A21CAF,stroke-width:2px,color:#1E293B
+
+    class G,W,O,B,P,PR,D,RP,L,LT,NEXT loop
+    class E,TG,N,C gate
+    class OO,CMP compare
+    class SEC security
+```
+
 ## Feature Set
 
 Current architecture and qualification status — consolidated
