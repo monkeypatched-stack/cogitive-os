@@ -20,6 +20,8 @@ FastAPI entry point: `src/monkey_brain/api/main.py`, port 8031.
 
 ## Documentation
 
+- [Install & Run](docs/install-and-run.md) — clone, install (Docker
+  Compose or native), boot, verify, and your first real request.
 - [Architecture](docs/architecture.md) — layering, geography/society
   split, world/policy split, timelines, and how it all actually fits
   together, as verified live across Gates 3-9.
@@ -464,45 +466,19 @@ implementation inventory for the open-source (AGPL) edition.
 | Production hardening | 80–85% |
 | **Overall** | **94–95%** |
 
-## Installation
-
-**Prerequisites** (real, required — the `Kernel` fails fast at boot if
-any are unreachable): MongoDB, Redis, Neo4j (`bolt://...:7687`).
-Optional/degraded-if-absent: NATS, InfluxDB, Elasticsearch (audit
-sink), OPA, mem0. Python `>=3.11` for a native install.
-
-**Option A — Docker Compose** (brings up every dependency above plus
-the runtime itself):
+## Install & Run
 
 ```bash
 git clone https://github.com/monkeypatched-stack/cogitive-os.git
 cd cogitive-os
 docker compose up agentos
-```
-
-**Option B — native**, against your own MongoDB/Redis/Neo4j:
-
-```bash
-git clone https://github.com/monkeypatched-stack/cogitive-os.git
-cd cogitive-os
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-./scripts/start_server.sh 8031
-```
-
-See [`docs/deployment.md`](docs/deployment.md) for the full
-prerequisites list, Kubernetes manifest, and Helm chart.
-
-## Quick start
-
-```bash
 curl http://localhost:8031/live
-curl http://localhost:8031/health
 ```
 
-See [`docs/examples.md`](docs/examples.md) for real request/response
-pairs against a representative slice of the API, and
-[`docs/openapi.md`](docs/openapi.md) for the full spec.
+That's Docker Compose; for a native install against your own
+MongoDB/Redis/Neo4j, prerequisites, verifying the boot actually
+succeeded, and your first real request — see
+**[`docs/install-and-run.md`](docs/install-and-run.md)**.
 
 ## License
 
