@@ -12,7 +12,7 @@ import time
 from typing import Any
 
 from src.monkey_brain.kernel.execute.runtime.outcome import ExecutionOutcome
-from monkey_brain.runtime.agent_resolver import AgentResult
+from src.monkey_brain.runtime.agent_resolver import AgentResult
 from src.shared.runtime_protocols import (
     ICapabilityProtocol,
     WorkloadProtocol,

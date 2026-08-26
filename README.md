@@ -307,6 +307,85 @@ original plan already carried out; replaying just the reasoning avoids
 that while still catching a plan that's now chasing a world that no
 longer exists.
 
+### Society and Governance
+
+An actor deciding to do something and an actor being *allowed* to do
+it are two separate checks, and CognitiveOS keeps them separate in
+code, not just in the conceptual model described earlier. Three real
+things enforce this, at three different points in the request/tick
+lifecycle.
+
+**The TransitionGate — the last check before shared state changes**
+(`kernel/society/transition_gate.py::TransitionGate.evaluate`, called
+from `kernel/pipeline/action_executor.py` right before a capability
+that touches a shared resource actually runs — one shared instance,
+reused by every capability rather than each implementing its own
+version)
+
+Before a proposed action is allowed to commit, the gate checks the
+resources it touches for three things, in order:
+
+1. **A real, incompatible constraint** — the resource declares
+   something the proposed transition directly conflicts with. This
+   pauses the action and requires negotiation.
+2. **An explicit consent requirement** — the resource (or the
+   capability itself) names another actor whose consent is needed
+   first. Also pauses for negotiation, naming that actor as the
+   counterparty.
+3. **A live claim from another actor, with neither of the above** —
+   this is allowed to proceed without pausing (it's arbitrated by the
+   existing reservation mechanism, not by negotiation), but it's still
+   recorded as contention so the trace is honest about who else had a
+   claim visible at the time.
+
+Only case 1 and 2 actually block; case 3 is pure observability. If
+none apply, the action proceeds. This is what turns "two actors want
+the same thing" (see [Example: Buying Groceries](#example-buying-groceries)
+below) into either a clean pass-through or a real negotiation, instead
+of a race.
+
+**OPA — policy-as-code, checked at three separate points, not one
+central gate**
+(`services.common.opa`, backed by real [Open Policy
+Agent](https://www.openpolicyagent.org/) policies under `opa/policies/`)
+
+There is no single "governance module" — three independent chokepoints
+each call out to OPA for their own decision:
+
+- **`kernel/governance.py::GovernanceEngine.evaluate`** — gates the
+  `/plan`, `/execute`, `/predict`, and `/query` routes against
+  `agentos_governance.rego`.
+- **`api/routes/actors.py`'s `require_opa("agentos/routes/allow", ...)`**
+  — gates actor-management routes against `agent_routes.rego`, for
+  agent-type Bearer principals.
+- **`kernel/plan/goals/executor.py::GoalExecutor._authorize`** — gates
+  goal execution against `agentos_execute.rego`.
+
+The three behave differently on purpose. `GovernanceEngine` is
+`default_allow=True`: if `OPA_URL` isn't set, it allows through rather
+than failing an unconfigured deployment closed with no way to open it.
+`GoalExecutor._authorize` is `default_allow=False`: once enforcement
+is actually turned on, an unconfigured or unreachable OPA denies
+rather than silently permitting execution. In both cases, once OPA
+*is* configured and reachable, the `.rego` policy itself defaults to
+deny internally — so a misconfigured-but-reachable OPA fails closed,
+not open, regardless of which chokepoint is asking.
+
+**Delegation — one actor acting with another's permissions, on
+purpose and revocably**
+(`kernel/society/delegation.py::DelegationRegistry`, consulted from
+`api/dependencies.py::require_permission`/`require_self_or_permission`
+via `_effective_delegated_permissions`)
+
+An actor can grant another actor a specific, time-bounded set of
+permissions (`DelegationRegistry.grant`) — every grant and revoke
+writes an immutable membership timeline entry, so delegation history
+is auditable, not just current state. When an API call checks whether
+a user has a permission, it checks the user's own permissions *and*
+whatever's been delegated to them (`effective_delegated_permissions`)
+before denying — the same request-time check either way, no separate
+"impersonation" code path.
+
 ## Example: Buying Groceries
 
 The reference domain shipped with CognitiveOS is grocery commerce
