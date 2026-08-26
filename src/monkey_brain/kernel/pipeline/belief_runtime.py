@@ -45,7 +45,7 @@ from src.monkey_brain.kernel.pipeline.cognitive_delta import CognitiveDelta
 from src.monkey_brain.kernel.pipeline.cognitive_policy import CognitivePolicy
 from src.monkey_brain.kernel.pipeline.planner import PlanningEngine
 from src.monkey_brain.kernel.pipeline.llm_planner import LLMPlanner
-from src.monkey_brain.kernel.pipeline.plan_validator import PlanValidator
+from src.monkey_brain.kernel.pipeline.plan_validator import PlanValidator, ValidationResult
 from src.monkey_brain.kernel.pipeline.execution import ExecutionEngine, Action, ActionOutcome, ExecutionResult
 from src.monkey_brain.kernel.pipeline.plan_compiler import compile_plan
 from src.monkey_brain.kernel.pipeline.action_executor import CapabilityRuntime
@@ -75,6 +75,7 @@ def _sanitize_error_for_memory(error_text: str) -> str:
 _NO_PERMISSION_NEEDED_ACTIONS = frozenset({
     "AskActor", "BroadcastToAffiliation", "RespondToInquiry",
     "EvaluateStrategy", "CompeteForResource", "RecordAgreement",
+    "GetAgreements",
 })
 """The exact action set llm_planner.py's own system prompt tells the
 model to leave required_permission empty for. Confirmed live: a small
@@ -83,7 +84,7 @@ guidance for CompeteForResource but just as reliably ignores the "leave
 required_permission empty" sentence a few paragraphs away, tagging a
 plausible-looking made-up permission string instead — even after adding
 a second, local reminder right next to CompeteForResource's own
-guidance. Since these six actions structurally never need a permission
+guidance. Since these actions structurally never need a permission
 (that's the system prompt's own claim, not a per-call judgment), the
 robust fix is enforcing it here regardless of what the model wrote,
 rather than continuing to hope a better-worded prompt will fix a real
@@ -851,8 +852,30 @@ class   CognitiveRuntime:
         state.metrics.setdefault("stage_timings_ms", {})["planning_total_ms"] = round(_planner_total_ms, 3)
         _obs.finish_span("ok")
 
-        # Validate the plan
-        validation = self._plan_validator.validate(plan, belief)
+        # Validate the plan — skipped for a plan resumed from an execution
+        # checkpoint. _plan_dict_from_actions's own docstring
+        # (action_executor.py) is explicit that confidence/risk on a
+        # checkpoint's stored plan "have no equivalent real source and
+        # stay at their honest 0.0 defaults" — it was only ever meant to
+        # round-trip enough to re-drive execution, never to be a faithful,
+        # re-validatable Plan. Validating that stub against thresholds
+        # calibrated for a freshly LLM-generated plan (PlanValidator's
+        # default min_confidence=0.1) wrongly re-rejects a plan that
+        # ALREADY passed real validation during its ORIGINAL tick — that's
+        # the only reason it was executing and reached a pause at all.
+        # Confirmed live: this unconditionally rejected every resume
+        # through meta.resume_execution_id (approval/negotiation/payment
+        # webhook alike) with confidence_below_threshold:0.00<0.1, before
+        # ActionExecutor ever got a chance to replay the checkpoint and
+        # reach the paused step. Distinct from the OTHER skip_replan
+        # source (current_plan_store's Deja Vu / incremental-scheduling
+        # reuse, load_current_plan above) — that path's CurrentPlanRecord
+        # carries the original plan's REAL confidence/risk from the LLM
+        # planner and is still genuinely re-validated here.
+        if state.metrics.get("plan_resumed_from_checkpoint"):
+            validation = ValidationResult(valid=True, score=1.0)
+        else:
+            validation = self._plan_validator.validate(plan, belief)
 
         if not validation.valid:
             state.record_warning(
@@ -996,9 +1019,27 @@ class   CognitiveRuntime:
         # via state.metrics so the persisted Decision (cognitive_actor.py)
         # can stay honest about what actually happened, instead of still
         # reading "do not execute" next to an Execution History that did.
+        # Same exemption as the PlanValidator skip above, and for the
+        # identical reason: a checkpoint-resumed plan isn't a fresh
+        # candidate being decided on for the first time -- it's an
+        # ALREADY-committed execution continuing after a real pause
+        # (approval/negotiation/payment). Re-running "should we execute
+        # this at all" against CURRENT world/prediction state punishes a
+        # plan for evidence that accumulated AFTER it already started
+        # (e.g. this exact resumed tick's own earlier partial run just
+        # taught the TransitionModel real negative evidence about one of
+        # its own steps) -- ActionExecutor's own checkpoint-replay
+        # (action_executor.py) is what correctly re-uses already-
+        # completed steps and only genuinely re-executes the paused one;
+        # this Decide-stage gate has no equivalent per-step awareness and
+        # rejects the WHOLE plan before ActionExecutor ever gets to run
+        # it. Confirmed live: a real UPI Reserve Pay payment resume was
+        # rejected with "Decision rejected: All scenarios rejected:
+        # Baseline 9% (rejected)" even though PlanValidator's own
+        # rejection was already fixed to exempt this exact case.
         prediction = state.prediction_result or {}
         candidates = prediction.get("candidates") or []
-        if candidates and prediction.get("selected") is None:
+        if candidates and prediction.get("selected") is None and not state.metrics.get("plan_resumed_from_checkpoint"):
             best = candidates[0]
             outcomes = (best.get("prediction") or {}).get("predicted_outcomes") or []
             all_unknown = bool(outcomes) and all(

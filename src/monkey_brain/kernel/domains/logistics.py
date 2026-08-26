@@ -245,6 +245,51 @@ def onboard_rider(kg, name: str, **rider_attrs) -> dict:
     return {"success": True, "rider_id": rider_id, "name": name}
 
 
+def mark_rider_assigned(kg, rider_id: str, max_attempts: int = 5) -> bool:
+    """Real capacity enforcement: a rider select_delivery_riders() picks
+    must stop being a candidate for the NEXT delivery until this one is
+    actually done. Before this existed, attributes["status"] was set to
+    "available" once at onboard_rider() and never touched again anywhere
+    in this codebase — every rider was "available" for every delivery
+    simultaneously, no matter how many were already assigned, since
+    DeliveryCapability (grocery.py) never persisted an assignment
+    anywhere a later call could see it (see create_shipment()'s own
+    docstring for the sibling half of this same gap).
+
+    CAS-protected the same way try_reserve() (grocery.py) protects
+    inventory — two concurrent DeliveryCapability calls reading the same
+    "available" rider and both trying to assign them is the identical
+    race try_reserve() already exists to prevent for stock, just never
+    extended to riders."""
+    for _ in range(max_attempts):
+        rider = kg.get_entity(rider_id)
+        if rider is None:
+            return False
+        version = kg.version_of(rider_id)
+        ok, _ = kg.compare_and_swap(rider_id, version, {"status": "assigned"})
+        if ok:
+            return True
+    return False
+
+
+def release_rider(kg, rider_id: str, max_attempts: int = 5) -> bool:
+    """The other half of mark_rider_assigned() — called from
+    mark_shipment_delivered() once a shipment this rider carried
+    actually completes, freeing them for the next assignment. Silently
+    no-ops if the rider no longer exists (never raises for a rider
+    removed since assignment) — releasing something that's already gone
+    is an honest no-op, not an error."""
+    for _ in range(max_attempts):
+        rider = kg.get_entity(rider_id)
+        if rider is None:
+            return False
+        version = kg.version_of(rider_id)
+        ok, _ = kg.compare_and_swap(rider_id, version, {"status": "available"})
+        if ok:
+            return True
+    return False
+
+
 # ── Pickup timing ─────────────────────────────────────────────────────
 
 _DEFAULT_HUMAN_PICK_MINUTES = 15.0
@@ -500,6 +545,17 @@ def mark_shipment_delivered(kg, shipment_id: str, now: float | None = None) -> d
             order_delivered = True
     result["order_id"] = order_id
     result["order_delivered"] = order_delivered
+
+    # Real capacity release (mark_rider_assigned()'s own docstring): THIS
+    # shipment's rider is free the moment THIS shipment lands, regardless
+    # of whether the whole (possibly multi-shipment) order is fully
+    # delivered yet — a rider who dropped off their own package doesn't
+    # stay artificially unavailable waiting on a different rider's
+    # separate shipment for the same order.
+    rider_id = shipment.attributes.get("rider_id") if shipment is not None else None
+    if rider_id:
+        release_rider(kg, rider_id)
+
     return result
 
 

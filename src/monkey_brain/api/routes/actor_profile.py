@@ -41,9 +41,18 @@ generates and stores a real, correctly-expiring code but does not
 return it — honestly reflecting that delivery isn't wired up yet,
 rather than pretending it is.
 
-profile GET/PUT remain unauthenticated metadata stubs — out of scope,
-same as before: they don't touch credentials, sessions, or any other
-real state.
+profile GET/PUT now genuinely persist (kernel/actor_profile/persistence.py
+::ActorProfilePersistence, via kernel/profile.py::Profile) — previously
+real stubs with no persistence at all, closed the same way login/logout/
+sessions were: a real, already-built implementation existed
+(ActorProfilePersistence, MongoDB-backed through the same get_db_pool()
+singleton ActorStateStore's confirmed-live belief persistence already
+uses) but nothing had ever wired it to an actual route, and it had its
+own real bug (a bare `time.time()` call with no `import time`) that would
+have raised the instant it was ever exercised. Still unauthenticated —
+name/bio/location/etc. carry no credential or session material, so this
+intentionally does not gate behind require_self_or_permission the way
+account/sessions do.
 
 Production Hardening audit finding (later pass): despite the above,
 get_account/update_account/list_sessions had NO auth dependency at
@@ -141,22 +150,35 @@ class OTPVerifyRequest(BaseModel):
 
 @router.get("/{actor_id}/profile")
 async def get_profile(actor_id: str):
-    """Get actor profile."""
-    return {
-        "actor_id": actor_id,
-        "status": "ok",
-        "message": "Profile endpoint",
-    }
+    """Get actor profile — real persisted data (kernel/profile.py::Profile)
+    when one has been saved, an honest "not set" shape otherwise."""
+    from src.monkey_brain.kernel.actor_profile.persistence import get_actor_profile_persistence
+
+    data = get_actor_profile_persistence().load_profile(actor_id)
+    if data is None:
+        return {"actor_id": actor_id, "status": "ok", "profile_set": False}
+    return {"actor_id": actor_id, "status": "ok", "profile_set": True, **data}
 
 
 @router.put("/{actor_id}/profile")
 async def update_profile(actor_id: str, request: ProfileUpdateRequest):
-    """Update actor profile."""
-    return {
-        "status": "updated",
-        "actor_id": actor_id,
-        "fields_updated": [k for k, v in request.dict().items() if v is not None],
-    }
+    """Update actor profile — a real, partial update against persisted
+    state: loads whatever profile already exists (or starts a fresh one),
+    applies only the fields actually present in the request via Profile.
+    update(), and saves it back."""
+    from src.monkey_brain.kernel.profile import Profile
+    from src.monkey_brain.kernel.actor_profile.persistence import get_actor_profile_persistence
+
+    persistence = get_actor_profile_persistence()
+    existing = persistence.load_profile(actor_id)
+    profile = Profile.from_dict(existing) if existing else Profile()
+
+    fields_updated = [k for k, v in request.dict().items() if v is not None]
+    updates = {k: v for k, v in request.dict().items() if v is not None}
+    profile.update(**updates)
+    persistence.save_profile(actor_id, profile)
+
+    return {"status": "updated", "actor_id": actor_id, "fields_updated": fields_updated}
 
 
 @router.get("/{actor_id}/account")

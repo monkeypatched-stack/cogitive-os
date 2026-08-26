@@ -271,6 +271,7 @@ from src.monkey_brain.api.routes.verify import router as verify_router
 from src.monkey_brain.api.routes.ws import router as ws_router
 from src.monkey_brain.api.routes.approval import router as approval_router
 from src.monkey_brain.api.routes.negotiation import router as negotiation_router
+from src.monkey_brain.api.routes.payments import router as payments_router
 from src.monkey_brain.api.routes.edge import router as edge_router
 
 app.include_router(simulate_router, prefix="/api/v1/agentos", tags=["Simulate"])
@@ -322,6 +323,7 @@ app.include_router(verify_router, prefix="/api/v1/agentos", tags=["Verify"])
 app.include_router(ws_router, prefix="/api/v1/agentos", tags=["WebSocket"])
 app.include_router(approval_router, prefix="/api/v1/agentos", tags=["Approval"])
 app.include_router(negotiation_router, prefix="/api/v1/agentos", tags=["Negotiation"])
+app.include_router(payments_router, prefix="/api/v1/agentos", tags=["Payments"])
 app.include_router(edge_router, prefix="/api/v1/agentos", tags=["Edge"])
 
 # ── Exchange Server (network transport for knowledge proposals) ──────────────

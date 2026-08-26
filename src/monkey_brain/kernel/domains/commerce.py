@@ -539,7 +539,23 @@ def onboard_merchant(kg: Any, merchant_id: str, store_name: str, **store_attrs: 
     store_id = f"store_{uuid.uuid4().hex}"
     attributes = {"owner_id": merchant_id, **store_attrs}
     kg.add_entity(store_id, EntityType.ORGANIZATION, store_name, attributes)
-    return {"success": True, "store_id": store_id, "owner_id": merchant_id, "name": store_name}
+
+    # A real receivable ACCOUNT the store is credited into on every
+    # completed sale — see kernel/domains/grocery.py::PaymentCapability's
+    # _finalize_successful_payment/_credit_store_accounts. Before this,
+    # nothing anywhere in this codebase ever credited the SELLING side of
+    # a transaction at all -- Payment only ever debited the buyer; a
+    # store had no account to receive into, so a real amount left one
+    # side of the ledger and simply vanished. owner=store_id (not
+    # merchant_id) since this is the STORE's own receivable, not the
+    # merchant-actor's personal wallet — a merchant who owns multiple
+    # stores keeps each store's revenue separately trackable.
+    store_account_id = f"account_{store_id}"
+    kg.add_entity(store_account_id, EntityType.ACCOUNT, f"{store_name} Receivable", {
+        "owner": store_id, "store_id": store_id, "account_type": "merchant_receivable", "balance": 0.0,
+    })
+    return {"success": True, "store_id": store_id, "owner_id": merchant_id, "name": store_name,
+            "store_account_id": store_account_id}
 
 
 def require_store_owner(kg: Any, store_id: str, merchant_id: str) -> dict | None:

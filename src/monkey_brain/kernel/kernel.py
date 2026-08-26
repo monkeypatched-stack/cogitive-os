@@ -1488,6 +1488,13 @@ class Kernel:
 
         app.state.planetary_runtime = planetary
         self.registry.register("planetary", planetary)
+        # api/routes/payments.py's auto-approve UPI simulator fires from a
+        # background timer thread with no Request/app.state to read
+        # app.state.planetary_runtime from the way every real HTTP route
+        # does -- this is the one place that real instance is reachable
+        # without one.
+        from src.monkey_brain.api.routes.payments import set_default_planetary_runtime
+        set_default_planetary_runtime(planetary)
         self._health["planetary"] = ComponentHealth(name="planetary", state=HealthState.HEALTHY)
 
         # Real NATS publishing for the context stream — additive to the

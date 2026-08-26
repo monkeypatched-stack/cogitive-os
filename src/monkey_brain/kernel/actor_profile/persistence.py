@@ -8,6 +8,7 @@ Provides:
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 logger = logging.getLogger("agentos.actor_profile.persistence")
@@ -188,3 +189,37 @@ class ActorProfilePersistence:
             "account": self.load_account(actor_id),
             "login_info": self.load_login_info(actor_id),
         }
+
+
+_actor_profile_persistence: "ActorProfilePersistence | None" = None
+
+
+def get_actor_profile_persistence() -> ActorProfilePersistence:
+    """Lazy, process-wide singleton — same shape as persistence/db_pool.py
+    ::get_db_pool() (itself lazily constructed the same way) and
+    kernel/domains/razorpay_upi_provider.py::get_default_provider(). Reuses
+    the SAME real Mongo connection pool kernel/society/integration.py's
+    confirmed-live belief-persistence path already establishes for
+    ActorStateStore, rather than opening a second, separate connection —
+    this was the actual, real gap keeping this whole module dead:
+    api/routes/actor_profile.py's GET/PUT /profile routes were genuine
+    stubs with no persistence at all (their own docstring says so
+    explicitly), and this class already existed to fill exactly that,
+    just never had anywhere real to get a database handle from until
+    wired to the same get_db_pool() singleton.
+
+    get_db_pool() raises if Mongo is genuinely unreachable (DBPool.
+    connect() re-raises) — degrades to a pool-less ActorProfilePersistence
+    instead (its own save_profile/load_profile already handle
+    self._db is None by skipping, same non-fatal shape
+    integration.py::get_actor_state_store already uses for the identical
+    real failure mode)."""
+    global _actor_profile_persistence
+    if _actor_profile_persistence is None:
+        try:
+            from src.monkey_brain.persistence.db_pool import get_db_pool
+            _actor_profile_persistence = ActorProfilePersistence(get_db_pool())
+        except Exception as exc:
+            logger.warning("get_actor_profile_persistence: Mongo unavailable, profile persistence disabled: %s", exc)
+            _actor_profile_persistence = ActorProfilePersistence(None)
+    return _actor_profile_persistence

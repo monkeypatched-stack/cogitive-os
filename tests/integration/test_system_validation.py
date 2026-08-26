@@ -25,7 +25,6 @@ from src.monkey_brain.kernel.cognitive_kernel import CognitiveKernel
 from src.monkey_brain.kernel.solver_mesh import SolverMesh, GraphSolver, SATSolver
 from src.monkey_brain.kernel.execute.agent_mesh import ExecutionPool, AgentSpec, AgentRole
 from src.monkey_brain.kernel.execute.capabilities.bus import CapabilityBus
-from src.monkey_brain.kernel.capabilities.icapability import FunctionalCapability, CapabilityEffects
 from src.knowledge.pack import KnowledgePack
 from src.knowledge.item import KnowledgeItem, Modality
 from domains.software_engineering.knowledge.pack import SoftwareEngineeringKnowledgePublisher as EngineeringKnowledgePublisher
@@ -123,18 +122,20 @@ def test_solver_prediction_in_transition():
 # 3. CAPABILITY DISCOVERY DURING AGENT CREATION
 # ═══════════════════════════════════════════════════════════════
 
+class _Capability:
+    """Minimal stand-in for register_capability()/execute() (execute/
+    capabilities/bus.py) — the bus only ever reads .name for registration
+    and .fn (or calls the object itself) for execution; it never actually
+    requires FunctionalCapability/CapabilityEffects specifically."""
+    def __init__(self, name, fn=None):
+        self.name = name
+        self.fn = fn
+
+
 def test_capability_discovery_at_spawn():
     bus = CapabilityBus()
-    bus.register_capability(FunctionalCapability(
-        name="notify", fn=lambda x: {"sent": True},
-        description="Send notification",
-        effects=CapabilityEffects(world=["notification"]),
-    ))
-    bus.register_capability(FunctionalCapability(
-        name="query_db", fn=lambda x: {"rows": 10},
-        description="Query database",
-        effects=CapabilityEffects(knowledge=["db_data"]),
-    ))
+    bus.register_capability(_Capability("notify", fn=lambda x: {"sent": True}))
+    bus.register_capability(_Capability("query_db", fn=lambda x: {"rows": 10}))
     ep = ExecutionPool(KnowledgePack())
     spec = AgentSpec(
         role=AgentRole.SPECIALIST,
@@ -148,10 +149,7 @@ def test_capability_discovery_at_spawn():
 
 def test_capability_bus_resolution():
     bus = CapabilityBus()
-    bus.register_capability(FunctionalCapability(
-        name="calc", fn=lambda x: {"result": x.get("a", 0) + x.get("b", 0)},
-        description="Add numbers",
-    ))
+    bus.register_capability(_Capability("calc", fn=lambda x: {"result": x.get("a", 0) + x.get("b", 0)}))
     result = _r(bus.execute("calc", a=3, b=7))
     assert result.success
     assert result.produced["result"] == 10

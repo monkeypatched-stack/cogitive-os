@@ -10,7 +10,6 @@ for _p in (_repo, os.path.join(_repo, 'src')):
 from src.monkey_brain.kernel.execute.agent_mesh import ExecutionPool, AgentSpec, AgentRole
 from src.knowledge.pack import KnowledgePack
 from src.monkey_brain.kernel.execute.capabilities.bus import CapabilityBus
-from src.monkey_brain.kernel.capabilities.icapability import FunctionalCapability, CapabilityEffects
 
 
 def test_required_capabilities_field():
@@ -26,11 +25,15 @@ def test_spawn_with_required_caps():
 
 
 def test_spawn_with_bus_resolves_caps():
+    # CapabilityBus.register_capability only ever reads .name off whatever
+    # it's given (execute/capabilities/bus.py) -- a plain stand-in with a
+    # name is a real, sufficient capability for this test's purpose, not
+    # a stub for something the bus actually requires.
+    class _Capability:
+        name = "notify"
+
     bus = CapabilityBus()
-    bus.register_capability(FunctionalCapability(
-        name="notify", fn=lambda x: {"sent": True},
-        description="Send notification", effects=CapabilityEffects(world=["notification"]),
-    ))
+    bus.register_capability(_Capability())
     ep = ExecutionPool(KnowledgePack())
     spec = AgentSpec(role=AgentRole.SPECIALIST, required_capabilities=["notify"])
     agent = ep.spawn(spec, capability_bus=bus)
