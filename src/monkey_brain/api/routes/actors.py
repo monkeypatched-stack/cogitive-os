@@ -1993,6 +1993,65 @@ async def get_actor_membership_timeline(
     return [m.to_dict() for m in TimelineStore().query(actor_id, TimelineKind.MEMBERSHIP, from_ts, to_ts)]
 
 
+@router.post("/actors/{actor_id}/delegations", tags=["Actors"])
+async def create_delegation(
+    actor_id: str,
+    body: dict[str, Any],
+    user_id: str = Depends(require_self_or_permission("perm-manage-actors")),
+) -> dict[str, Any]:
+    """Grants body.delegate_id real authority to act on actor_id's own
+    behalf — "buy milk on behalf of Priya" only ever succeeds because a
+    real, active grant like THIS one exists (DelegationCheckCapability,
+    kernel/domains/grocery.py). Real gap this closes: kernel/domains/
+    domain_security.py::grant_delegation had zero callers anywhere in
+    src/ or tests/ — no real path ever created the grant that capability
+    checks for, so an "on behalf of X" request was denied unconditionally,
+    every time. Written into the SAME Neo4j tenant partition
+    check_delegation itself reads from (its own docstring: "written into
+    the DELEGATOR's own tenant partition") — writing into the shared
+    commerce KG instead would be invisible to that lookup."""
+    delegate_id = body.get("delegate_id")
+    if not delegate_id:
+        raise HTTPException(status_code=400, detail="body.delegate_id is required")
+    try:
+        hours = float(body.get("hours", 24))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="body.hours must be a real number")
+    if hours <= 0:
+        raise HTTPException(status_code=400, detail="body.hours must be positive")
+
+    import time
+    from src.monkey_brain.kernel.knowledge_graph_neo4j import Neo4jBackedKnowledgeGraph, resolve_household_id
+    from src.monkey_brain.kernel.domains.domain_security import grant_delegation
+
+    delegator_kg = Neo4jBackedKnowledgeGraph(person_id=actor_id, household_id=resolve_household_id(actor_id))
+    delegation_id = grant_delegation(delegator_kg, actor_id, delegate_id, expires_at=time.time() + hours * 3600)
+    return {
+        "success": True, "delegation_id": delegation_id,
+        "delegator_id": actor_id, "delegate_id": delegate_id, "expires_in_hours": hours,
+    }
+
+
+@router.delete("/actors/{actor_id}/delegations/{delegate_id}", tags=["Actors"])
+async def revoke_delegation_route(
+    actor_id: str, delegate_id: str,
+    user_id: str = Depends(require_self_or_permission("perm-manage-actors")),
+) -> dict[str, Any]:
+    """Real, immediate revocation — kernel/domains/domain_security.py::
+    revoke_delegation, same Neo4j tenant partition create_delegation
+    above writes into. A later check_delegation call sees this
+    immediately (kg.refresh()), not just at the end of whatever request
+    happened to already be in flight."""
+    from src.monkey_brain.kernel.knowledge_graph_neo4j import Neo4jBackedKnowledgeGraph, resolve_household_id
+    from src.monkey_brain.kernel.domains.domain_security import revoke_delegation
+
+    delegator_kg = Neo4jBackedKnowledgeGraph(person_id=actor_id, household_id=resolve_household_id(actor_id))
+    revoked = revoke_delegation(delegator_kg, actor_id, delegate_id)
+    if not revoked:
+        raise HTTPException(status_code=404, detail=f"no active delegation from {actor_id!r} to {delegate_id!r}")
+    return {"success": True, "delegator_id": actor_id, "delegate_id": delegate_id}
+
+
 @router.delete("/actors/{actor_id}", tags=["Actors"])
 @audited("actors.delete")
 async def delete_actor(
