@@ -1,4 +1,4 @@
-"""Hardening test suite — 84 checks across 25 categories."""
+"""Hardening test suite — 81 checks across 24 categories."""
 import asyncio, random, threading, sys, os, time, math, json
 _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _root)
@@ -15,7 +15,6 @@ from src.monkey_brain.kernel.fix.policy.retrieval import HeuristicRetrievalPolic
 from src.monkey_brain.kernel.learn.epa.epistemic import EpistemicState, BeliefState, KnowledgeConfidence
 from src.monkey_brain.kernel.execute.agent_mesh import ExecutionPool, AgentSpec, AgentRole
 from src.monkey_brain.kernel.cognitive_kernel import CognitiveKernel
-from src.monkey_brain.kernel.capabilities.icapability import CapabilityEffects
 from src.monkey_brain.kernel.fix.performance_budgets import PerformanceMonitor
 from src.monkey_brain.kernel.fix.assumption_validator.assumption_validator import AssumptionValidator
 from src.monkey_brain.kernel.learn.epa.completeness import EpistemicCompleteness
@@ -124,15 +123,11 @@ T('Complete', lambda: EpistemicCompleteness().assess(0.8,0.1,0,0.9,0.8,0.95,0.7)
 # === 11. Loss (1) ===
 T('Loss', lambda: epa_loss(EpistemicPredictiveState(S={'a':1}), EpistemicPredictiveState(S={'a':1})).get('L_E', 0) == 0.0)
 
-# === 12. Capability (1) ===
-T('Util', lambda: CapabilityEffects(world=['m'],knowledge=['k'],confidence_delta=0.3,enable=['n']).expected_utility()>0)
-
-# === 13. Bounds (3) ===
+# === 12. Bounds (2) ===
 T('Conf 0-1', lambda: all(0<=KnowledgeConfidence(provenance=random.random(),freshness=random.random(),completeness=random.random(),semantic_consistency=random.random(),validation=random.random(),simulation_success=random.random()).composite<=1 for _ in range(100)))
-T('Util >=0', lambda: all(CapabilityEffects(world=['m'],knowledge=['k'],confidence_delta=random.uniform(-1,1)).expected_utility()>=0 for _ in range(100)))
 T('Loss >=0', lambda: all(epa_loss(EpistemicPredictiveState(), EpistemicPredictiveState()).get('L_E', 0) >= 0 for _ in range(10)))
 
-# === 14. Concurrency (1) ===
+# === 13. Concurrency (1) ===
 def concurrent():
     am = ExecutionPool(KnowledgePack())
     for _ in range(5): am.spawn(AgentSpec(role=AgentRole.WORKER))
@@ -146,7 +141,7 @@ def concurrent():
     assert not errors
 T('Concurrent', concurrent)
 
-# === 15. Thread safety (1) ===
+# === 14. Thread safety (1) ===
 def thread_safe():
     kp = KnowledgePack(); errors = []
     def add(n):
@@ -159,14 +154,14 @@ def thread_safe():
     assert not errors
 T('Thread safe', thread_safe)
 
-# === 16. Soak (1) ===
+# === 15. Soak (1) ===
 T('Soak 200', lambda: (lambda k: all(_r(k.step(f's{i}'))['confidence']>0 for i in range(200)) and k.state.belief.confidence>0)(CognitiveKernel()))
 
-# === 17. Performance (2) ===
+# === 16. Performance (2) ===
 T('Perf solver', lambda: all(_r(SolverMesh().solve({'type':'satisfiability'})) for _ in range(100)))
 T('Perf kernel', lambda: [(_r(CognitiveKernel().step(f's{i}'))) for i in range(50)])
 
-# === 18. Security (2) ===
+# === 17. Security (2) ===
 def check_sec_malicious():
     r = _r(SolverMesh().solve({'type': 'injection; DROP TABLE'}))
     assert r.confidence >= 0, "Solver returned negative confidence on malicious input"
@@ -175,7 +170,7 @@ def check_sec_malicious():
 T('Sec malicious', check_sec_malicious)
 T('Sec overflow', lambda: 'satisfiable' in _r(SATSolver().solve({'clauses':[[i] for i in range(1000)],'variables':list(range(1000))})).solution)
 
-# === 19. Serialization (3) ===
+# === 18. Serialization (3) ===
 def test_ser_kp():
     k = KnowledgePack()
     k.add(KnowledgeItem(id='k1', content='test', modality=Modality.DOCUMENT, source='s', provenance=0.5))
@@ -188,29 +183,28 @@ T('Ser KP', test_ser_kp)
 T('Ser epi', lambda: EpistemicState.from_dict(EpistemicState(world={'a':1},belief=BeliefState(confidence=KnowledgeConfidence(provenance=0.9))).to_dict()).world=={'a':1})
 T('Ser JSON', lambda: (lambda e: (lambda j: EpistemicState.from_dict(json.loads(j)).world==e.world)(json.dumps(e.to_dict())))(EpistemicState(world={'a':1})))
 
-# === 20. Determinism (2) ===
+# === 19. Determinism (2) ===
 T('Det loss', lambda: epa_loss(EpistemicPredictiveState(S={'a':1}), EpistemicPredictiveState(S={'a':1})).get('L_E', 0) == epa_loss(EpistemicPredictiveState(S={'a':1}), EpistemicPredictiveState(S={'a':1})).get('L_E', 0))
 T('Det conf', lambda: KnowledgeConfidence(provenance=.5,freshness=.5,completeness=.5,semantic_consistency=.5,validation=.5,simulation_success=.5).composite==KnowledgeConfidence(provenance=.5,freshness=.5,completeness=.5,semantic_consistency=.5,validation=.5,simulation_success=.5).composite)
 
-# === 21. Property-based (4) ===
+# === 20. Property-based (3) ===
 T('Conf mono', lambda: KnowledgeConfidence(provenance=1,freshness=1,completeness=1,semantic_consistency=1,validation=1,simulation_success=1).composite>=KnowledgeConfidence(provenance=.1,freshness=.1,completeness=.1,semantic_consistency=.1,validation=.1,simulation_success=.1).composite)
 T('Loss sym', lambda: epa_loss(EpistemicPredictiveState(S={'x':1}), EpistemicPredictiveState(S={'y':2})).get('L_E', 0) == epa_loss(EpistemicPredictiveState(S={'y':2}), EpistemicPredictiveState(S={'x':1})).get('L_E', 0))
-T('Util bounds', lambda: all(CapabilityEffects(world=['m'],confidence_delta=random.uniform(-1,1)).expected_utility()>=0 for _ in range(100)))
 T('NaN free', lambda: all(not math.isnan(KnowledgeConfidence(provenance=random.random(),freshness=random.random(),completeness=random.random(),semantic_consistency=random.random(),validation=random.random(),simulation_success=random.random()).composite) for _ in range(100)))
 
-# === 22. Fuzz (1) ===
+# === 21. Fuzz (1) ===
 T('Fuzz solvers', lambda: all(_r(SolverMesh().solve({'type':random.choice(['rule_check','reachability','satisfiability','constraint','verification','optimization','planning','prediction','general'])})).confidence>=0 for _ in range(50)))
 
-# === 23. Mutation (2) ===
+# === 22. Mutation (2) ===
 T('Mut loss', lambda: epa_loss(EpistemicPredictiveState(S={'a':1}), EpistemicPredictiveState(S={'a':1})).get('L_E', 0) < epa_loss(EpistemicPredictiveState(S={'a':1}), EpistemicPredictiveState(S={'a':999})).get('L_E', 0))
 T('Mut conf', lambda: KnowledgeConfidence(provenance=1,freshness=1,completeness=1,semantic_consistency=1,validation=1,simulation_success=1).composite>KnowledgeConfidence(provenance=0,freshness=0,completeness=0,semantic_consistency=0,validation=0,simulation_success=0).composite)
 
-# === 24. Fault injection (3) ===
+# === 23. Fault injection (3) ===
 T('Fault graph', lambda: not _r(GraphSolver().solve({'graph':{},'query':{'source':'x','target':'y','check':'reachability'}})).solution['reachable'])
 T('Fault SAT', lambda: _r(SATSolver().solve({'clauses':[],'variables':[]})).solution['satisfiable']==True)
 T('Fault fuse', lambda: EvidenceFusionEngine().fuse([],KnowledgePack(),EpistemicState()).evidence_applied==0)
 
-# === 25. Backward compat (2) ===
+# === 24. Backward compat (2) ===
 def test_compat_kp():
     k = KnowledgePack()
     k.add(KnowledgeItem(id='k1', content='old', modality=Modality.DOCUMENT, source='s', provenance=0.5))

@@ -107,6 +107,7 @@ def build_default_capability_bus() -> "GroceryCapabilityBus":
     bus.register(EvaluateStrategyCapability())
     bus.register(CompeteForResourceCapability())
     bus.register(RecordAgreementCapability())
+    bus.register(GetAgreementsCapability())
     bus.register(ReportWorldPerturbationCapability())
     bus.register(PrepareOrderCapability())
     bus.register(AcceptDeliveryCapability())
@@ -763,7 +764,7 @@ def parse_shared_budget(question: str) -> float | None:
 from src.monkey_brain.kernel.domains.logistics import (
     parse_deadline_minutes, predict_delivery_delay, _format_address,
     estimate_pickup_minutes, select_delivery_riders,
-    find_schedule_conflict,
+    find_schedule_conflict, create_shipment, mark_rider_assigned,
 )
 
 
@@ -2917,6 +2918,60 @@ def _cas_adjust_balance(kg, wallet_id: str, delta: float, max_attempts: int = 20
     return False
 
 
+def _debit_store_accounts_for_refund(kg, order, refund_amount: float) -> None:
+    """Debits each affected store's real receivable account (kernel/
+    domains/commerce.py::onboard_merchant) by its proportional share of a
+    refund — the symmetric reversal of PaymentCapability's own store-
+    crediting (grocery.py::PaymentCapability._finalize_successful_payment).
+    Store accounts allow both directions (credit on sale, debit on
+    refund — and, outside this function's scope, whatever a store spends
+    on restocking its own inventory) the same as any other real account;
+    nothing here treats them as credit-only. Without this reversal, a
+    refunded buyer got their money back but the store kept the full
+    original credit, silently doubling the total in circulation.
+
+    Scaled by refund_amount / the order's own paid_amount (not a flat
+    per-item split), so a PARTIAL refund debits each store only its
+    proportional share, and cancel_order()/refund_order() calling this
+    multiple times across several partial refunds on the same order
+    never debits a store more than it was ever actually credited for
+    that order. Items whose product has since been discontinued are
+    skipped — their original store can no longer be identified from the
+    live catalog, the same real limitation cancel_order()'s own
+    restocking logic already accepts rather than fabricating a store to
+    debit.
+    """
+    from src.monkey_brain.kernel.knowledge_graph import EntityType
+
+    items = order.attributes.get("items", [])
+    paid_amount = order.attributes.get("paid_amount", order.attributes.get("total", 0))
+    if not items or paid_amount <= 0 or refund_amount <= 0:
+        return
+    refund_ratio = min(1.0, refund_amount / paid_amount)
+
+    totals_by_store: dict[str, float] = {}
+    for item in items:
+        pid = item.get("product_id")
+        product = kg.get_entity(pid) if pid else None
+        if product is None:
+            continue
+        store_id = product.attributes.get("store_id")
+        if not store_id:
+            continue
+        totals_by_store[store_id] = totals_by_store.get(store_id, 0.0) + (item.get("price", 0) * item.get("qty", 1))
+
+    for store_id, gross_value in totals_by_store.items():
+        debit = round(gross_value * refund_ratio, 2)
+        if debit <= 0:
+            continue
+        store_account = next(
+            (a for a in kg.entities_by_type(EntityType.ACCOUNT) if a.attributes.get("store_id") == store_id),
+            None,
+        )
+        if store_account is not None:
+            _cas_adjust_balance(kg, store_account.entity_id, -debit)
+
+
 def _seller_scoped_kg(kg, seller_id: str):
     """Level 50 (GS-5000): a peer seller's own wallet lives in THEIR OWN
     partition, not the buyer's — reachable from the buyer's kg instance
@@ -3935,13 +3990,26 @@ def find_recipe(kg, name: str):
 
 
 class DelegationCheckCapability:
-    """Level 39 (GS-3900/3901/3902): runs FIRST, before even RecipeExpansion
-    — "on behalf of alice" must be verified before anything else in the
-    pipeline reads the request, since a denied delegation means nothing
-    downstream should run at all, not just that the eventual purchase
-    fails. Verifies a REAL, currently-active KG delegation grant
-    (check_delegation) — expired or revoked delegations are denied with
-    the real reason, never silently treated as "acting for yourself".
+    """Level 39 (GS-3900/3901/3902): "on behalf of alice" must be verified
+    before anything else in the pipeline reads the request, since a
+    denied delegation means nothing downstream should run at all, not
+    just that the eventual purchase fails. Verifies a REAL, currently-
+    active KG delegation grant (check_delegation) — expired or revoked
+    delegations are denied with the real reason, never silently treated
+    as "acting for yourself".
+
+    Does NOT actually run first, or at all, automatically — like every
+    other capability in this file, it only executes when the LLM planner
+    includes it as a plan step (registered in the bus, no fixed pipeline
+    position anywhere in belief_runtime.py/action_executor.py; confirmed
+    by grep). More importantly: there is currently no real path to ever
+    CREATE an active grant this checks for — grant_delegation()
+    (domain_security.py) has zero callers anywhere in src/ or tests/, so
+    check_delegation() can only ever return active=False. Until a real
+    grant-creation entry point exists (an API route or capability that
+    calls grant_delegation), an "on behalf of X" request is denied
+    unconditionally, every time — this is a real, known, currently
+    out-of-scope gap, not a working gate.
 
     When active, context["knowledge_graph"] is REPLACED with a KG scoped
     to the delegator's own real household — every downstream capability
@@ -4581,8 +4649,20 @@ class ProductSelectionCapability:
             return {"success": True, "selected": selected, "planner_decision": True}
 
         question = context.get("question", "")
+        # GS-1500/1501/GS-2000: an item SocialSourcing already borrowed or
+        # negotiated peer-to-peer, or one the household already has enough
+        # of at home (HouseholdCognition), must not also be OFFERED as a
+        # store-purchase candidate — it's already fulfilled. _legacy_handle
+        # (below, confirmed dead — zero callers) already applied this exact
+        # filter; this, the actual active candidate-building path, never
+        # did, so a socially/pantry-fulfilled item was still offered here
+        # and could still be bought a second time from a store.
+        socially_fulfilled = context.get("socially_fulfilled") or {}
+        pantry_fulfilled = context.get("pantry_fulfilled") or {}
         candidates = []
         for phrase in _split_requested_items(question):
+            if phrase in socially_fulfilled or phrase in pantry_fulfilled:
+                continue
             products = open_products(kg, context.get("actor_permissions"),
                                      context.get("actor_attributes"), item_phrase=phrase)
             candidates.append({"request": phrase, "products": tuple(
@@ -4992,6 +5072,29 @@ class OrderConfirmationCapability:
             if context.get("socially_fulfilled") or context.get("pantry_fulfilled"):
                 return {"success": True, "note": "nothing to confirm — already fulfilled", "confirmed": []}
             return {"success": False, "error": "no order to confirm — OrderCreation has not run yet"}
+
+        # Real gap this closes: a plan whose Payment step returned
+        # requires_payment_confirmation (pending UPI authorization, never a
+        # real charge) still let OrderConfirmation — and, unguarded the
+        # same way, Delivery right after it — proceed and report success.
+        # Confirmed live: the planner had silently dropped every
+        # depends_on in the purchase chain (a real, separate planner-
+        # reliability bug also being fixed alongside this), so nothing
+        # blocked these steps on Payment's real outcome at the dependency-
+        # graph level — but even with a correct dependency graph, nothing
+        # here independently verified the money actually moved before
+        # confirming and shipping the order. context["order"] is a stale
+        # OrderCreation-time snapshot (never updated after Payment runs —
+        # its own projector only ever sets it once, on "order_id" in
+        # result), so this can't check IT; a fresh kg.get_entity(order_id)
+        # read is required, same real "payment_status" == "paid" gate
+        # CancelOrder/ReturnOrder/ApproveReturn/RefundOrder already use.
+        order_id = context["order"].get("order_id")
+        if order_id and kg is not None:
+            fresh_order = kg.get_entity(order_id)
+            if fresh_order is not None and fresh_order.attributes.get("payment_status") != "paid":
+                return {"success": False,
+                        "error": f"order {order_id!r} has not been paid for yet — cannot confirm"}
 
         if not products:
             # Level 16/20: an empty cart is only a REAL failure if nothing
@@ -5555,6 +5658,34 @@ async def subscribe_actor_inbox(pr: Any, actor_id: str, actor_role: str) -> bool
                 pr, actor_id, actor_role, payload.get("tasks", []),
                 shared_budget_id=payload.get("shared_budget_id"),
             )
+        elif payload.get("msg_type") == "broadcast":
+            # Real gap this closes: BroadcastToAffiliationCapability
+            # (below) used to only ever call SocietyRuntime.
+            # broadcast_message(), which queues into _message_queue --
+            # a real, correctly-permission-checked recipient list with
+            # NO real consumer anywhere in the live pipeline (its only
+            # reader, cognitive_os/cognitive_os.py::get_messages_for's
+            # caller, has zero external callers itself). A broadcast
+            # need not be answered or executed (unlike a question or a
+            # delegated task) -- the honest, minimal real effect is that
+            # the recipient genuinely KNOWS about it, recorded as real
+            # episodic state they can recall later, the same way
+            # AskActor already records BOTH sides of a question/answer.
+            memory_manager = getattr(pr, "memory_manager", None)
+            if memory_manager is not None:
+                try:
+                    memory_manager.record_experience(
+                        actor_id, kind="broadcast", text=payload.get("message", ""),
+                        metadata={
+                            "timestamp": time.time(),
+                            "from_actor_id": payload.get("from_actor_id", ""),
+                            "from_actor_name": payload.get("from_actor_name", ""),
+                            "correlation_id": payload.get("correlation_id", ""),
+                        },
+                    )
+                except Exception:
+                    logger.debug("subscribe_actor_inbox: record_experience(kind=broadcast) failed for %s", actor_id, exc_info=True)
+            result = {"success": True, "received": True}
         else:
             result = await AnswerQuestionCapability().handle({"context": {
                 "knowledge_graph": pr.knowledge_graph, "actor_id": actor_id,
@@ -5848,7 +5979,7 @@ class DelegateTaskCapability:
     name = "DelegateTask"
 
     @staticmethod
-    def _find_actor_by_id_or_name(pr, target: str):
+    def _find_actor_by_id_or_name(pr, target: str, asker_id: str = ""):
         """Real gap this closed: this only ever matched by name, even
         though llm_planner.py's own DelegateTask prompt guidance (added
         alongside AskActorCapability's identical fix) tells the model to
@@ -5858,15 +5989,42 @@ class DelegateTaskCapability:
         field is ever an id string. Same actor_id-first-then-name-
         fallback order as AskActorCapability.handle() (this capability's
         own docstring already claims "Same target-resolution... shape as
-        AskActorCapability" — this makes that claim true again)."""
+        AskActorCapability" — this makes that claim true again).
+
+        Real gap this closes too: the exact same "Raj" vs "Raj Sharma"
+        partial-name failure AskActorCapability.handle() confirmed live
+        and fixed via reachable_colleagues' first-token fallback was never
+        ported here, despite this method's own docstring (above) claiming
+        target-resolution parity with AskActorCapability — a DelegateTask
+        step with a short/partial name (exactly what the "Reachable
+        colleagues" prompt section can lead a smaller model to write
+        anyway, same as AskActor's own confirmed failure) failed outright
+        instead of resolving, while the identical AskActor call succeeded."""
         target_norm = str(target).strip().lower()
         for sr in pr.all_societies():
             for state in sr.active_actors():
                 if state.actor_id == target:
-                    return sr, state
+                    return sr, state, None
                 if state.profile.identity.name.strip().lower() == target_norm:
-                    return sr, state
-        return None, None
+                    return sr, state, None
+
+        if not asker_id:
+            return None, None, None
+        from src.monkey_brain.kernel.affiliations.reachability import reachable_colleagues
+        candidates = [
+            c for c in reachable_colleagues(pr, asker_id)
+            if c["name"].strip().lower().split(" ")[0] == target_norm
+        ]
+        if len(candidates) == 1:
+            match_id = candidates[0]["actor_id"]
+            for sr in pr.all_societies():
+                state = sr.get_actor(match_id)
+                if state is not None:
+                    return sr, state, None
+        elif len(candidates) > 1:
+            names = ", ".join(c["name"] for c in candidates)
+            return None, None, f"{target!r} is ambiguous — could mean any of: {names}"
+        return None, None, None
 
     @staticmethod
     def _find_alternative_delegate(pr, original_state, excluded_ids: set, asker_id: str):
@@ -5916,9 +6074,10 @@ class DelegateTaskCapability:
         if pr is None:
             return {"success": False, "error": "no planetary_runtime available to resolve target actor"}
 
-        original_sr, original_state = self._find_actor_by_id_or_name(pr, target_name)
+        asker_id = context.get("actor_id", "")
+        original_sr, original_state, ambiguity_error = self._find_actor_by_id_or_name(pr, target_name, asker_id)
         if original_state is None:
-            return {"success": False, "error": f"no actor named {target_name!r} found"}
+            return {"success": False, "error": ambiguity_error or f"no actor named {target_name!r} found"}
 
         if parameters.get("retry_after_failure"):
             # Domain-independent per "MAKE DOMAIN ISOLATION AIRTIGHT": the
@@ -5949,7 +6108,6 @@ class DelegateTaskCapability:
             f"{target_name}, whose responsibilities include: {', '.join(target_goals)}"
             if target_goals else target_name
         )
-        asker_id = context.get("actor_id", "")
         asker_name = str(context.get("actor_role", "")).split(",")[0] or asker_id
 
         correlation_id = context.get("correlation_id") or new_correlation_id()
@@ -6062,15 +6220,27 @@ class BroadcastToAffiliationCapability:
     single named colleague ("can someone help pack Order 123", "everyone
     in Warehouse A stop operations") is a genuine plan-step choice the
     LLM planner makes, not a fallback when AskActor's target lookup
-    fails. Delivery is real: SocietyRuntime.broadcast_message() computes
-    eligible recipients through the same AffiliationCommunicationRouter
-    AskActor uses (shared affiliation, or society membership including
-    temporary presence-driven participants) and queues a real message
-    for each one; nothing here invents a recipient list. Scoped to the
-    sender's own home society — there is no cross-society broadcast."""
+    fails. Recipient computation is real: SocietyRuntime.
+    broadcast_message() resolves eligible recipients through the same
+    AffiliationCommunicationRouter AskActor uses (shared affiliation, or
+    society membership including temporary presence-driven
+    participants); nothing here invents a recipient list. Scoped to the
+    sender's own home society — there is no cross-society broadcast.
+
+    Real gap this closes: broadcast_message() only ever queued into
+    SocietyRuntime._message_queue, which has no live reader anywhere in
+    the running pipeline (its one real consumer,
+    cognitive_os/cognitive_os.py::get_messages_for's caller, is itself
+    dead code with zero external callers) — a sender got an honest-
+    looking delivered_count for a message that reached literally no
+    one. Now genuinely delivered per recipient, same NATS-with-in-
+    process-fallback shape AskActor/DelegateTask already use — publish
+    (fire-and-forget; a broadcast needs no synchronous reply the way a
+    question or delegated task does), to each recipient's own inbox,
+    handled by subscribe_actor_inbox's new msg_type=="broadcast" branch."""
     name = "BroadcastToAffiliation"
 
-    def handle(self, args: dict) -> dict:
+    async def handle(self, args: dict) -> dict:
         context = args.get("context", {})
         parameters = args.get("parameters", {}) or {}
         message = parameters.get("message")
@@ -6083,16 +6253,26 @@ class BroadcastToAffiliationCapability:
             return {"success": False, "error": "no planetary_runtime/actor_id available to broadcast from"}
 
         sender_sr = None
+        sender_state = None
         for sr in pr.all_societies():
-            if sr.get_actor(sender_id) is not None:
-                sender_sr = sr
+            state = sr.get_actor(sender_id)
+            if state is not None:
+                sender_sr, sender_state = sr, state
                 break
         if sender_sr is None:
             return {"success": False, "error": f"sender {sender_id!r} has no home society to broadcast from"}
+        sender_display_name = sender_state.profile.identity.name if sender_state else sender_id
+
+        correlation_id = context.get("correlation_id") or new_correlation_id()
 
         start = time.monotonic()
         recipients = sender_sr.eligible_recipients(sender_id)
-        delivered = sender_sr.broadcast_message(sender_id, "broadcast", {"message": message})
+        # Still real, still the source of truth for WHO is eligible and
+        # WHY (affiliation/society permission) — this permission-checked
+        # queueing keeps happening exactly as before, feeding the same
+        # audit trail and Lemon metrics below. Actual delivery to each
+        # recipient is the separate step right after this.
+        delivered = sender_sr.broadcast_message(sender_id, "broadcast", {"message": message}, correlation_id=correlation_id)
         elapsed_ms = (time.monotonic() - start) * 1000
         _obs.gauge("communication.average_routing_time_ms", elapsed_ms)
         _obs.counter("communication.societies_traversed", 1)
@@ -6100,9 +6280,71 @@ class BroadcastToAffiliationCapability:
             if decision.affiliation_id:
                 _obs.counter("communication.messages_per_affiliation", affiliation_id=decision.affiliation_id)
 
+        nc = getattr(pr, "_nats_client", None)
+        memory_manager = getattr(pr, "memory_manager", None)
+        received_by: list[str] = []
+        for recipient_id in recipients:
+            wire_payload = {
+                "msg_type": "broadcast", "message": message,
+                "from_actor_id": sender_id, "from_actor_name": sender_display_name,
+                "correlation_id": correlation_id,
+            }
+            if nc is not None:
+                try:
+                    import json
+                    await nc.publish(f"monkeybrain.actor.{recipient_id}.inbox", json.dumps(wire_payload).encode())
+                    received_by.append(recipient_id)
+                    continue
+                except Exception:
+                    logger.debug("BroadcastToAffiliation: NATS publish failed for %s, falling back in-process", recipient_id, exc_info=True)
+            # No live NATS connection (or publish failed) — same
+            # non-fatal in-process fallback AskActor/DelegateTask use,
+            # applied here as the identical real effect
+            # subscribe_actor_inbox's broadcast branch has: record it
+            # directly into the recipient's own episodic memory.
+            if memory_manager is not None:
+                try:
+                    memory_manager.record_experience(
+                        recipient_id, kind="broadcast", text=message,
+                        metadata={
+                            "timestamp": time.time(), "from_actor_id": sender_id,
+                            "from_actor_name": sender_display_name, "correlation_id": correlation_id,
+                        },
+                    )
+                    received_by.append(recipient_id)
+                except Exception:
+                    logger.debug("BroadcastToAffiliation: in-process fallback failed for %s", recipient_id, exc_info=True)
+
+        try:
+            from src.monkey_brain.kernel.society.context_stream import ContextEvent, ContextEventType
+            pr.context_stream.publish(ContextEvent(
+                event_type=ContextEventType.INTERACTION,
+                actor_id=sender_id,
+                description=f"{sender_display_name} broadcast to {len(received_by)} recipient(s): {message}",
+                payload={
+                    "from_actor_id": sender_id, "from_actor_name": sender_display_name,
+                    "participants": [sender_id, *received_by],
+                    "society_id": sender_sr.society.society_id,
+                    "society_name": sender_sr.society.name,
+                    "message": message, "recipients": list(recipients), "received_by": received_by,
+                },
+                correlation_id=correlation_id,
+            ))
+        except Exception:
+            logger.debug("handle: suppressed exception", exc_info=True)
+        if memory_manager is not None:
+            try:
+                memory_manager.record_experience(
+                    sender_id, kind="broadcast", text=message,
+                    metadata={"timestamp": time.time(), "sent": True, "correlation_id": correlation_id},
+                )
+            except Exception:
+                logger.debug("BroadcastToAffiliation: sender memory record failed", exc_info=True)
+
         return {
             "success": True, "message": message,
             "recipients": list(recipients), "delivered_count": delivered,
+            "received_by": received_by, "correlation_id": correlation_id,
         }
 
 
@@ -6237,6 +6479,42 @@ class RecordAgreementCapability:
         from src.monkey_brain.kernel.domains.negotiation import record_agreement
         ok, msg = record_agreement(kg, entity_id, agreement)
         return {"success": ok, "entity_id": entity_id, "agreement": agreement, "message": msg}
+
+
+class GetAgreementsCapability:
+    """Game-Theoretic Reasoning: real read path for RecordAgreement's own
+    persisted data. Real gap this closes: RecordAgreement's docstring
+    claims a recorded agreement is "durable world state future reasoning
+    can read back... via the same KG fact-lookup every capability
+    already uses" — but no such fact-lookup existed for it. Unlike
+    place_bid's `bids` (consumed by resolve_auction) or NegotiatePrice's
+    deal (threaded into context["negotiated_prices"] for
+    OrderCreationCapability), a recorded agreement was write-only: the
+    context_stream event at record time is the only place it was ever
+    visible, and only for that one tick — an actor (or its counterparty)
+    in a LATER round, or a different actor checking "did we agree on
+    this?", had no way to ever see it again. This is a plain read of
+    entity_id's real, persisted `agreements` list, nothing computed or
+    inferred."""
+    name = "GetAgreements"
+
+    def handle(self, args: dict) -> dict:
+        context = args.get("context", {})
+        parameters = args.get("parameters", {}) or {}
+        entity_id = parameters.get("entity_id")
+        if not entity_id:
+            return {"success": False, "error": "GetAgreements requires parameters.entity_id"}
+
+        kg = context.get("knowledge_graph")
+        if kg is None:
+            return {"success": False, "error": "no knowledge graph available"}
+
+        entity = kg.get_entity(entity_id)
+        if entity is None:
+            return {"success": False, "error": f"entity {entity_id!r} not found"}
+
+        agreements = list(entity.attributes.get("agreements", []))
+        return {"success": True, "entity_id": entity_id, "agreements": agreements, "count": len(agreements)}
 
 
 class ReportWorldPerturbationCapability:
@@ -7135,12 +7413,22 @@ class PaymentConfirmationCapability:
             sod_check = separation_of_duties_satisfied(kg, context.get("actor_id", ""), wallet, total, order)
             if not sod_check["authorized"]:
                 return {"success": False, "error": f"separation of duties denied: {sod_check['reason']}"}
-            balance = wallet.attributes.get("balance", 0)
-            if balance < total:
-                return {
-                    "success": False,
-                    "error": f"insufficient balance: {wallet.name} has ${balance:.2f}, order total is ${total:.2f}",
-                }
+            # UPI Reserve Pay (kernel/domains/payment_provider.py): a
+            # wallet entity explicitly tagged account_type=="upi_reserve_pay"
+            # has no meaningful local "balance" to check here at all — the
+            # real affordability determination happens at the payer's own
+            # bank, when they approve (or don't) the reserve request in
+            # their UPI app, which this backend has no visibility into
+            # ahead of time. Every other account_type (including no tag at
+            # all, the default for every existing wallet) keeps this exact
+            # check unchanged.
+            if wallet.attributes.get("account_type") != "upi_reserve_pay":
+                balance = wallet.attributes.get("balance", 0)
+                if balance < total:
+                    return {
+                        "success": False,
+                        "error": f"insufficient balance: {wallet.name} has ${balance:.2f}, order total is ${total:.2f}",
+                    }
 
         return {"success": True, "status": "confirmed", "order_id": order.get("order_id"), "total": total}
 
@@ -7153,6 +7441,235 @@ class PaymentCapability:
         context = args.get("context", {})
         kg = context.get("knowledge_graph")
         total = context.get("total", 0)
+        order_id = context.get("order", {}).get("order_id", "")
+
+        def _finalize_successful_payment(
+            wallet, wallet_name: str, bank_name: str, processor_name: str,
+            payment_attempts: list, balance_before, balance_after, account_type,
+        ) -> dict:
+            """Shared tail for EVERY real successful charge, wallet-debit
+            or UPI Reserve Pay alike: confirms the stock/budget holds
+            OrderCreation only placed (Reservation Before Payment — see
+            below), records what was actually paid on the order, builds
+            the honest result shape, applies the delegate-privacy
+            redaction, and writes the audit event. Extracted so UPI's
+            real capture()-success path doesn't have to duplicate this —
+            every one of these side effects applies identically regardless
+            of which payment rail actually landed the charge."""
+            # Reservation Before Payment: the actual stock commit — see
+            # OrderCreationCapability's comment. OrderCreation only placed a
+            # HOLD (try_reserve); confirming it (a permanent decrement) is
+            # deferred to here, the point payment has actually, successfully
+            # landed. A payment that fails anywhere above this line never
+            # reaches this call, so its held stock is never consumed — it
+            # just lapses on its own once the hold expires.
+            if kg:
+                for p in context.get("selected_product") or []:
+                    pid = p.get("id")
+                    qty = p.get("qty", 1)
+                    if pid and qty > 0:
+                        confirm_reservation(kg, pid, order_id)
+                # Shared multi-agent budget (Qualification Gap Closure, Phase
+                # 5): the SAME hold-then-confirm-on-real-payment sequencing as
+                # product reservations directly above — OrderCreation only
+                # placed a hold; converting it into a permanent commit against
+                # the shared ceiling is deferred to here, the point payment has
+                # actually, successfully landed.
+                shared_budget_id = context.get("shared_budget_id")
+                if shared_budget_id:
+                    confirm_reservation(kg, shared_budget_id, order_id)
+                # Goal Cancellation: cancel_order() needs to know WHICH account
+                # to refund and WHAT was actually paid — "status": "confirmed"
+                # alone (written by OrderCreationCapability, before payment
+                # even runs) doesn't mean payment succeeded, so it can't be
+                # trusted as "this order was really paid for". Recording the
+                # real paid wallet/amount here, at the point of a genuine
+                # successful charge, is the only honest signal of that.
+                if wallet is not None and order_id:
+                    kg.update_entity(order_id, attributes={
+                        "paid_wallet_id": wallet.entity_id, "paid_amount": total, "payment_status": "paid",
+                    })
+
+                # Credit the selling side of the transaction — see
+                # kernel/domains/commerce.py::onboard_merchant's own
+                # comment: before this, nothing anywhere credited a
+                # store's account at all; Payment only ever debited the
+                # buyer, and the amount simply vanished rather than
+                # landing anywhere. Splits by each line item's own
+                # store_id (a cart can span multiple stores) and credits
+                # only the goods subtotal (price*qty), not tax/delivery
+                # fee, which aren't the store's own revenue. Uses the
+                # SAME CAS-safe increment _cas_adjust_balance already
+                # provides for peer-to-peer payment (Level 50) — a store
+                # can be credited from many concurrent buyers at once,
+                # the identical concurrency hazard the buyer-side CAS
+                # loop above already guards against.
+                from src.monkey_brain.kernel.knowledge_graph import EntityType as _EntityType
+                totals_by_store: dict[str, float] = {}
+                for p in context.get("selected_product") or []:
+                    sid = p.get("store_id")
+                    if not sid:
+                        continue
+                    totals_by_store[sid] = totals_by_store.get(sid, 0.0) + (p.get("price", 0) * p.get("qty", 1))
+                for sid, sale_amount in totals_by_store.items():
+                    if sale_amount <= 0:
+                        continue
+                    store_account = next(
+                        (a for a in kg.entities_by_type(_EntityType.ACCOUNT) if a.attributes.get("store_id") == sid),
+                        None,
+                    )
+                    if store_account is not None:
+                        _cas_adjust_balance(kg, store_account.entity_id, round(sale_amount, 2))
+
+            result = {
+                "success": True,
+                "payment_id": f"PAY-{int(time.time())}",
+                "amount": total,
+                "wallet": wallet_name,
+                "payment_source": account_type,
+                "bank": bank_name,
+                "processor": processor_name,
+                "payment_attempts": payment_attempts,
+                "wallet_balance_before": balance_before,
+                "wallet_balance_after": balance_after,
+                "status": "completed",
+            }
+
+            # Level 38 (GS-3800/3801): a delegate acting for someone OUTSIDE
+            # their own real household (the common delegation case, Level 39)
+            # needs to know the payment succeeded, not the delegator's exact
+            # account identity or balance — a privacy boundary, distinct from
+            # authorization (Level 39's delegation check already decided this
+            # payment itself is legitimate). A delegate who IS a real household
+            # member of the delegator, or the delegator acting for themselves,
+            # sees the full detail unchanged.
+            acting_as = context.get("acting_as")
+            if acting_as and not is_same_household(acting_as, context.get("actor_id", "")):
+                result["wallet"] = "[redacted]"
+                result["bank"] = "[redacted]"
+                result["wallet_balance_before"] = None
+                result["wallet_balance_after"] = None
+
+            from src.monkey_brain.kernel.pipeline.audit_trail import record_decision_event
+            record_decision_event(
+                "payment_completed", actor_id=context.get("actor_id", ""),
+                execution_id=context.get("execution_id", ""),
+                reason=f"Charged ${total:.2f} via {processor_name}",
+                metadata={"payment_id": result["payment_id"], "order_id": order_id, "amount": total},
+            )
+
+            return result
+
+        def _handle_upi_reserve_pay(wallet, account_type: str) -> dict:
+            """Real UPI Reserve Pay (kernel/domains/payment_provider.py::
+            RazorpayUPIProvider via get_default_provider() — the same
+            singleton the webhook route, api/routes/payments.py, resolves
+            authorizations through). Only reached for a wallet entity
+            explicitly tagged account_type=="upi_reserve_pay" — every
+            other account type keeps using the wallet-debit path below,
+            completely unchanged.
+
+            Two-phase, spanning TWO separate handle() calls: the first
+            reserves and PAUSES (ActionExecutor persists a PendingPayment
+            and the tick stops here — see action_executor.py); the SECOND
+            is the resumed call, after a real webhook confirmed the payer's
+            decision, and either captures for real or reports the honest
+            refusal. context["payment_decision"] (injected by
+            ActionExecutor on resume, never set on a first attempt) is
+            what tells these two calls apart — the same signal
+            approval_decision/negotiation_decision already use for their
+            own pause/resume capabilities.
+            """
+            from src.monkey_brain.kernel.domains.payment_provider import sync_call
+            from src.monkey_brain.kernel.domains.razorpay_upi_provider import get_default_provider
+
+            provider = get_default_provider()
+            payer_id = _paying_actor_id(context)
+
+            # RBAC/SoD re-verified here regardless of which pass this is —
+            # the SAME "verify directly against real current state, don't
+            # trust a prior check" principle every other check in this
+            # function already follows; a resumed capture happens after a
+            # real-world delay (the payer approving in their own app), so
+            # re-checking is the MORE correct application of that
+            # principle here, not a redundant one.
+            ent_check = enterprise_purchase_authorized(kg, context.get("actor_id", ""), wallet, total)
+            if not ent_check["authorized"]:
+                return {"success": False, "error": f"RBAC denied: {ent_check['reason']}"}
+            sod_check = separation_of_duties_satisfied(kg, context.get("actor_id", ""), wallet, total, context.get("order", {}))
+            if not sod_check["authorized"]:
+                return {"success": False, "error": f"separation of duties denied: {sod_check['reason']}"}
+
+            decision = context.get("payment_decision")
+            if decision is not None:
+                # Resumed: a real decision already exists — capture (or
+                # honor a real refusal), never reserve again.
+                if decision is not True:
+                    return {"success": False, "error": "UPI payment was not approved"}
+                reservation_id = context.get("payment_reservation_id", "")
+                cap = sync_call(provider.capture(reservation_id, f"{order_id}:capture"))
+                if not cap.success:
+                    return {"success": False, "error": cap.reason}
+                # The real capture succeeded — the money DID actually
+                # move at the PSP. This wallet's own tracked balance is
+                # the local ledger everything else in this system
+                # (seeding, refunds, store crediting) already treats as
+                # real, so it must be debited here too, the same
+                # CAS-safe way the non-UPI wallet-debit path already is
+                # -- without this, a UPI purchase credited the store
+                # (see _finalize_successful_payment below) while the
+                # buyer's own tracked balance never moved, silently
+                # inflating the total in circulation exactly the way
+                # crediting a store with no matching refund debit did.
+                current = kg.get_entity(wallet.entity_id)
+                balance_before = current.attributes.get("balance", 0) if current else 0
+                if balance_before < total:
+                    return {"success": False,
+                            "error": f"insufficient balance: {wallet.name} has ${balance_before:.2f}, charge is ${total:.2f}"}
+                if not _cas_adjust_balance(kg, wallet.entity_id, -total):
+                    return {"success": False, "error": "payment failed: too much contention on wallet, please retry"}
+                balance_after = round(balance_before - total, 2)
+                # Level 43's single-use consumption, deferred to HERE (not
+                # the reserve pass below) — for UPI, capture is the true
+                # "money moved" point, the direct analog of the CAS wallet
+                # debit above; consuming a single-use approval before the
+                # payer had even approved the UPI collect request would
+                # burn it on a purchase that might never actually happen.
+                if "request_id" in sod_check:
+                    consume_purchase_request(kg, sod_check["request_id"])
+                return _finalize_successful_payment(
+                    wallet, wallet.name, "UPI", provider.name, [],
+                    balance_before=balance_before, balance_after=balance_after, account_type=account_type,
+                )
+
+            # First attempt: reserve (hold funds) — real money is not yet
+            # moved. reserve_idempotency_key is the order_id itself
+            # (already unique and, per OrderCreationCapability's own
+            # resume_order_id, stable across a resumed tick), so a retried
+            # first attempt replays the SAME reservation instead of
+            # creating a second real order.
+            r = sync_call(provider.reserve(total, payer_id, order_id))
+            if not r.success:
+                return {"success": False, "error": r.reason}
+            # Demo-mode only (UPI_AUTO_APPROVE_SECONDS — see its own
+            # docstring): with UPI now every actor's sole payment account,
+            # a real checkout has no debit fallback to pause on instead —
+            # this stands in for the payer actually approving the UPI
+            # collect request, so checkout completes on its own instead of
+            # pausing forever with nothing to ever resolve it.
+            from src.monkey_brain.kernel.domains.razorpay_upi_provider import schedule_auto_approval
+            schedule_auto_approval(r.reservation_id, r.amount)
+            return {
+                "success": False,
+                "requires_payment_confirmation": True,
+                "provider_name": provider.name,
+                "reservation_id": r.reservation_id,
+                "payer_ref": payer_id,
+                "amount": r.amount,
+                "reserve_idempotency_key": order_id,
+                "status": r.status.value,
+                "reason": "awaiting UPI approval",
+            }
 
         # Level 43 (GS-4300): OrderCreation already found this a resumed
         # order that reached a real successful charge in a prior attempt —
@@ -7211,6 +7728,16 @@ class PaymentCapability:
             chosen_id = context.get("chosen_payment_source")
             wallet = kg.get_entity(chosen_id) if chosen_id else _find_wallet(kg, _paying_actor_id(context))
             account_type = wallet.attributes.get("account_type") if wallet else None
+
+            # UPI Reserve Pay dispatch: a wallet explicitly tagged this way
+            # never goes through the simulated payment_processor/CAS-balance
+            # machinery below at all — real money moves (or is refused) via
+            # a real PSP instead. Every other account_type (including no
+            # tag, the default for every existing wallet) falls through to
+            # the unchanged code beneath this block.
+            if wallet is not None and account_type == "upi_reserve_pay":
+                return _handle_upi_reserve_pay(wallet, account_type)
+
             orgs = [e for e in kg.entities_by_type(EntityType.ORGANIZATION)]
             bank = next((e for e in orgs if "bank" in e.name.lower() or e.attributes.get("type") == "bank"), None)
             # GS-2200: try every processor, retrying a transiently-down one
@@ -7315,79 +7842,10 @@ class PaymentCapability:
         else:
             balance_after = _apply_balance_change(balance_before)
 
-        # Reservation Before Payment: the actual stock commit — see
-        # OrderCreationCapability's comment. OrderCreation only placed a
-        # HOLD (try_reserve); confirming it (a permanent decrement) is
-        # deferred to here, the point payment has actually, successfully
-        # landed. A payment that fails anywhere above this line never
-        # reaches this call, so its held stock is never consumed — it
-        # just lapses on its own once the hold expires.
-        order_id = context.get("order", {}).get("order_id", "")
-        if kg:
-            for p in context.get("selected_product") or []:
-                pid = p.get("id")
-                qty = p.get("qty", 1)
-                if pid and qty > 0:
-                    confirm_reservation(kg, pid, order_id)
-            # Shared multi-agent budget (Qualification Gap Closure, Phase
-            # 5): the SAME hold-then-confirm-on-real-payment sequencing as
-            # product reservations directly above — OrderCreation only
-            # placed a hold; converting it into a permanent commit against
-            # the shared ceiling is deferred to here, the point payment has
-            # actually, successfully landed.
-            shared_budget_id = context.get("shared_budget_id")
-            if shared_budget_id:
-                confirm_reservation(kg, shared_budget_id, order_id)
-            # Goal Cancellation: cancel_order() needs to know WHICH account
-            # to refund and WHAT was actually paid — "status": "confirmed"
-            # alone (written by OrderCreationCapability, before payment
-            # even runs) doesn't mean payment succeeded, so it can't be
-            # trusted as "this order was really paid for". Recording the
-            # real paid wallet/amount here, at the point of a genuine
-            # successful charge, is the only honest signal of that.
-            if wallet is not None and order_id:
-                kg.update_entity(order_id, attributes={
-                    "paid_wallet_id": wallet.entity_id, "paid_amount": total, "payment_status": "paid",
-                })
-
-        result = {
-            "success": True,
-            "payment_id": f"PAY-{int(time.time())}",
-            "amount": total,
-            "wallet": wallet_name,
-            "payment_source": account_type,
-            "bank": bank_name,
-            "processor": processor_name,
-            "payment_attempts": payment_result["attempts"],
-            "wallet_balance_before": balance_before,
-            "wallet_balance_after": balance_after,
-            "status": "completed",
-        }
-
-        # Level 38 (GS-3800/3801): a delegate acting for someone OUTSIDE
-        # their own real household (the common delegation case, Level 39)
-        # needs to know the payment succeeded, not the delegator's exact
-        # account identity or balance — a privacy boundary, distinct from
-        # authorization (Level 39's delegation check already decided this
-        # payment itself is legitimate). A delegate who IS a real household
-        # member of the delegator, or the delegator acting for themselves,
-        # sees the full detail unchanged.
-        acting_as = context.get("acting_as")
-        if acting_as and not is_same_household(acting_as, context.get("actor_id", "")):
-            result["wallet"] = "[redacted]"
-            result["bank"] = "[redacted]"
-            result["wallet_balance_before"] = None
-            result["wallet_balance_after"] = None
-
-        from src.monkey_brain.kernel.pipeline.audit_trail import record_decision_event
-        record_decision_event(
-            "payment_completed", actor_id=context.get("actor_id", ""),
-            execution_id=context.get("execution_id", ""),
-            reason=f"Charged ${total:.2f} via {processor_name}",
-            metadata={"payment_id": result["payment_id"], "order_id": order_id, "amount": total},
+        return _finalize_successful_payment(
+            wallet, wallet_name, bank_name, processor_name, payment_result["attempts"],
+            balance_before, balance_after, account_type,
         )
-
-        return result
 
 
 _SHIPPED_ORDER_STATUSES = frozenset({"delivered", "completed", "return_requested", "returned"})
@@ -7461,6 +7919,7 @@ def cancel_order(kg, order_id: str, actor_id: str | None = None) -> dict:
     # charge/credit asymmetry already established.
     new_balance = round(balance - refund_amount, 2) if account_type == "credit" else round(balance + refund_amount, 2)
     kg.update_entity(wallet.entity_id, attributes={"balance": new_balance})
+    _debit_store_accounts_for_refund(kg, order, refund_amount)
 
     restocked = []
     stores_affected = set()
@@ -7612,6 +8071,7 @@ def approve_return(kg, order_id: str, approved_by: str | None = None, now: float
     # Same credit/debit refund-direction asymmetry as cancel_order().
     new_balance = round(balance - refund_amount, 2) if account_type == "credit" else round(balance + refund_amount, 2)
     kg.update_entity(wallet.entity_id, attributes={"balance": new_balance})
+    _debit_store_accounts_for_refund(kg, order, refund_amount)
 
     restocked = []
     for item in order.attributes.get("items", []):
@@ -7739,6 +8199,7 @@ def refund_order(kg, order_id: str, amount: float | None = None, reason: str = "
     # Same credit/debit refund-direction asymmetry as cancel_order().
     new_balance = round(balance - refund_amount, 2) if account_type == "credit" else round(balance + refund_amount, 2)
     kg.update_entity(wallet.entity_id, attributes={"balance": new_balance})
+    _debit_store_accounts_for_refund(kg, order, refund_amount)
 
     new_total_refunded = round(already_refunded + refund_amount, 2)
     refund_record = {"amount": refund_amount, "reason": reason, "refunded_by": refunded_by, "refunded_at": now}
@@ -7818,6 +8279,20 @@ class DeliveryCapability:
                 return {"success": True, "note": "nothing to deliver — already fulfilled"}
             return {"success": False, "error": "no items to deliver"}
 
+        # Real gap this closes: same real bug as OrderConfirmationCapability
+        # (its own docstring explains the full finding — a planner-dropped
+        # depends_on chain let this run even though Payment never actually
+        # succeeded) — a rider was assigned and a real Shipment entity
+        # created for an order that was never paid for. Same fresh-KG-read
+        # "payment_status" == "paid" gate; context["order"] is a stale
+        # OrderCreation-time snapshot, never updated after Payment runs.
+        order_id = (context.get("order") or {}).get("order_id")
+        if order_id:
+            fresh_order = kg.get_entity(order_id)
+            if fresh_order is not None and fresh_order.attributes.get("payment_status") != "paid":
+                return {"success": False,
+                        "error": f"order {order_id!r} has not been paid for yet — cannot arrange delivery"}
+
         from src.monkey_brain.kernel.knowledge_graph import EntityType
 
         store_ids = sorted({p.get("store_id", "") for p in products if p.get("store_id")})
@@ -7889,6 +8364,31 @@ class DeliveryCapability:
         assignments = assignment["assignments"]
         deadline_met = assignment["deadline_met"]
 
+        # Real capacity + tracking (closes the gap create_shipment()'s
+        # own docstring already names: "DeliveryCapability schedules a
+        # rider and returns a delivery_id, but that id is never
+        # persisted"). Each assigned rider gets a real Shipment record
+        # (logistics.py, MB-3019) and is marked unavailable for further
+        # assignment (mark_rider_assigned) until mark_shipment_delivered
+        # releases them back — without this, every rider stayed
+        # "available" forever regardless of how many deliveries they
+        # already carried, since nothing ever recorded an assignment
+        # anywhere a later call could see it. order_id may be empty for
+        # a caller that never threaded a real order through context
+        # (e.g. a standalone scheduling probe) — shipments/capacity
+        # tracking need a real order to attach to, so this is skipped
+        # rather than fabricating one.
+        order_id = context.get("order", {}).get("order_id", "")
+        shipment_ids: list[str] = []
+        if order_id and kg:
+            packages = [{"product_id": p.get("id"), "qty": p.get("qty", 1)} for p in products]
+            for a in assignments:
+                rider = a["rider"]
+                shipment = create_shipment(kg, order_id, packages, rider_id=rider.entity_id)
+                if shipment.get("success"):
+                    shipment_ids.append(shipment["shipment_id"])
+                mark_rider_assigned(kg, rider.entity_id)
+
         if len(assignments) == 1:
             # Single rider (the common case) — same result shape Level 8
             # always returned, unchanged.
@@ -7908,6 +8408,8 @@ class DeliveryCapability:
                 "estimated_minutes": rider_attrs.get("estimated_minutes", 30),
                 "status": "scheduled",
             }
+            if shipment_ids:
+                result["shipment_id"] = shipment_ids[0]
             if assignment["cold_chain"]:
                 result["cold_chain_verified"] = True
             if deadline_minutes is not None:
@@ -7960,6 +8462,8 @@ class DeliveryCapability:
             "delivery_address": delivery_address,
             "status": "scheduled",
         }
+        if shipment_ids:
+            result["shipment_ids"] = shipment_ids
         if assignment["cold_chain"]:
             result["cold_chain_verified"] = True
         if deadline_minutes is not None:

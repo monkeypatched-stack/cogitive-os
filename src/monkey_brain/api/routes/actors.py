@@ -2065,6 +2065,9 @@ async def update_actor(
         p = dataclasses.replace(p, objective=body.objective)
         if state.actor_runtime is not None:
             state.actor_runtime.set_objective(body.objective)
+    if body.metadata is not None:
+        merged_metadata = {**p.metadata, **body.metadata}
+        p = dataclasses.replace(p, metadata=merged_metadata)
     state.profile = p
     pr._save_actors()
     return ActorResponse(

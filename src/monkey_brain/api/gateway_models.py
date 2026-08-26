@@ -413,6 +413,14 @@ class ActorUpdateRequest(BaseModel):
     trust_level: float | None = None
     ownership: str | None = None
     objective: str | None = None
+    metadata: dict[str, Any] | None = None
+    """Merged (not replaced) into the actor's existing profile.metadata —
+    see ActorCreateRequest.metadata above for the strategy-preferences
+    convention EvaluateStrategyCapability (kernel/domains/grocery.py)
+    reads. Real gap this closes: metadata could only ever be set at
+    actor creation; an already-existing actor (e.g. one seeded before
+    scripts/seed_world.py's HUMAN_STRATEGY_METADATA was added) had no
+    way to acquire it afterward."""
 
 
 class ActorResponse(BaseModel):

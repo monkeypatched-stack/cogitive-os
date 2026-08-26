@@ -21,7 +21,9 @@ PATCH  /organizations/{id}          — admin-edit any organization (store, ware
 POST   /riders                      — register a delivery rider
 POST   /wallets                     — create a real payment account
 GET    /wallets/{id}                — read a wallet's real current balance
+DELETE /wallets/{id}                — remove a payment account entirely
 GET    /actors/{id}/wallet          — find an actor's own wallet by owner (no order needed)
+DELETE /actors/{id}/orders          — remove every order this actor placed
 POST   /cart/{actor_id}/items       — add a product to a customer's cart
 GET    /cart/{actor_id}             — view a customer's cart
 POST   /cart/{actor_id}/coupon      — apply a coupon code to a cart
@@ -269,6 +271,65 @@ async def get_wallet(
     return {"wallet_id": wallet_id, "name": wallet.name, **wallet.attributes}
 
 
+@router.post("/wallets/{wallet_id}/topup", tags=["Commerce"])
+async def topup_wallet(
+    wallet_id: str,
+    body: dict[str, Any],
+    request: Request,
+    user_id: str = Depends(require_permission("perm-manage-actors")),
+) -> dict[str, Any]:
+    """Dev/demo-only: adds real money to a wallet with no corresponding
+    real-world funding source — an actor's UPI Reserve Pay balance has no
+    top-up/deposit flow at all (real gap this closes), so exercising a
+    real Razorpay capture end-to-end sometimes needs a demo actor to
+    simply have more funds than their seeded starting balance, with no
+    real bank/card transfer behind it. Same _cas_adjust_balance CAS
+    primitive Payment/refunds already use (kernel/domains/grocery.py) —
+    real, contention-safe balance arithmetic, not a raw overwrite;
+    perm-manage-actors-gated, same as delete_wallet right below."""
+    from src.monkey_brain.kernel.knowledge_graph import EntityType
+    from src.monkey_brain.kernel.domains.grocery import _cas_adjust_balance
+
+    try:
+        amount = float(body.get("amount"))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="body.amount must be a real number")
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="body.amount must be positive — use a real debit/refund flow to reduce a balance")
+
+    kg = _kg(request)
+    wallet = kg.get_entity(wallet_id)
+    if wallet is None or wallet.entity_type != EntityType.ACCOUNT:
+        raise HTTPException(status_code=404, detail=f"no such wallet {wallet_id!r}")
+    balance_before = wallet.attributes.get("balance", 0)
+    if not _cas_adjust_balance(kg, wallet_id, amount):
+        raise HTTPException(status_code=409, detail="topup failed: too much contention on wallet, please retry")
+    balance_after = round(balance_before + amount, 2)
+    return {"success": True, "wallet_id": wallet_id, "balance_before": balance_before, "balance_after": balance_after}
+
+
+@router.delete("/wallets/{wallet_id}", tags=["Commerce"])
+@idempotent("wallets.delete")
+async def delete_wallet(
+    wallet_id: str,
+    request: Request,
+    user_id: str = Depends(require_permission("perm-manage-actors")),
+) -> dict[str, Any]:
+    """Real removal of a payment account — kg.remove_entity (same primitive
+    delete_product already uses), not a soft-delete/retag. Added alongside
+    the UPI-Reserve-Pay-only payment model: an actor's old debit/cash
+    account is genuinely gone, not just deprioritized, so it can never be
+    resolved by _find_wallet/find_payment_sources again."""
+    from src.monkey_brain.kernel.knowledge_graph import EntityType
+
+    kg = _kg(request)
+    wallet = kg.get_entity(wallet_id)
+    if wallet is None or wallet.entity_type != EntityType.ACCOUNT:
+        raise HTTPException(status_code=404, detail=f"no such wallet {wallet_id!r}")
+    kg.remove_entity(wallet_id)
+    return {"success": True, "wallet_id": wallet_id}
+
+
 @router.get("/actors/{actor_id}/wallet", tags=["Commerce"])
 async def get_actor_wallet(
     actor_id: str,
@@ -289,6 +350,46 @@ async def get_actor_wallet(
         if entity.attributes.get("owner") == actor_id:
             return {"wallet_id": entity.entity_id, "name": entity.name, **entity.attributes}
     raise HTTPException(status_code=404, detail=f"no wallet found for actor {actor_id!r}")
+
+
+@router.delete("/actors/{actor_id}/orders", tags=["Commerce"])
+async def delete_actor_orders(
+    actor_id: str,
+    request: Request,
+    user_id: str = Depends(require_permission("perm-manage-actors")),
+) -> dict[str, Any]:
+    """Real removal of every order this actor placed (attributes["buyer_id"]
+    — the same field finance.py::assess_transaction_risk's velocity check
+    reads). A genuine reset of test/demo order history — kg.remove_entity
+    per order, not a soft-delete or status change — so a velocity-based
+    fraud check (MB-3014) sees a clean window afterward rather than being
+    bypassed or special-cased for testing.
+
+    Cascades to each order's Shipment entities (logistics.py::create_shipment)
+    too — leaving one behind orphans attributes["order_id"] on a deleted
+    order, which world_validator.py's referential_integrity check (correctly)
+    flags as shipment_references_missing_order and refuses to execute on."""
+    from src.monkey_brain.kernel.knowledge_graph import EntityType
+
+    kg = _kg(request)
+    order_ids = [
+        e.entity_id for e in kg.entities_by_type(EntityType.EVENT)
+        if e.attributes.get("buyer_id") == actor_id
+    ]
+    order_id_set = set(order_ids)
+    shipment_ids = [
+        e.entity_id for e in kg.entities
+        if e.attributes.get("shipment") is True and e.attributes.get("order_id") in order_id_set
+    ]
+    for shipment_id in shipment_ids:
+        kg.remove_entity(shipment_id)
+    for order_id in order_ids:
+        kg.remove_entity(order_id)
+    return {
+        "success": True, "actor_id": actor_id,
+        "orders_removed": len(order_ids), "order_ids": order_ids,
+        "shipments_removed": len(shipment_ids), "shipment_ids": shipment_ids,
+    }
 
 
 # ── Products ────────────────────────────────────────────────────────────

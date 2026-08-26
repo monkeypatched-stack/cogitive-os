@@ -26,7 +26,6 @@ from src.knowledge.item import KnowledgeItem, Modality
 from src.monkey_brain.kernel.learn.epa.epistemic import EpistemicState, BeliefState, KnowledgeConfidence
 from src.monkey_brain.kernel.execute.agent_mesh import ExecutionPool, AgentSpec, AgentRole
 from src.monkey_brain.kernel.cognitive_kernel import CognitiveKernel
-from src.monkey_brain.kernel.capabilities.icapability import CapabilityEffects
 from src.monkey_brain.kernel.loss_driven_repair import LossDrivenRepair
 
 
@@ -206,11 +205,6 @@ def run_memory_benchmarks():
         ep = ExecutionPool(KnowledgePack())
         for _ in range(100): ep.spawn(AgentSpec(role=AgentRole.WORKER))
     results.append(('Agent pool: 100 agents', bench_memory('100 agents', ep_100)))
-
-    # CapabilityEffects serialization
-    effects = CapabilityEffects(world=['a', 'b'], knowledge=['c'], confidence_delta=0.3, enable=['d'])
-    results.append(('CapabilityEffects: to_dict', bench_memory('effects dict', lambda: effects.to_dict())))
-    results.append(('CapabilityEffects: roundtrip', bench_memory('effects roundtrip', lambda: (lambda d: CapabilityEffects.from_dict(d))(effects.to_dict()))))
 
     return results
 

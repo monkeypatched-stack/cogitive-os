@@ -105,6 +105,19 @@ def _find_wallet(kg, actor_id: str | None = None):
     personal one — an actor can have both a personal wallet and a shared
     household wallet in their KG, and groceries are a household expense.
     Falls back to any wallet-ish account, then the first account at all.
+
+    UPI Reserve Pay (kernel/domains/payment_provider.py) accounts
+    (account_type=="upi_reserve_pay") are only picked when they're the
+    ONLY real payment account an actor has. Every actor is now UPI-only
+    (scripts/seed_world.py::ensure_wallet no longer creates a regular
+    debit/cash wallet at all) — but preferring a non-UPI account WHEN one
+    genuinely exists still matters for any transitional/mixed state (a
+    household with an unmigrated legacy wallet, or a typed food_assistance/
+    credit account from Level 26): without that preference, an actor with
+    both would have their charge routed to whichever account happens to
+    sort first by entity_id — real money (or a real, asynchronous UPI
+    pause) decided by tie-break order, not by anyone's actual choice or
+    the system's own UPI-first policy.
     """
     from src.monkey_brain.kernel.knowledge_graph import EntityType
     # kg.entities' order isn't guaranteed (Neo4j's MATCH has no ORDER BY,
@@ -114,6 +127,11 @@ def _find_wallet(kg, actor_id: str | None = None):
     accounts = sorted((e for e in kg.entities if e.entity_type == EntityType.ACCOUNT), key=lambda e: e.entity_id)
     if actor_id is not None:
         accounts = [a for a in accounts if _owned_by(kg, a, actor_id)]
+    non_upi = [a for a in accounts if a.attributes.get("account_type") != "upi_reserve_pay"]
+    # Prefer a non-UPI account if one genuinely exists (see docstring);
+    # otherwise UPI Reserve Pay is the only account there is, and IS the
+    # correct default now, not something to exclude down to nothing.
+    accounts = non_upi or accounts
     household = next((e for e in accounts if e.attributes.get("household") is True), None)
     if household is not None:
         return household
@@ -202,14 +220,32 @@ def attempt_borrowing(credit_account, shortfall: float) -> dict:
     inflated one household's wallet to -$20M), not an acceptable
     fallback. A shortfall beyond the extension limit is an honest
     failure, reported with the real numbers, never silently absorbed.
+
+    Cumulative, not per-call: emergency_extension_limit bounds how far
+    PAST credit_limit this account may EVER sit at once, not how much
+    can be borrowed in any single transaction — the limit itself is
+    static seed data, so the only honest way to know how much
+    headroom is actually left is to read how much of it is already
+    outstanding (balance already past credit_limit) on THIS call.
+    Without this, a limit "used" by one purchase was fully available
+    again on the very next one (nothing ever persists usage against
+    it), reintroducing exactly the unbounded-overspend failure mode
+    this function's own docstring says was already proven real — just
+    one layer up, at the emergency-extension cap instead of the plain
+    balance.
     """
     if credit_account is None:
         return {"approved": False, "reason": "no credit account available to extend"}
     limit = credit_account.attributes.get("emergency_extension_limit", 0)
-    if shortfall <= limit:
-        return {"approved": True, "extension_used": round(shortfall, 2), "remaining_extension": round(limit - shortfall, 2)}
+    credit_limit = credit_account.attributes.get("credit_limit", 0)
+    balance = credit_account.attributes.get("balance", 0)
+    already_used = max(0.0, balance - credit_limit)
+    remaining = round(limit - already_used, 2)
+    if shortfall <= remaining:
+        return {"approved": True, "extension_used": round(shortfall, 2), "remaining_extension": round(remaining - shortfall, 2)}
     return {"approved": False,
-            "reason": f"shortfall ${shortfall:.2f} exceeds the ${limit:.2f} emergency extension limit"}
+            "reason": f"shortfall ${shortfall:.2f} exceeds the ${remaining:.2f} remaining emergency extension "
+                      f"(${limit:.2f} limit, ${already_used:.2f} already in use)"}
 
 
 # ── Processing & spending limits ──────────────────────────────────────

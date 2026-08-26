@@ -55,6 +55,30 @@ def _actor_query_result(question: str, actor_id: str, result: Any) -> tuple[dict
     if achieved:
         answer += " successfully"
 
+    # Real gap this closes: RespondToInquiryCapability (kernel/domains/
+    # grocery.py) is Autonomous Dialogue's termination signal — its own
+    # docstring says "An orchestrator watches for this action name to know
+    # the conversation is over" and parameters["answer"] is the real,
+    # planner-written natural-language answer to whoever asked the original
+    # question. But this — the actual HTTP-facing orchestrator a caller's
+    # answer comes back through — never watched for it at all: `answer`
+    # above was always this generic "executed through the planetary cycle"
+    # string, silently discarding the real answer every time (confirmed
+    # live, repeatedly, across this session's own /prompt calls). plan.steps
+    # and actions are parallel, same-order lists (one action per step) —
+    # cross-reference by index to find which action, if any, was a
+    # successful RespondToInquiry step, and surface ITS real answer instead.
+    plan_steps = value.get("plan", {}).get("steps", []) if isinstance(value, dict) else []
+    for index, action in enumerate(actions):
+        if not isinstance(action, dict) or index >= len(plan_steps):
+            continue
+        step = plan_steps[index]
+        step_action = step.get("action") if isinstance(step, dict) else None
+        if step_action == "RespondToInquiry" and action.get("success"):
+            respond_answer = (action.get("result") or {}).get("answer")
+            if respond_answer:
+                answer = respond_answer
+
     query_result = {
         "question": question,
         "answer": answer,

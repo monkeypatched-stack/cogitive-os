@@ -4286,6 +4286,9 @@ class PlanetaryRuntime:
                 logger.warning("Redis client close failed: %s", exc)
         if getattr(app.state, "planetary_runtime", None) is self:
             app.state.planetary_runtime = None
+        from src.monkey_brain.api.routes.payments import get_default_planetary_runtime, set_default_planetary_runtime
+        if get_default_planetary_runtime() is self:
+            set_default_planetary_runtime(None)
         logger.info("PlanetaryRuntime shutdown complete")
 
     # ── Serialization ────────────────────────────────────────────────────
