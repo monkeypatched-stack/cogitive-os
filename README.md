@@ -33,6 +33,10 @@ That decomposition is explicitly summarized in the final architectural principle
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/29fecbd3-8922-45d7-b80d-eb351a1a9fea" />
 
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/807cd63e-a7d0-4bab-970a-ff85de6e4b4d" />
+
+
 ## How It Works
 
 *Condensed from the CognitiveOS paper's Abstract and §1–3. Full text
