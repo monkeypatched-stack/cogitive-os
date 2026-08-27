@@ -1,5 +1,12 @@
 """Edge Actor — an actor running on an edge node.
 
+STATUS (Cloud/Edge Actor Convergence): standalone tabular-RL prototype,
+disconnected from the real Actor Registry/CognitiveActor/governance model
+— see src/sync/edge_server.py's module docstring for the full status note
+and src/monkey_brain/actor_runtime.py for the real, governed edge
+deployment path. Kept unchanged for backward compatibility with its own
+existing tests (tests/unit/test_edge_cloud.py).
+
 Layer 2 (Belief Formation) + Layer 3 (Decision) for edge-deployed actors.
 
 Each EdgeActor maintains:

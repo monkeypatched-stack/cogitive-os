@@ -1506,6 +1506,26 @@ class Kernel:
         tick_interval = int(os.getenv("AGENTOS_TICK_INTERVAL", "300"))
         planetary.start_auto_tick(interval_seconds=tick_interval)
 
+        # Start the Actor Lifecycle Controller's reconciliation — independent
+        # of auto-tick above: this reconciles actor LIFECYCLE (desired vs.
+        # observed state — crash recovery, suspend/resume/terminate
+        # follow-through), never actor cognition. Two loops (Horizontal
+        # Scheduler Scaling, Section 26/27): a fast, event-driven queue
+        # drain (ACTOR_RECONCILE_QUEUE_INTERVAL, default 2s — reacts to a
+        # registration/desired-state/placement change almost immediately)
+        # and a slow full-table backstop sweep (ACTOR_LIFECYCLE_RECONCILE_
+        # INTERVAL, default 300s — a crashed actor is still noticed well
+        # within one stale-threshold window, ACTOR_LIFECYCLE_STALE_SECONDS,
+        # default 600s, even relying on the backstop alone).
+        lifecycle_interval = int(os.getenv("ACTOR_LIFECYCLE_RECONCILE_INTERVAL", "300"))
+        queue_interval = float(os.getenv("ACTOR_RECONCILE_QUEUE_INTERVAL", "2.0"))
+        queue_batch_size = int(os.getenv("ACTOR_RECONCILE_QUEUE_BATCH_SIZE", "50"))
+        queue_concurrency = int(os.getenv("ACTOR_RECONCILE_QUEUE_CONCURRENCY", "10"))
+        planetary.start_actor_lifecycle_reconciliation(
+            interval_seconds=lifecycle_interval, queue_interval_seconds=queue_interval,
+            queue_batch_size=queue_batch_size, queue_concurrency=queue_concurrency,
+        )
+
     # 23. Initialize the Code Generation Runtime
     #
     # Purpose:

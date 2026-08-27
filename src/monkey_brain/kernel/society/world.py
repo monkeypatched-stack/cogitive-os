@@ -565,6 +565,26 @@ class SharedWorld:
         self._capabilities[capability.capability_id] = capability
         self._bump_version()
 
+    def record_capability(self, *, capability_id: str = "", name: str = "",
+                          description: str = "", requirements: tuple[str, ...] = (),
+                          confidence: float = 1.0) -> WorldCapability:
+        """Register (or re-register) a named capability as a versioned
+        world fact. CognitiveOS Constitution: "knowledge, policies and
+        capabilities are versioned infrastructure" -- WorldCapability.version
+        was declared but add_capability() had zero real callers anywhere in
+        the codebase, so the field never carried a live value. Re-recording
+        the same capability_id bumps version instead of silently
+        overwriting it back to 0, so the version genuinely tracks how many
+        times a capability's world-facing description has changed."""
+        existing = self._capabilities.get(capability_id) if capability_id else None
+        capability = WorldCapability(
+            capability_id=capability_id or uuid4().hex, name=name, description=description,
+            requirements=requirements, confidence=confidence,
+            version=(existing.version + 1) if existing is not None else 0,
+        )
+        self.add_capability(capability)
+        return capability
+
     def capabilities(self) -> tuple[WorldCapability, ...]:
         return tuple(self._capabilities.values())
 
@@ -609,6 +629,23 @@ class SharedWorld:
     def add_policy(self, policy: WorldPolicy) -> None:
         self._policies[policy.policy_id] = policy
         self._bump_version()
+
+    def record_policy(self, *, policy_id: str = "", name: str = "", description: str = "",
+                      rules: tuple[str, ...] = (), scope: str = "",
+                      confidence: float = 1.0) -> WorldPolicy:
+        """Register (or re-register) a named policy as a versioned world
+        fact -- same bridging purpose as record_capability() above, for
+        SocietyGovernanceEngine.add_policy() (society/governance.py) and
+        any other real policy registration path. Re-recording the same
+        policy_id bumps version rather than resetting it."""
+        existing = self._policies.get(policy_id) if policy_id else None
+        policy = WorldPolicy(
+            policy_id=policy_id or uuid4().hex, name=name, description=description,
+            rules=rules, scope=scope, confidence=confidence,
+            version=(existing.version + 1) if existing is not None else 0,
+        )
+        self.add_policy(policy)
+        return policy
 
     def policies(self) -> tuple[WorldPolicy, ...]:
         return tuple(self._policies.values())

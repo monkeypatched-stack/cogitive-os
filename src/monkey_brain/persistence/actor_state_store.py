@@ -38,6 +38,19 @@ class PersistedActorState:
     last_cycle: float = 0.0
     world_snapshot: bytes = b""  # Phase 1: World snapshot (pickled)
     world_version: int = 0  # Phase 1: World version number
+    last_model_provider: str = ""
+    """CognitiveOS Constitution: "persistent actors survive interruption,
+    restart and changing models." Actor state itself was already
+    provider-agnostic (belief/plan, never raw model output, is the
+    persisted substrate), so a model swap never broke continuity
+    functionally -- but nothing recorded WHICH provider/model last
+    reasoned about this actor, so there was no way to audit continuity
+    across a model change, only across a same-model process restart.
+    Populated from ModelBackend.stats()["provider"] at the same
+    checkpoint call that persists belief (see PlanetaryRuntime.
+    checkpoint_actor_belief)."""
+    last_model_name: str = ""
+    """Same provenance as last_model_provider, e.g. "claude-sonnet-4-6"."""
 
 
 class ActorStateStore:
@@ -117,6 +130,8 @@ class ActorStateStore:
                 "is_active": actor_state.is_active,
                 "cycle_count": actor_state.cycle_count,
                 "last_cycle": actor_state.last_cycle,
+                "last_model_provider": actor_state.last_model_provider,
+                "last_model_name": actor_state.last_model_name,
             }
 
             # Upsert (insert or update)
@@ -175,6 +190,8 @@ class ActorStateStore:
                 is_active=doc.get("is_active", True),
                 cycle_count=doc.get("cycle_count", 0),
                 last_cycle=doc.get("last_cycle", 0.0),
+                last_model_provider=doc.get("last_model_provider", ""),
+                last_model_name=doc.get("last_model_name", ""),
             )
 
             logger.debug("[actor_state_store] Loaded actor %s (tenant=%s, v%d, world_v%d)",
@@ -310,6 +327,8 @@ class ActorStateStore:
                     is_active=doc.get("is_active", True),
                     cycle_count=doc.get("cycle_count", 0),
                     last_cycle=doc.get("last_cycle", 0.0),
+                    last_model_provider=doc.get("last_model_provider", ""),
+                    last_model_name=doc.get("last_model_name", ""),
                 )
                 result[doc["actor_id"]] = state
 
@@ -351,6 +370,8 @@ class ActorStateStore:
                     "is_active": actor_state.is_active,
                     "cycle_count": actor_state.cycle_count,
                     "last_cycle": actor_state.last_cycle,
+                    "last_model_provider": actor_state.last_model_provider,
+                    "last_model_name": actor_state.last_model_name,
                 }
 
                 from pymongo import ReplaceOne

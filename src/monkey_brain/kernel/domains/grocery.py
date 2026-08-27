@@ -5837,24 +5837,45 @@ class AskActorCapability:
                 names = ", ".join(c["name"] for c in candidates)
                 return {"success": False, "error": f"{target_name!r} is ambiguous — could mean any of: {names}"}
         if target_state is None:
-            return {"success": False, "error": f"no actor named {target_name!r} found"}
-
-        target_id = target_state.actor_id
-        # Real gap this closes: target_name is whatever the planner wrote
-        # in parameters.target_actor — since the "Reachable colleagues"
-        # prompt section (llm_planner.py) now correctly leads the model to
-        # write the exact actor_id there (confirmed live) rather than a
-        # display name, target_name itself is now often a raw id string.
-        # Everywhere a HUMAN-READABLE name is needed below uses the real
-        # resolved name instead — target_name/target_id stay as the
-        # original parameter/resolved id for lookup and error-message
-        # purposes only.
-        target_display_name = target_state.profile.identity.name
-        target_goals = list(target_state.profile.goals) if target_state.profile.goals else []
-        target_role = (
-            f"{target_display_name}, whose responsibilities include: {', '.join(target_goals)}"
-            if target_goals else target_display_name
-        )
+            # Deployment Architecture (Section 8 / Top 10 item 4): every
+            # search above only ever looks at pr.all_societies() — actors
+            # genuinely resident in THIS process's memory. An actor
+            # registered on a DIFFERENT node was previously reported "no
+            # actor named X found" even when it genuinely existed — the
+            # durable Actor Registry (locate_actor), not this process's
+            # in-memory set, is the real source of truth for "does this
+            # actor exist." locate_actor() is a cheap, no-side-effect
+            # registry read (no cognition reconstruction), tried only as a
+            # last resort after the exact-id and reachable-colleagues name
+            # fallbacks above, so this never changes behavior for the
+            # overwhelmingly common same-process case.
+            registry_entry = pr.locate_actor(target_name)
+            if registry_entry is None or not registry_entry.actor_id:
+                return {"success": False, "error": f"no actor named {target_name!r} found"}
+            target_id = registry_entry.actor_id
+            target_display_name = registry_entry.name or target_id
+            # No goals available from the lightweight registry record (by
+            # design — locate_actor never reconstructs cognition) — the
+            # role description degrades to just the name rather than
+            # fabricating responsibilities this process has no way to know.
+            target_role = target_display_name
+        else:
+            target_id = target_state.actor_id
+            # Real gap this closes: target_name is whatever the planner wrote
+            # in parameters.target_actor — since the "Reachable colleagues"
+            # prompt section (llm_planner.py) now correctly leads the model to
+            # write the exact actor_id there (confirmed live) rather than a
+            # display name, target_name itself is now often a raw id string.
+            # Everywhere a HUMAN-READABLE name is needed below uses the real
+            # resolved name instead — target_name/target_id stay as the
+            # original parameter/resolved id for lookup and error-message
+            # purposes only.
+            target_display_name = target_state.profile.identity.name
+            target_goals = list(target_state.profile.goals) if target_state.profile.goals else []
+            target_role = (
+                f"{target_display_name}, whose responsibilities include: {', '.join(target_goals)}"
+                if target_goals else target_display_name
+            )
         asker_id = context.get("actor_id", "")
         # actor_role context isn't reliably populated on this real
         # pipeline invocation path (confirmed live: always empty here,
@@ -5912,12 +5933,27 @@ class AskActorCapability:
                 # time) and any transport error both land here — an
                 # honest failure, never a guessed/fabricated answer.
                 return {"success": False, "error": f"{target_display_name} did not respond within 90s ({exc})"}
-        else:
+        elif target_state is not None:
             result = await AnswerQuestionCapability().handle({"context": {
                 "knowledge_graph": pr.knowledge_graph, "actor_id": target_id,
                 "actor_role": target_role, "question": question,
                 "planetary_runtime": pr,
             }})
+        else:
+            # No NATS connection AND the target isn't resident in this
+            # process — there is no way to reach it. The in-process
+            # AnswerQuestionCapability fallback above is only correct when
+            # the target genuinely lives in THIS process's memory
+            # (target_state is not None); calling it for a registry-only,
+            # remote target_id would silently answer using whatever local
+            # actor_id happens to match, or fail confusingly deep inside
+            # AnswerQuestionCapability instead of here, honestly, at the
+            # one place that actually knows why.
+            return {
+                "success": False,
+                "error": f"{target_display_name} is on a different node and no NATS connection "
+                         "is available to reach it",
+            }
         if not result.get("success"):
             return {"success": False, "error": result.get("error", f"{target_display_name} could not answer")}
 

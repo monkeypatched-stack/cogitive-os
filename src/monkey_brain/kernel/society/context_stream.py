@@ -34,6 +34,13 @@ class ContextEventType(Enum):
     SOCIETY_TICK = "society_tick"
     TEMPORARY_MEMBERSHIP_GRANTED = "temporary_membership_granted"
     TEMPORARY_MEMBERSHIP_REVOKED = "temporary_membership_revoked"
+    ACTOR_LIFECYCLE = "actor_lifecycle"
+    """Actor Lifecycle Controller: one event per lifecycle transition
+    (ActorStarting/ActorReady/ActorSuspended/ActorFailed/etc — see
+    actor_lifecycle.py's LifecycleEvent). Distinct from ACTION (a
+    capability the actor's cognition executed) and WORLD_UPDATE (a change
+    to shared reality) — this is the controller managing the actor as a
+    deployment unit, not the actor acting in the world."""
 
 
 @dataclass(frozen=True)
@@ -168,6 +175,7 @@ class SocietyContextStream:
         if len(self._events) > self._max_history:
             self._events = self._events[-self._max_history:]
         self._dirty = True
+        self._validate_causal_lineage(stamped)
         if self._nats_client is not None:
             # Fire-and-forget: publish() is called from many existing
             # sync call sites across the codebase — changing it to a
@@ -193,6 +201,34 @@ class SocietyContextStream:
             except Exception:
                 logger.debug("publish: subscriber %r failed", subscriber, exc_info=True)
         return stamped
+
+    def _validate_causal_lineage(self, event: ContextEvent) -> None:
+        """CognitiveOS Constitution: "causal dependencies are runtime
+        invariants." correlation_id/causation_id were, until this check,
+        purely optional str="" fields threaded by convention at real call
+        sites — nothing anywhere validated that a downstream event
+        (one with a causation_id, meaning something upstream produced it)
+        actually carries the correlation_id of the end-to-end operation it
+        belongs to. Without that, the causal chain can be pointed-at
+        (causation_id) but never walked back to the operation it's part
+        of (correlation_id).
+
+        This is deliberately non-blocking: many existing call sites don't
+        set these fields yet, and rejecting/mutating the event here would
+        turn an observability gap into a functional regression. The point
+        is to make the previously-silent gap OBSERVABLE (log + metric),
+        not to enforce it by fiat before every caller has been audited."""
+        if event.causation_id and not event.correlation_id:
+            from src.monkey_brain.kernel.compile import _obs
+            logger.warning(
+                "context_stream: event %s (%s, provenance=%r) has causation_id=%r but no "
+                "correlation_id -- causal chain cannot be traced back to its originating operation",
+                event.event_id, event.event_type.value, event.provenance, event.causation_id,
+            )
+            _obs.counter(
+                "context_stream.causal_lineage_violations",
+                event_type=event.event_type.value, provenance=event.provenance,
+            )
 
     def subscribe(self, callback: Callable[[ContextEvent], None]) -> None:
         self._subscribers.append(callback)

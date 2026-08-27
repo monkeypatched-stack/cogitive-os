@@ -7,16 +7,27 @@ metadata:
     app: agentos
     component: cognitive-runtime
 spec:
-  # Pinned at 1, not an oversight: MB_WORLD_TENSOR_PATH (kernel/compile/
-  # world_tensor.py) is a process-global singleton that loads once at
-  # boot and does last-write-wins saves to a single local file — real,
-  # active state at this configuration since MB_WORLD_TENSOR=true in
-  # agentos-config. RunStore/TimelineStore ARE genuinely Redis-backed
-  # and multi-worker-safe (see kernel/timeline/store.py), but that does
-  # NOT cover this file, so raising replicas today would silently drop
-  # learned world-tensor transitions from whichever pod loses the last
-  # write, not just fail to scale. Raise only after world_tensor.py
-  # gains a shared (Redis-backed, same pattern as RunStore) store.
+  # Pinned at 1, not an oversight. UPDATE: all four blockers this comment
+  # originally documented are now fixed at the code level. (1) kernel/
+  # compile/world_tensor.py defaults (AGENTOS_WORLD_BACKEND=auto) to a
+  # shared, Redis-backed, per-tenant store instead of one process-global,
+  # last-write-wins local file. (2) SocietyGovernanceEngine (kernel/
+  # society/governance.py) policies/permissions/trust/safety/audit now all
+  # persist through PlanetaryRuntime._save_societies()/_load_societies()
+  # on every live mutation. (3) PlanetaryRuntime.unregister_actor() now
+  # checkpoints belief before removing an actor and searches every managed
+  # society, not only the default one. (4) SocietyRuntime._message_queue
+  # is now backed by a durable, per-actor Redis inbox (PlanetaryRuntime.
+  # push_actor_message/drain_actor_inbox) instead of an in-process list.
+  #
+  # This is NOT the same claim as "validated safe at replicas > 1 in
+  # production." Every fix above was verified by direct code tracing and
+  # unit tests against Redis fakes — no process was actually run at
+  # replicas > 1 against real load or a real Redis cluster as part of this
+  # work. Raising this value is now a deliberate operator decision to make
+  # after real multi-replica validation, not a decision this file makes
+  # for you. See DEPLOYMENT_ARCHITECTURE.md's Section 10 for the full,
+  # itemized history of what was fixed and what remains unverified.
   replicas: 1
   selector:
     matchLabels:

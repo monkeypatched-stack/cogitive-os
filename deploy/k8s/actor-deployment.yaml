@@ -1,0 +1,171 @@
+# CognitiveOS Actor — deployment template for ONE Actor's independently-
+# deployable runtime (src/monkey_brain/actor_runtime.py), the Actor
+# Artifact model (docs/ACTOR_ARTIFACT.md).
+#
+# Same substrate precedent edge-actor-deployment.yaml already established:
+# no separate image/build target — this uses the SAME monkeybrain/agentos
+# image as deployment.yaml, differing only in the container `command:`
+# (Section 12: "Do not require a different Actor implementation for
+# Docker. The Docker image should simply package the Actor binary.").
+# Unlike edge-actor-deployment.yaml (which boots the old, disconnected
+# EdgeActor prototype), this boots the REAL, governed CognitiveActor via
+# PlanetaryRuntime — the same cognition, capabilities, and
+# TransitionGate-enforced authority the cloud deployment uses, just
+# possibly placed on an edge/device/robot node.
+#
+# This is a TEMPLATE — render it once PER ACTOR:
+#
+#   ACTOR_ID=alice ACTOR_NODE_CLASS=edge \
+#     envsubst '${ACTOR_ID} ${ACTOR_NODE_CLASS}' \
+#     < deploy/k8s/actor-deployment.yaml | kubectl apply -f -
+#
+# `replicas: 1`, same reasoning as edge-actor-deployment.yaml: this is a
+# genuine one-actor-per-process deployment (ACTOR_NODE_CAPACITY=1) — N
+# identical replicas behind one Service would mean requests randomly land
+# on N different Actors' processes even though it's the SAME actor_id, an
+# ambiguity this Actor Runtime does not resolve (only ONE of the N would
+# actually hold the actor's registry lease and reach READY; the others
+# would sit at SCHEDULED_ELSEWHERE/RESTORING forever, wasting the
+# resource, not causing corruption — the Actor Registry lease still
+# closes the split-brain risk, but this is not the intended shape).
+#
+# ACTOR_NODE_CLASS distinguishes CLOUD/EDGE/DEVICE/ROBOT scheduling intent
+# only (docs/ACTOR_SCHEDULER.md) — it selects NOTHING about which
+# cognitive code runs. The Actor abstraction is identical regardless.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cognitiveos-actor-${ACTOR_ID}
+  namespace: monkeybrain
+  labels:
+    app: cognitiveos-actor
+    component: actor-runtime
+    actor-id: "${ACTOR_ID}"
+    node-class: "${ACTOR_NODE_CLASS}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cognitiveos-actor
+      actor-id: "${ACTOR_ID}"
+  template:
+    metadata:
+      labels:
+        app: cognitiveos-actor
+        actor-id: "${ACTOR_ID}"
+        node-class: "${ACTOR_NODE_CLASS}"
+    spec:
+      # Real CognitiveActor boot restores belief via ActorStateStore
+      # (Mongo) and reconciles through the Actor Lifecycle Controller —
+      # heavier than edge_server.py's near-instant boot (a bare
+      # EdgeActor object), lighter than the full cloud deployment.yaml's
+      # ~295-agent boot (this process hosts exactly one Actor). 60s
+      # covers the common case without carrying deployment.yaml's full
+      # 120s allowance for a workload this much smaller in scope.
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: cognitiveos-actor
+          image: monkeybrain/agentos:latest
+          command:
+            - python
+            - -m
+            - uvicorn
+            - src.monkey_brain.actor_runtime:app
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "8051"
+          ports:
+            - containerPort: 8051
+              name: http
+          envFrom:
+            - configMapRef:
+                name: agentos-config
+                # Same shared Redis/Mongo/Neo4j/NATS endpoints the cloud
+                # deployment uses (Section 17: never hard-code a specific
+                # node's address) — this Actor's Registry/state/world
+                # access is the SAME Society infrastructure, regardless
+                # of where this particular Actor executes.
+          env:
+            - name: ACTOR_ID
+              value: "${ACTOR_ID}"
+            - name: ACTOR_NODE_CLASS
+              value: "${ACTOR_NODE_CLASS}"
+            - name: ACTOR_NODE_CAPACITY
+              value: "1"
+            - name: ACTOR_CLAIM_PLACEMENT
+              # This deployment IS the placement decision for this
+              # specific actor_id (Section 19) -- an operator rendering
+              # this template for ACTOR_ID=alice is explicitly choosing
+              # to host alice here, not asking the Scheduler to pick
+              # among several candidate nodes for her.
+              value: "true"
+            - name: ACTOR_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ACTOR_ARTIFACT_VERSION
+              value: "${ACTOR_ARTIFACT_VERSION:-1.0.0}"
+            - name: NEO4J_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agentos-secrets
+                  key: neo4j-password
+          resources:
+            # Deliberately smaller than deployment.yaml's cloud footprint
+            # (Section 14: different Actors may require radically
+            # different resources) -- an operator deploying a
+            # heavier/GPU-bound Actor overrides these per rendering, the
+            # Scheduler's own ActorPlacementRequirements is the
+            # placement-time expression of the same idea
+            # (docs/ACTOR_SCHEDULER.md).
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8051
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            # /ready returns 503 until this specific actor_id is
+            # confirmed ACTIVE and resident HERE (not merely "process
+            # started") -- see ActorRuntime.status()'s ReadinessState.
+            httpGet:
+              path: /ready
+              port: 8051
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /live
+              port: 8051
+            periodSeconds: 5
+            failureThreshold: 20
+            timeoutSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cognitiveos-actor-${ACTOR_ID}
+  namespace: monkeybrain
+  labels:
+    app: cognitiveos-actor
+    actor-id: "${ACTOR_ID}"
+spec:
+  selector:
+    app: cognitiveos-actor
+    actor-id: "${ACTOR_ID}"
+  ports:
+    - port: 8051
+      targetPort: 8051
+      protocol: TCP
+      name: http
+  type: ClusterIP

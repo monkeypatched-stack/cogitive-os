@@ -1,0 +1,16 @@
+apiVersion: cognitiveos/v1
+kind: Actor
+metadata:
+  name: conformance-buyer
+spec:
+  artifact: cognitiveos-actor
+  version: "1.0.0"
+  placement:
+    node_class: cloud
+  resources:
+    capacity: 1
+  configuration:
+    goals:
+      - get_best_grocery_deals
+    objective: cost
+    tenant_id: default

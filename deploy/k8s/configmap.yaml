@@ -5,8 +5,36 @@ metadata:
   namespace: monkeybrain
 data:
   MONGODB_URL: "mongodb://mongodb:27017"
+  # Final Conformance run finding (live deployment test): ActorStateStore's
+  # own Mongo connection (persistence/db_pool.py) reads DATABASE_URL, NOT
+  # MONGODB_URL (which only the Society API's own /health check and a few
+  # other call sites use) — a real, pre-existing naming split between
+  # subsystems, confirmed live by running a real container against this
+  # exact env var set and watching ActorStateStore fail to connect while
+  # MONGODB_URL-reading code paths succeeded. Both are set so every
+  # subsystem this ConfigMap feeds (deployment.yaml AND actor-deployment.yaml)
+  # resolves correctly — this does not rename or unify the application
+  # code's own env var conventions, only ensures deployment config
+  # supplies every name the code actually reads.
+  DATABASE_URL: "mongodb://mongodb:27017/cognitive_platform"
   DB_NAME: "demo"
   REDIS_URL: "redis://redis:6379"
+  # Same finding, more severe: PlanetaryRuntime's own Redis client
+  # (kernel/society/integration.py — the Actor Registry/Scheduler/
+  # Lifecycle Controller/reconciliation-queue substrate this entire
+  # session's control-plane work depends on) reads REDIS_HOST/REDIS_PORT,
+  # NOT REDIS_URL. Before this fix, NEITHER deployment.yaml NOR
+  # actor-deployment.yaml ever supplied these — meaning a real Kubernetes
+  # deployment of this application would have booted with
+  # PlanetaryRuntime._redis silently None (the documented fail-soft
+  # fallback), never actually persisting the Actor Registry/leases/node
+  # registry/reconcile queue to Redis at all, with no error surfaced
+  # anywhere except a WARNING log line. Confirmed live: a real container
+  # run against REDIS_URL alone reproduced exactly this ("Redis not
+  # available: ... Connection refused") before REDIS_HOST/REDIS_PORT were
+  # added.
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
   NEO4J_URI: "bolt://neo4j:7687"
   NEO4J_USER: "neo4j"
   # NEO4J_PASSWORD intentionally NOT here — a ConfigMap is plaintext-
@@ -14,6 +42,16 @@ data:
   # supplied to the container as a real env var via secret.yaml's
   # agentos-secrets Secret (see deployment.yaml's env: block).
   MB_WORLD_TENSOR: "true"
+  # MB_WORLD_TENSOR_PATH is now only the FALLBACK single-file store, used
+  # when AGENTOS_WORLD_BACKEND resolves to "memory" or Redis is genuinely
+  # unreachable — kernel/compile/world_tensor.py's default
+  # (AGENTOS_WORLD_BACKEND=auto, unset here) now prefers the shared,
+  # multi-replica-safe Redis-backed store (kernel/compile/
+  # redis_world_store.py) whenever REDIS_URL above is reachable, which it
+  # already is in this deployment. Left set so a Redis outage still
+  # degrades to a working, if process-local, world tensor rather than none
+  # at all. See deployment.yaml's `replicas` comment for what this does
+  # and does not unblock.
   MB_WORLD_TENSOR_PATH: "/data/world_tensor.json"
   AGENTOS_AUTH_REQUIRED: "true"
   # Was unset here — require_opa()/evaluate_full() (services.common.opa,

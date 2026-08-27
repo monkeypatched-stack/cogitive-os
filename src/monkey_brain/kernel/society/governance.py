@@ -234,6 +234,16 @@ class SocietyGovernanceEngine:
     def all_trust_records(self) -> tuple[TrustRecord, ...]:
         return tuple(self._trust_records.values())
 
+    def restore_trust_record(self, record: TrustRecord) -> None:
+        """Reinstate a previously-persisted TrustRecord verbatim (actor_id,
+        score, evidence_count, factors, last_evaluated all preserved) —
+        distinct from evaluate_trust(), which computes a NEW record
+        relative to whatever this engine currently holds. Used only by
+        PlanetaryRuntime's society-reload path (_load_societies), so a
+        restart doesn't silently reset every actor's trust to the
+        TrustRecord default."""
+        self._trust_records[record.actor_id] = record
+
     # ── Audit ────────────────────────────────────────────────────────────
 
     def audit(self, actor_id: str, action: str, policy_id: str = "",
@@ -245,6 +255,15 @@ class SocietyGovernanceEngine:
         )
         self._audit_log.append(entry)
         return entry
+
+    def restore_audit_entry(self, entry: AuditEntry) -> None:
+        """Reinstate a previously-persisted AuditEntry verbatim, including
+        its original timestamp — distinct from audit(), which always
+        mints a fresh entry via time.time(). Used only by PlanetaryRuntime's
+        society-reload path; callers must restore entries in original
+        (oldest-first) order so audit_log()'s own log[-limit:] slicing
+        stays chronological."""
+        self._audit_log.append(entry)
 
     def audit_log(self, *, actor_id: str | None = None,
                   limit: int = 100) -> tuple[AuditEntry, ...]:

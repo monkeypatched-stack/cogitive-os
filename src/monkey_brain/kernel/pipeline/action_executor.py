@@ -42,9 +42,22 @@ class ActionExecutor:
         pre_execute_hook: Callable[[dict], None] | None = None,
         propose_transition: Callable[[Action, dict], ProposedTransition | None] | None = None,
         transition_gate: TransitionGate | None = None,
+        connectivity_check: Callable[[str], tuple[bool, str, str]] | None = None,
     ) -> None:
         self._capability_bus = capability_bus
         self._failure_rate = failure_rate
+        # Cloud/Edge Actor Convergence, Section 11/31: offline-safety gate,
+        # evaluated BEFORE the negotiation gate below (a capability this
+        # node can't safely reach authority for is refused before it's
+        # even worth asking whether it needs negotiation). None (the
+        # default) preserves exactly the prior behavior for every existing
+        # caller — this only takes effect for a caller that explicitly
+        # opts in (kernel/pipeline/offline_safety.py::make_connectivity_check,
+        # wired by the edge runtime). See offline_safety.py for the
+        # capability classification and connectivity assessment; this
+        # class only calls the hook and turns a refusal into a real
+        # ActionOutcome — it has no offline-safety policy of its own.
+        self._connectivity_check = connectivity_check
         # Pre-commit negotiation gate: same "vertical injects, executor
         # stays domain-agnostic" principle as pre_execute_hook/
         # context_projector below. A vertical that wants a class of
@@ -284,8 +297,24 @@ class ActionExecutor:
                 # all -- behaves exactly as before for those.
                 gate_decision = None
                 gated_outcome = None
+                if self._connectivity_check is not None:
+                    allowed, waiting_state, reason = self._connectivity_check(action.capability)
+                    if not allowed:
+                        # Refused before the capability is ever invoked --
+                        # same "never call handle() for a gated action"
+                        # contract the negotiation gate below establishes.
+                        # Never reached for TRANSITION_GATE gating below
+                        # since gated_outcome is already set.
+                        gated_outcome = ActionOutcome(
+                            action_id=action.action_id, success=False,
+                            result={"waiting_state": waiting_state, "capability": action.capability},
+                            error=reason, latency_ms=0.0,
+                        )
+                        from src.monkey_brain.kernel.compile import _obs
+                        _obs.counter("offline_safety.blocked.total", waiting_state=waiting_state, capability=action.capability)
                 if (
-                    self._propose_transition is not None
+                    gated_outcome is None
+                    and self._propose_transition is not None
                     and self._transition_gate is not None
                     and isinstance(context, dict)
                 ):
@@ -388,7 +417,12 @@ class ActionExecutor:
 
                 if gated_outcome is not None:
                     outcome = gated_outcome
-                    if gate_decision.requires_negotiation and context.get("negotiation_decision") is None:
+                    # gate_decision is None when this outcome came from the
+                    # connectivity gate above (refused before the
+                    # transition gate ever ran) -- that path never needs
+                    # negotiation-store bookkeeping, only the transition
+                    # gate's own requires_negotiation path does.
+                    if gate_decision is not None and gate_decision.requires_negotiation and context.get("negotiation_decision") is None:
                         if not waiting_for_negotiation:
                             from src.monkey_brain.kernel.pipeline.negotiation_store import (
                                 PendingNegotiation, save_pending_negotiation,
@@ -770,12 +804,29 @@ class ActionExecutor:
                 )
 
             if self._capability_bus is None:
-                # No capability bus — simulate success
-                logger.debug("[executor] No capability bus, simulating: %s", action.capability)
+                # No capability bus — simulate success. CognitiveOS
+                # Constitution: "capabilities are the boundary between
+                # cognition and reality" / "every consequential transition
+                # is observable and auditable" — this branch is exactly
+                # where that boundary degrades to a no-op, so it must never
+                # be silent. Previously logger.debug (invisible in
+                # production) and no telemetry/audit trail at all; a
+                # capability with real state-mutating intent could report
+                # success here and nothing downstream could tell the
+                # difference from a genuine commit. "governed": False is
+                # the explicit marker _publish_action_event below keys off
+                # to still surface this as an auditable event, distinct
+                # from a real business outcome.
+                logger.warning(
+                    "[executor] No capability bus wired — simulating %s with NO governance "
+                    "(no TransitionGate check, no real state mutation)", action.capability,
+                )
+                from src.monkey_brain.kernel.compile import _obs
+                _obs.counter("capability.calls.total", capability=action.capability, status="ungoverned")
                 return ActionOutcome(
                     action_id=action.action_id,
                     success=True,
-                    result={"simulated": True, "capability": action.capability},
+                    result={"simulated": True, "governed": False, "capability": action.capability},
                     latency_ms=0.0,
                 )
 
@@ -839,7 +890,19 @@ class ActionExecutor:
                 cap_status = "rejected"
             else:
                 cap_status = "failed"
-            _obs.counter("capability.calls.total", capability=action.capability, status=cap_status)
+            # gate_wired: real per-call visibility into whether this
+            # capability's tick was even eligible for TransitionGate
+            # governance (propose_transition/transition_gate are opt-in
+            # per vertical — see __init__'s docstring). This doesn't make
+            # gating structurally mandatory (that's a vertical's own
+            # domain-knowledge decision the executor can't make for it),
+            # but it turns "was this action ever considered for gating"
+            # from an invisible constructor default into a queryable metric.
+            gate_wired = self._propose_transition is not None and self._transition_gate is not None
+            _obs.counter(
+                "capability.calls.total", capability=action.capability,
+                status=cap_status, gate_wired=str(gate_wired),
+            )
             _obs.histogram("capability.duration_ms", latency, capability=action.capability)
 
             return ActionOutcome(
@@ -865,10 +928,13 @@ class ActionExecutor:
 
     def _publish_action_event(self, action: Action, outcome: ActionOutcome, context: Any) -> None:
         """MB-3051 Context Propagation: publish one real ContextEvent for
-        this action outcome. Skips purely SIMULATED outcomes (no real
-        capability_bus wired, or the stochastic-failure-rate path) —
-        those never touched real state, so publishing them as a
-        business event would be dishonest, not just incomplete.
+        this action outcome. SIMULATED outcomes (no real capability_bus
+        wired, or the stochastic-failure-rate test path) never touched
+        real state, so publishing them as an ordinary business ACTION
+        event would be dishonest — they're either skipped (the synthetic
+        test-failure path) or published as a distinct, unambiguously
+        "UNGOVERNED" event (the no-capability-bus path) instead, never as
+        a real outcome. See the governed-marker check below.
 
         Both prior caveats on this docstring are now closed: the live
         request pipeline (PlanetaryRuntime.execute_actor_request ->
@@ -880,10 +946,34 @@ class ActionExecutor:
         """
         if self._context_stream is None:
             return
-        if isinstance(outcome.result, dict) and outcome.result.get("simulated"):
-            return
-
         from src.monkey_brain.kernel.society.context_stream import ContextEvent, ContextEventType
+
+        if isinstance(outcome.result, dict) and outcome.result.get("simulated"):
+            # A genuinely ungoverned "no capability bus" outcome (see
+            # _execute_action's "governed": False marker) must still be
+            # observable/auditable, even though it never touched real
+            # state — publishing it as a normal ACTION event would claim a
+            # business outcome that didn't happen, so it gets its own,
+            # unambiguously-labeled event instead. The stochastic-
+            # failure-rate test path (result carries "simulated" but no
+            # "governed" key) keeps the original skip — that's a
+            # deliberately synthetic test outcome, not a real governance
+            # gap, and was never dishonest to omit.
+            if isinstance(outcome.result, dict) and outcome.result.get("governed") is False:
+                actor_id = context.get("actor_id", "") if isinstance(context, dict) else ""
+                self._context_stream.publish(ContextEvent(
+                    event_type=ContextEventType.ACTION, actor_id=actor_id,
+                    description=(
+                        f"UNGOVERNED: {action.capability} reported success with no capability "
+                        f"bus wired — no real state mutation occurred, no TransitionGate ran"
+                    ),
+                    payload={
+                        "capability": action.capability, "action_id": outcome.action_id,
+                        "governed": False, "simulated": True,
+                    },
+                    provenance="executor:ungoverned",
+                ))
+            return
 
         actor_id = context.get("actor_id", "") if isinstance(context, dict) else ""
         description = f"{action.capability} failed: {outcome.error}"

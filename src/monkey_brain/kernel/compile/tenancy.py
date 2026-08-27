@@ -103,6 +103,15 @@ class TenantWorld:
         if self._store is not None:
             self._store.flush()
 
+    @property
+    def is_store_backed(self) -> bool:
+        """True when tensors are persisted via an external store (Redis or
+        local-disk shards) rather than kept only in this process's memory.
+        world_tensor.py's _maybe_save() uses this to decide whether to
+        flush() the store (per-tenant, external, cross-process-visible)
+        instead of writing a single whole-world JSON file."""
+        return self._store is not None
+
     def observe(self, tenant_id: str, src: str, dst: str, *, shared: bool = False, **kw) -> None:
         """Write a transition into a tenant's PRIVATE world (or the shared one). A tenant
         can only ever write its own private world."""

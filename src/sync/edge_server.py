@@ -1,6 +1,27 @@
 """Edge server — a minimal, independently-deployable ASGI process hosting
 ONE actor's edge-node execution domain (src/sync/edge_actor.py::EdgeActor).
 
+STATUS (Cloud/Edge Actor Convergence): this module and EdgeActor predate
+the real Actor Registry/Lifecycle Controller/Scheduler and the governed,
+LLM-driven CognitiveActor's registry-integrated cross-process
+reconstruction (all built later in this codebase's history). EdgeActor is
+a standalone, disconnected, tabular-RL-only prototype — its actor_id is
+just a string label, tied to no real ActorIdentity/ActorProfile, no
+governance, no capabilities, no NATS. It is kept exactly as-is, unchanged,
+for backward compatibility with its own existing tests
+(tests/unit/test_edge_cloud.py) and the "Thesis 14" edge/cloud sync
+demonstration it's part of (src/sync/edge_node.py, cloud_aggregator.py,
+edge_cloud_sync.py) — not because it is the recommended path for a real
+edge deployment.
+
+For a real edge/device/robot deployment of the actual governed
+CognitiveActor — the SAME Actor abstraction used in the cloud, with real
+belief, capabilities, and TransitionGate-enforced authority — use
+src/monkey_brain/actor_runtime.py instead (docs/ACTOR_ARTIFACT.md,
+docs/CLOUD_EDGE_ACTOR_ARCHITECTURE.md). That module boots a real
+PlanetaryRuntime-backed Actor Runtime; this one boots the standalone
+EdgeActor prototype described above.
+
 This is the real deployment vehicle for the "Actor A / CognitiveOS A /
 Edge" box in the per-actor architecture diagram: unlike the main
 cloud/society deployment (src/monkey_brain/api/main.py, pinned to

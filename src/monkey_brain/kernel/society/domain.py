@@ -50,13 +50,27 @@ class ActorType(Enum):
 class ActorStatus(Enum):
     """Step 13.6: REGISTERED/INITIALIZED added to make the actor lifecycle
     explicit — extending this enum rather than introducing a second, parallel
-    lifecycle enum (the two would have overlapped on ACTIVE/SUSPENDED/RETIRED)."""
+    lifecycle enum (the two would have overlapped on ACTIVE/SUSPENDED/RETIRED).
+
+    Actor Lifecycle Controller (kernel/society/actor_lifecycle_controller.py):
+    this is the OBSERVED state an actor's own runtime reports, distinct from
+    ActorDesiredState (actor_lifecycle.py) — what the control plane wants.
+    SUSPENDED and RETIRED were declared here but never assigned anywhere in
+    the codebase before the Lifecycle Controller; SUSPENDED is now real
+    (ActorLifecycleController.suspend_actor). RETIRED remains unused/
+    deprecated — TERMINATED (added below) is the controller's real
+    terminal-removal state and uses different, explicit vocabulary rather
+    than silently repurposing RETIRED's ambiguous prior meaning. FAILED is
+    also new: the controller's own crash-detection signal (a RUNNING-desired
+    actor whose registry record has gone stale with no lease held)."""
     REGISTERED = "registered"
     INITIALIZED = "initialized"
     ACTIVE = "active"
     IDLE = "idle"
     SUSPENDED = "suspended"
     RETIRED = "retired"
+    FAILED = "failed"
+    TERMINATED = "terminated"
     UNKNOWN = "unknown"
 
 

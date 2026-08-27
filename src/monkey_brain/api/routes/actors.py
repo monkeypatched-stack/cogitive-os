@@ -15,6 +15,15 @@ POST   /actors/{id}/tick      — trigger one cognitive tick
 POST   /actors/{id}/observe   — trigger observation only
 POST   /actors/{id}/plan      — trigger planning only
 POST   /actors/{id}/execute   — trigger execution only
+GET    /actors/registry       — Actor Registry: every actor known, any node
+GET    /actors/{id}/registry  — Actor Registry: one actor's durable record
+POST   /actors/{id}/lifecycle — Actor Lifecycle Controller: set desired state
+GET    /actors/{id}/lifecycle — Actor Lifecycle Controller: desired/observed/history
+GET    /scheduler/nodes       — Actor Scheduler: every known execution node
+GET    /actors/{id}/placement — Actor Scheduler: this actor's desired/observed node
+POST   /actors/{id}/migrate   — Actor Scheduler: deliberate rescheduling
+POST   /actors/apply          — cogctl apply: declarative ActorSpecification (create-or-update)
+POST   /actors/{id}/restart   — cogctl restart: suspend then resume, same actor_id
 """
 from __future__ import annotations
 
@@ -26,6 +35,7 @@ import time
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
 
 from src.monkey_brain.api.audit_decorator import audited
 from src.monkey_brain.api.dependencies import require_permission, require_self_or_permission
@@ -617,6 +627,31 @@ async def list_actors(
     return results
 
 
+@router.get("/actors/registry", tags=["Actors"])
+async def list_actor_registry(request: Request,
+                              user_id: str = Depends(require_permission("perm-view-actors"))) -> list[dict]:
+    """Every Actor this PlanetaryRuntime's durable registry knows about,
+    across every society and regardless of which node last wrote each
+    record — the Control Plane visibility primitive (Deployment
+    Architecture, Sections 5-7): "any Execution Node can discover any
+    Actor." Distinct from GET /actors above, which only lists actors
+    resident in THIS process's memory; this reads the shared Redis
+    registry directly, so it also surfaces actors another node registered.
+    Registered ahead of GET /actors/{actor_id} below so "registry" is
+    never matched as a path parameter."""
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        return []
+    return [
+        {
+            "actor_id": e.actor_id, "actor_type": e.actor_type, "name": e.name,
+            "society_id": e.society_id, "status": e.status, "node_id": e.node_id,
+            "updated_at": e.updated_at,
+        }
+        for e in pr.list_registry()
+    ]
+
+
 @router.post("/actors", response_model=ActorResponse, tags=["Actors"])
 async def create_actor(
     body: ActorCreateRequest,
@@ -834,6 +869,172 @@ async def get_actor(
         ownership=state.profile.ownership,
         objective=state.profile.objective,
     )
+
+
+@router.get("/actors/{actor_id}/registry", tags=["Actors"])
+async def get_actor_registry_entry(actor_id: str, request: Request,
+                                   user_id: str = Depends(require_permission("perm-view-actors"))) -> dict:
+    """Actor Registry lookup (Deployment Architecture, Section 7/8): does
+    `actor_id` exist, what lifecycle status was it last recorded in, and
+    which node last owned it — without reconstructing the actor's
+    cognition. This is the durable-registry read path a scheduler or a
+    cross-process AskActor resolver would use; unlike GET /actors/{id}
+    above (which requires the actor resident in THIS process's memory),
+    this also answers correctly for an actor another node registered."""
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    entry = pr.locate_actor(actor_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail=f"Actor {actor_id} not found in registry")
+    return {
+        "actor_id": entry.actor_id, "actor_type": entry.actor_type, "name": entry.name,
+        "society_id": entry.society_id, "status": entry.status, "node_id": entry.node_id,
+        "updated_at": entry.updated_at,
+    }
+
+
+class ActorLifecycleRequest(BaseModel):
+    desired_state: str
+    """One of "running" | "suspended" | "terminated" — see
+    kernel/society/actor_lifecycle.py::ActorDesiredState."""
+    reason: str = ""
+
+
+@router.post("/actors/{actor_id}/lifecycle", tags=["Actors"])
+async def set_actor_lifecycle(
+    actor_id: str, body: ActorLifecycleRequest, request: Request,
+    user_id: str = Depends(require_permission("perm-manage-actors")),
+    _agent: dict = Depends(require_opa("agentos/routes/allow", action="lifecycle", resource="actor")),
+) -> dict:
+    """Actor Lifecycle Controller (Deployment Architecture, Section 5):
+    durably records the desired state and immediately attempts one
+    reconciliation pass, so a caller sees a best-effort synchronous result
+    rather than only "queued for the next background sweep" — but the
+    background reconciliation loop (PlanetaryRuntime.start_actor_lifecycle_
+    reconciliation) is what actually guarantees eventual consistency if
+    this immediate attempt can't complete (e.g. another node currently
+    holds the actor's lease, or the actor lives on a different node
+    entirely). This route only changes DEPLOYMENT lifecycle — it never
+    grants authority; the actor still passes through governance/
+    TransitionGate/capability authorization on every real action exactly
+    as before (Section 14)."""
+    from src.monkey_brain.kernel.society.actor_lifecycle import ActorDesiredState
+
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    try:
+        desired = ActorDesiredState(body.desired_state.strip().lower())
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=f"invalid desired_state {body.desired_state!r} — must be one of "
+                   f"{[s.value for s in ActorDesiredState]}",
+        )
+    pr.lifecycle.set_desired_state(actor_id, desired, reason=body.reason)
+    result = pr.lifecycle.reconcile(actor_id)
+    return {
+        "actor_id": actor_id, "desired_state": desired.value,
+        "action_taken": result.action, "succeeded": result.succeeded,
+        "observed_before": result.observed_before, "reason": result.reason,
+    }
+
+
+@router.get("/actors/{actor_id}/lifecycle", tags=["Actors"])
+async def get_actor_lifecycle(
+    actor_id: str, request: Request,
+    user_id: str = Depends(require_permission("perm-view-actors")),
+) -> dict:
+    """Desired vs. observed state (the Kubernetes `kubectl describe pod`
+    analog) plus recent lifecycle history — answers "why is it not
+    running," "when did it last transition," and "is it recovering"
+    (Section 22)."""
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    desired = pr.lifecycle.get_desired_state(actor_id)
+    observed = pr.lifecycle.observe(actor_id)
+    history = pr.lifecycle.lifecycle_history(actor_id, limit=20)
+    return {
+        "actor_id": actor_id,
+        "desired_state": desired.value,
+        "observed": {
+            "exists": observed.exists, "status": observed.status, "node_id": observed.node_id,
+            "updated_at": observed.updated_at, "is_stale": observed.is_stale,
+            "resident_here": observed.resident_here, "lease_held": observed.lease_held,
+            "desired_node_id": observed.desired_node_id,
+        },
+        "history": history,
+    }
+
+
+@router.get("/scheduler/nodes", tags=["Scheduler"])
+async def list_scheduler_nodes(
+    request: Request, user_id: str = Depends(require_permission("perm-view-actors")),
+) -> dict:
+    """Every execution node the Actor Scheduler currently knows about
+    (health recomputed for heartbeat staleness at read time — the
+    `kubectl get nodes` analog). An empty list means this deployment is
+    running in unmanaged single-node mode: the Scheduler leaves every
+    actor's placement unconstrained rather than declaring them
+    unschedulable."""
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    return {"nodes": [n.to_dict() for n in pr.list_nodes()]}
+
+
+@router.get("/actors/{actor_id}/placement", tags=["Scheduler"])
+async def get_actor_placement(
+    actor_id: str, request: Request, user_id: str = Depends(require_permission("perm-view-actors")),
+) -> dict:
+    """This actor's current Scheduler placement: desired node
+    (what the Scheduler decided) vs. observed node (where the registry
+    last saw it actually running) — the placement analog of GET
+    /actors/{id}/lifecycle's desired-vs-observed state split."""
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    observed = pr.lifecycle.observe(actor_id)
+    if not observed.exists:
+        raise HTTPException(status_code=404, detail=f"Actor {actor_id} not found in registry")
+    requirements = pr.get_actor_placement_requirements(actor_id)
+    return {
+        "actor_id": actor_id,
+        "desired_node_id": observed.desired_node_id,
+        "observed_node_id": observed.node_id,
+        "requirements": requirements.to_dict(),
+    }
+
+
+class ActorMigrateRequest(BaseModel):
+    target_node_id: str | None = None
+    """Explicit target node, or omitted to let the Scheduler pick a
+    fresh placement (kernel/society/actor_scheduler.py::ActorScheduler.
+    migrate_actor)."""
+
+
+@router.post("/actors/{actor_id}/migrate", tags=["Scheduler"])
+async def migrate_actor(
+    actor_id: str, body: ActorMigrateRequest, request: Request,
+    user_id: str = Depends(require_permission("perm-manage-actors")),
+    _agent: dict = Depends(require_opa("agentos/routes/allow", action="lifecycle", resource="actor")),
+) -> dict:
+    """Deliberate rescheduling (Actor Scheduler spec, Section 14) — safe
+    checkpoint-and-restart, never live migration. Only takes local effect
+    (checkpoint + suspend) if this actor happens to be resident on the
+    node handling this request; otherwise it durably records the new
+    desired placement and the actor's own hosting node picks up the
+    evacuation on its next reconciliation pass."""
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    decision = pr.scheduler.migrate_actor(actor_id, target_node_id=body.target_node_id)
+    return {
+        "actor_id": actor_id, "scheduled": decision.scheduled, "node_id": decision.node_id,
+        "reason": decision.reason,
+    }
 
 
 @router.get("/actors/{actor_id}/societies", tags=["Actors"])
@@ -2064,15 +2265,15 @@ async def delete_actor(
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
     # Full deletion (unlike leave_society/DELETE /memberships, which only
-    # detach one organizational link): unregister cognition from its home
-    # society, then clean up every remaining organizational membership so
-    # no dangling SocietyMembershipRegistry record points at a deleted actor.
+    # detach one organizational link): unregister cognition from wherever
+    # it lives, then clean up every remaining organizational membership so
+    # no dangling SocietyMembershipRegistry record points at a deleted
+    # actor. PlanetaryRuntime.unregister_actor() now does the "search
+    # every managed society" work this route used to do inline (the same
+    # fix also gave it a checkpoint-before-terminate step this route never
+    # had — belief was previously discarded unflushed on every DELETE).
     memberships = pr.societies_for_actor(actor_id)
-    deleted = False
-    for sr in pr.all_societies():
-        if sr.unregister_actor(actor_id):
-            deleted = True
-            break
+    deleted = pr.unregister_actor(actor_id)
     for society_id in memberships:
         pr.leave_society(actor_id, society_id)
     if deleted:
@@ -3464,4 +3665,134 @@ async def tick_team(
         "team_id": result.team_id,
         "actors_ticked": list(result.actors_ticked),
         "duration_ms": result.duration_ms,
+    }
+
+
+# ── cogctl / declarative control (Final Architectural Convergence, Phase 6) ─
+
+@router.post("/actors/apply", tags=["Actors"])
+async def apply_actor_specification(
+    body: dict[str, Any],
+    request: Request,
+    user_id: str = Depends(require_permission("perm-manage-actors")),
+    _agent: dict = Depends(require_opa("agentos/routes/allow", action="manage", resource="actor")),
+) -> dict[str, Any]:
+    """`cogctl apply -f actor.yaml` — the Control API endpoint for a
+    declarative ActorSpecification (kernel/society/actor_specification.py).
+    Create-or-update, the same semantics as `kubectl apply`: if
+    metadata.actor_id/name resolves to an existing registry record, this
+    updates its placement requirements and desired state; otherwise it
+    registers a brand-new Actor via the exact same canonical
+    PlanetaryRuntime.register_actor() every other entry point already
+    uses — this route never constructs an Actor a second, different way.
+
+    Never starts an Actor process directly (the explicit cogctl
+    invariant): this only writes desired state / placement requirements
+    and wakes the event-driven reconciliation queue
+    (PlanetaryRuntime._enqueue_reconciliation) — whichever Execution
+    Node's own Actor Runtime the Scheduler assigns is what actually
+    brings the Actor to READY, on that node's own reconciliation loop,
+    not synchronously inside this request.
+    """
+    from src.monkey_brain.kernel.society.actor_specification import ActorSpecification, ActorSpecificationError
+    from src.monkey_brain.kernel.society.actor_lifecycle import ActorDesiredState
+    from src.monkey_brain.kernel.society.actor_scheduler import ActorPlacementRequirements, NodeClass
+    from src.monkey_brain.kernel.society.domain import ActorProfile, ActorIdentity, ActorType
+
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+
+    try:
+        spec = ActorSpecification.from_dict(body)
+    except ActorSpecificationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    actor_id = spec.resolved_actor_id()
+    entry = pr.locate_actor(actor_id)
+    created = False
+    if entry is None:
+        # ActorIdentity.actor_id defaults via a uuid4 default_factory --
+        # that only fires when the constructor kwarg is OMITTED entirely,
+        # not when explicitly passed as "". spec.actor_id is usually ""
+        # (the common case: only metadata.name was given), so it must
+        # never be passed through literally or every such Actor would be
+        # registered with an empty actor_id instead of a real one.
+        identity_kwargs: dict[str, Any] = {
+            "name": spec.name or spec.actor_id, "actor_type": ActorType.AI_AGENT,
+        }
+        if spec.actor_id:
+            identity_kwargs["actor_id"] = spec.actor_id
+        state = pr.register_actor(ActorProfile(
+            identity=ActorIdentity(**identity_kwargs),
+            goals=spec.goals, objective=spec.objective,
+        ))
+        actor_id = state.actor_id
+        created = True
+
+    def _resolve_node_class(value: str, field_name: str) -> Any:
+        if not value:
+            return None
+        try:
+            return NodeClass(value)
+        except ValueError:
+            raise HTTPException(
+                status_code=422,
+                detail=f"spec.placement.{field_name} {value!r} is not a recognized node class "
+                       f"({[c.value for c in NodeClass]})",
+            )
+
+    required_node_class = _resolve_node_class(spec.node_class, "node_class")
+    preferred_node_class = _resolve_node_class(spec.preferred_node_class, "preferred_node_class")
+
+    pr.set_actor_placement_requirements(actor_id, ActorPlacementRequirements(
+        required_capabilities=spec.required_capabilities,
+        required_node_class=required_node_class,
+        preferred_node_class=preferred_node_class,
+        preferred_region=spec.preferred_region,
+    ))
+    if spec.claim_node:
+        pr.scheduler.migrate_actor(actor_id, target_node_id=spec.claim_node)
+    pr.set_actor_desired_state(actor_id, ActorDesiredState.RUNNING, reason="cogctl apply")
+
+    observed = pr.observe_actor(actor_id)
+    return {
+        "actor_id": actor_id, "created": created,
+        "spec": spec.to_dict(),
+        "desired_state": ActorDesiredState.RUNNING.value,
+        "observed": {
+            "exists": observed.exists, "status": observed.status, "node_id": observed.node_id,
+            "resident_here": observed.resident_here, "desired_node_id": observed.desired_node_id,
+        },
+    }
+
+
+@router.post("/actors/{actor_id}/restart", tags=["Actors"])
+async def restart_actor(
+    actor_id: str, request: Request,
+    user_id: str = Depends(require_permission("perm-manage-actors")),
+    _agent: dict = Depends(require_opa("agentos/routes/allow", action="lifecycle", resource="actor")),
+) -> dict[str, Any]:
+    """`cogctl restart actor <id>` — suspend then resume, reusing the
+    existing SUSPENDED/RUNNING desired-state primitives
+    (ActorLifecycleController) rather than a new lifecycle mechanism.
+    Same actor_id, same checkpoint-restore path every other suspend/
+    resume already uses; never reconstructs a new Actor."""
+    from src.monkey_brain.kernel.society.actor_lifecycle import ActorDesiredState
+
+    pr = _get_planetary_runtime(request)
+    if pr is None:
+        raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    if pr.locate_actor(actor_id) is None:
+        raise HTTPException(status_code=404, detail=f"Actor {actor_id} not found in registry")
+
+    pr.lifecycle.set_desired_state(actor_id, ActorDesiredState.SUSPENDED, reason="cogctl restart")
+    suspend_result = pr.lifecycle.reconcile(actor_id)
+    pr.lifecycle.set_desired_state(actor_id, ActorDesiredState.RUNNING, reason="cogctl restart")
+    resume_result = pr.lifecycle.reconcile(actor_id)
+
+    return {
+        "actor_id": actor_id,
+        "suspend": {"action": suspend_result.action, "succeeded": suspend_result.succeeded},
+        "resume": {"action": resume_result.action, "succeeded": resume_result.succeeded},
     }

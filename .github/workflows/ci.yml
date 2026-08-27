@@ -71,3 +71,52 @@ jobs:
         with:
           name: coverage-xml
           path: coverage.xml
+
+  actor-artifact-build:
+    # Actor Artifact model (docs/ACTOR_ARTIFACT.md): verifies the shared
+    # monkeybrain/agentos image -- which packages BOTH the Society
+    # control-plane server AND the canonical Actor Runtime
+    # (src/monkey_brain/actor_runtime.py), selected only by container
+    # `command:` -- still builds cleanly, and computes/exposes a
+    # deterministic artifact version tag. Deliberately BUILD ONLY: no
+    # `docker push`, no registry credentials needed, and no deployment
+    # step -- source -> tests -> artifact -> version is a separate,
+    # explicit concern from "an Actor gets deployed" (Section 21: "do
+    # not automatically deploy an Actor merely because an image was
+    # built").
+    #
+    # continue-on-error, same "not a real gate yet" precedent this
+    # workflow's own typecheck job already established: this is the
+    # FIRST CI job to build this image at all, so a hard-fail gate on
+    # day one could fail for reasons unrelated to any specific change
+    # (base image pull flakiness, an environment difference from local
+    # `docker build`, never previously exercised in CI). Once this has
+    # run cleanly on main a few times, remove continue-on-error to make
+    # it a real gate.
+    runs-on: ubuntu-latest
+    needs: [test]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compute Actor Artifact version
+        id: version
+        run: |
+          SHORT_SHA="${GITHUB_SHA:0:12}"
+          echo "artifact_version=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "Actor Artifact version: ${SHORT_SHA} (source revision ${GITHUB_SHA})"
+      - name: Build Actor Artifact image (no push)
+        run: |
+          docker build \
+            -f docker/services/agentos/Dockerfile \
+            -t cognitiveos-actor:${{ steps.version.outputs.artifact_version }} \
+            .
+      - name: Verify canonical Actor Runtime entrypoint is importable
+        # Cheap, real smoke check distinct from pytest's own coverage:
+        # confirms the image actually contains a working
+        # src.monkey_brain.actor_runtime:app target before anything ever
+        # tries to `docker run ... command: [... actor_runtime:app]`
+        # against it (deploy/k8s/actor-deployment.yaml,
+        # docker-compose.actors.yml).
+        run: |
+          docker run --rm cognitiveos-actor:${{ steps.version.outputs.artifact_version }} \
+            python -c "import src.monkey_brain.actor_runtime as m; print('ACTOR_RUNTIME_VERSION=' + m.ACTOR_RUNTIME_VERSION)"
