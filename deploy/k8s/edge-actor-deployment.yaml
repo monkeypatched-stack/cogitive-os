@@ -66,6 +66,8 @@ spec:
       containers:
         - name: agentos-edge
           image: monkeybrain/agentos:latest
+          # See deployment.yaml's imagePullPolicy comment -- same fix.
+          imagePullPolicy: IfNotPresent
           command:
             - python
             - -m

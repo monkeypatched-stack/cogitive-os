@@ -10,10 +10,13 @@ Connection is cached per process to avoid per-call connect/close overhead.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
 from typing import Any
+
+_CONNECT_TIMEOUT_SEC = float(os.getenv("NATS_AUDIT_CONNECT_TIMEOUT_SEC", "2"))
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +41,19 @@ async def _get_nats():
 
     try:
         import nats
-        _nc = await nats.connect(url)
+        # Live Deployment Validation finding: this module's own docstring
+        # ("never blocks the request path") was violated — a bare
+        # `await nats.connect(url)` has no bound on its own, and every
+        # require_permission-gated route's 401/403 path routes through
+        # here via _audit_auth_failure(). Confirmed live: with NATS fully
+        # reachable, this call still hung indefinitely under the running
+        # server's event loop (a fresh, isolated process connected in
+        # ~10ms against the same URL), so an unauthenticated request to
+        # ANY protected endpoint never received its 401 — it hung until
+        # the client timed out. Bounding the connect attempt restores the
+        # documented "never blocks" contract regardless of the deeper
+        # cause of that particular hang.
+        _nc = await asyncio.wait_for(nats.connect(url), timeout=_CONNECT_TIMEOUT_SEC)
         return _nc
     except Exception as exc:
         logger.warning("NATS connection failed (audit will log only): %s", exc)

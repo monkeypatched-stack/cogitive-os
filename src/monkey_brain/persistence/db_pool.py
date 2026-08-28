@@ -24,12 +24,42 @@ class DBPool:
             connection_string: MongoDB connection string
                               (defaults to DATABASE_URL env var)
         """
-        self.connection_string = connection_string or os.getenv(
-            "DATABASE_URL",
-            "mongodb://localhost:27017/cognitive_platform"
-        )
+        self.connection_string = connection_string or os.getenv("DATABASE_URL") or self._mongodb_url_fallback()
         self._client = None
         self._db = None
+
+    @staticmethod
+    def _mongodb_url_fallback() -> str:
+        """Gap Remediation audit finding: this codebase has two genuinely
+        different, pre-existing Mongo env-var conventions — this class's
+        own DATABASE_URL (with a database path baked in, since connect()
+        below calls get_database() with no explicit name and relies on
+        the connection string's own path component), and MONGODB_URL
+        (used by the main API's own boot/health-check code and
+        docker-compose.yml/deploy/k8s/configmap.yaml, typically WITHOUT
+        a database path). Confirmed live during Deployment Conformance
+        testing: a container given only MONGODB_URL failed to connect
+        here (ActorStateStore/belief persistence silently disabled)
+        while the rest of the app connected fine via its own, different
+        Mongo client. MONGODB_URL is now accepted as a fallback, with
+        DB_NAME (the same env var docker-compose.yml/configmap.yaml
+        already set for the unrelated domain microservices) appended
+        when the URL has no database path of its own — never overriding
+        an explicit DATABASE_URL, so any deployment that already sets it
+        is completely unaffected."""
+        mongodb_url = os.getenv("MONGODB_URL", "").strip()
+        if not mongodb_url:
+            return "mongodb://localhost:27017/cognitive_platform"
+        # A bare "mongodb://host:port" (no path, or just "/") has no
+        # database component pymongo's get_database() can resolve.
+        path = mongodb_url.split("://", 1)[-1].split("?", 1)[0].split("/", 1)
+        has_db_path = len(path) > 1 and path[1].strip("/")
+        if has_db_path:
+            return mongodb_url
+        db_name = os.getenv("DB_NAME", "cognitive_platform")
+        base = mongodb_url.split("?", 1)
+        query = f"?{base[1]}" if len(base) > 1 else ""
+        return f"{base[0].rstrip('/')}/{db_name}{query}"
 
     def connect(self) -> None:
         """Establish MongoDB connection."""

@@ -101,7 +101,13 @@ echo "claim:       $CLAIM"
 echo "bootstrap:   $BOOTSTRAP"
 echo "Logs: $LOG_FILE"
 
-nohup python -m uvicorn src.monkey_brain.actor_runtime:app \
+if [ -x "$PROJECT_DIR/.venv/bin/python3" ]; then
+    PYTHON_BIN="$PROJECT_DIR/.venv/bin/python3"
+else
+    PYTHON_BIN="$(command -v python3 || command -v python)"
+fi
+
+nohup "$PYTHON_BIN" -m uvicorn src.monkey_brain.actor_runtime:app \
     --host 0.0.0.0 \
     --port "$PORT" \
     --log-level warning \

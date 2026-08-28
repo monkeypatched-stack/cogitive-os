@@ -37,6 +37,14 @@ data:
   REDIS_PORT: "6379"
   NEO4J_URI: "bolt://neo4j:7687"
   NEO4J_USER: "neo4j"
+  # Live Deployment Validation finding: NATS_URL was never set anywhere
+  # in this ConfigMap even though nats.py's Society Bus connection
+  # (PlanetaryRuntime.connect_nats()) reads it — a real Kubernetes
+  # deployment previously had no NATS manifest to point at anyway (see
+  # nats.yaml, added this pass), so this was a compounding gap, not just
+  # a missing env var. Actor-to-Actor communication (AskActorCapability)
+  # silently degraded to its in-process fallback with no NATS_URL set.
+  NATS_URL: "nats://nats:4222"
   # NEO4J_PASSWORD intentionally NOT here — a ConfigMap is plaintext-
   # visible to anyone who can `kubectl get configmap -o yaml`. It's
   # supplied to the container as a real env var via secret.yaml's
@@ -65,3 +73,15 @@ data:
   # is what leaving this unset would still mean.
   OPA_URL: "http://opa:8181"
   LOG_LEVEL: "INFO"
+  # Live Deployment Validation finding: on this local kind cluster,
+  # "Policy Control Plane" / "Graph Store" boot phases repeatedly hit
+  # the 60s default (kernel.py's KERNEL_PHASE_TIMEOUT) even with every
+  # backing service confirmed Running and independently fast when
+  # tested directly (PlanetaryRuntime construction 0.3s, connect_nats()
+  # 0.15s via direct in-pod probes) -- consistent with real CPU
+  # contention on a single-node local cluster sharing the host's Docker
+  # Desktop VM, not a deadlock (each attempt made incremental progress,
+  # never the exact same failure point twice). Raised as a deployment-
+  # config tuning value, not a code change -- KERNEL_PHASE_TIMEOUT
+  # already existed as a documented override point.
+  KERNEL_PHASE_TIMEOUT: "180"

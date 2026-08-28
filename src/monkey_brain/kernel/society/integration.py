@@ -327,6 +327,12 @@ class PlanetaryRuntime:
         self._scheduler: Any = None
         """Lazy-constructed ActorScheduler — see the `scheduler` property
         below."""
+        self._kubernetes_provisioner: Any = None
+        """Lazy-constructed KubernetesProvisioner — see the
+        `kubernetes_provisioner` property below."""
+        self._edge_provisioner: Any = None
+        """Lazy-constructed EdgeProvisioner — see the `edge_provisioner`
+        property below."""
         self._node_registry_fallback: dict[str, dict[str, Any]] = {}
         self._desired_node_fallback: dict[str, dict[str, Any]] = {}
         self._placement_requirements_fallback: dict[str, dict[str, Any]] = {}
@@ -382,6 +388,11 @@ class PlanetaryRuntime:
         self._reconcile_queue_interval: float = 2.0
         self._reconcile_queue_batch_size: int = 50
         self._reconcile_queue_semaphore: asyncio.Semaphore | None = None
+        self._reconciliation_scope_actor_id: str | None = None
+        """None = full-registry backstop sweep (default, every pre-existing
+        caller). Set by start_actor_lifecycle_reconciliation(scope_actor_id=...)
+        for a single-actor Actor Runtime pod so its backstop sweep only
+        ever reconciles itself."""
         """The event-driven fast path (Section 26/27) — see
         start_actor_lifecycle_reconciliation()'s docstring."""
         self._background_propagation_tasks: set[asyncio.Task] = set()
@@ -641,13 +652,67 @@ class PlanetaryRuntime:
             # hardcoded db 0 before every test, silently wiping a real,
             # actively-demoed dev world's entire Redis-backed state with
             # no way to have redirected it away from that risk.
-            self._redis = _redis.Redis(
-                host=os.getenv("REDIS_HOST", "localhost"),
-                port=int(os.getenv("REDIS_PORT", "6379")),
-                db=int(os.getenv("REDIS_DB", "0")),
-                decode_responses=True,
-                socket_connect_timeout=2,
+            # Gap Remediation audit finding: this codebase has two
+            # genuinely different, pre-existing Redis env-var
+            # conventions — this constructor's own REDIS_HOST/REDIS_PORT/
+            # REDIS_DB, and REDIS_URL (used by execution_checkpoint_
+            # store.py, negotiation_store.py, and several other
+            # standalone stores via redis.from_url()). Confirmed live
+            # during Deployment Conformance testing: a real container
+            # given only REDIS_URL silently connected to "localhost"
+            # instead (this constructor's own default), degrading the
+            # entire Actor Registry/Scheduler/Lifecycle Controller to
+            # process-local-only with just a WARNING log line — a real
+            # correctness gap, not merely inconsistent naming. REDIS_URL
+            # is now accepted here too, WHEN REDIS_HOST is not itself
+            # explicitly set — an existing deployment that already sets
+            # REDIS_HOST is completely unaffected; one that only ever
+            # set REDIS_URL (the convention every OTHER Redis-backed
+            # store in this codebase already used) now actually connects
+            # instead of silently falling back to localhost.
+            # Live Deployment Validation finding: a real, long-running
+            # control-plane process was observed to silently stop
+            # persisting new actor registrations to this Redis client
+            # after a period of otherwise-normal operation (in-memory
+            # registration kept succeeding; the durable write did not) —
+            # a fresh process against the identical Redis server and
+            # code registered and persisted correctly on the first try.
+            # No code path ever reassigns self._redis after this method
+            # returns, so a lingering stale connection in the pool (e.g.
+            # from a transient network blip — this environment saw many
+            # during a chaotic multi-service simultaneous startup) is
+            # the most likely explanation: without retry_on_timeout/
+            # retry_on_error, redis-py's default client does not retry
+            # the FIRST command that hits a connection already gone bad;
+            # it just raises once (silently swallowed by _save_actor's
+            # own DEBUG-level except, see below) rather than
+            # transparently reconnecting and succeeding, the way the
+            # very next call on a fresh connection normally would.
+            # retry_on_timeout deliberately omitted: redis-py >= 6.0
+            # deprecated it in favor of retry_on_error, which already
+            # includes TimeoutError by default -- listing it explicitly
+            # below keeps the intent self-documenting without the
+            # deprecation warning.
+            retry = _redis.retry.Retry(_redis.backoff.ExponentialBackoff(cap=2, base=0.1), 3)
+            retry_kwargs = dict(
+                retry=retry,
+                retry_on_error=[_redis.exceptions.ConnectionError, _redis.exceptions.TimeoutError],
+                socket_timeout=5, health_check_interval=30,
             )
+            redis_url = os.getenv("REDIS_URL", "").strip()
+            if redis_url and "REDIS_HOST" not in os.environ:
+                self._redis = _redis.Redis.from_url(
+                    redis_url, decode_responses=True, socket_connect_timeout=2, **retry_kwargs,
+                )
+            else:
+                self._redis = _redis.Redis(
+                    host=os.getenv("REDIS_HOST", "localhost"),
+                    port=int(os.getenv("REDIS_PORT", "6379")),
+                    db=int(os.getenv("REDIS_DB", "0")),
+                    decode_responses=True,
+                    socket_connect_timeout=2,
+                    **retry_kwargs,
+                )
             self._redis.ping()
             self._persistence_manager = None
             logger.info("Redis connected for PlanetaryRuntime persistence")
@@ -825,7 +890,14 @@ class PlanetaryRuntime:
             actor_data = self._actor_state_to_dict(state, society_id)
             self._redis.hset(self._ACTORS_HASH_KEY, state.actor_id, json.dumps(actor_data))
         except Exception as exc:
-            logger.debug("Actor save failed for %r: %s", getattr(state, "actor_id", "?"), exc)
+            # Live Deployment Validation finding: this was DEBUG-level,
+            # invisible at this deployment's default LOG_LEVEL=INFO --
+            # a real durable-persistence failure (the actor stays
+            # registered in-memory, callers see success, but the
+            # Registry write silently never happens) needs to be
+            # visible without an operator having to already suspect
+            # this exact method and turn on DEBUG logging to find it.
+            logger.warning("Actor save failed for %r: %s", getattr(state, "actor_id", "?"), exc)
 
     def _save_actors(self) -> None:
         """Full resync of every currently-registered actor — still O(n)
@@ -872,6 +944,36 @@ class PlanetaryRuntime:
             else:
                 legacy = self._redis.get(self._ACTORS_LEGACY_ARRAY_KEY)
                 actors = json.loads(legacy) if legacy else []
+            # Live Deployment Validation finding (P0, confirmed live):
+            # a single-actor Actor Runtime pod (actor_runtime.py,
+            # ACTOR_ID set) previously loaded and locally activated
+            # EVERY actor in the shared registry, not just its own --
+            # get_actor_runtime(actor_id) then returned non-None for
+            # OTHER actors too, defeating suspend_actor_for_migration's
+            # "only act if resident_here" guard (integration.py's own
+            # docstring there: "a no-op ... when the actor isn't
+            # resident here"). Confirmed live: a two-actor rollout
+            # produced BOTH actors' durable registry records pointing
+            # at the SAME (wrong) node_id, written within 3ms of each
+            # other -- one pod's migrate-away reconciliation for an
+            # actor it never actually owned stamped its own node_id
+            # into that actor's registry entry. Scoping this load to
+            # ACTOR_ID when set closes the gap at its source: a
+            # single-actor pod now only ever has ITS OWN actor's
+            # runtime resident, so resident_here is correctly False for
+            # every other actor, and AskActor-style cross-actor lookups
+            # still work via locate_actor()'s durable-registry fallback
+            # (see grocery.py::AskActorCapability, already the fallback
+            # path for an actor not in this process's local societies).
+            # None (default) preserves the exact prior full-load
+            # behavior for every multi-actor process (deployment.yaml's
+            # control-plane pod, tests) that never sets ACTOR_ID.
+            scope_actor_id = os.getenv("ACTOR_ID", "").strip()
+            if scope_actor_id:
+                actors = [
+                    a for a in actors
+                    if a.get("identity", {}).get("actor_id") == scope_actor_id
+                ]
             if actors:
                 loaded = 0
                 skipped = 0
@@ -1467,6 +1569,33 @@ return new_count
             from src.monkey_brain.kernel.society.actor_scheduler import ActorScheduler
             self._scheduler = ActorScheduler(self)
         return self._scheduler
+
+    @property
+    def kubernetes_provisioner(self) -> "Any":
+        """Gap Remediation audit fix: the Lifecycle Controller's one
+        additional action for a genuinely UNSCHEDULABLE actor (no
+        healthy node exists at all) — see kernel/society/
+        kubernetes_provisioner.py. Lazily constructed, same composition
+        pattern as self.scheduler/self.lifecycle; opt-in and inert
+        unless KUBERNETES_PROVISIONING_ENABLED=true AND kubectl is on
+        PATH."""
+        if self._kubernetes_provisioner is None:
+            from src.monkey_brain.kernel.society.kubernetes_provisioner import KubernetesProvisioner
+            self._kubernetes_provisioner = KubernetesProvisioner(self)
+        return self._kubernetes_provisioner
+
+    @property
+    def edge_provisioner(self) -> "Any":
+        """Edge Deployment: the Lifecycle Controller's action for an
+        actor scheduled onto a registered EDGE/DEVICE/ROBOT-class node
+        with nothing resident there yet — see kernel/society/
+        edge_provisioner.py. Lazily constructed, same composition
+        pattern as self.kubernetes_provisioner; opt-in and inert unless
+        EDGE_PROVISIONING_ENABLED=true."""
+        if self._edge_provisioner is None:
+            from src.monkey_brain.kernel.society.edge_provisioner import EdgeProvisioner
+            self._edge_provisioner = EdgeProvisioner(self)
+        return self._edge_provisioner
 
     # ── Actor Scheduler: desired placement + placement requirements ────
     # Deliberately separate keys from desired STATE above: "should this
@@ -5294,8 +5423,24 @@ return new_count
     def start_actor_lifecycle_reconciliation(self, interval_seconds: float = 300.0,
                                              queue_interval_seconds: float = 2.0,
                                              queue_batch_size: int = 50,
-                                             queue_concurrency: int = 10) -> None:
+                                             queue_concurrency: int = 10,
+                                             scope_actor_id: str | None = None) -> None:
         """Start the Actor Lifecycle Controller's background reconciliation.
+
+        scope_actor_id (Gap Remediation audit fix): a single-actor Actor
+        Runtime pod (actor_runtime.py — the canonical per-actor Kubernetes
+        deployment unit, see deploy/k8s/actor-deployment.yaml) only ever
+        needs its OWN actor reconciled, but the backstop sweep below
+        previously always ran reconcile_all() — every pod in an N-actor
+        cluster doing O(N) reconcile() calls every interval, O(N^2) total
+        Redis round-trips cluster-wide for no benefit (each pod's sweep
+        redundantly re-decides every OTHER actor, which its own owning
+        pod already covers). When set, the backstop sweep reconciles only
+        this actor_id instead of the full registry. None (default)
+        preserves the exact prior full-sweep behavior for every existing
+        caller (multi-actor Society/control-plane processes, tests) —
+        only actor_runtime.py's single-actor start() path now passes its
+        own config.actor_id here.
 
         Two independent loops (Horizontal Scheduler Scaling, Section 26/27),
         both idempotent to start twice (same contract as start_auto_tick):
@@ -5332,17 +5477,45 @@ return new_count
         self._reconcile_queue_interval = queue_interval_seconds
         self._reconcile_queue_batch_size = queue_batch_size
         self._reconcile_queue_semaphore = asyncio.Semaphore(max(1, queue_concurrency))
+        self._reconciliation_scope_actor_id = scope_actor_id
         # Self-register (and, every loop iteration below, heartbeat) this
-        # process as a CLOUD execution node -- this is what lets the
+        # process as an execution node -- this is what lets the
         # Scheduler run in "managed" mode at all (Actor Scheduler spec,
         # Section 6). An operator that never wants scheduling involved
         # can set SCHEDULER_SELF_REGISTER=false; ActorScheduler.schedule()
         # already degrades to unconstrained placement when zero nodes are
         # registered anywhere, so this is opt-out, not required for
         # correctness.
+        #
+        # Edge Deployment Validation finding (P1, confirmed live): this
+        # call previously always passed zero args, meaning it silently
+        # OVERWROTE any node_class/capacity a caller had already
+        # correctly registered moments earlier (e.g. actor_runtime.py's
+        # own start() calling register_self_as_node(node_class=EDGE,
+        # capacity=self.config.node_capacity, ...) BEFORE calling this
+        # method) with the generic SCHEDULER_NODE_CLASS/_CAPACITY env-var
+        # defaults (cloud/1000) -- confirmed live: an edge actor's
+        # correct node_class=edge registration flipped back to "cloud"
+        # on this exact call, immediately failing every subsequent
+        # "required_node_class=edge" placement with a genuinely
+        # confusing "no healthy node satisfies" error. Invisible for the
+        # common cloud/default-capacity case (the overwrite happens to
+        # match what was already there), but a real, silent placement-
+        # constraint violation for any actor using a non-default
+        # node_class or capacity. Fix: preserve an already-existing
+        # registration for this exact node_id instead of blindly
+        # re-deriving from env-var defaults; only a genuinely new node_id
+        # (no prior registration at all) falls back to those.
         if os.getenv("SCHEDULER_SELF_REGISTER", "true").lower() not in ("false", "0", "no"):
             try:
-                self.register_self_as_node()
+                existing = self.get_node(self._node_id)
+                if existing is not None:
+                    self.register_self_as_node(
+                        node_class=existing.node_class, capacity=existing.capacity,
+                        capabilities=existing.capabilities, region=existing.region,
+                    )
+                else:
+                    self.register_self_as_node()
             except Exception as exc:
                 logger.warning("register_self_as_node() at reconciliation startup failed: %s", exc)
         self._lifecycle_reconciliation_task = asyncio.create_task(self._actor_lifecycle_reconciliation_loop())
@@ -5407,7 +5580,11 @@ return new_count
                     self.heartbeat_node(self._node_id, current_actor_count=current_actor_count)
                 except Exception as exc:
                     logger.debug("node heartbeat failed (non-fatal): %s", exc)
-                results = await asyncio.to_thread(self.lifecycle.reconcile_all)
+                scope_actor_id = self._reconciliation_scope_actor_id
+                if scope_actor_id:
+                    results = [await asyncio.to_thread(self.lifecycle.reconcile, scope_actor_id)]
+                else:
+                    results = await asyncio.to_thread(self.lifecycle.reconcile_all)
                 acted = [r for r in results if r.action not in ("none", "skipped_lease_held", "skipped_unknown_actor")]
                 if acted:
                     logger.info(

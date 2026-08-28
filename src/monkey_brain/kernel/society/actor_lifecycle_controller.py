@@ -380,6 +380,27 @@ class ActorLifecycleController:
         if not decision.scheduled:
             self._publish(actor_id, LifecycleEventType.ACTOR_UNSCHEDULABLE,
                           observed.status, observed.status, decision.reason)
+            # Gap Remediation audit finding (Priority 1 — Scheduler ->
+            # Kubernetes gap): the ONE UNSCHEDULABLE cause this can
+            # actually fix is "no healthy node exists at all" -- every
+            # other cause (a real node exists but rejects this actor's
+            # specific requirements) needs an operator/capacity decision,
+            # not a generic Pod. should_provision() draws that line.
+            # Opt-in (KUBERNETES_PROVISIONING_ENABLED, default off) --
+            # zero behavior change for any deployment that never enables
+            # it or has no kubectl configured; a failed/skipped
+            # provisioning attempt leaves UNSCHEDULABLE exactly as before.
+            from src.monkey_brain.kernel.society import kubernetes_provisioner as _k8s_provisioner
+            if _k8s_provisioner.provisioning_enabled() and _k8s_provisioner.should_provision(decision.reason):
+                provisioned = self._planetary.kubernetes_provisioner.provision(
+                    actor_id, node_class=requirements.required_node_class.value if requirements.required_node_class else "cloud",
+                )
+                if provisioned:
+                    # Wake the fast path instead of waiting for the 300s
+                    # backstop to notice the new Pod once it registers
+                    # itself as a node -- see the same reasoning the
+                    # scheduled_elsewhere re-enqueue below documents.
+                    self._planetary._enqueue_reconciliation(actor_id)
             return ReconciliationResult(
                 actor_id=actor_id, desired_state=desired.value, observed_before=observed.status,
                 action=_ACTION_UNSCHEDULABLE, succeeded=False, reason=decision.reason,
@@ -388,6 +409,46 @@ class ActorLifecycleController:
             reason = f"scheduled to {decision.node_id}, not this node ({self._planetary._node_id})"
             self._publish(actor_id, LifecycleEventType.ACTOR_SCHEDULED_ELSEWHERE,
                           observed.status, observed.status, reason)
+            # Edge Deployment: the Kubernetes-only analog of this problem
+            # doesn't exist there -- a Pod's own actor_runtime.py process
+            # boots itself and self-claims via ACTOR_CLAIM_PLACEMENT, so
+            # nothing external ever needs to "start" it. An edge device
+            # has no such self-booting process for an actor that has
+            # never run anywhere yet -- something has to ask its Edge
+            # Agent to spawn one. Scoped narrowly: only when the actor
+            # has genuinely never been resident anywhere (REGISTERED/
+            # INITIALIZED/UNKNOWN, never ACTIVE/SUSPENDED/IDLE) and the
+            # scheduled node is registered as EDGE/DEVICE/ROBOT-class --
+            # an actor merely suspended-for-migration elsewhere is left
+            # alone here; its own target node's normal reconcile (or,
+            # for Kubernetes, its own Pod boot) handles that case
+            # already, unchanged.
+            from src.monkey_brain.kernel.society import edge_provisioner as _edge_provisioner
+            if (_edge_provisioner.provisioning_enabled()
+                    and observed.status not in (ActorStatus.ACTIVE.value, ActorStatus.SUSPENDED.value, ActorStatus.IDLE.value)):
+                target_node = self._planetary.get_node(decision.node_id)
+                if target_node is not None and target_node.node_class.value in ("edge", "device", "robot"):
+                    provisioned = self._planetary.edge_provisioner.provision(
+                        actor_id, device_id=decision.node_id, node_class=target_node.node_class.value,
+                    )
+                    if provisioned:
+                        self._planetary._enqueue_reconciliation(actor_id)
+            # Gap Remediation audit finding (Priority 1 — multi-process
+            # reconcile-queue race, confirmed live in the prior
+            # conformance-testing session): LPOP is exclusive, so
+            # whichever process happens to drain this actor_id's queue
+            # entry first "consumes" it -- if that process isn't the
+            # scheduled node, the entry is gone and the ACTUAL target
+            # had no fast-path signal, only the 300s backstop sweep.
+            # Re-enqueueing here gives every OTHER process (including,
+            # eventually, the correct one) another 2s-interval chance.
+            # Bounded, not unbounded: only the processes that actually
+            # attempt this actor_id (at most once per their own 2s
+            # queue-drain cycle) ever re-enqueue it, and the correct
+            # node's own successful resume/start naturally stops the
+            # cycle (its next _decide() sees the settled state and
+            # returns NONE, doing nothing further).
+            self._planetary._enqueue_reconciliation(actor_id)
             return ReconciliationResult(
                 actor_id=actor_id, desired_state=desired.value, observed_before=observed.status,
                 action=_ACTION_SCHEDULED_ELSEWHERE, succeeded=True, reason=reason,
@@ -407,6 +468,24 @@ class ActorLifecycleController:
         self._publish(actor_id, LifecycleEventType.ACTOR_SCHEDULED_ELSEWHERE,
                       observed.status, "suspending_for_migration", effective_reason)
         ok = self._planetary.suspend_actor_for_migration(actor_id)
+        if ok:
+            # Live Deployment Validation finding: confirmed live -- an
+            # actor suspended here (e.g. by the control-plane's own
+            # backstop sweep, which legitimately sees every actor since
+            # it never sets ACTOR_ID) sat SUSPENDED for 8+ minutes past
+            # its target node's 300s backstop interval before converging,
+            # because nothing woke that target node's fast queue-drain
+            # path -- only _consult_scheduler's scheduled_elsewhere/
+            # UNSCHEDULABLE branches re-enqueued after a state change,
+            # this sibling suspend path never did. A manual RPUSH onto
+            # the reconcile queue for this exact actor_id resolved it
+            # within seconds, proving the RESUME decision logic itself
+            # was correct all along -- only the wake-up signal was
+            # missing. Same bounded reasoning as the other re-enqueue
+            # fixes this session: the target node's own next _decide()
+            # sees the settled state and returns NONE, so this cannot
+            # loop.
+            self._planetary._enqueue_reconciliation(actor_id)
         return ReconciliationResult(
             actor_id=actor_id, desired_state=desired.value, observed_before=observed.status,
             action=_ACTION_MIGRATE_AWAY, succeeded=ok, reason=effective_reason,

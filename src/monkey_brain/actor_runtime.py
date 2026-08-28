@@ -329,7 +329,12 @@ class ActorRuntime:
             # THIS node explicitly still reserves capacity for it.
             pr.scheduler.migrate_actor(self.config.actor_id, target_node_id=pr._node_id)
 
-        pr.start_actor_lifecycle_reconciliation()
+        # Gap Remediation audit fix: this process hosts exactly one actor
+        # (self.config.actor_id) -- scope the backstop sweep to it so this
+        # pod never fans out reconcile() calls across the whole cluster's
+        # actor registry (see start_actor_lifecycle_reconciliation's
+        # scope_actor_id docstring).
+        pr.start_actor_lifecycle_reconciliation(scope_actor_id=self.config.actor_id)
         await self._reconcile_until_settled()
 
         if self.state == ReadinessState.READY:
@@ -550,6 +555,35 @@ def _build_app() -> Any:
     @fastapi_app.get("/artifact")
     async def artifact() -> dict:
         return _runtime().artifact_info()
+
+    @fastapi_app.post("/execute")
+    async def execute() -> Any:
+        # Live Deployment Validation finding: the control-plane API's own
+        # POST /actors/{id}/execute only ever searched its own process's
+        # locally-loaded societies -- correct for the monolithic
+        # deployment (deployment.yaml), a real gap for the per-actor-Pod
+        # model this module exists for, where a correctly-migrated actor
+        # is deliberately NOT resident there anymore. That route now
+        # proxies to this endpoint over the network
+        # (api/routes/actors.py::_proxy_execute_to_actor_pod) when it
+        # finds the actor lives on its own dedicated Pod. This endpoint
+        # is the other half of that fix: the actual tick, run against
+        # the ONE actor this process ever hosts, using the exact same
+        # response-shaping code the control-plane route uses
+        # (run_actor_tick) so a caller sees an identical response shape
+        # regardless of which path served it.
+        from fastapi import HTTPException
+        from src.monkey_brain.api.routes.actors import run_actor_tick
+
+        runtime = _runtime()
+        pr = runtime.planetary_runtime
+        if pr is None:
+            raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+        actor_id = runtime.config.actor_id
+        state = pr._society_runtime.get_actor(actor_id)
+        if state is None:
+            raise HTTPException(status_code=404, detail=f"Actor {actor_id} not resident on this Pod")
+        return await run_actor_tick(actor_id, pr, state)
 
     return fastapi_app
 

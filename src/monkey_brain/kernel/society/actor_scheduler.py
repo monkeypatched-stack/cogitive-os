@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import logging
 import time
+import dataclasses
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any
@@ -255,7 +256,32 @@ class ActorScheduler:
             if current_node_id:
                 current_node = self._planetary.get_node(current_node_id)
                 if current_node is not None and current_node.reported_health == NodeHealth.HEALTHY:
-                    ok, _ = self._check_hard_constraints(current_node, requirements)
+                    # Edge Deployment Validation finding (P1, confirmed
+                    # live): a genuine one-actor-per-node registration
+                    # (capacity=1 -- the documented Kubernetes/edge
+                    # convention, see actor-deployment.yaml's own
+                    # ACTOR_NODE_CAPACITY=1) always has current_actor_
+                    # count=1 once THIS actor itself has registered —
+                    # meaning available_capacity is permanently 0 on its
+                    # OWN node, so this "am I already validly placed
+                    # HERE" check was self-defeating: it always failed
+                    # the capacity constraint against itself, forcing
+                    # every reconcile to fall through to fresh candidate
+                    # search, which then picked a DIFFERENT node with
+                    # more headroom (e.g. the control plane's own,
+                    # generic-capacity node) instead of confirming the
+                    # actor's own explicit self-claim. Exclude this
+                    # actor's own prior occupancy before checking --
+                    # "can I stay here" must not double-count the very
+                    # actor asking the question. Only affects this
+                    # idempotent-shortcut check; fresh candidate search
+                    # below (a real "can I move a NEW actor here")
+                    # correctly still counts every currently-resident
+                    # actor, unchanged.
+                    self_excluded = dataclasses.replace(
+                        current_node, current_actor_count=max(0, current_node.current_actor_count - 1),
+                    )
+                    ok, _ = self._check_hard_constraints(self_excluded, requirements)
                     if ok:
                         return SchedulingDecision(
                             actor_id=actor_id, scheduled=True, node_id=current_node_id,

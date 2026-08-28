@@ -49,9 +49,47 @@ spec:
       # operation wait up to 10 minutes per pod; documented trade-off, not
       # an oversight.
       terminationGracePeriodSeconds: 120
+      # Live Deployment Validation finding: docker-compose.yml gates
+      # agentos on `depends_on: condition: service_healthy` for mongodb/
+      # redis/nats/opa -- Kubernetes Deployments have no equivalent
+      # primitive, and this manifest never replicated that guarantee any
+      # other way. Confirmed live: applying the full stack in one batch
+      # (the normal `kubectl apply -k` case, e.g. right after a fresh
+      # `kind create cluster`) let this pod start before NATS was ready;
+      # its own PlanetaryRuntime boot phase burned its full 60s timeout
+      # retrying a still-starting NATS, then CrashLoopBackOff added more
+      # delay on top before it self-healed. This initContainer is the
+      # standard Kubernetes equivalent of docker-compose's
+      # service_healthy gate -- it blocks Pod startup (not just the app's
+      # own internal boot-phase retry) until every dependency this
+      # ConfigMap actually points at is accepting TCP connections.
+      initContainers:
+        - name: wait-for-dependencies
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              for target in redis:6379 mongodb:27017 nats:4222 opa:8181 neo4j:7687; do
+                host="${target%%:*}"; port="${target##*:}"
+                until nc -z -w2 "$host" "$port"; do
+                  echo "waiting for $target..."
+                  sleep 2
+                done
+                echo "$target is up"
+              done
       containers:
         - name: agentos
           image: monkeybrain/agentos:latest
+          # Live Deployment Validation finding: a `:latest` tag makes
+          # Kubernetes default imagePullPolicy to Always, so a locally
+          # built/kind-loaded image (this repo has no registry this
+          # image is ever pushed to) is ignored -- kubelet tries a real
+          # registry pull and hangs/fails ImagePullBackOff. Confirmed
+          # live: every pod using this image stuck in "Pulling image"
+          # until this was set. IfNotPresent uses the node's already-
+          # loaded/built image instead of assuming a registry exists.
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8031
               name: http
@@ -95,11 +133,21 @@ spec:
             # * periodSeconds=30 gives ~105s before a slow-but-healthy
             # boot gets killed and restart-looped — too tight for the
             # slower end of what's actually been observed.
+            #
+            # Live Deployment Validation finding: raised further
+            # (150s -> 600s budget) alongside configmap.yaml's
+            # KERNEL_PHASE_TIMEOUT=180 -- /live only starts responding
+            # AFTER Kernel.boot() either completes or a phase raises
+            # (uvicorn's ASGI app isn't live until the FastAPI lifespan
+            # startup returns), so raising the per-phase timeout without
+            # raising this budget to match would just trade a boot-phase
+            # timeout crash for a startupProbe-kill crash on the exact
+            # same slow-but-healthy boot.
             httpGet:
               path: /live
               port: 8031
-            periodSeconds: 5
-            failureThreshold: 30
+            periodSeconds: 10
+            failureThreshold: 60
             timeoutSeconds: 5
           env:
             - name: NEO4J_PASSWORD

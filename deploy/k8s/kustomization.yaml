@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: monkeybrain
 
 resources:
+  - namespace.yaml
   - configmap.yaml
   - secret.yaml
   - pvc.yaml
@@ -11,6 +12,12 @@ resources:
   - servicemonitor.yaml
   - prometheusrule.yaml
   - opa.yaml
+  - rbac.yaml
+  - networkpolicy.yaml
+  - redis.yaml
+  - mongodb.yaml
+  - nats.yaml
+  - neo4j.yaml
 
 # Deliberately NOT included as base resources: edge-actor-deployment.yaml
 # and actor-deployment.yaml. Both are per-Actor TEMPLATES (ACTOR_ID

@@ -3320,6 +3320,92 @@ async def search_shared_experiences(
     ]
 
 
+async def run_actor_tick(actor_id: str, pr: Any, state: Any) -> dict[str, Any]:
+    """The actual tick-and-format-response work behind POST /execute —
+    factored out of execute_actor() so actor_runtime.py's own internal
+    /execute route (added for the per-actor-Pod deployment model, see
+    that function's own docstring for why) can share it verbatim rather
+    than re-implementing the same response shape."""
+    if state.actor_runtime is None:
+        return {"actor_id": actor_id, "status": "no_tick_handler"}
+    _gate_on_world_validation(pr)
+    try:
+        # Same 30s cap SocietyRuntime.tick_one_actor() already applies to
+        # the identical operation (a single actor's cognitive tick, LLM
+        # planner included) — this route called actor_runtime.tick()
+        # directly with no timeout at all, so a slow LLM call here could
+        # hang indefinitely instead of failing predictably like every
+        # other actor-tick entry point does.
+        result = await asyncio.wait_for(state.actor_runtime.tick(), timeout=30.0)
+        state.cycle_count += 1
+        state.last_cycle = time.time()
+        pr._save_actors()
+
+        return {
+            "actor_id": actor_id,
+            "goal": state.profile.goals[0] if state.profile.goals else "",
+            "goal_achieved": getattr(result, "outcome", {}).get("goal_achieved", False) if isinstance(getattr(result, "outcome", None), dict) else False,
+            "actions": [
+                {"action_id": a.get("action_id", ""), "success": a.get("success", False), "error": a.get("error", "")}
+                for a in (getattr(result, "actions", None) or [])
+            ],
+            "belief_updated": getattr(result, "belief_updated", False),
+            "learned": getattr(result, "learned", False),
+            "error": getattr(result, "error", None),
+            "cycle_count": state.cycle_count,
+        }
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail=f"Actor {actor_id} tick timed out after 30s (LLM planner latency — see docs/adr/016-performance-gate9.md)",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Execute failed: {e}")
+
+
+async def _proxy_execute_to_actor_pod(actor_id: str, pr: Any) -> dict[str, Any] | None:
+    """Live Deployment Validation finding: execute_actor() only ever
+    searched THIS process's own locally-loaded societies — correct for
+    the monolithic control-plane deployment (deployment.yaml, every
+    actor resident in one process), but a real gap for the per-actor-Pod
+    model (actor-deployment.yaml) this codebase's own Actor Artifact
+    model treats as canonical: an actor correctly migrated onto its own
+    dedicated Pod is, by design, no longer resident here at all, so the
+    control plane 404'd on an actor that was very much alive and
+    reachable — confirmed live.
+
+    Proxies the call over the network to that actor's own Pod instead of
+    trying to reach into its process. Deliberately narrow: only attempts
+    this when (a) the durable registry confirms the actor exists and
+    names a node that isn't this process's own node_id, and (b)
+    KUBERNETES_SERVICE_HOST is set (a standard signal this process is
+    actually running inside a real cluster, not local dev/tests) — in
+    every other case this returns None and the caller keeps its existing
+    404 behavior unchanged. Targets the actor's canonical Kubernetes
+    Service name (cognitiveos-actor-{actor_id}, see actor-deployment.
+    yaml's own Service block), not the Pod's own randomly-suffixed name,
+    since only the Service name is a stable, resolvable address."""
+    import os
+
+    if not os.getenv("KUBERNETES_SERVICE_HOST"):
+        return None
+    entry = pr.locate_actor(actor_id)
+    if entry is None or not entry.node_id or entry.node_id == pr._node_id:
+        return None
+    import httpx
+
+    namespace = os.getenv("POD_NAMESPACE", "monkeybrain")
+    url = f"http://cognitiveos-actor-{actor_id}.{namespace}.svc.cluster.local:8051/execute"
+    try:
+        async with httpx.AsyncClient(timeout=35.0) as client:
+            resp = await client.post(url)
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail=f"Could not reach Actor {actor_id}'s own Pod: {exc}") from exc
+    if resp.status_code >= 400:
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    return resp.json()
+
+
 @router.post("/actors/{actor_id}/execute", tags=["Actors"])
 async def execute_actor(
     actor_id: str,
@@ -3330,47 +3416,27 @@ async def execute_actor(
     pr = _get_planetary_runtime(request)
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
+    # Live Deployment Validation finding: checking local presence
+    # (_find_actor_state, below) FIRST was itself the bug -- the
+    # control-plane process's own unscoped _load_actors() means every
+    # actor ever registered has SOME local copy here (however stale or
+    # suspended once it's correctly migrated to its own dedicated Pod),
+    # so `found is None` never actually triggered and the proxy fix
+    # below was silently dead code. The durable registry's own node_id
+    # is the only authoritative answer to "where does this actor really
+    # live" -- check that FIRST, and only fall back to the local
+    # in-memory lookup when the registry agrees this is the right node
+    # (or has no opinion at all, e.g. a single-process/no-Redis dev run).
+    entry = pr.locate_actor(actor_id)
+    if entry is not None and entry.node_id and entry.node_id != pr._node_id:
+        proxied = await _proxy_execute_to_actor_pod(actor_id, pr)
+        if proxied is not None:
+            return proxied
     found = _find_actor_state(pr, actor_id)
     if found is None:
         raise HTTPException(status_code=404, detail=f"Actor {actor_id} not found")
     sr, state = found
-
-    if state.actor_runtime is not None:
-        _gate_on_world_validation(pr)
-        try:
-            # Same 30s cap SocietyRuntime.tick_one_actor() already applies to
-            # the identical operation (a single actor's cognitive tick, LLM
-            # planner included) — this route called actor_runtime.tick()
-            # directly with no timeout at all, so a slow LLM call here could
-            # hang indefinitely instead of failing predictably like every
-            # other actor-tick entry point does.
-            result = await asyncio.wait_for(state.actor_runtime.tick(), timeout=30.0)
-            state.cycle_count += 1
-            state.last_cycle = time.time()
-            pr._save_actors()
-
-            return {
-                "actor_id": actor_id,
-                "goal": state.profile.goals[0] if state.profile.goals else "",
-                "goal_achieved": getattr(result, "outcome", {}).get("goal_achieved", False) if isinstance(getattr(result, "outcome", None), dict) else False,
-                "actions": [
-                    {"action_id": a.get("action_id", ""), "success": a.get("success", False), "error": a.get("error", "")}
-                    for a in (getattr(result, "actions", None) or [])
-                ],
-                "belief_updated": getattr(result, "belief_updated", False),
-                "learned": getattr(result, "learned", False),
-                "error": getattr(result, "error", None),
-                "cycle_count": state.cycle_count,
-            }
-        except asyncio.TimeoutError:
-            raise HTTPException(
-                status_code=504,
-                detail=f"Actor {actor_id} tick timed out after 30s (LLM planner latency — see docs/adr/016-performance-gate9.md)",
-            )
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Execute failed: {e}")
-
-    return {"actor_id": actor_id, "status": "no_tick_handler"}
+    return await run_actor_tick(actor_id, pr, state)
 
 
 # ── Actor Relationships CRUD ────────────────────────────────────────────

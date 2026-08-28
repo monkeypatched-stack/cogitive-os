@@ -5,6 +5,17 @@ Routes tasks to the best available runtime based on:
 - Resource availability (CPU, memory, queue depth)
 - Locality (prefer nearby runtimes)
 - Load balancing (distribute across available runtimes)
+
+Gap Remediation audit note: this module's own `DistributedScheduler` class
+is NOT the CognitiveOS Actor placement scheduler — that is
+`kernel/society/actor_scheduler.py::ActorScheduler`, invoked by the
+`ActorLifecycleController` and reachable in production. This module is only
+kept alive for its two dataclasses (`RuntimeDescriptor`, `ScheduledTask`),
+which `kernel.py` and `kernel/compile/scheduler_adapters.py` still import as
+shared metadata types; `DistributedScheduler` itself has no production call
+site. Left in place rather than deleted (dataclasses are load-bearing,
+deletion risk outweighs the naming-confusion cost) — do not confuse the two
+schedulers when reading either file.
 """
 from __future__ import annotations
 

@@ -32,6 +32,33 @@ COPY src/ ./src/
 # monkeypatched_sdk is its own top-level package (repo root, sibling to
 # src/) — src.cortex.prediction imports monkeypatched_sdk.models directly.
 COPY monkeypatched_sdk/ ./monkeypatched_sdk/
+# Live Deployment Validation finding: packages/broca and packages/
+# cerebellum were never copied into this image at all — confirmed live,
+# a real container crashed at startup with
+# ModuleNotFoundError: No module named 'broca.registry' (bootstrap.py::
+# init_broca, 18 real call sites across src/monkey_brain/, not dead
+# code). The local dev venv only works because `pip install -e
+# packages/broca` registers a custom editable-install finder that
+# transparently redirects `broca.registry`/`broca.agents.*` submodule
+# imports to packages/broca/broca/ even though bare `import broca` itself
+# resolves to src/broca/'s own (older, incomplete — no registry.py)
+# stub package of the same name. Reproducing that same editable install
+# here (not a plain COPY) is what actually reproduces dev's real import
+# behavior in the container. cerebellum (init_providers, 5 real call
+# sites) has the same shape: a real `cerebellum` package that only
+# exists under packages/cerebellum/, with no src/ stub of its own at
+# all, so it was ModuleNotFoundError-ing too, just silently (init_
+# providers already wraps its import in try/except — see bootstrap.py).
+# packages/cortex is NOT installed here: bare `import cortex` already
+# resolves entirely to src/cortex/ (confirmed live — reasoning_
+# scheduler.py, epa.py, epistemic.py, everything kernel/cognitive_
+# kernel.py actually imports, all live under src/cortex/, not
+# packages/cortex/), so packages/cortex is an unrelated, unused
+# duplicate — installing it would risk a real name collision with the
+# src/cortex/ package this code actually depends on, not close a gap.
+COPY packages/broca/ ./packages/broca/
+COPY packages/cerebellum/ ./packages/cerebellum/
+RUN uv pip install --system --no-deps -e ./packages/broca -e ./packages/cerebellum
 # services/{common,auth,agentos} live under domains/manufacturing/knowledge/
 # (see tests/conftest.py's sys.path setup — same reason), NOT at the repo
 # root, which only has services/file/. The previous COPY services/common/
