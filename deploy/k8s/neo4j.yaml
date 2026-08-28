@@ -1,0 +1,113 @@
+# Neo4j — Live Deployment Validation finding: this pass initially left
+# Neo4j undeployed on the reasoning that persistence/graph_store.py's
+# connection attempt is wrapped in try/except and therefore "fails soft."
+# Confirmed live this pass that assumption was WRONG in practice: with
+# Neo4j absent, the "Policy Control Plane" and "Graph Store" boot phases
+# each burned their full 60s phase_timeout before degrading, and
+# resource_manager's background retry for the same optional-but-absent
+# resource kept the single-threaded event loop busy enough that the
+# NEXT phase ("Planetary Runtime" — proven fast in isolation, 0.3s
+# construct + 0.15s connect_nats() when tested directly against a live
+# pod) also timed out at 60s, every single boot attempt, crash-looping
+# the whole control-plane pod indefinitely. "Fails soft" here means
+# "does not raise," not "does not degrade boot time/stability" — a real
+# gap between the code's documented contract and its live behavior.
+# Deploying real Neo4j is the smaller, more certain fix than auditing
+# resource_manager's retry/backoff internals for an event-loop-blocking
+# call this pass did not have to isolate exactly.
+#
+# Single-instance, ephemeral (emptyDir) — same local/kind-conformance
+# scope note as redis.yaml/mongodb.yaml. Community edition, matching
+# docker-compose.yml's own (unauthenticated-by-default there too, but
+# secret.yaml already carries a real generated password for this
+# deployment — see its own comment for why).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neo4j
+  namespace: monkeybrain
+  labels:
+    app: neo4j
+    component: state-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: neo4j
+  template:
+    metadata:
+      labels:
+        app: neo4j
+    spec:
+      # Live Deployment Validation finding: Kubernetes auto-injects
+      # <SERVICE>_PORT* compatibility env vars (legacy Docker-links
+      # behavior) into every pod for every Service in the namespace --
+      # with a Service literally named "neo4j", that means NEO4J_PORT,
+      # NEO4J_PORT_7687_TCP_PORT, etc. Neo4j's own docker-entrypoint
+      # treats ANY NEO4J_* env var as a config override (underscores ->
+      # dots), so it tried to parse "PORT_7687_TCP_PORT" as a config key
+      # and refused to start ("Unrecognized setting... disable
+      # server.config.strict_validation.enabled to continue"). Disabling
+      # enableServiceLinks is the correct fix (not lowering strict
+      # validation) -- this pod never uses the legacy Service-links env
+      # vars for anything, and the same collision would recur for any
+      # future NEO4J_-prefixed Service name.
+      enableServiceLinks: false
+      containers:
+        - name: neo4j
+          image: neo4j:5-community
+          env:
+            - name: NEO4J_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: agentos-secrets
+                  key: neo4j-auth
+          ports:
+            - containerPort: 7687
+              name: bolt
+            - containerPort: 7474
+              name: http
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 7687
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 7687
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          volumeMounts:
+            - name: neo4j-data
+              mountPath: /data
+      volumes:
+        - name: neo4j-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j
+  namespace: monkeybrain
+  labels:
+    app: neo4j
+spec:
+  selector:
+    app: neo4j
+  ports:
+    - port: 7687
+      targetPort: 7687
+      protocol: TCP
+      name: bolt
+    - port: 7474
+      targetPort: 7474
+      protocol: TCP
+      name: http
+  type: ClusterIP

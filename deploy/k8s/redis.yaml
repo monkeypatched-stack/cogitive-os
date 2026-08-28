@@ -1,0 +1,81 @@
+# Redis — Live Deployment Validation finding: PlanetaryRuntime's Actor
+# Registry/Scheduler leases/node registry/reconcile queue (kernel/society/
+# integration.py::_init_persistence) all depend on Redis being reachable
+# at REDIS_HOST=redis (configmap.yaml), but NO Kubernetes manifest for
+# Redis itself existed anywhere in deploy/k8s/ before this fix — every
+# prior "the manifests render" check passed while a real deployment would
+# have booted with PlanetaryRuntime._redis silently None (the documented
+# fail-soft degrade), never actually persisting anything. Confirmed live
+# this pass: applying the base kustomization without this file left every
+# agentos/actor pod logging "Redis not available" and running fully
+# process-local.
+#
+# Single-instance, ephemeral (emptyDir, not a PVC) — this is a local/kind
+# conformance deployment, not a production HA topology. A production
+# deployment should replace this with a managed Redis (ElastiCache,
+# Memorystore, etc.) or a real Redis Sentinel/Cluster chart; this is the
+# minimum that makes the actual code path (a single REDIS_HOST) work.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: monkeybrain
+  labels:
+    app: redis
+    component: state-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: monkeybrain
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  type: ClusterIP

@@ -1,0 +1,55 @@
+# CognitiveOS Edge Agent — systemd unit template
+#
+# The persistent-supervision deployment mechanism for a real, unattended
+# edge device (see EDGE_DEPLOYMENT_REPORT.md, Section 6). This is a
+# TEMPLATE to install and enable manually on a target device — it is not
+# applied by any automation in this repo, matching how deploy/k8s/
+# actor-deployment.yaml is a template rendered per-actor, not a static
+# base resource.
+#
+# Install:
+#   sudo cp deploy/edge/cognitiveos-edge-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now cognitiveos-edge-agent
+#
+# Why systemd, not a custom supervisor daemon or SSH-driven provisioning:
+# this is "a normal Linux edge device" (this task's own guidance) —
+# systemd is already present on essentially every such device, already
+# gives the exact primitives an Edge Agent itself needs one level up
+# (restart-on-crash, start-on-boot, log capture via journald), and adds
+# ZERO new infrastructure dependency. The Edge Agent process itself
+# still owns supervising its own managed Actor SUBPROCESSES (see
+# src/monkey_brain/edge_agent.py's own supervise_loop) — systemd here
+# only supervises the Edge Agent process itself, one layer up, the same
+# relationship kubelet has to a container's own PID 1.
+[Unit]
+Description=CognitiveOS Edge Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Adjust to the real deployment path/user on the target device.
+WorkingDirectory=/opt/cognitiveos
+User=cognitiveos
+Environment=EDGE_DEVICE_ID=%H
+Environment=EDGE_AGENT_PORT=8061
+# Point these at the real control-plane Society infrastructure this
+# device should join — same env vars scripts/start_edge_agent.sh /
+# start_actor.sh already use, no new configuration surface.
+Environment=REDIS_HOST=redis.internal
+Environment=REDIS_PORT=6379
+Environment=MONGODB_URL=mongodb://mongodb.internal:27017
+Environment=DATABASE_URL=mongodb://mongodb.internal:27017/cognitive_platform
+Environment=NEO4J_URI=bolt://neo4j.internal:7687
+Environment=NATS_URL=nats://nats.internal:4222
+ExecStart=/opt/cognitiveos/.venv/bin/python -m uvicorn src.monkey_brain.edge_agent:app --host 0.0.0.0 --port 8061
+Restart=always
+RestartSec=5
+# Give a graceful SIGTERM (checkpoints + stops managed Actor
+# subprocesses, see edge_agent.py's own shutdown handler) real time to
+# complete before systemd escalates to SIGKILL.
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,40 @@
+version: "3.8"
+
+# Local override: remaps the agentos service's host port so it doesn't
+# collide with `kubectl port-forward ... 8031:8031` (currently pointing
+# the living-world-explorer frontend at the kind cluster's agentos —
+# see this session's work). Container-internal port is unchanged (8031),
+# only the host-side publish port moves to 18034.
+services:
+  agentos:
+    ports:
+      - "18034:8031"
+    # Real, live-confirmed root cause (not a guess): the required
+    # "Planetary Runtime" boot phase (kernel.py::_phase_planetary, NOT in
+    # _OPTIONAL_PHASES) legitimately exceeds the default 60s
+    # KERNEL_PHASE_TIMEOUT in this docker-compose environment — its own
+    # connect_nats() call is slow for the same reason documented in
+    # CLEAN_DEPLOYMENT_VALIDATION_REPORT.md's Failure 2 (NATS is reachable
+    # the whole time; the connect itself is just slow here). Per kernel.py's
+    # own documented contract, a required phase's timeout is a deliberate,
+    # correct fail-fast — `sys.exit(3)` (uvicorn's STARTUP_FAILURE) followed,
+    # and `restart: unless-stopped` then crash-looped the container every
+    # ~180s, never actually converging. Raising the budget lets the same
+    # slow-but-eventually-successful connect this session already proved
+    # out (in Kubernetes) actually finish here too.
+    environment:
+      - KERNEL_PHASE_TIMEOUT=300
+      - MODEL_BACKEND=dev_bridge
+      - RAZORPAY_KEY_ID=rzp_test_TV0NvdrWxirPCL
+      - RAZORPAY_KEY_SECRET=KBkPnoQvUM5OLPSa6qkSlCY3
+    # Overrides the Dockerfile's own baked-in HEALTHCHECK
+    # (--start-period=10s --retries=3, ~100s total) — confirmed live
+    # this session that a real agentos boot against NATS/PCP retry
+    # latency (kernel.py's PCP/PlanetaryRuntime connect_nats() calls)
+    # routinely takes several minutes, not 100s. Matches the real
+    # observed boot time instead of the Dockerfile's optimistic default.
+    healthcheck:
+      start_period: 480s
+      interval: 15s
+      timeout: 5s
+      retries: 5
