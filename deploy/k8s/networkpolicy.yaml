@@ -1,0 +1,97 @@
+# NetworkPolicies for the monkeybrain namespace — Gap Remediation audit
+# finding: no NetworkPolicy existed anywhere under deploy/k8s/, so every
+# pod in the namespace (Society control-plane, per-actor Actor Runtime
+# pods, OPA) accepted traffic from anywhere in the cluster by default.
+#
+# Deliberately a minimal, additive baseline, not a full mesh-authorization
+# rewrite (that is TransitionGate/OPA's job at the application layer,
+# already enforced independently — see opa.yaml/require_opa()). This only
+# closes the "any pod in the cluster can reach any port of any pod here"
+# default-open gap:
+#
+#   1. default-deny-all: baseline — nothing is reachable unless a
+#      later policy explicitly allows it. NetworkPolicies are additive
+#      (multiple policies selecting the same pod OR together), so this
+#      is always safe to apply alongside the allow-rules below.
+#   2. allow-intra-namespace: every pod in monkeybrain may reach every
+#      other pod in monkeybrain on any port — this is the Society Bus
+#      (NATS pub/sub between actors), Actor Runtime -> Redis/Mongo/OPA,
+#      and the Society API -> actor pods reconciliation traffic. Scoping
+#      this port-by-port would require hand-maintaining a port list that
+#      already drifts across configmap.yaml/docker-compose.yml (see the
+#      REDIS_PORT/MONGODB_URL comments there) — namespace-scoped instead
+#      of cluster-wide is the actual gap being closed here.
+#   3. allow-dns-egress: every pod needs to resolve Service DNS names
+#      (redis, mongodb, nats, opa, ...) regardless of the deny-all above
+#      — kube-dns/CoreDNS normally lives in kube-system, outside this
+#      namespace, so it needs its own explicit egress allow.
+#   4. allow-metrics-scrape: Prometheus (servicemonitor.yaml) needs
+#      ingress to the /metrics port from OUTSIDE this namespace. Scoped
+#      via namespaceSelector matching a "monitoring" namespace label —
+#      adjust the label selector below to match your cluster's actual
+#      Prometheus operator namespace if it differs.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: monkeybrain
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: monkeybrain
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+  egress:
+    - to:
+        - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: monkeybrain
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-metrics-scrape
+  namespace: monkeybrain
+spec:
+  podSelector:
+    matchLabels:
+      app: agentos
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8031

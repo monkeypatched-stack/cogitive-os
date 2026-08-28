@@ -4002,34 +4002,50 @@ class DelegationCheckCapability:
     other capability in this file, it only executes when the LLM planner
     includes it as a plan step (registered in the bus, no fixed pipeline
     position anywhere in belief_runtime.py/action_executor.py; confirmed
-    by grep). More importantly: there is currently no real path to ever
-    CREATE an active grant this checks for — grant_delegation()
-    (domain_security.py) has zero callers anywhere in src/ or tests/, so
-    check_delegation() can only ever return active=False. Until a real
-    grant-creation entry point exists (an API route or capability that
-    calls grant_delegation), an "on behalf of X" request is denied
-    unconditionally, every time — this is a real, known, currently
-    out-of-scope gap, not a working gate.
+    by grep).
 
-    When active, context["knowledge_graph"] is REPLACED with a KG scoped
-    to the delegator's own real household — every downstream capability
-    (SocietyQuery, ProductSelection, HouseholdCognition, Payment, ...)
-    reads stores/products/wallets from this single shared context value,
-    so this is what actually makes Bob operate in Alice's grocery domain
-    rather than his own (typically empty) one. context["actor_id"] is left
-    untouched — Bob remains the authenticated author of the request for
-    audit purposes, he just now acts within Alice's society/wallet.
-    context["acting_as"] additionally records the delegator's id so
-    PaymentConfirmation's revocation re-check (GS-3902) knows which grant
-    to re-verify.
+    Real gaps this closes (both real, both confirmed live-blocking):
+    (1) grant_delegation() (domain_security.py) had zero callers anywhere
+    — no real path ever created the grant this capability checks for, so
+    every "on behalf of X" request was denied unconditionally. Fixed via
+    POST /actors/{delegator_id}/delegations (api/routes/actors.py).
+    (2) parse_delegator(question) only ever extracts a raw, lowercase
+    WORD from the question text ("on behalf of alice" -> "alice") — it
+    was passed straight into check_delegation/Neo4jBackedKnowledgeGraph
+    as if it were a real actor_id, with no resolution step at all, unlike
+    every other actor-addressing capability in this file (AskActor/
+    DelegateTask both resolve a short/partial name via reachable_
+    colleagues' first-token match — this one never did). Fixed below:
+    the parsed word is resolved against the DELEGATE's own reachable
+    colleagues before check_delegation ever runs.
 
-    Offline (no live Neo4j), there is no separate per-tenant store to
-    fetch the delegator's own partition from — check_delegation falls
-    back to the request's own context kg (see its docstring), and this
-    capability correspondingly leaves context["knowledge_graph"] as-is
-    rather than replacing it with a freshly-constructed, always-empty
-    Neo4jBackedKnowledgeGraph, which would silently erase the delegator's
-    real wallet/products/stores for the rest of the pipeline.
+    When active, context["actor_id"] is left untouched — Bob remains the
+    authenticated author of the request for audit purposes — but
+    context["acting_as"] is set to the delegator's real id, which is what
+    actually makes Bob's purchase pay from Alice's real wallet
+    (_paying_actor_id, below, scopes every financial lookup to acting_as
+    when set) and lets PaymentConfirmation's revocation re-check (GS-3902)
+    know which grant to re-verify.
+
+    Real gap this closed: an earlier version of this capability also
+    REPLACED context["knowledge_graph"] with a fresh, per-actor
+    Neo4jBackedKnowledgeGraph scoped to the delegator — on paper, "make
+    Bob operate in Alice's grocery domain." Confirmed live: this
+    deployment's real commerce data (stores/products/wallets) lives
+    entirely in the shared, Redis-backed pr.knowledge_graph every other
+    capability in this file already reads/writes — no capability here
+    has ever used per-actor Neo4j partitions for commerce data (that
+    class only backs a separate, unrelated per-actor graph used by
+    routes/knowledge_graph.py). Swapping to one mid-plan silently handed
+    every downstream capability an almost-empty graph, and a real
+    delegated purchase failed at ProductSelection with "planner selected
+    unknown product" the moment delegation succeeded — the exact
+    "silently erase the delegator's real wallet/products/stores" failure
+    this capability's own OLD offline-only comment already warned about,
+    just never applied to the online branch too. Since every actor in one
+    PlanetaryRuntime already shares the SAME pr.knowledge_graph instance,
+    there was never anything to switch: acting_as alone is both necessary
+    and sufficient.
     """
     name = "DelegationCheck"
 
@@ -4038,18 +4054,38 @@ class DelegationCheckCapability:
         question = context.get("question", "")
         delegate_id = context.get("actor_id", "")
 
-        delegator_id = parse_delegator(question)
-        if delegator_id is None or delegator_id == delegate_id:
+        parsed_name = parse_delegator(question)
+        if parsed_name is None or parsed_name == delegate_id:
             return {"success": True, "delegated": False}
+
+        # Resolve the raw parsed word into a real actor_id, same
+        # first-token/reachable-colleagues pattern AskActorCapability/
+        # DelegateTaskCapability already use — scoped to who the DELEGATE
+        # (the one making this request) can actually reach, never a
+        # global name search. An unresolved or ambiguous name is never
+        # silently guessed at: it either falls through to the raw parsed
+        # word (check_delegation then honestly reports "no delegation
+        # exists" for it, the same real denial this always gave) or, if
+        # genuinely ambiguous, is denied outright with the specific
+        # ambiguity named.
+        delegator_id = parsed_name
+        pr = context.get("planetary_runtime")
+        if pr is not None:
+            from src.monkey_brain.kernel.affiliations.reachability import reachable_colleagues
+            candidates = [
+                c for c in reachable_colleagues(pr, delegate_id)
+                if c["name"].strip().lower().split(" ")[0] == parsed_name
+            ]
+            if len(candidates) == 1:
+                delegator_id = candidates[0]["actor_id"]
+            elif len(candidates) > 1:
+                names = ", ".join(c["name"] for c in candidates)
+                return {"success": False, "error": f"{parsed_name!r} is ambiguous — could mean any of: {names}"}
 
         check = check_delegation(delegator_id, delegate_id, kg=context.get("knowledge_graph"))
         if not check["active"]:
             return {"success": False, "error": f"delegation denied: {check['reason']}"}
 
-        from src.monkey_brain.kernel.knowledge_graph_neo4j import Neo4jBackedKnowledgeGraph, resolve_household_id, _default_driver
-        if _default_driver() is not None:
-            context["knowledge_graph"] = Neo4jBackedKnowledgeGraph(
-                person_id=delegator_id, household_id=resolve_household_id(delegator_id))
         context["acting_as"] = delegator_id
         return {"success": True, "delegated": True, "delegator": delegator_id, "reason": check["reason"]}
 
@@ -5801,24 +5837,45 @@ class AskActorCapability:
                 names = ", ".join(c["name"] for c in candidates)
                 return {"success": False, "error": f"{target_name!r} is ambiguous — could mean any of: {names}"}
         if target_state is None:
-            return {"success": False, "error": f"no actor named {target_name!r} found"}
-
-        target_id = target_state.actor_id
-        # Real gap this closes: target_name is whatever the planner wrote
-        # in parameters.target_actor — since the "Reachable colleagues"
-        # prompt section (llm_planner.py) now correctly leads the model to
-        # write the exact actor_id there (confirmed live) rather than a
-        # display name, target_name itself is now often a raw id string.
-        # Everywhere a HUMAN-READABLE name is needed below uses the real
-        # resolved name instead — target_name/target_id stay as the
-        # original parameter/resolved id for lookup and error-message
-        # purposes only.
-        target_display_name = target_state.profile.identity.name
-        target_goals = list(target_state.profile.goals) if target_state.profile.goals else []
-        target_role = (
-            f"{target_display_name}, whose responsibilities include: {', '.join(target_goals)}"
-            if target_goals else target_display_name
-        )
+            # Deployment Architecture (Section 8 / Top 10 item 4): every
+            # search above only ever looks at pr.all_societies() — actors
+            # genuinely resident in THIS process's memory. An actor
+            # registered on a DIFFERENT node was previously reported "no
+            # actor named X found" even when it genuinely existed — the
+            # durable Actor Registry (locate_actor), not this process's
+            # in-memory set, is the real source of truth for "does this
+            # actor exist." locate_actor() is a cheap, no-side-effect
+            # registry read (no cognition reconstruction), tried only as a
+            # last resort after the exact-id and reachable-colleagues name
+            # fallbacks above, so this never changes behavior for the
+            # overwhelmingly common same-process case.
+            registry_entry = pr.locate_actor(target_name)
+            if registry_entry is None or not registry_entry.actor_id:
+                return {"success": False, "error": f"no actor named {target_name!r} found"}
+            target_id = registry_entry.actor_id
+            target_display_name = registry_entry.name or target_id
+            # No goals available from the lightweight registry record (by
+            # design — locate_actor never reconstructs cognition) — the
+            # role description degrades to just the name rather than
+            # fabricating responsibilities this process has no way to know.
+            target_role = target_display_name
+        else:
+            target_id = target_state.actor_id
+            # Real gap this closes: target_name is whatever the planner wrote
+            # in parameters.target_actor — since the "Reachable colleagues"
+            # prompt section (llm_planner.py) now correctly leads the model to
+            # write the exact actor_id there (confirmed live) rather than a
+            # display name, target_name itself is now often a raw id string.
+            # Everywhere a HUMAN-READABLE name is needed below uses the real
+            # resolved name instead — target_name/target_id stay as the
+            # original parameter/resolved id for lookup and error-message
+            # purposes only.
+            target_display_name = target_state.profile.identity.name
+            target_goals = list(target_state.profile.goals) if target_state.profile.goals else []
+            target_role = (
+                f"{target_display_name}, whose responsibilities include: {', '.join(target_goals)}"
+                if target_goals else target_display_name
+            )
         asker_id = context.get("actor_id", "")
         # actor_role context isn't reliably populated on this real
         # pipeline invocation path (confirmed live: always empty here,
@@ -5876,12 +5933,27 @@ class AskActorCapability:
                 # time) and any transport error both land here — an
                 # honest failure, never a guessed/fabricated answer.
                 return {"success": False, "error": f"{target_display_name} did not respond within 90s ({exc})"}
-        else:
+        elif target_state is not None:
             result = await AnswerQuestionCapability().handle({"context": {
                 "knowledge_graph": pr.knowledge_graph, "actor_id": target_id,
                 "actor_role": target_role, "question": question,
                 "planetary_runtime": pr,
             }})
+        else:
+            # No NATS connection AND the target isn't resident in this
+            # process — there is no way to reach it. The in-process
+            # AnswerQuestionCapability fallback above is only correct when
+            # the target genuinely lives in THIS process's memory
+            # (target_state is not None); calling it for a registry-only,
+            # remote target_id would silently answer using whatever local
+            # actor_id happens to match, or fail confusingly deep inside
+            # AnswerQuestionCapability instead of here, honestly, at the
+            # one place that actually knows why.
+            return {
+                "success": False,
+                "error": f"{target_display_name} is on a different node and no NATS connection "
+                         "is available to reach it",
+            }
         if not result.get("success"):
             return {"success": False, "error": result.get("error", f"{target_display_name} could not answer")}
 

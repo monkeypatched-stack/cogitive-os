@@ -1,0 +1,149 @@
+# CognitiveOS Actor instances — layered on top of docker-compose.yml
+# (Society infrastructure + the Society control-plane `agentos` process),
+# never merged into it. This is the concrete answer to "docker-compose.yml
+# must not imply all Actors are one CognitiveOS process"
+# (docs/DEPLOYMENT_MIGRATION.md Section 9): each Actor is its own service,
+# its own container, its own ACTOR_ID, independently
+# up/down/restart/replaceable without touching `agentos` or any other
+# Actor.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.actors.yml up -d
+#
+# actor-a/actor-b below are EXAMPLES demonstrating the pattern, not an
+# exhaustive or required set — add more named services following the
+# same shape for additional Actors. Each Actor's actor_id must already
+# be registered with the Society (via the agentos API) before its
+# container can reach READY — see docs/ACTOR_ARTIFACT.md's identity
+# model; set ACTOR_BOOTSTRAP_IF_MISSING=true on a service below only for
+# local dev convenience.
+#
+# No Actor-specific identity is embedded in the shared image — every
+# service below runs the SAME docker/services/agentos/Dockerfile image,
+# differing only in `command:` (selecting the Actor Runtime entrypoint
+# instead of the Society server) and `ACTOR_ID`/`ACTOR_NODE_CLASS` env
+# vars.
+
+services:
+  actor-a:
+    build:
+      context: .
+      dockerfile: docker/services/agentos/Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - src.monkey_brain.actor_runtime:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8051"
+    ports:
+      - "8051:8051"
+    environment:
+      - ACTOR_ID=actor-a
+      - ACTOR_NODE_CLASS=cloud
+      - ACTOR_NODE_ID=actor-a-instance
+      - ACTOR_CLAIM_PLACEMENT=true
+      # Same Society infrastructure endpoints `agentos` itself uses —
+      # never a second set of names for the same thing. Conformance-run
+      # finding: PlanetaryRuntime's own Redis client reads REDIS_HOST/
+      # REDIS_PORT (kernel/society/integration.py), NOT REDIS_URL
+      # (which other, unrelated stores like execution_checkpoint_store.py
+      # DO read) -- a genuine pre-existing naming split between
+      # subsystems in this codebase, confirmed live. Likewise
+      # ActorStateStore's Mongo connection (persistence/db_pool.py)
+      # reads DATABASE_URL, not MONGODB_URL (which the Society API's own
+      # /health check uses). Both names are set below so every subsystem
+      # actor_runtime.py touches resolves correctly -- this does not
+      # change or unify the underlying application code's env var
+      # names, only ensures deployment config supplies all of them.
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DATABASE_URL=mongodb://mongodb:27017/cognitive_platform
+      - DB_NAME=demo
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      agentos:
+        condition: service_started
+        # Actor A instantiates against the Registry the Society control
+        # plane owns -- it needs `agentos` running (or at minimum the
+        # shared Redis it also depends on directly), not vice versa.
+        # Killing this container never restarts `agentos` or actor-b.
+    healthcheck:
+      # The base image's own HEALTHCHECK (docker/services/agentos/
+      # Dockerfile) targets the Society server's /health on 8031 --
+      # wrong for this container's actor_runtime.py entrypoint (port
+      # 8051, and /health doesn't exist there — /live and /ready do).
+      # Must be overridden explicitly per Actor Runtime container, same
+      # requirement Section 12 (Kubernetes health) applies to the K8s
+      # template.
+      test: curl -f http://localhost:8051/live || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  actor-b:
+    build:
+      context: .
+      dockerfile: docker/services/agentos/Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - src.monkey_brain.actor_runtime:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8051"
+    ports:
+      # Each container has its own isolated network namespace, so both
+      # actor-a and actor-b listen on the SAME internal port (8051) --
+      # only the HOST-side mapping differs, avoiding a real "which
+      # internal port is it actually listening on" mismatch bug.
+      - "8052:8051"
+    environment:
+      - ACTOR_ID=actor-b
+      - ACTOR_NODE_CLASS=cloud
+      - ACTOR_NODE_ID=actor-b-instance
+      - ACTOR_CLAIM_PLACEMENT=true
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DB_NAME=demo
+      - REDIS_URL=redis://redis:6379
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      agentos:
+        condition: service_started
+    healthcheck:
+      test: curl -f http://localhost:8051/live || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped

@@ -1,0 +1,76 @@
+# MongoDB — same finding as redis.yaml: DBPool/ActorStateStore
+# (persistence/db_pool.py, persistence/actor_state_store.py) depend on
+# reaching MongoDB at the service name "mongodb" (configmap.yaml's
+# MONGODB_URL/DATABASE_URL), but no Kubernetes manifest for MongoDB
+# itself existed. Without this, ActorStateStore construction fails at
+# first use (belief persistence silently disabled, kernel/society/
+# integration.py::_get_actor_state_store's documented fail-soft path) —
+# confirmed live this pass.
+#
+# Single-instance, ephemeral (emptyDir) — same local/kind-conformance
+# scope note as redis.yaml; a production deployment should use a managed
+# MongoDB or a real replica-set chart.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: monkeybrain
+  labels:
+    app: mongodb
+    component: state-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:7
+          ports:
+            - containerPort: 27017
+              name: mongo
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: monkeybrain
+  labels:
+    app: mongodb
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
+      name: mongo
+  type: ClusterIP

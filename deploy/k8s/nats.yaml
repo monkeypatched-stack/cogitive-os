@@ -1,0 +1,93 @@
+# NATS — Society Bus transport (Gap Remediation audit's deferred finding,
+# closed this pass). PlanetaryRuntime.connect_nats() (kernel/society/
+# integration.py) and AskActorCapability/DelegateTask (kernel/domains/
+# grocery.py) are the only real NATS client usage in src/monkey_brain/ —
+# confirmed by grep this pass, zero references to jetstream/`.js(` exist
+# anywhere in the codebase. JetStream is therefore deliberately NOT
+# enabled here, unlike docker-compose.yml's `nats:2-alpine` service
+# (which runs `-js -sd /data`) — that flag pre-dates any actual JetStream
+# consumer and isn't exercised by any code path; enabling it here would
+# be inventing infrastructure the code doesn't use. Core NATS pub/sub
+# (plain request/reply on monkeybrain.actor.{id}.inbox subjects) is all
+# that's required.
+#
+# No authentication configured — matches the existing docker-compose.yml
+# NATS service (also unauthenticated) exactly; this pass does not add
+# auth the current architecture doesn't already require. NetworkPolicy
+# (networkpolicy.yaml's allow-intra-namespace rule) is the actual access
+# boundary today: only pods inside the monkeybrain namespace can reach
+# NATS at all.
+#
+# Single-instance, ephemeral (emptyDir — no volume actually needed
+# without JetStream, kept minimal). A production deployment serving
+# multiple Actor pods at real scale should run the official NATS Helm
+# chart / a real StatefulSet cluster instead of this one-replica
+# Deployment; this is the minimum that makes the actual Society Plane
+# code path work for conformance testing.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nats
+  namespace: monkeybrain
+  labels:
+    app: nats
+    component: society-bus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nats
+  template:
+    metadata:
+      labels:
+        app: nats
+    spec:
+      containers:
+        - name: nats
+          image: nats:2-alpine
+          args: ["-m", "8222"]
+          ports:
+            - containerPort: 4222
+              name: client
+            - containerPort: 8222
+              name: monitor
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8222
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8222
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats
+  namespace: monkeybrain
+  labels:
+    app: nats
+spec:
+  selector:
+    app: nats
+  ports:
+    - port: 4222
+      targetPort: 4222
+      protocol: TCP
+      name: client
+    - port: 8222
+      targetPort: 8222
+      protocol: TCP
+      name: monitor
+  type: ClusterIP

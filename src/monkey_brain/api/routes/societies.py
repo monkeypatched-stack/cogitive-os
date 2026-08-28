@@ -770,6 +770,24 @@ async def add_society_governance_policy(
         rules=tuple(body.rules), scope=body.scope, priority=body.priority, enabled=body.enabled,
     )
     sr.governance.add_policy(policy)
+    # CognitiveOS Constitution: "knowledge, policies and capabilities are
+    # versioned infrastructure" -- mirror the real governance registration
+    # into SharedWorld's own versioned WorldPolicy record too (see
+    # SharedWorld.record_policy's docstring for why this was previously
+    # dead scaffolding), keyed by the SAME policy_id so a later edit to
+    # this policy is recognized as a re-registration, not a new one.
+    sr.world.record_policy(
+        policy_id=policy.policy_id, name=policy.name, description=policy.description,
+        rules=policy.rules, scope=policy.scope,
+    )
+    # SocietyGovernanceEngine cross-process gap: _save_societies() already
+    # serializes sr.governance.policies() into the same durable blob every
+    # OTHER society-mutating route here calls it after -- this route was
+    # the one real exception, so a policy added here was only ever
+    # persisted by accident, whenever some unrelated route happened to
+    # trigger a save afterward. Without this, a second process (or this
+    # one after a restart) never saw it.
+    pr._save_societies()
     return _governance_policy_to_response(policy)
 
 
@@ -789,6 +807,7 @@ async def remove_society_governance_policy(
     removed = sr.governance.remove_policy(policy_id)
     if not removed:
         raise HTTPException(status_code=404, detail=f"Policy {policy_id} not found")
+    pr._save_societies()
     return {"status": "deleted", "policy_id": policy_id}
 
 
@@ -837,6 +856,7 @@ async def grant_actor_permission(
         granted_by=user_id, expires_at=body.expires_at,
     )
     sr.governance.grant_permission(permission)
+    pr._save_societies()  # SocietyGovernanceEngine cross-process gap — see add_society_governance_policy's comment
     return _permission_to_response(permission)
 
 
@@ -858,6 +878,7 @@ async def revoke_actor_permission(
     removed = sr.governance.revoke_permission(actor_id, resource, action)
     if not removed:
         raise HTTPException(status_code=404, detail="Permission not found")
+    pr._save_societies()
     return {"status": "revoked", "actor_id": actor_id, "resource": resource, "action": action}
 
 

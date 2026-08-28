@@ -802,45 +802,77 @@ class SocietyRuntime:
         if actor_state is None or not actor_state.is_active:
             return None
 
-        # get revious observations 
-        observation = self.get_observation(actor_id)
-        try:
-            # fuse with current
-            actor_state.belief_state = self._belief_fusion.fuse(
-                actor_id, observation, actor_state.belief_state,
-            )
-            logger.info("Belief fusion for %s: %d beliefs from %d entities",
-                       actor_id,
-                       len(actor_state.belief_state.beliefs) if actor_state.belief_state else 0,
-                       len(observation.entities))
-        except Exception as e:
-            logger.error("Belief fusion failed for %s: %s", actor_id, e)
-            return None
-        actor_state.last_cycle = time.time()
-        actor_state.cycle_count += 1
+        # Actor Registry / ownership lease (Deployment Architecture,
+        # Section 7): two processes can both have `actor_id` loaded into
+        # their own _actors dict (e.g. both reconciled it from the shared
+        # Redis actor registry) with nothing previously stopping both from
+        # ticking it concurrently -- a split-brain risk on one identity's
+        # belief, not just a discovery gap. Acquire a short-lived,
+        # per-actor Redis lease before running any real cognition; if
+        # another node already holds it, skip this tick entirely rather
+        # than race it. Deliberately a no-op (lease_token stays None, no
+        # Redis round-trip at all) for a standalone SocietyRuntime with no
+        # PlanetaryRuntime attached -- there is no cross-process risk to
+        # guard against there, and this must not add overhead or a new
+        # failure mode to the extensive existing standalone/unit-test path.
+        planetary = self._planetary_runtime
+        lease_token: str | None = None
+        if planetary is not None:
+            lease_token = planetary.acquire_actor_lease(actor_id)
+            if lease_token is None:
+                logger.info(
+                    "Actor %s is currently leased by another node — skipping this tick",
+                    actor_id,
+                )
+                return None
 
         try:
-            await asyncio.wait_for(
-                self._coordinate_actor(actor_state, observation, prompt_request),
-                # A dialogue turn may include AskActor's real HTTP request
-                # and the colleague's own LLM answer. Keep this above the
-                # capability's 90-second network budget so nested dialogue
-                # is not discarded as an apparent actor failure. Also kept
-                # above belief_formation.from_state's own 240s timeout
-                # (cognitive_actor.py) — this must stay an outer safety net,
-                # never the one that fires first: a TimeoutError caught HERE
-                # skips the actor with no result at all, while the inner
-                # one degrades gracefully to an honest FormationResult
-                # failure the caller can still report.
-                timeout=300.0,
-            )
-        except asyncio.TimeoutError:
-            logger.warning("Actor %s tick timed out after 300s — skipping", actor_id)
-            return None
-        except Exception as e:
-            logger.error("Actor %s tick failed: %s", actor_id, e)
-            return None
-        return True
+            # get revious observations
+            observation = self.get_observation(actor_id)
+            try:
+                # fuse with current
+                actor_state.belief_state = self._belief_fusion.fuse(
+                    actor_id, observation, actor_state.belief_state,
+                )
+                logger.info("Belief fusion for %s: %d beliefs from %d entities",
+                           actor_id,
+                           len(actor_state.belief_state.beliefs) if actor_state.belief_state else 0,
+                           len(observation.entities))
+            except Exception as e:
+                logger.error("Belief fusion failed for %s: %s", actor_id, e)
+                return None
+            actor_state.last_cycle = time.time()
+            actor_state.cycle_count += 1
+
+            try:
+                await asyncio.wait_for(
+                    self._coordinate_actor(actor_state, observation, prompt_request),
+                    # A dialogue turn may include AskActor's real HTTP request
+                    # and the colleague's own LLM answer. Keep this above the
+                    # capability's 90-second network budget so nested dialogue
+                    # is not discarded as an apparent actor failure. Also kept
+                    # above belief_formation.from_state's own 240s timeout
+                    # (cognitive_actor.py) — this must stay an outer safety net,
+                    # never the one that fires first: a TimeoutError caught HERE
+                    # skips the actor with no result at all, while the inner
+                    # one degrades gracefully to an honest FormationResult
+                    # failure the caller can still report.
+                    timeout=300.0,
+                )
+            except asyncio.TimeoutError:
+                logger.warning("Actor %s tick timed out after 300s — skipping", actor_id)
+                return None
+            except Exception as e:
+                logger.error("Actor %s tick failed: %s", actor_id, e)
+                return None
+            return True
+        finally:
+            # Release as soon as this tick actually finishes (success,
+            # failure, or timeout alike) rather than holding the lease for
+            # its full TTL -- the next tick, on any node, should not have
+            # to wait out the lease window unnecessarily.
+            if planetary is not None and lease_token is not None:
+                planetary.release_actor_lease(actor_id, lease_token)
 
     # ── Inter-Agent Messaging ─────────────────────────────────────────────
 
@@ -854,7 +886,7 @@ class SocietyRuntime:
         if not decision.allowed:
             logger.warning("Communication denied %s -> %s: %s", from_actor, to_actor, decision.reason)
             return False
-        self._message_queue.append({
+        message = {
             "from": from_actor, "to": to_actor,
             "type": msg_type, "payload": payload or {},
             "routing": {
@@ -864,7 +896,19 @@ class SocietyRuntime:
             },
             "correlation_id": decision.correlation_id,
             "causation_id": decision.decision_id,
-        })
+        }
+        # Actor Messaging (Deployment Architecture, Section 8): route
+        # through the recipient's durable, cross-process inbox whenever a
+        # PlanetaryRuntime/Redis is available, so the message reaches
+        # to_actor regardless of which process is currently ticking it —
+        # previously this queue could only ever be drained by the SAME
+        # process that appended to it. Falls back to the process-local
+        # list (this method's entire prior behavior) when there's no
+        # PlanetaryRuntime attached (standalone/unit-test SocietyRuntime)
+        # or Redis is genuinely unreachable.
+        planetary = self._planetary_runtime
+        if planetary is None or not planetary.push_actor_message(to_actor, message):
+            self._message_queue.append(message)
         _obs.counter("communication.messages_routed")
         return True
 
@@ -898,8 +942,13 @@ class SocietyRuntime:
         return tuple(self._communication_router.audit)
 
     def get_messages_for(self, actor_id: str) -> list[dict[str, Any]]:
-        """Get pending messages for a specific actor."""
-        return [m for m in self._message_queue if m["to"] == actor_id]
+        """Get pending messages for a specific actor — a non-destructive
+        peek (never drains), merging the durable cross-process inbox with
+        this process's own in-memory fallback queue."""
+        planetary = self._planetary_runtime
+        durable = planetary.peek_actor_inbox(actor_id) if planetary is not None else []
+        local = [m for m in self._message_queue if m["to"] == actor_id]
+        return durable + local
 
     def _affiliations_for(self, actor_id: str) -> Any | None:
         """The actor's own AffiliationManager. Affiliation.trust_level (not
@@ -935,38 +984,63 @@ class SocietyRuntime:
         return new_trust
 
     def _deliver_messages(self) -> int:
-        """Deliver all queued messages, trust-weighted. Returns count."""
+        """Deliver all queued messages, trust-weighted. Returns count.
+
+        Drains two sources: each resident actor's durable, cross-process
+        inbox (PlanetaryRuntime.drain_actor_inbox — messages ANY process
+        sent, addressed to an actor THIS process currently has resident
+        and is about to tick) and this process's own in-memory fallback
+        queue (only ever populated by send_message when no PlanetaryRuntime/
+        Redis was available at send time). Without the durable inbox, a
+        message sent by a different process's SocietyRuntime instance for
+        the same actor was structurally invisible here, even though the
+        recipient was genuinely about to be ticked by this process."""
         from src.monkey_brain.kernel.society.belief import BeliefEntry, BeliefHypothesis
 
         delivered = 0
-        for msg in self._message_queue:
+        delivered_this_tick: list[dict[str, Any]] = []
+
+        def _apply(msg: dict[str, Any]) -> None:
+            nonlocal delivered
             target = self._actors.get(msg["to"])
-            if target and target.belief_state:
-                sender = msg.get("from", "")
-                trust = self.get_trust(sender, msg["to"])
-                # Only deliver if trust >= 0.3 (filter out very low-trust noise)
-                if trust < 0.3:
-                    continue
-                claim = f"{sender}: {msg['type']} — {msg['payload'].get('message', str(msg['payload']))}"
-                # BeliefState (society/belief.py) is a frozen dataclass — no
-                # add_hypothesis() method (that only exists on the differently
-                # -scoped kernel/pipeline/belief_state.py::BeliefState). Append
-                # via dataclasses.replace(), matching how every other belief
-                # write in this codebase mutates an immutable BeliefState.
-                new_entry = BeliefEntry(
-                    subject=claim,
-                    hypotheses=(BeliefHypothesis(
-                        subject=claim, predicate="claims", confidence=trust,
-                        correlation_id=msg.get("correlation_id", ""),
-                        causation_id=msg.get("causation_id", ""),
-                    ),),
-                )
-                target.belief_state = dataclasses.replace(
-                    target.belief_state,
-                    beliefs=target.belief_state.beliefs + (new_entry,),
-                )
-                delivered += 1
-        self._messages_this_tick = list(self._message_queue)
+            if not (target and target.belief_state):
+                return
+            sender = msg.get("from", "")
+            trust = self.get_trust(sender, msg["to"])
+            # Only deliver if trust >= 0.3 (filter out very low-trust noise)
+            if trust < 0.3:
+                return
+            claim = f"{sender}: {msg['type']} — {msg['payload'].get('message', str(msg['payload']))}"
+            # BeliefState (society/belief.py) is a frozen dataclass — no
+            # add_hypothesis() method (that only exists on the differently
+            # -scoped kernel/pipeline/belief_state.py::BeliefState). Append
+            # via dataclasses.replace(), matching how every other belief
+            # write in this codebase mutates an immutable BeliefState.
+            new_entry = BeliefEntry(
+                subject=claim,
+                hypotheses=(BeliefHypothesis(
+                    subject=claim, predicate="claims", confidence=trust,
+                    correlation_id=msg.get("correlation_id", ""),
+                    causation_id=msg.get("causation_id", ""),
+                ),),
+            )
+            target.belief_state = dataclasses.replace(
+                target.belief_state,
+                beliefs=target.belief_state.beliefs + (new_entry,),
+            )
+            delivered += 1
+
+        planetary = self._planetary_runtime
+        if planetary is not None:
+            for actor_id in list(self._actors):
+                for msg in planetary.drain_actor_inbox(actor_id):
+                    _apply(msg)
+                    delivered_this_tick.append(msg)
+
+        for msg in self._message_queue:
+            _apply(msg)
+        delivered_this_tick.extend(self._message_queue)
+        self._messages_this_tick = delivered_this_tick
         self._message_queue.clear()
         return delivered
 

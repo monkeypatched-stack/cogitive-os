@@ -47,13 +47,20 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
 
-BASE = "http://localhost:8031/api/v1/agentos"
+BASE = os.environ.get("SEED_WORLD_API_BASE", "http://localhost:8031/api/v1/agentos")
 USER = "seed-world"
-REDIS_HOST, REDIS_PORT = "localhost", 6379
+REDIS_HOST = os.environ.get("SEED_WORLD_REDIS_HOST", "localhost")
+REDIS_PORT = int(os.environ.get("SEED_WORLD_REDIS_PORT", "6379"))
+# Optional Bearer token — required against a deployment with
+# AGENTOS_AUTH_REQUIRED=true, where X-User-ID alone (USER, above) is
+# rejected with 401 "Bearer token required". Unset by default so this
+# script's behavior against an auth-disabled/dev backend is unchanged.
+TOKEN = os.environ.get("SEED_WORLD_TOKEN", "")
 
 
 # ─── HTTP helpers ────────────────────────────────────────────────────────
@@ -63,6 +70,8 @@ def api(method: str, path: str, body: dict | None = None, ok404: bool = False):
     req = urllib.request.Request(BASE + path, data=data, method=method)
     req.add_header("Content-Type", "application/json")
     req.add_header("X-User-ID", USER)
+    if TOKEN:
+        req.add_header("Authorization", f"Bearer {TOKEN}")
     try:
         with urllib.request.urlopen(req) as resp:
             raw = resp.read()

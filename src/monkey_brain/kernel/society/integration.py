@@ -134,6 +134,37 @@ class GeographyReconciliationResult:
 
 
 @dataclass(frozen=True)
+class ActorRegistryEntry:
+    """Actor Registry (Deployment Architecture, Section 7): a lightweight,
+    durable record of one Actor's existence, lifecycle status, and owning
+    node — readable via PlanetaryRuntime.locate_actor()/list_registry()
+    with a single Redis read, no actor reconstruction required. This is
+    the piece that was missing from the already-real _save_actor()/
+    _load_actors() persistence: that mechanism could always rebuild an
+    actor's full cognition from Redis, but nothing let a caller cheaply
+    ask "does this actor exist, and where" without doing so."""
+    actor_id: str
+    actor_type: str
+    name: str
+    society_id: str
+    status: str
+    node_id: str
+    updated_at: float
+    artifact_version: str = ""
+    """Actor Artifact model (docs/ACTOR_ARTIFACT.md): the operator-supplied
+    version of whatever built the process currently reporting this
+    record — e.g. "1.4". "" for any record written before this field
+    existed, or by a process that never set ACTOR_ARTIFACT_VERSION —
+    never required, purely observability. Distinct from actor_id: an
+    artifact upgrade (this field changing) must never imply a different
+    Actor."""
+    runtime_version: str = ""
+    """This module's own ACTOR_RUNTIME_VERSION — the Actor Runtime
+    (actor_runtime.py) build that last wrote this record, independent of
+    the artifact_version an operator assigns to their own deployment."""
+
+
+@dataclass(frozen=True)
 class _ActorTickOutcome:
     """Result of PlanetaryRuntime._run_actor_tick() — named fields instead
     of a 4-tuple, handed to _finalize_actor_execution()."""
@@ -185,6 +216,31 @@ class PropagationScope(str, Enum):
     BROADCAST = "BROADCAST"
 
 
+_MESSAGE_INBOX_KEY_PREFIX = "monkeybrain:messages:"
+_MESSAGE_INBOX_TTL_SECONDS = 86400
+"""Bounded so a message addressed to an actor_id that's mistyped, or that
+never becomes resident anywhere, doesn't grow its inbox key forever —
+same TTL-bounded-without-explicit-eviction shape as RunStore's own
+RUN_STORE_TTL_SECONDS default."""
+
+_DRAIN_INBOX_SCRIPT = """
+local msgs = redis.call('lrange', KEYS[1], 0, -1)
+if #msgs > 0 then redis.call('del', KEYS[1]) end
+return msgs
+"""
+"""Atomic read-and-clear: a plain LRANGE followed by a separate DEL from
+Python would have a real race — a message RPUSHed by another process
+between the two calls would be silently deleted, never delivered. Runs
+server-side via EVAL so the two operations are atomic, the same reasoning
+_RELEASE_LOCK_IF_OWNER_SCRIPT already documents for the actor lease."""
+
+_ACTOR_LEASE_KEY_PREFIX = "monkeybrain:actor:lease:"
+_ACTOR_LEASE_DEFAULT_TTL_SECONDS = 330.0
+"""Covers SocietyRuntime.tick_one_actor()'s own 300s outer timeout plus
+margin -- the lease must outlive the longest a single real tick is ever
+allowed to run, or it could expire and let a second node acquire it
+while the first is still legitimately mid-tick."""
+
 _PLANETARY_CYCLE_LOCK_KEY = "monkeybrain:planetary:cycle:lock"
 _RELEASE_LOCK_IF_OWNER_SCRIPT = """
 if redis.call("get", KEYS[1]) == ARGV[1] then
@@ -220,6 +276,25 @@ class PlanetaryRuntime:
         self._peak_queue_depth = 0
         """Running maximum message-queue depth (across every managed
         Society) ever observed — Prompt 8's peak_queue_depth metric."""
+        self._node_id = os.getenv("COGNITIVEOS_NODE_ID") or f"node-{uuid4().hex[:12]}"
+        """Actor Registry (Deployment Architecture, Section 7): stable
+        identity for THIS execution process/pod, distinct from any
+        society/actor id. Recorded alongside every actor this process
+        persists to the Redis actor registry (_actor_state_to_dict) so a
+        second process reading the same registry can tell which node last
+        owned/updated a given actor — the missing half of "Actor A must
+        remain addressable even if its execution location changes."
+        Configurable (COGNITIVEOS_NODE_ID, e.g. the pod name in
+        Kubernetes) so restarts of the SAME pod keep a stable identity;
+        falls back to a random id for local/dev processes that don't set
+        it."""
+        self._artifact_version = os.getenv("ACTOR_ARTIFACT_VERSION", "")
+        self._runtime_version = os.getenv("ACTOR_RUNTIME_VERSION", "")
+        """Actor Artifact model (docs/ACTOR_ARTIFACT.md) — purely
+        observability, recorded alongside every actor this process
+        persists (see ActorRegistryEntry.artifact_version/runtime_version
+        above). Empty for any process that never sets these (every
+        pre-existing deployment) — never required for correctness."""
         self._default_bootstrap_space_id: str | None = (
             default_bootstrap_space_id or os.getenv("PLANETARY_DEFAULT_BOOTSTRAP_SPACE_ID") or None
         )
@@ -241,6 +316,30 @@ class PlanetaryRuntime:
         belief persistence backend. None until the first restore_actor_belief()/
         checkpoint_actor_belief() call; stays None (fail-soft) if Mongo is
         unreachable, see _get_actor_state_store()."""
+        self._desired_state_fallback: dict[str, dict[str, Any]] = {}
+        """In-memory-only fallback for set_actor_desired_state()/
+        get_actor_desired_state() when Redis is unavailable — same
+        degraded-but-functional shape as every other Redis-backed store
+        in this class. Non-durable, single-process only."""
+        self._lifecycle_controller: Any = None
+        """Lazy-constructed ActorLifecycleController — see the `lifecycle`
+        property below."""
+        self._scheduler: Any = None
+        """Lazy-constructed ActorScheduler — see the `scheduler` property
+        below."""
+        self._kubernetes_provisioner: Any = None
+        """Lazy-constructed KubernetesProvisioner — see the
+        `kubernetes_provisioner` property below."""
+        self._edge_provisioner: Any = None
+        """Lazy-constructed EdgeProvisioner — see the `edge_provisioner`
+        property below."""
+        self._node_registry_fallback: dict[str, dict[str, Any]] = {}
+        self._desired_node_fallback: dict[str, dict[str, Any]] = {}
+        self._placement_requirements_fallback: dict[str, dict[str, Any]] = {}
+        """In-memory-only fallbacks for the node registry / desired
+        placement / placement requirements when Redis is unavailable —
+        same degraded-but-functional, single-process-only shape as
+        _desired_state_fallback above."""
         self._nats_client: Any = None
         """Set by connect_nats() (async, called from kernel.py's boot
         sequence after construction — nats.connect() is a coroutine,
@@ -280,6 +379,22 @@ class PlanetaryRuntime:
         self._last_tick_timestamp: float = 0.0
         self._auto_tick_task: asyncio.Task | None = None
         self._auto_tick_interval: float = 300.0  # 5 minutes default
+        self._lifecycle_reconciliation_task: asyncio.Task | None = None
+        self._lifecycle_reconciliation_interval: float = 300.0
+        """Actor Lifecycle Controller's full-table backstop sweep —
+        independent of auto-tick (cognition) above; see
+        start_actor_lifecycle_reconciliation()."""
+        self._reconcile_queue_task: asyncio.Task | None = None
+        self._reconcile_queue_interval: float = 2.0
+        self._reconcile_queue_batch_size: int = 50
+        self._reconcile_queue_semaphore: asyncio.Semaphore | None = None
+        self._reconciliation_scope_actor_id: str | None = None
+        """None = full-registry backstop sweep (default, every pre-existing
+        caller). Set by start_actor_lifecycle_reconciliation(scope_actor_id=...)
+        for a single-actor Actor Runtime pod so its backstop sweep only
+        ever reconciles itself."""
+        """The event-driven fast path (Section 26/27) — see
+        start_actor_lifecycle_reconciliation()'s docstring."""
         self._background_propagation_tasks: set[asyncio.Task] = set()
         """In-flight ASYNCHRONOUS-mode _propagate_coordination_background()
         tasks — held here (mirrors api/routes/prompt.py's own
@@ -397,7 +512,24 @@ class PlanetaryRuntime:
         # 0-1 events vs 4000+. Building this after settlement means every
         # SocietyRuntime this engine gets threaded into via _attach_society
         # below shares the one real context_stream instance for this boot.
-        self._execution_engine = build_execution_engine("grocery", context_stream=self.context_stream)
+        # Cloud/Edge Actor Convergence, Section 11/31: the offline-safety
+        # gate is opt-in, defaulting to unchanged behavior everywhere
+        # (OFFLINE_SAFETY_GATE_ENABLED unset/false) -- unconditionally
+        # gating every REQUIRES_WORLD_STATE/REQUIRES_AUTHORITY capability
+        # on Redis reachability would break any lightweight/no-Redis
+        # deployment or test that currently runs capabilities successfully
+        # with self._redis is None (a well-supported, intentional
+        # configuration throughout this codebase, not a degraded state to
+        # treat as "disconnected"). The edge runtime (edge_runtime.py)
+        # enables this explicitly; a cloud boot may too, but never by
+        # default.
+        connectivity_check = None
+        if os.getenv("OFFLINE_SAFETY_GATE_ENABLED", "false").lower() not in ("false", "0", "no"):
+            from src.monkey_brain.kernel.pipeline.offline_safety import make_connectivity_check
+            connectivity_check = make_connectivity_check(self)
+        self._execution_engine = build_execution_engine(
+            "grocery", context_stream=self.context_stream, connectivity_check=connectivity_check,
+        )
 
         for society_runtime in self._societies.values():
             self._attach_society(society_runtime)
@@ -520,13 +652,67 @@ class PlanetaryRuntime:
             # hardcoded db 0 before every test, silently wiping a real,
             # actively-demoed dev world's entire Redis-backed state with
             # no way to have redirected it away from that risk.
-            self._redis = _redis.Redis(
-                host=os.getenv("REDIS_HOST", "localhost"),
-                port=int(os.getenv("REDIS_PORT", "6379")),
-                db=int(os.getenv("REDIS_DB", "0")),
-                decode_responses=True,
-                socket_connect_timeout=2,
+            # Gap Remediation audit finding: this codebase has two
+            # genuinely different, pre-existing Redis env-var
+            # conventions — this constructor's own REDIS_HOST/REDIS_PORT/
+            # REDIS_DB, and REDIS_URL (used by execution_checkpoint_
+            # store.py, negotiation_store.py, and several other
+            # standalone stores via redis.from_url()). Confirmed live
+            # during Deployment Conformance testing: a real container
+            # given only REDIS_URL silently connected to "localhost"
+            # instead (this constructor's own default), degrading the
+            # entire Actor Registry/Scheduler/Lifecycle Controller to
+            # process-local-only with just a WARNING log line — a real
+            # correctness gap, not merely inconsistent naming. REDIS_URL
+            # is now accepted here too, WHEN REDIS_HOST is not itself
+            # explicitly set — an existing deployment that already sets
+            # REDIS_HOST is completely unaffected; one that only ever
+            # set REDIS_URL (the convention every OTHER Redis-backed
+            # store in this codebase already used) now actually connects
+            # instead of silently falling back to localhost.
+            # Live Deployment Validation finding: a real, long-running
+            # control-plane process was observed to silently stop
+            # persisting new actor registrations to this Redis client
+            # after a period of otherwise-normal operation (in-memory
+            # registration kept succeeding; the durable write did not) —
+            # a fresh process against the identical Redis server and
+            # code registered and persisted correctly on the first try.
+            # No code path ever reassigns self._redis after this method
+            # returns, so a lingering stale connection in the pool (e.g.
+            # from a transient network blip — this environment saw many
+            # during a chaotic multi-service simultaneous startup) is
+            # the most likely explanation: without retry_on_timeout/
+            # retry_on_error, redis-py's default client does not retry
+            # the FIRST command that hits a connection already gone bad;
+            # it just raises once (silently swallowed by _save_actor's
+            # own DEBUG-level except, see below) rather than
+            # transparently reconnecting and succeeding, the way the
+            # very next call on a fresh connection normally would.
+            # retry_on_timeout deliberately omitted: redis-py >= 6.0
+            # deprecated it in favor of retry_on_error, which already
+            # includes TimeoutError by default -- listing it explicitly
+            # below keeps the intent self-documenting without the
+            # deprecation warning.
+            retry = _redis.retry.Retry(_redis.backoff.ExponentialBackoff(cap=2, base=0.1), 3)
+            retry_kwargs = dict(
+                retry=retry,
+                retry_on_error=[_redis.exceptions.ConnectionError, _redis.exceptions.TimeoutError],
+                socket_timeout=5, health_check_interval=30,
             )
+            redis_url = os.getenv("REDIS_URL", "").strip()
+            if redis_url and "REDIS_HOST" not in os.environ:
+                self._redis = _redis.Redis.from_url(
+                    redis_url, decode_responses=True, socket_connect_timeout=2, **retry_kwargs,
+                )
+            else:
+                self._redis = _redis.Redis(
+                    host=os.getenv("REDIS_HOST", "localhost"),
+                    port=int(os.getenv("REDIS_PORT", "6379")),
+                    db=int(os.getenv("REDIS_DB", "0")),
+                    decode_responses=True,
+                    socket_connect_timeout=2,
+                    **retry_kwargs,
+                )
             self._redis.ping()
             self._persistence_manager = None
             logger.info("Redis connected for PlanetaryRuntime persistence")
@@ -668,6 +854,19 @@ class PlanetaryRuntime:
         affiliations = getattr(state.actor_runtime, "affiliations", None)
         if affiliations is not None and affiliations.count():
             actor_data["affiliations"] = affiliations.to_dict()
+        # Actor Registry (Deployment Architecture, Section 7): these three
+        # fields are what turn this already-real, already-Redis-backed
+        # persistence into a genuine registry lookup (locate_actor()/
+        # list_registry() below) rather than only a rehydration payload —
+        # a caller can now answer "does this actor exist, what state was
+        # it in, and which node last owned it" via a single HGET, with no
+        # need to reconstruct the actor's full cognition first.
+        status = getattr(state, "status", None)
+        actor_data["status"] = status.value if hasattr(status, "value") else str(status or "")
+        actor_data["node_id"] = self._node_id
+        actor_data["updated_at"] = time.time()
+        actor_data["artifact_version"] = self._artifact_version
+        actor_data["runtime_version"] = self._runtime_version
         return actor_data
 
     def _save_actor(self, state: Any, society_id: str = "") -> None:
@@ -691,7 +890,14 @@ class PlanetaryRuntime:
             actor_data = self._actor_state_to_dict(state, society_id)
             self._redis.hset(self._ACTORS_HASH_KEY, state.actor_id, json.dumps(actor_data))
         except Exception as exc:
-            logger.debug("Actor save failed for %r: %s", getattr(state, "actor_id", "?"), exc)
+            # Live Deployment Validation finding: this was DEBUG-level,
+            # invisible at this deployment's default LOG_LEVEL=INFO --
+            # a real durable-persistence failure (the actor stays
+            # registered in-memory, callers see success, but the
+            # Registry write silently never happens) needs to be
+            # visible without an operator having to already suspect
+            # this exact method and turn on DEBUG logging to find it.
+            logger.warning("Actor save failed for %r: %s", getattr(state, "actor_id", "?"), exc)
 
     def _save_actors(self) -> None:
         """Full resync of every currently-registered actor — still O(n)
@@ -738,6 +944,36 @@ class PlanetaryRuntime:
             else:
                 legacy = self._redis.get(self._ACTORS_LEGACY_ARRAY_KEY)
                 actors = json.loads(legacy) if legacy else []
+            # Live Deployment Validation finding (P0, confirmed live):
+            # a single-actor Actor Runtime pod (actor_runtime.py,
+            # ACTOR_ID set) previously loaded and locally activated
+            # EVERY actor in the shared registry, not just its own --
+            # get_actor_runtime(actor_id) then returned non-None for
+            # OTHER actors too, defeating suspend_actor_for_migration's
+            # "only act if resident_here" guard (integration.py's own
+            # docstring there: "a no-op ... when the actor isn't
+            # resident here"). Confirmed live: a two-actor rollout
+            # produced BOTH actors' durable registry records pointing
+            # at the SAME (wrong) node_id, written within 3ms of each
+            # other -- one pod's migrate-away reconciliation for an
+            # actor it never actually owned stamped its own node_id
+            # into that actor's registry entry. Scoping this load to
+            # ACTOR_ID when set closes the gap at its source: a
+            # single-actor pod now only ever has ITS OWN actor's
+            # runtime resident, so resident_here is correctly False for
+            # every other actor, and AskActor-style cross-actor lookups
+            # still work via locate_actor()'s durable-registry fallback
+            # (see grocery.py::AskActorCapability, already the fallback
+            # path for an actor not in this process's local societies).
+            # None (default) preserves the exact prior full-load
+            # behavior for every multi-actor process (deployment.yaml's
+            # control-plane pod, tests) that never sets ACTOR_ID.
+            scope_actor_id = os.getenv("ACTOR_ID", "").strip()
+            if scope_actor_id:
+                actors = [
+                    a for a in actors
+                    if a.get("identity", {}).get("actor_id") == scope_actor_id
+                ]
             if actors:
                 loaded = 0
                 skipped = 0
@@ -777,6 +1013,24 @@ class PlanetaryRuntime:
                         if state:
                             state.belief_state = BeliefState.from_dict(actor_data["belief_state"])
 
+                    # Actor Registry: restore the persisted lifecycle
+                    # status too (register_actor() above always creates a
+                    # fresh REGISTERED state) -- without this, an actor
+                    # that was ACTIVE before a restart silently reverts to
+                    # REGISTERED on reload, and nothing re-activates it.
+                    # Unknown/legacy records (no "status" key, from before
+                    # this field existed) are left at the fresh default
+                    # rather than guessed.
+                    persisted_status = actor_data.get("status")
+                    if persisted_status:
+                        from src.monkey_brain.kernel.society.domain import ActorStatus
+                        state = target_sr.get_actor(profile.identity.actor_id)
+                        if state:
+                            try:
+                                state.status = ActorStatus(persisted_status)
+                            except ValueError:
+                                logger.debug("Unknown persisted actor status %r for %s", persisted_status, profile.identity.actor_id)
+
                     restored_state = target_sr.get_actor(profile.identity.actor_id)
                     restored_runtime = restored_state.actor_runtime if restored_state else None
                     restored_affiliations = getattr(restored_runtime, "affiliations", None)
@@ -809,6 +1063,627 @@ class PlanetaryRuntime:
         caller (kernel/validation/world_validator.py's Gate 3, called
         before flagging a violation) instead of inventing new logic."""
         self._load_actors()
+
+    @staticmethod
+    def _registry_entry_from_dict(actor_data: dict[str, Any]) -> "ActorRegistryEntry":
+        identity = actor_data.get("identity") or {}
+        return ActorRegistryEntry(
+            actor_id=identity.get("actor_id", ""),
+            actor_type=identity.get("actor_type", ""),
+            name=identity.get("name", ""),
+            society_id=actor_data.get("society_id", ""),
+            status=actor_data.get("status", ""),
+            node_id=actor_data.get("node_id", ""),
+            updated_at=float(actor_data.get("updated_at", 0.0) or 0.0),
+            artifact_version=actor_data.get("artifact_version", ""),
+            runtime_version=actor_data.get("runtime_version", ""),
+        )
+
+    def locate_actor(self, actor_id: str) -> ActorRegistryEntry | None:
+        """Actor Registry lookup: does `actor_id` exist anywhere this
+        PlanetaryRuntime's Redis knows about, which society is it home to,
+        what lifecycle status was it last recorded in, and which node
+        (self._node_id, possibly a DIFFERENT process than the one calling
+        this) last wrote that record?
+
+        Deliberately does NOT reconstruct the actor (no register_actor(),
+        no belief_state/affiliations restoration, no cognition) — a single
+        Redis HGET, safe to call from any process for a cheap existence/
+        location check. This is the primitive Section 8 of the Deployment
+        Architecture needs for cross-process discovery (e.g. AskActor
+        resolving a target actor that isn't in THIS process's in-memory
+        `_actors`) — resolution can check here before giving up, instead
+        of only ever searching pr.all_societies() locally.
+
+        Falls back to the in-memory registry (this process's own
+        `_home_society_runtime`) when Redis is unavailable, so a
+        single-process/dev/test setup with no Redis still gets a real
+        answer, not an unconditional None.
+        """
+        if self._redis:
+            try:
+                raw = self._redis.hget(self._ACTORS_HASH_KEY, actor_id)
+                if raw:
+                    return self._registry_entry_from_dict(json.loads(raw))
+            except Exception as exc:
+                logger.debug("locate_actor(%r): Redis lookup failed: %s", actor_id, exc)
+        sr = self._home_society_runtime(actor_id)
+        if sr is None:
+            return None
+        state = sr.get_actor(actor_id)
+        if state is None:
+            return None
+        status = getattr(state, "status", None)
+        return ActorRegistryEntry(
+            actor_id=actor_id,
+            actor_type=state.profile.identity.actor_type.value if hasattr(state.profile.identity.actor_type, "value") else str(state.profile.identity.actor_type),
+            name=state.profile.identity.name,
+            society_id=sr.society.society_id,
+            status=status.value if hasattr(status, "value") else str(status or ""),
+            node_id=self._node_id,
+            updated_at=state.last_cycle or self._boot_time,
+        )
+
+    def list_registry(self) -> tuple[ActorRegistryEntry, ...]:
+        """Every Actor this PlanetaryRuntime's Redis registry currently
+        knows about, across every society and regardless of which node
+        last wrote each record — the "any Execution Node can discover any
+        Actor" primitive the Deployment Architecture's Control Plane
+        needs (Sections 5/6/7). Lightweight: parses only the registry
+        fields (society_id/status/node_id/updated_at/identity), never
+        reconstructs belief_state or affiliations. Falls back to this
+        process's own in-memory actor set when Redis is unavailable."""
+        if self._redis:
+            try:
+                hash_data = self._redis.hgetall(self._ACTORS_HASH_KEY)
+                return tuple(
+                    self._registry_entry_from_dict(json.loads(raw))
+                    for raw in hash_data.values()
+                )
+            except Exception as exc:
+                logger.debug("list_registry(): Redis scan failed: %s", exc)
+        entries: list[ActorRegistryEntry] = []
+        for sid, sr in self._societies.items():
+            for state in sr.all_actors():
+                status = getattr(state, "status", None)
+                entries.append(ActorRegistryEntry(
+                    actor_id=state.actor_id,
+                    actor_type=state.profile.identity.actor_type.value if hasattr(state.profile.identity.actor_type, "value") else str(state.profile.identity.actor_type),
+                    name=state.profile.identity.name,
+                    society_id=sid,
+                    status=status.value if hasattr(status, "value") else str(status or ""),
+                    node_id=self._node_id,
+                    updated_at=state.last_cycle or self._boot_time,
+                    artifact_version=self._artifact_version,
+                    runtime_version=self._runtime_version,
+                ))
+        return tuple(entries)
+
+    # ── Actor Lifecycle Controller: desired state ──────────────────────────
+    # (kernel/society/actor_lifecycle.py::ActorDesiredState,
+    # actor_lifecycle_controller.py::ActorLifecycleController). A dedicated
+    # key per actor_id, deliberately separate from the actor registry hash
+    # (_ACTORS_HASH_KEY) above: desired state is a declarative record
+    # ("what should this actor be doing") independent of whether the actor
+    # is currently registered/resident anywhere, the same way a Kubernetes
+    # Pod's spec lives in etcd independently of whether any kubelet has it
+    # scheduled — writing it is a plain SET, never a read-modify-write
+    # race on the much larger actor profile/belief/affiliations blob.
+
+    _ACTOR_DESIRED_STATE_KEY_PREFIX = "monkeybrain:actor:desired_state:"
+
+    def set_actor_desired_state(self, actor_id: str, desired: "ActorDesiredState", *, reason: str = "") -> None:
+        """Durably record what the control plane wants for this actor.
+        Never raises — a failed write degrades to the in-memory fallback
+        (this process only), never blocks the caller."""
+        payload = {
+            "state": desired.value, "reason": reason,
+            "set_at": time.time(), "set_by": self._node_id,
+        }
+        if self._redis is not None:
+            try:
+                self._redis.set(f"{self._ACTOR_DESIRED_STATE_KEY_PREFIX}{actor_id}", json.dumps(payload))
+                self._enqueue_reconciliation(actor_id)
+                return
+            except Exception as exc:
+                logger.warning("set_actor_desired_state(%r) Redis write failed: %s", actor_id, exc)
+        self._desired_state_fallback[actor_id] = payload
+
+    def get_actor_desired_state(self, actor_id: str) -> "ActorDesiredState":
+        """What the control plane wants for this actor. Defaults to
+        RUNNING when no explicit record exists — matches the pre-Lifecycle-
+        Controller behavior every already-registered actor already had
+        (register + activate = tick automatically), so introducing this
+        controller does not silently pause any existing actor that never
+        had its desired state set explicitly."""
+        from src.monkey_brain.kernel.society.actor_lifecycle import ActorDesiredState
+
+        payload: dict[str, Any] | None = None
+        if self._redis is not None:
+            try:
+                raw = self._redis.get(f"{self._ACTOR_DESIRED_STATE_KEY_PREFIX}{actor_id}")
+                if raw:
+                    payload = json.loads(raw)
+            except Exception as exc:
+                logger.debug("get_actor_desired_state(%r) Redis read failed: %s", actor_id, exc)
+        if payload is None:
+            payload = self._desired_state_fallback.get(actor_id)
+        if payload is None:
+            return ActorDesiredState.RUNNING
+        try:
+            return ActorDesiredState(payload.get("state", "running"))
+        except ValueError:
+            return ActorDesiredState.RUNNING
+
+    _ACTOR_STALE_SECONDS = float(os.getenv("ACTOR_LIFECYCLE_STALE_SECONDS", "600"))
+    """A RUNNING-desired actor whose registry record hasn't been refreshed
+    in this long, AND whose lease no one currently holds, is treated as
+    FAILED (Section 12). Default 600s = 2x the default auto-tick interval
+    (AGENTOS_TICK_INTERVAL, kernel.py) plus real margin for a slow LLM-
+    bound tick, so a merely-busy actor is never misclassified as crashed."""
+
+    def observe_actor(self, actor_id: str) -> "ObservedActorState":
+        """The Actor Lifecycle Controller's read of reality for one
+        actor_id: durable registry state (locate_actor — correct
+        regardless of which node the actor lives on) merged with this
+        process's own local residency and lease status. Never
+        reconstructs the actor's cognition — same "cheap, no side
+        effects" contract as locate_actor()."""
+        from src.monkey_brain.kernel.society.actor_lifecycle import ObservedActorState
+
+        entry = self.locate_actor(actor_id)
+        resident_here = self.get_actor_runtime(actor_id) is not None
+        if entry is None and not resident_here:
+            return ObservedActorState(actor_id=actor_id, exists=False)
+
+        status = entry.status if entry is not None else ""
+        node_id = entry.node_id if entry is not None else self._node_id
+        updated_at = entry.updated_at if entry is not None else self._boot_time
+        lease_held = False
+        if self._redis is not None:
+            try:
+                lease_held = bool(self._redis.exists(f"{_ACTOR_LEASE_KEY_PREFIX}{actor_id}"))
+            except Exception as exc:
+                logger.debug("observe_actor(%r) lease check failed: %s", actor_id, exc)
+        desired = self.get_actor_desired_state(actor_id)
+        is_stale = (
+            desired.value == "running"
+            and not lease_held
+            and (time.time() - updated_at) > self._ACTOR_STALE_SECONDS
+        )
+        return ObservedActorState(
+            actor_id=actor_id, exists=True, status=status, node_id=node_id,
+            updated_at=updated_at, is_stale=is_stale, resident_here=resident_here,
+            lease_held=lease_held, desired_node_id=self.get_actor_desired_node(actor_id),
+        )
+
+    @property
+    def lifecycle(self) -> "ActorLifecycleController":
+        """The Actor Lifecycle Controller (Deployment Architecture,
+        Section 5) — manages actor lifecycle (create/start/suspend/
+        resume/terminate/recover), never actor cognition. Lazily
+        constructed, same composition pattern as self._game_theory/
+        self._coordination_engine: a facilitator holding a back-reference
+        to this PlanetaryRuntime, owning none of its state directly."""
+        if self._lifecycle_controller is None:
+            from src.monkey_brain.kernel.society.actor_lifecycle_controller import ActorLifecycleController
+            self._lifecycle_controller = ActorLifecycleController(self)
+        return self._lifecycle_controller
+
+    # ── Actor Scheduler: node registry ──────────────────────────────────
+    # (kernel/society/actor_scheduler.py::ExecutionNode/ActorScheduler). A
+    # dedicated hash, deliberately separate from the actor registry hash
+    # above: a node is compute/execution location, never an actor — the
+    # scheduler's central invariant (ACTOR IDENTITY != ACTOR LOCATION)
+    # means these two registries must never be conflated into one record.
+
+    _NODES_HASH_KEY = "monkeybrain:nodes:hash"
+
+    # ── Event-driven reconciliation queue ───────────────────────────────
+    # (Horizontal Scheduler Scaling, Section 26/27): "prefer event-driven
+    # scheduling... do not implement a scheduler loop that repeatedly
+    # scans every Actor at scale." This is the queue every state-changing
+    # write below (register_actor, set_actor_desired_state,
+    # set_actor_desired_node) pushes into — the reconciliation loop's
+    # FAST path drains it with bounded concurrency (Section 25:
+    # backpressure) every couple of seconds, touching only actors that
+    # actually changed. The existing full-table reconcile_all() sweep
+    # remains, at a much longer interval, purely as the correctness
+    # backstop Section 27 explicitly allows ("may exist... but must not
+    # be the primary scaling mechanism") — for the one case the queue
+    # can't precisely target: a node's capacity freeing up (register_node/
+    # heartbeat_node) doesn't know WHICH previously-unschedulable actors
+    # might now fit, so it isn't (and can't cheaply be) enqueued
+    # precisely; the backstop sweep is what eventually reschedules them.
+    # A plain Redis LIST, not a priority queue or a new distributed
+    # database — LPUSH/LPOP is already atomic server-side, and duplicate
+    # entries for a hot actor are harmless (reconcile() is already an
+    # idempotent, cheap-read fast path for an already-settled actor), so
+    # no dedup bookkeeping is needed.
+    _RECONCILE_QUEUE_KEY = "monkeybrain:reconcile:queue"
+
+    def _enqueue_reconciliation(self, actor_id: str) -> None:
+        """Never raises, never blocks the caller on failure — a lost
+        enqueue only means this one change waits for the next full-sweep
+        backstop instead of the fast path, not a correctness loss."""
+        if self._redis is None or not actor_id:
+            return
+        try:
+            self._redis.rpush(self._RECONCILE_QUEUE_KEY, actor_id)
+        except Exception as exc:
+            logger.debug("_enqueue_reconciliation(%r) failed (non-fatal): %s", actor_id, exc)
+
+    def _drain_reconcile_queue_batch(self, max_items: int) -> list[str]:
+        """Pop up to max_items actor_ids in one round trip. redis-py's
+        LPOP-with-count (Redis >= 6.2) is already atomic server-side —
+        two concurrent reconciler processes draining the same queue never
+        receive overlapping items, the natural "Scheduler Pool" work-
+        distribution property Section 6 asks for, with zero new
+        infrastructure."""
+        if self._redis is None:
+            return []
+        try:
+            items = self._redis.lpop(self._RECONCILE_QUEUE_KEY, max_items)
+        except Exception as exc:
+            logger.debug("_drain_reconcile_queue_batch failed (non-fatal): %s", exc)
+            return []
+        return list(items) if items else []
+
+    _RESERVE_NODE_CAPACITY_SCRIPT = """
+local raw = redis.call('HGET', KEYS[1], ARGV[1])
+if not raw then
+    return -1
+end
+local node = cjson.decode(raw)
+local delta = tonumber(ARGV[2])
+local capacity = tonumber(node['capacity']) or 0
+local current = tonumber(node['current_actor_count']) or 0
+local new_count = current + delta
+if delta > 0 and new_count > capacity then
+    return -2
+end
+if new_count < 0 then
+    new_count = 0
+end
+node['current_actor_count'] = new_count
+node['updated_at'] = tonumber(ARGV[3])
+redis.call('HSET', KEYS[1], ARGV[1], cjson.encode(node))
+return new_count
+"""
+    """Atomic reserve/release of one unit of a node's capacity (Actor
+    Scheduler spec, Section 17-18: concurrency safety for simultaneous
+    scheduling decisions without an unnecessary distributed lock).
+    Without this running server-side, two concurrent schedule() calls for
+    two different actors could each read the same current_actor_count,
+    both decide the node has room, and both write back count+1 — silently
+    losing one increment and over-allocating the node. A plain HGET/HSET
+    round-trip from Python has exactly that race; EVAL makes the
+    read-check-write atomic, the same reasoning _RELEASE_LOCK_IF_OWNER_
+    SCRIPT and _DRAIN_INBOX_SCRIPT above already document. Returns -1 if
+    the node is unknown, -2 if reserving would exceed capacity, otherwise
+    the new count. Deliberately NOT the source of truth for a node's
+    actual load — heartbeat_node()'s own len(sr.all_actors()) recount
+    (the reconciliation loop, every interval) periodically overwrites
+    this with ground truth, so any transient reservation drift self-heals
+    rather than accumulating forever."""
+    _NODE_STALE_SECONDS = float(os.getenv("SCHEDULER_NODE_STALE_SECONDS", "600"))
+    """A node whose heartbeat hasn't refreshed in this long is treated as
+    NodeHealth.UNKNOWN regardless of its last self-reported health — the
+    scheduler's own analog of _ACTOR_STALE_SECONDS above.
+
+    Conformance-test finding (live deployment run): this MUST stay
+    comfortably larger than the interval of whatever actually sends the
+    heartbeat — _actor_lifecycle_reconciliation_loop's backstop sweep,
+    default 300s (ACTOR_LIFECYCLE_RECONCILE_INTERVAL), not the 60s
+    figure this comment previously assumed from before the Horizontal
+    Scheduler Scaling pass raised that default. A threshold smaller than
+    (or too close to) the heartbeat interval means every node
+    predictably goes UNKNOWN for the gap between heartbeats, and —
+    combined with the heartbeat_node() bug fixed alongside this comment
+    — could turn one transient gap into a permanently stuck UNKNOWN.
+    Default 600s = 2x the 300s backstop interval, the same safety-margin
+    reasoning _ACTOR_STALE_SECONDS already uses relative to its own
+    heartbeat source."""
+
+    def register_node(self, node: "ExecutionNode") -> None:
+        """Durably record one execution node — called by a process at
+        boot (register_self_as_node) or by an external heartbeat/agent
+        for a non-PlanetaryRuntime node (an edge device, a plain worker).
+        Never raises; a failed write degrades to the in-memory fallback
+        (this process's own view only)."""
+        payload = node.to_dict()
+        if self._redis is not None:
+            try:
+                self._redis.hset(self._NODES_HASH_KEY, node.node_id, json.dumps(payload))
+                return
+            except Exception as exc:
+                logger.warning("register_node(%r) Redis write failed: %s", node.node_id, exc)
+        self._node_registry_fallback[node.node_id] = payload
+
+    def deregister_node(self, node_id: str) -> None:
+        """Remove a node from the registry — e.g. a clean shutdown. A
+        node that simply crashes is NOT expected to call this; it is
+        instead detected via heartbeat staleness (list_nodes/get_node),
+        exactly like actor crash detection above."""
+        if self._redis is not None:
+            try:
+                self._redis.hdel(self._NODES_HASH_KEY, node_id)
+            except Exception as exc:
+                logger.debug("deregister_node(%r) Redis delete failed: %s", node_id, exc)
+        self._node_registry_fallback.pop(node_id, None)
+
+    def heartbeat_node(self, node_id: str, *, current_actor_count: int | None = None) -> None:
+        """Refresh a node's updated_at (and, when known, its current
+        actor count) without requiring the full ExecutionNode record to
+        be reconstructed by the caller — the node-registry analog of
+        _save_actor's cheap per-tick refresh.
+
+        Conformance-test finding (live deployment run): this MUST set
+        reported_health back to HEALTHY explicitly, not copy whatever
+        get_node() just computed. get_node()/_node_with_computed_health
+        return a COMPUTED UNKNOWN once a node has gone stale even once
+        (e.g. the gap between _NODE_STALE_SECONDS and the backstop sweep
+        interval that calls this method) — copying that computed value
+        back into the persisted record turns one transient staleness gap
+        into a PERMANENTLY stuck UNKNOWN, since every subsequent
+        heartbeat then reads back its own frozen UNKNOWN and re-persists
+        it, and reported_health only gets recomputed as UNKNOWN when it
+        was persisted HEALTHY (never the reverse). A caller that reaches
+        this method at all is, by definition, still alive right now —
+        that is exactly what a heartbeat means."""
+        node = self.get_node(node_id)
+        if node is None:
+            return
+        from src.monkey_brain.kernel.society.actor_scheduler import ExecutionNode, NodeHealth
+        refreshed = ExecutionNode(
+            node_id=node.node_id, node_class=node.node_class, capacity=node.capacity,
+            current_actor_count=node.current_actor_count if current_actor_count is None else current_actor_count,
+            capabilities=node.capabilities, region=node.region,
+            reported_health=NodeHealth.HEALTHY, updated_at=time.time(),
+        )
+        self.register_node(refreshed)
+
+    def _reserve_node_capacity(self, node_id: str, delta: int) -> int | None:
+        """Atomically add `delta` (+1 to reserve a placement, -1 to
+        release one) to a node's current_actor_count. Returns the new
+        count, or None if the node is unknown or (delta > 0) reserving
+        would exceed capacity — the caller must treat None as "this
+        placement did not happen," not retry-forever. See
+        _RESERVE_NODE_CAPACITY_SCRIPT above for why this must run
+        atomically rather than as a Python read-then-write."""
+        if self._redis is not None:
+            try:
+                result = int(self._redis.eval(
+                    self._RESERVE_NODE_CAPACITY_SCRIPT, 1, self._NODES_HASH_KEY,
+                    node_id, delta, time.time(),
+                ))
+                return None if result < 0 else result
+            except Exception as exc:
+                logger.warning("_reserve_node_capacity(%r, %r) Redis eval failed: %s", node_id, delta, exc)
+                return None
+        raw = self._node_registry_fallback.get(node_id)
+        if raw is None:
+            return None
+        capacity = int(raw.get("capacity", 0))
+        current = int(raw.get("current_actor_count", 0))
+        new_count = current + delta
+        if delta > 0 and new_count > capacity:
+            return None
+        new_count = max(0, new_count)
+        raw["current_actor_count"] = new_count
+        raw["updated_at"] = time.time()
+        return new_count
+
+    def get_node(self, node_id: str) -> "ExecutionNode | None":
+        from src.monkey_brain.kernel.society.actor_scheduler import ExecutionNode
+
+        raw: dict[str, Any] | None = None
+        if self._redis is not None:
+            try:
+                raw_json = self._redis.hget(self._NODES_HASH_KEY, node_id)
+                if raw_json:
+                    raw = json.loads(raw_json)
+            except Exception as exc:
+                logger.debug("get_node(%r) Redis read failed: %s", node_id, exc)
+        if raw is None:
+            raw = self._node_registry_fallback.get(node_id)
+        if raw is None:
+            return None
+        return self._node_with_computed_health(ExecutionNode.from_dict(raw))
+
+    def list_nodes(self) -> tuple["ExecutionNode", ...]:
+        """Every registered node, health recomputed for staleness at read
+        time (never trusts a stored "healthy" flag past its heartbeat
+        window) — the same "observed can be more current than persisted"
+        pattern used throughout this codebase's registries."""
+        from src.monkey_brain.kernel.society.actor_scheduler import ExecutionNode
+
+        raws: dict[str, dict[str, Any]] = {}
+        if self._redis is not None:
+            try:
+                hash_data = self._redis.hgetall(self._NODES_HASH_KEY)
+                for node_id, raw_json in hash_data.items():
+                    try:
+                        raws[node_id] = json.loads(raw_json)
+                    except (TypeError, ValueError):
+                        continue
+            except Exception as exc:
+                logger.debug("list_nodes() Redis read failed: %s", exc)
+        for node_id, raw in self._node_registry_fallback.items():
+            raws.setdefault(node_id, raw)
+        return tuple(
+            self._node_with_computed_health(ExecutionNode.from_dict(raw))
+            for raw in raws.values()
+        )
+
+    def _node_with_computed_health(self, node: "ExecutionNode") -> "ExecutionNode":
+        from src.monkey_brain.kernel.society.actor_scheduler import ExecutionNode, NodeHealth
+
+        if node.reported_health == NodeHealth.HEALTHY and (time.time() - node.updated_at) > self._NODE_STALE_SECONDS:
+            return ExecutionNode(
+                node_id=node.node_id, node_class=node.node_class, capacity=node.capacity,
+                current_actor_count=node.current_actor_count, capabilities=node.capabilities,
+                region=node.region, reported_health=NodeHealth.UNKNOWN, updated_at=node.updated_at,
+            )
+        return node
+
+    def register_self_as_node(self, *, node_class: "NodeClass | None" = None, capacity: int | None = None,
+                              capabilities: tuple[str, ...] | None = None, region: str | None = None) -> None:
+        """Self-register this process as an execution node, using its own
+        already-stable self._node_id (the same identity actor-registry
+        records and leases already key on) — called once at boot
+        (kernel.py) and refreshed by the lifecycle reconciliation loop's
+        own heartbeat, never by the scheduler itself (Section 5: the
+        scheduler only ever reads the node registry, it does not
+        maintain node liveness). Any parameter left unset falls back to
+        an env var (SCHEDULER_NODE_CLASS/_CAPACITY/_CAPABILITIES/_REGION)
+        so an operator can describe this deployment's node without a code
+        change — SCHEDULER_NODE_CAPABILITIES is comma-separated."""
+        from src.monkey_brain.kernel.society.actor_scheduler import ExecutionNode, NodeClass
+
+        if node_class is None:
+            try:
+                node_class = NodeClass(os.getenv("SCHEDULER_NODE_CLASS", "cloud"))
+            except ValueError:
+                node_class = NodeClass.CLOUD
+        if capacity is None:
+            capacity = int(os.getenv("SCHEDULER_NODE_CAPACITY", "1000"))
+        if capabilities is None:
+            raw_caps = os.getenv("SCHEDULER_NODE_CAPABILITIES", "")
+            capabilities = tuple(c.strip() for c in raw_caps.split(",") if c.strip())
+        if region is None:
+            region = os.getenv("SCHEDULER_NODE_REGION", "")
+
+        current_actor_count = sum(len(sr.all_actors()) for sr in self._societies.values())
+        self.register_node(ExecutionNode(
+            node_id=self._node_id, node_class=node_class, capacity=capacity,
+            current_actor_count=current_actor_count, capabilities=capabilities, region=region,
+        ))
+
+    @property
+    def scheduler(self) -> "ActorScheduler":
+        """The Actor Scheduler (Actor Scheduler spec, Section 5) —
+        decides WHERE an actor executes, never what it does or thinks.
+        Lazily constructed, same composition pattern as self.lifecycle."""
+        if self._scheduler is None:
+            from src.monkey_brain.kernel.society.actor_scheduler import ActorScheduler
+            self._scheduler = ActorScheduler(self)
+        return self._scheduler
+
+    @property
+    def kubernetes_provisioner(self) -> "Any":
+        """Gap Remediation audit fix: the Lifecycle Controller's one
+        additional action for a genuinely UNSCHEDULABLE actor (no
+        healthy node exists at all) — see kernel/society/
+        kubernetes_provisioner.py. Lazily constructed, same composition
+        pattern as self.scheduler/self.lifecycle; opt-in and inert
+        unless KUBERNETES_PROVISIONING_ENABLED=true AND kubectl is on
+        PATH."""
+        if self._kubernetes_provisioner is None:
+            from src.monkey_brain.kernel.society.kubernetes_provisioner import KubernetesProvisioner
+            self._kubernetes_provisioner = KubernetesProvisioner(self)
+        return self._kubernetes_provisioner
+
+    @property
+    def edge_provisioner(self) -> "Any":
+        """Edge Deployment: the Lifecycle Controller's action for an
+        actor scheduled onto a registered EDGE/DEVICE/ROBOT-class node
+        with nothing resident there yet — see kernel/society/
+        edge_provisioner.py. Lazily constructed, same composition
+        pattern as self.kubernetes_provisioner; opt-in and inert unless
+        EDGE_PROVISIONING_ENABLED=true."""
+        if self._edge_provisioner is None:
+            from src.monkey_brain.kernel.society.edge_provisioner import EdgeProvisioner
+            self._edge_provisioner = EdgeProvisioner(self)
+        return self._edge_provisioner
+
+    # ── Actor Scheduler: desired placement + placement requirements ────
+    # Deliberately separate keys from desired STATE above: "should this
+    # actor be RUNNING" and "where should it run" are independent
+    # questions the Lifecycle Controller and Scheduler each own one of —
+    # conflating them into a single record would recreate exactly the
+    # coupling the Deployment Architecture work spent this session
+    # untangling for actor state itself.
+
+    _ACTOR_DESIRED_NODE_KEY_PREFIX = "monkeybrain:actor:desired_node:"
+    _ACTOR_PLACEMENT_REQ_KEY_PREFIX = "monkeybrain:actor:placement_requirements:"
+
+    def set_actor_desired_node(self, actor_id: str, node_id: str) -> None:
+        payload = {"node_id": node_id, "set_at": time.time()}
+        if self._redis is not None:
+            try:
+                self._redis.set(f"{self._ACTOR_DESIRED_NODE_KEY_PREFIX}{actor_id}", json.dumps(payload))
+                # A placement change (initial schedule OR migration) means
+                # the Lifecycle Controller may now have something to do on
+                # either the old or the new node -- wake the fast path
+                # rather than waiting for the backstop sweep.
+                self._enqueue_reconciliation(actor_id)
+                return
+            except Exception as exc:
+                logger.warning("set_actor_desired_node(%r) Redis write failed: %s", actor_id, exc)
+        self._desired_node_fallback[actor_id] = payload
+
+    def get_actor_desired_node(self, actor_id: str) -> str:
+        """"" means "never scheduled" — no placement requirement has ever
+        been expressed for this actor, matching today's implicit
+        single-node behavior for every actor that never opts in."""
+        payload: dict[str, Any] | None = None
+        if self._redis is not None:
+            try:
+                raw = self._redis.get(f"{self._ACTOR_DESIRED_NODE_KEY_PREFIX}{actor_id}")
+                if raw:
+                    payload = json.loads(raw)
+            except Exception as exc:
+                logger.debug("get_actor_desired_node(%r) Redis read failed: %s", actor_id, exc)
+        if payload is None:
+            payload = self._desired_node_fallback.get(actor_id)
+        return (payload or {}).get("node_id", "")
+
+    def set_actor_placement_requirements(self, actor_id: str, requirements: "ActorPlacementRequirements") -> None:
+        payload = requirements.to_dict()
+        if self._redis is not None:
+            try:
+                self._redis.set(f"{self._ACTOR_PLACEMENT_REQ_KEY_PREFIX}{actor_id}", json.dumps(payload))
+                return
+            except Exception as exc:
+                logger.warning("set_actor_placement_requirements(%r) Redis write failed: %s", actor_id, exc)
+        self._placement_requirements_fallback[actor_id] = payload
+
+    def get_actor_placement_requirements(self, actor_id: str) -> "ActorPlacementRequirements":
+        from src.monkey_brain.kernel.society.actor_scheduler import ActorPlacementRequirements
+
+        payload: dict[str, Any] | None = None
+        if self._redis is not None:
+            try:
+                raw = self._redis.get(f"{self._ACTOR_PLACEMENT_REQ_KEY_PREFIX}{actor_id}")
+                if raw:
+                    payload = json.loads(raw)
+            except Exception as exc:
+                logger.debug("get_actor_placement_requirements(%r) Redis read failed: %s", actor_id, exc)
+        if payload is None:
+            payload = self._placement_requirements_fallback.get(actor_id)
+        if payload is None:
+            return ActorPlacementRequirements()
+        return ActorPlacementRequirements.from_dict(payload)
+
+    def suspend_actor_for_migration(self, actor_id: str) -> bool:
+        """Checkpoint + locally suspend an actor resident on THIS process
+        as the first half of a migration (Actor Scheduler spec, Section
+        14) — deliberately reuses ActorLifecycleController's own suspend
+        action rather than a parallel implementation, and deliberately
+        does NOT change desired_state (the intent stays RUNNING
+        throughout a migration; only location changes). A no-op,
+        returning False, if the actor isn't resident here — the correct
+        outcome when migrate_actor() is invoked from a process other than
+        the one currently hosting the actor; that other process's own
+        reconcile loop will notice the node_id mismatch and suspend it
+        there instead."""
+        if self.get_actor_runtime(actor_id) is None:
+            return False
+        observed = self.observe_actor(actor_id)
+        desired = self.get_actor_desired_state(actor_id)
+        result = self.lifecycle._do_suspend(actor_id, desired, observed, reason="migrating to a different node")
+        return result.succeeded
 
     _CONTEXT_LIST_KEY = "monkeybrain:context:list"
     _CONTEXT_LEGACY_KEY = "monkeybrain:context"
@@ -1001,6 +1876,42 @@ class PlanetaryRuntime:
                         }
                         for p in sr.governance.all_permissions()
                     ],
+                    # SocietyGovernanceEngine cross-process gap: policies/
+                    # permissions above were already persisted (this same
+                    # blob), but trust_records/safety_constraints/audit_log
+                    # had NO persisted fields at all before this fix -- a
+                    # process restart, or a second process reading this
+                    # same Redis key, saw none of them.
+                    "trust_records": [
+                        {
+                            "actor_id": t.actor_id, "trust_score": t.trust_score,
+                            "evidence_count": t.evidence_count, "factors": dict(t.factors),
+                        }
+                        for t in sr.governance.all_trust_records()
+                    ],
+                    "safety_constraints": [
+                        {
+                            "constraint_id": c.constraint_id, "name": c.name,
+                            "description": c.description, "rule": c.rule,
+                            "severity": c.severity, "applies_to": list(c.applies_to),
+                        }
+                        for c in sr.governance.safety_constraints()
+                    ],
+                    # Bounded, not the full unbounded history: matches
+                    # audit_log()'s own existing limit=100 read convention.
+                    # A full permanent audit trail is a heavier concern
+                    # this dormant-in-production governance layer does not
+                    # need to solve to close the cross-process gap; a
+                    # bounded recent window is real, durable, and correct
+                    # for what audit_log() itself already promises callers.
+                    "audit_log": [
+                        {
+                            "entry_id": e.entry_id, "actor_id": e.actor_id, "action": e.action,
+                            "policy_id": e.policy_id, "compliance_status": e.compliance_status.value,
+                            "details": e.details, "timestamp": e.timestamp,
+                        }
+                        for e in sr.governance.audit_log(limit=200)
+                    ],
                 })
             self._redis.set("monkeybrain:societies", json.dumps(societies))
         except Exception as exc:
@@ -1013,7 +1924,10 @@ class PlanetaryRuntime:
             data = self._redis.get("monkeybrain:societies")
             if data:
                     import dataclasses
-                    from src.monkey_brain.kernel.society.governance import GovernancePolicy, PolicyType, GovernanceLevel, Permission
+                    from src.monkey_brain.kernel.society.governance import (
+                        GovernancePolicy, PolicyType, GovernanceLevel, Permission,
+                        TrustRecord, SafetyConstraint, AuditEntry, ComplianceStatus,
+                    )
                     societies = json.loads(data)
                     for soc_data in societies:
                         sid = soc_data.get("society_id", "")
@@ -1060,6 +1974,17 @@ class PlanetaryRuntime:
                                     priority=gp_data.get("priority", 0),
                                 )
                                 sr.governance.add_policy(policy)
+                                # Same versioned-world mirroring as the live
+                                # POST /societies/{id}/governance-policies
+                                # route (api/routes/societies.py) -- keeps
+                                # SharedWorld.policies() populated across a
+                                # process restart's rehydration too, not
+                                # only for policies added after boot.
+                                sr.world.record_policy(
+                                    policy_id=policy.policy_id, name=policy.name,
+                                    description=policy.description, rules=policy.rules,
+                                    scope=policy.scope,
+                                )
                             except ValueError:
                                 continue
                         for perm_data in soc_data.get("permissions", []):
@@ -1072,6 +1997,35 @@ class PlanetaryRuntime:
                                 expires_at=perm_data.get("expires_at", 0.0),
                             )
                             sr.governance.grant_permission(permission)
+                        for tr_data in soc_data.get("trust_records", []):
+                            sr.governance.restore_trust_record(TrustRecord(
+                                actor_id=tr_data.get("actor_id", ""),
+                                trust_score=tr_data.get("trust_score", 0.5),
+                                evidence_count=tr_data.get("evidence_count", 0),
+                                factors=dict(tr_data.get("factors", {})),
+                            ))
+                        for sc_data in soc_data.get("safety_constraints", []):
+                            sr.governance.add_safety_constraint(SafetyConstraint(
+                                constraint_id=sc_data.get("constraint_id", ""),
+                                name=sc_data.get("name", ""), description=sc_data.get("description", ""),
+                                rule=sc_data.get("rule", ""), severity=sc_data.get("severity", "high"),
+                                applies_to=tuple(sc_data.get("applies_to", [])),
+                            ))
+                        # Oldest-first, same order they were saved in, so
+                        # restore_audit_entry's append-only log stays
+                        # chronological (audit_log()'s own log[-limit:]
+                        # slicing assumes this).
+                        for ae_data in soc_data.get("audit_log", []):
+                            try:
+                                compliance_status = ComplianceStatus(ae_data.get("compliance_status", "compliant"))
+                            except ValueError:
+                                compliance_status = ComplianceStatus.COMPLIANT
+                            sr.governance.restore_audit_entry(AuditEntry(
+                                entry_id=ae_data.get("entry_id", ""), actor_id=ae_data.get("actor_id", ""),
+                                action=ae_data.get("action", ""), policy_id=ae_data.get("policy_id", ""),
+                                compliance_status=compliance_status, details=ae_data.get("details", ""),
+                                timestamp=ae_data.get("timestamp", 0.0),
+                            ))
                     logger.info("Societies loaded: %d", len(societies))
         except Exception as exc:
             logger.warning("Societies load failed: %s", exc)
@@ -1234,6 +2188,11 @@ class PlanetaryRuntime:
         # _save_actors() call here took 222s and was still climbing).
         self._save_actor(state, target_society_id)
         self._subscribe_actor_inbox(actor_id, profile)
+        # Event-driven scheduling (Section 26): a newly registered Actor
+        # needs a start decision -- wake the fast reconciliation path
+        # instead of waiting for it to be discovered by the next full
+        # backstop sweep.
+        self._enqueue_reconciliation(actor_id)
         return state
 
     def _subscribe_actor_inbox(self, actor_id: str, profile: Any) -> None:
@@ -1263,7 +2222,31 @@ class PlanetaryRuntime:
             logger.debug("_subscribe_actor_inbox: suppressed exception for %s", actor_id, exc_info=True)
 
     def unregister_actor(self, actor_id: str) -> bool:
-        result = self._society_runtime.unregister_actor(actor_id)
+        """Unregister an actor's cognition from wherever it currently
+        lives. Searches every managed society (self._societies), not only
+        self._society_runtime — register_actor()'s society_id parameter
+        can point anywhere this PlanetaryRuntime manages, so this method
+        previously silently no-op'd for any actor registered against a
+        non-default society_id. DELETE /actors/{id} used to work around
+        that with its own inline search loop over pr.all_societies(); that
+        loop now just calls this method, so the fix lives in one place.
+
+        Checkpoint-before-terminate: persists the actor's belief BEFORE
+        unregistering — an actor's last real cognitive state must never
+        be silently discarded on deletion, regardless of which entry
+        point (this method, the Actor Lifecycle Controller's
+        terminate_actor, or a future caller) triggers it. Never raises: a
+        checkpoint failure degrades to best-effort and unregistration
+        still proceeds, matching checkpoint_actor_belief's own fail-soft
+        contract — a stuck belief store must not make an actor
+        undeletable.
+        """
+        self.checkpoint_actor_belief(actor_id)
+        result = False
+        for sr in self._societies.values():
+            if sr.unregister_actor(actor_id):
+                result = True
+                break
         if result:
             self.context_stream.publish(ContextEvent(
                 event_type=ContextEventType.WORLD_UPDATE,
@@ -1914,6 +2897,39 @@ class PlanetaryRuntime:
             self._nats_client = None
             return False
 
+    def _sync_world_capabilities(self) -> None:
+        """Mirror the real, live capability bus (self._execution_engine's
+        wired CapabilityBus) into the world's own versioned WorldCapability
+        records. CognitiveOS Constitution: "knowledge, policies and
+        capabilities are versioned infrastructure" -- WorldCapability.version
+        was declared (world.py) but nothing anywhere ever registered a real
+        WorldCapability, so the field never carried a live value.
+
+        Read-only with respect to the actual capability bus -- this only
+        reads bus.names()/discover() after the bus is already fully built,
+        never touches registration or dispatch, so it cannot affect which
+        capability handles a real action. Idempotent: capability_id is the
+        capability's own name, and an unchanged description is skipped
+        entirely so re-attaching a society doesn't inflate version on
+        every call. Non-fatal by design -- capability introspection must
+        never block society attachment."""
+        bus = getattr(self._execution_engine, "_capability_bus", None)
+        if bus is None or not hasattr(bus, "names"):
+            return
+        try:
+            existing_by_id = {c.capability_id: c for c in self.world.capabilities()}
+            for name in bus.names():
+                capability = bus.discover(name)
+                description = getattr(capability, "description", "") or "".join(
+                    ((capability.__doc__ or "").strip().splitlines() or [""])[:1]
+                )
+                current = existing_by_id.get(name)
+                if current is not None and current.description == description:
+                    continue
+                self.world.record_capability(capability_id=name, name=name, description=description)
+        except Exception:
+            logger.debug("_sync_world_capabilities: capability introspection failed (non-fatal)", exc_info=True)
+
     def _attach_society(self, society_runtime: SocietyRuntime) -> None:
         """Attach a society to Planetary's single world and context owners."""
         # AskActorCapability (kernel/domains/grocery.py) reads
@@ -1938,6 +2954,7 @@ class PlanetaryRuntime:
         society_runtime._execution_engine = self._execution_engine
         society_runtime._knowledge_graph = self._knowledge_graph
         society_runtime._communication_router.affiliation_graph = self._affiliation_graph
+        self._sync_world_capabilities()
         # A WorldEntity with an owner_society_id is only observable by
         # actors with an active effective Membership there (permanent OR
         # temporary — Coordination Boundary refactor; was permanent-only).
@@ -2076,6 +3093,21 @@ class PlanetaryRuntime:
             belief = actor.pipeline_belief()
             pipeline_actor = actor.pipeline_actor() if hasattr(actor, "pipeline_actor") else None
             tenant_id = getattr(actor, "tenant_id", None) or "default"
+            # CognitiveOS Constitution: "persistent actors survive
+            # interruption, restart and changing models" -- record which
+            # provider/model actually reasoned about this actor this
+            # cycle, so continuity across a model swap is auditable, not
+            # just functionally unaffected. Never fatal: an unavailable
+            # backend must not block the belief checkpoint that already
+            # completed successfully.
+            model_provider, model_name = "", ""
+            try:
+                from src.monkey_brain.kernel.execute.provider.model_backend import get_backend
+                backend_stats = get_backend().stats()
+                model_provider = backend_stats.get("provider", "")
+                model_name = backend_stats.get("model", "")
+            except Exception:
+                logger.debug("[planetary] %s model backend stats unavailable (non-fatal)", actor_id, exc_info=True)
             state = PersistedActorState(
                 actor_id=actor_id,
                 tenant_id=tenant_id,
@@ -2087,11 +3119,30 @@ class PlanetaryRuntime:
                 version=belief.version,
                 cycle_count=getattr(pipeline_actor, "cycle_count", 0),
                 last_cycle=getattr(pipeline_actor, "last_reasoned_at", 0.0) or 0.0,
+                last_model_provider=model_provider,
+                last_model_name=model_name,
             )
             store.save(state)
         except Exception as exc:
             logger.warning("[planetary] %s belief checkpoint failed (non-fatal): %s",
                            actor_id, exc)
+
+        # Actor Registry (Deployment Architecture, Section 7): every real
+        # request cycle already reaches this method after commit, so it's
+        # the natural, already-live place to refresh the registry's
+        # status/node_id/updated_at -- giving locate_actor()/list_registry()
+        # a genuine liveness signal ("this actor was last active on THIS
+        # node at THIS time") instead of a value that's only ever fresh as
+        # of registration. Independent try/except: a registry-refresh
+        # failure must never mask a belief checkpoint that already
+        # succeeded above, or vice versa.
+        try:
+            sr = self._home_society_runtime(actor_id)
+            registry_state = sr.get_actor(actor_id) if sr is not None else None
+            if sr is not None and registry_state is not None:
+                self._save_actor(registry_state, sr.society.society_id)
+        except Exception as exc:
+            logger.debug("[planetary] %s registry refresh failed (non-fatal): %s", actor_id, exc)
 
     def _societies_for(self, actor_id: str) -> tuple[SocietyRuntime, ...]:
         """Every SocietyRuntime this actor currently participates in —
@@ -4208,6 +5259,343 @@ class PlanetaryRuntime:
         finally:
             self._cycle_lock_token = None
 
+    #################################################################################################
+    #                                       Actor Ownership Lease                                  #
+    #################################################################################################
+    # Deployment Architecture, Section 7 (ownership/lease gap): the planetary
+    # cycle lock above answers "which node runs the next whole-planet tick."
+    # This answers a narrower, per-actor question: two nodes can each have
+    # the SAME actor_id loaded (both reconciled it from the shared Redis
+    # actor registry — see _load_actors()/reconcile_actors_from_redis()),
+    # and nothing previously stopped both from ticking it concurrently, a
+    # split-brain risk on one identity's belief. Same SET NX EX + Lua
+    # compare-and-delete pattern as the cycle lock, generalized to a
+    # per-actor key so many actors can be leased independently (and
+    # concurrently, across nodes, for DIFFERENT actor_ids) rather than one
+    # global lock serializing every actor behind a single key.
+
+    def acquire_actor_lease(self, actor_id: str,
+                            ttl_seconds: float = _ACTOR_LEASE_DEFAULT_TTL_SECONDS) -> str | None:
+        """Try to become the node that runs this actor's next cognitive
+        cycle. Returns a token to pass to release_actor_lease() on success,
+        or None if another node currently holds the lease (skip this tick)
+        or the lease check itself failed.
+
+        self._redis is None (never configured) is a static, boot-time-known
+        degraded mode: with no Redis at all there is no second process
+        sharing this actor's state to race against, so proceeding without a
+        real lease is correct, not "failing open" — same reasoning as
+        _acquire_planetary_cycle_lock. A Redis call that RAISES (Redis WAS
+        reachable and is erroring now) is the dangerous case: another node
+        may genuinely hold this actor's lease and we can't tell — that must
+        fail CLOSED (return None, skip the tick) rather than assume it's
+        safe to proceed."""
+        token = f"{self._node_id}:{os.getpid()}:{uuid4().hex}"
+        if self._redis is None:
+            return token
+        try:
+            acquired = bool(self._redis.set(
+                f"{_ACTOR_LEASE_KEY_PREFIX}{actor_id}", token,
+                nx=True, ex=max(1, int(ttl_seconds)),
+            ))
+        except Exception as exc:
+            if self._lease_fail_open_single_node():
+                # Explicit operator opt-in (ACTOR_LEASE_FAIL_OPEN_SINGLE_NODE
+                # — Horizontal Scheduler Scaling, Section 22: "existing
+                # Actors should not immediately cease cognition merely
+                # because the Registry is temporarily unavailable"). This
+                # is a deliberate, named trade-off, not a default: it
+                # reopens the exact split-brain race the fail-closed
+                # default above exists to close, and is only safe when the
+                # operator can guarantee no OTHER node could possibly also
+                # be ticking this same actor_id right now (e.g. a genuine
+                # one-actor-per-process edge deployment) -- default OFF,
+                # see docs/CLOUD_EDGE_ACTOR_ARCHITECTURE.md and
+                # docs/HORIZONTAL_SCHEDULER_SCALING.md for exactly when
+                # this is and isn't safe to enable.
+                logger.warning(
+                    "Actor lease check failed for %r (%s) — "
+                    "ACTOR_LEASE_FAIL_OPEN_SINGLE_NODE is set, proceeding "
+                    "WITHOUT a lease (operator-accepted split-brain risk)",
+                    actor_id, exc,
+                )
+                return token
+            logger.warning(
+                "Actor lease check failed for %r (%s) — refusing to tick: an "
+                "unreachable Redis must not be treated as proof no other node "
+                "currently owns this actor", actor_id, exc,
+            )
+            return None
+        return token if acquired else None
+
+    @staticmethod
+    def _lease_fail_open_single_node() -> bool:
+        return os.getenv("ACTOR_LEASE_FAIL_OPEN_SINGLE_NODE", "false").lower() not in ("false", "0", "no")
+
+    def release_actor_lease(self, actor_id: str, token: str | None) -> None:
+        """Release actor_id's lease as soon as its tick actually finishes,
+        instead of always holding it for the full TTL. Only releases if
+        `token` still matches what's stored (the same compare-and-delete
+        safety _RELEASE_LOCK_IF_OWNER_SCRIPT already gives the cycle lock —
+        an unconditional DELETE could otherwise wipe out a DIFFERENT node's
+        lease that legitimately acquired the key after this one's TTL had
+        already expired). No-op, not an error, when token is None/empty
+        (the "no Redis, no real lease was ever taken" case from
+        acquire_actor_lease) or Redis is unavailable."""
+        if self._redis is None or not token:
+            return
+        try:
+            self._redis.eval(_RELEASE_LOCK_IF_OWNER_SCRIPT, 1, f"{_ACTOR_LEASE_KEY_PREFIX}{actor_id}", token)
+        except Exception as exc:
+            logger.debug("Actor lease release failed for %r (non-fatal, TTL will expire it): %s", actor_id, exc)
+
+    #################################################################################################
+    #                                   Actor Messaging (durable inbox)                            #
+    #################################################################################################
+    # Deployment Architecture, Section 8: SocietyRuntime._message_queue was
+    # a plain in-process list — send_message/broadcast_message only ever
+    # worked between actors registered in the SAME process's _actors dict,
+    # by construction. These three methods give each actor_id a durable,
+    # per-actor Redis inbox any process can push into and only the
+    # process currently ticking that actor drains, closing the gap
+    # without changing send_message's fire-and-forget, trust-weighted-
+    # belief-injection-on-next-tick semantics at all — only WHERE the
+    # queue lives changes. SocietyRuntime falls back to its own in-process
+    # list when these return False/[]/[] (Redis unavailable, or no
+    # PlanetaryRuntime attached at all — the standalone/unit-test case),
+    # exactly the same degrade-gracefully contract every other store here
+    # already has.
+
+    def push_actor_message(self, actor_id: str, message: dict[str, Any]) -> bool:
+        """Queue one message into actor_id's durable inbox. Returns True
+        if durably queued; False (never raises) means the caller must
+        fall back to a process-local queue."""
+        if self._redis is None:
+            return False
+        try:
+            key = f"{_MESSAGE_INBOX_KEY_PREFIX}{actor_id}"
+            pipe = self._redis.pipeline()
+            pipe.rpush(key, json.dumps(message))
+            pipe.expire(key, _MESSAGE_INBOX_TTL_SECONDS)
+            pipe.execute()
+            return True
+        except Exception as exc:
+            logger.warning("push_actor_message(%r) failed: %s", actor_id, exc)
+            return False
+
+    def drain_actor_inbox(self, actor_id: str) -> list[dict[str, Any]]:
+        """Atomically read and clear actor_id's durable inbox — the
+        delivery path (SocietyRuntime._deliver_messages), called once per
+        resident actor at the start of every real tick. Never raises;
+        returns [] on any failure, same as an empty inbox."""
+        if self._redis is None:
+            return []
+        try:
+            raw_list = self._redis.eval(_DRAIN_INBOX_SCRIPT, 1, f"{_MESSAGE_INBOX_KEY_PREFIX}{actor_id}")
+            return [json.loads(raw) for raw in (raw_list or [])]
+        except Exception as exc:
+            logger.warning("drain_actor_inbox(%r) failed: %s", actor_id, exc)
+            return []
+
+    def peek_actor_inbox(self, actor_id: str) -> list[dict[str, Any]]:
+        """Non-destructive read of actor_id's durable inbox — for
+        introspection (SocietyRuntime.get_messages_for), never delivery.
+        Unlike drain_actor_inbox, does not clear the inbox."""
+        if self._redis is None:
+            return []
+        try:
+            raw_list = self._redis.lrange(f"{_MESSAGE_INBOX_KEY_PREFIX}{actor_id}", 0, -1)
+            return [json.loads(raw) for raw in (raw_list or [])]
+        except Exception as exc:
+            logger.debug("peek_actor_inbox(%r) failed: %s", actor_id, exc)
+            return []
+
+    #################################################################################################
+    #                              Actor Lifecycle Controller — Reconciliation Loop                #
+    #################################################################################################
+    # Same shape as start_auto_tick/_auto_tick_loop directly below — a
+    # second, independent background loop, not folded into the tick loop,
+    # because they answer different questions on different cadences:
+    # auto-tick runs actor COGNITION; this loop only reconciles actor
+    # LIFECYCLE (desired vs. observed state) and never touches planning,
+    # belief, or capability dispatch.
+
+    def start_actor_lifecycle_reconciliation(self, interval_seconds: float = 300.0,
+                                             queue_interval_seconds: float = 2.0,
+                                             queue_batch_size: int = 50,
+                                             queue_concurrency: int = 10,
+                                             scope_actor_id: str | None = None) -> None:
+        """Start the Actor Lifecycle Controller's background reconciliation.
+
+        scope_actor_id (Gap Remediation audit fix): a single-actor Actor
+        Runtime pod (actor_runtime.py — the canonical per-actor Kubernetes
+        deployment unit, see deploy/k8s/actor-deployment.yaml) only ever
+        needs its OWN actor reconciled, but the backstop sweep below
+        previously always ran reconcile_all() — every pod in an N-actor
+        cluster doing O(N) reconcile() calls every interval, O(N^2) total
+        Redis round-trips cluster-wide for no benefit (each pod's sweep
+        redundantly re-decides every OTHER actor, which its own owning
+        pod already covers). When set, the backstop sweep reconciles only
+        this actor_id instead of the full registry. None (default)
+        preserves the exact prior full-sweep behavior for every existing
+        caller (multi-actor Society/control-plane processes, tests) —
+        only actor_runtime.py's single-actor start() path now passes its
+        own config.actor_id here.
+
+        Two independent loops (Horizontal Scheduler Scaling, Section 26/27),
+        both idempotent to start twice (same contract as start_auto_tick):
+
+        - The FAST, event-driven queue-drain loop (queue_interval_seconds,
+          default 2s): pops up to queue_batch_size actor_ids the moment
+          something actually changed (_enqueue_reconciliation, called from
+          register_actor/set_actor_desired_state/set_actor_desired_node)
+          and reconciles only those, with at most queue_concurrency
+          reconcile() calls in flight at once (Section 25: backpressure —
+          a burst of thousands of registrations fills the queue instantly,
+          but this loop drains it at a bounded rate rather than firing
+          thousands of concurrent reconcile() calls, each its own Redis
+          round trips, all at once).
+        - The SLOW, full-table backstop sweep (interval_seconds, default
+          300s — 5x its pre-Section-26 default of 60s, to make the "this is
+          a backstop, not the primary mechanism" intent explicit): the
+          existing reconcile_all() sweep, kept only for what the queue
+          can't precisely target (Section 27 explicitly allows this) — a
+          node's capacity freeing up doesn't identify which specific
+          unschedulable actors might now fit, and a possible lost/dropped
+          enqueue (Redis blip during the write) still self-heals within
+          one backstop interval.
+
+        interval_seconds' default changed from 60.0 (pre-Section-26): a
+        caller that passes it explicitly is unaffected; a caller relying
+        on the old default now gets the intended "rare backstop" cadence
+        instead, matching Section 27's guidance.
+        """
+        if self._lifecycle_reconciliation_task is not None and not self._lifecycle_reconciliation_task.done():
+            logger.warning("Actor lifecycle reconciliation already running")
+            return
+        self._lifecycle_reconciliation_interval = interval_seconds
+        self._reconcile_queue_interval = queue_interval_seconds
+        self._reconcile_queue_batch_size = queue_batch_size
+        self._reconcile_queue_semaphore = asyncio.Semaphore(max(1, queue_concurrency))
+        self._reconciliation_scope_actor_id = scope_actor_id
+        # Self-register (and, every loop iteration below, heartbeat) this
+        # process as an execution node -- this is what lets the
+        # Scheduler run in "managed" mode at all (Actor Scheduler spec,
+        # Section 6). An operator that never wants scheduling involved
+        # can set SCHEDULER_SELF_REGISTER=false; ActorScheduler.schedule()
+        # already degrades to unconstrained placement when zero nodes are
+        # registered anywhere, so this is opt-out, not required for
+        # correctness.
+        #
+        # Edge Deployment Validation finding (P1, confirmed live): this
+        # call previously always passed zero args, meaning it silently
+        # OVERWROTE any node_class/capacity a caller had already
+        # correctly registered moments earlier (e.g. actor_runtime.py's
+        # own start() calling register_self_as_node(node_class=EDGE,
+        # capacity=self.config.node_capacity, ...) BEFORE calling this
+        # method) with the generic SCHEDULER_NODE_CLASS/_CAPACITY env-var
+        # defaults (cloud/1000) -- confirmed live: an edge actor's
+        # correct node_class=edge registration flipped back to "cloud"
+        # on this exact call, immediately failing every subsequent
+        # "required_node_class=edge" placement with a genuinely
+        # confusing "no healthy node satisfies" error. Invisible for the
+        # common cloud/default-capacity case (the overwrite happens to
+        # match what was already there), but a real, silent placement-
+        # constraint violation for any actor using a non-default
+        # node_class or capacity. Fix: preserve an already-existing
+        # registration for this exact node_id instead of blindly
+        # re-deriving from env-var defaults; only a genuinely new node_id
+        # (no prior registration at all) falls back to those.
+        if os.getenv("SCHEDULER_SELF_REGISTER", "true").lower() not in ("false", "0", "no"):
+            try:
+                existing = self.get_node(self._node_id)
+                if existing is not None:
+                    self.register_self_as_node(
+                        node_class=existing.node_class, capacity=existing.capacity,
+                        capabilities=existing.capabilities, region=existing.region,
+                    )
+                else:
+                    self.register_self_as_node()
+            except Exception as exc:
+                logger.warning("register_self_as_node() at reconciliation startup failed: %s", exc)
+        self._lifecycle_reconciliation_task = asyncio.create_task(self._actor_lifecycle_reconciliation_loop())
+        self._reconcile_queue_task = asyncio.create_task(self._reconcile_queue_loop())
+        logger.info(
+            "Actor lifecycle reconciliation started: backstop sweep every %ds, "
+            "event-driven queue drain every %.1fs (batch=%d, concurrency=%d)",
+            interval_seconds, queue_interval_seconds, queue_batch_size, queue_concurrency,
+        )
+
+    async def stop_actor_lifecycle_reconciliation(self) -> None:
+        for attr in ("_lifecycle_reconciliation_task", "_reconcile_queue_task"):
+            task = getattr(self, attr, None)
+            if task is not None and not task.done():
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+                setattr(self, attr, None)
+        logger.info("Actor lifecycle reconciliation stopped")
+
+    async def _reconcile_one_bounded(self, actor_id: str) -> None:
+        """One queue-drained actor_id's reconcile() call, gated by the
+        shared semaphore (Section 25: backpressure) -- never more than
+        queue_concurrency reconcile() calls in flight from this loop at
+        once, regardless of how many actor_ids were just drained."""
+        async with self._reconcile_queue_semaphore:
+            try:
+                result = await asyncio.to_thread(self.lifecycle.reconcile, actor_id)
+                if result.action not in ("none", "skipped_lease_held", "skipped_unknown_actor"):
+                    logger.info("Actor lifecycle reconciliation (event-driven): %s -> %s", actor_id, result.action)
+            except Exception as exc:
+                logger.error("Event-driven reconcile(%r) raised: %s", actor_id, exc, exc_info=True)
+
+    async def _reconcile_queue_loop(self) -> None:
+        """The fast, event-driven path (Section 26). Drains in batches
+        and dispatches each item through the bounded semaphore
+        concurrently within a batch — items in one batch don't serialize
+        behind each other, but the loop never has more than
+        queue_concurrency truly in flight system-wide."""
+        while True:
+            try:
+                await asyncio.sleep(self._reconcile_queue_interval)
+                batch = await asyncio.to_thread(self._drain_reconcile_queue_batch, self._reconcile_queue_batch_size)
+                if batch:
+                    await asyncio.gather(*(self._reconcile_one_bounded(aid) for aid in batch))
+            except asyncio.CancelledError:
+                break
+            except Exception as exc:
+                logger.error("Reconcile queue loop error: %s", exc, exc_info=True)
+
+    async def _actor_lifecycle_reconciliation_loop(self) -> None:
+        """The slow, full-table backstop sweep (Section 27) — correctness
+        net, not the primary scaling mechanism; see start_actor_lifecycle_
+        reconciliation's docstring."""
+        while True:
+            try:
+                await asyncio.sleep(self._lifecycle_reconciliation_interval)
+                try:
+                    current_actor_count = sum(len(sr.all_actors()) for sr in self._societies.values())
+                    self.heartbeat_node(self._node_id, current_actor_count=current_actor_count)
+                except Exception as exc:
+                    logger.debug("node heartbeat failed (non-fatal): %s", exc)
+                scope_actor_id = self._reconciliation_scope_actor_id
+                if scope_actor_id:
+                    results = [await asyncio.to_thread(self.lifecycle.reconcile, scope_actor_id)]
+                else:
+                    results = await asyncio.to_thread(self.lifecycle.reconcile_all)
+                acted = [r for r in results if r.action not in ("none", "skipped_lease_held", "skipped_unknown_actor")]
+                if acted:
+                    logger.info(
+                        "Actor lifecycle reconciliation (backstop sweep): %d actor(s) acted on (%s)",
+                        len(acted), ", ".join(f"{r.actor_id}:{r.action}" for r in acted),
+                    )
+            except asyncio.CancelledError:
+                break
+            except Exception as exc:
+                logger.error("Actor lifecycle reconciliation loop error: %s", exc, exc_info=True)
+
     def start_auto_tick(self, interval_seconds: float = 300.0) -> None:
         """Start the automatic tick scheduler."""
         if self._auto_tick_task is not None and not self._auto_tick_task.done():
@@ -4266,6 +5654,14 @@ class PlanetaryRuntime:
     async def shutdown(self, app: Any) -> None:
         """Shutdown the planetary runtime and its societies."""
         await self.stop_auto_tick()
+        await self.stop_actor_lifecycle_reconciliation()
+        try:
+            # Clean shutdown deregisters this node immediately rather than
+            # waiting out _NODE_STALE_SECONDS of heartbeat silence -- the
+            # Scheduler stops offering it for new placements right away.
+            self.deregister_node(self._node_id)
+        except Exception as exc:
+            logger.debug("deregister_node(%r) at shutdown failed (non-fatal): %s", self._node_id, exc)
         for task in list(self._background_propagation_tasks):
             if not task.done():
                 task.cancel()

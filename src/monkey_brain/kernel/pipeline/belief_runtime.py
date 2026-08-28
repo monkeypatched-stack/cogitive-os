@@ -75,7 +75,7 @@ def _sanitize_error_for_memory(error_text: str) -> str:
 _NO_PERMISSION_NEEDED_ACTIONS = frozenset({
     "AskActor", "BroadcastToAffiliation", "RespondToInquiry",
     "EvaluateStrategy", "CompeteForResource", "RecordAgreement",
-    "GetAgreements",
+    "GetAgreements", "DelegationCheck",
 })
 """The exact action set llm_planner.py's own system prompt tells the
 model to leave required_permission empty for. Confirmed live: a small

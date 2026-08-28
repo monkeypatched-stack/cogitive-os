@@ -89,7 +89,12 @@ services:
     ports:
       - "4222:4222"
       - "8222:8222"
-    command: ["-js", "-sd", "/data"]
+    # -m 8222 real fix: the healthcheck below probes the HTTP monitor
+    # endpoint on 8222, but nothing enabled it — confirmed live, the
+    # container logged "Listening for client connections on 0.0.0.0:4222"
+    # only, no monitor endpoint, so the healthcheck failed 100% of the
+    # time with "Connection refused" despite NATS itself being healthy.
+    command: ["-js", "-sd", "/data", "-m", "8222"]
     volumes:
       - nats_data:/data
     healthcheck:
@@ -110,11 +115,13 @@ services:
     command: ["run", "--server", "--addr=0.0.0.0:8181", "--bundle", "/policies"]
     volumes:
       - ./opa/policies:/policies:ro
-    healthcheck:
-      test: wget -qO- http://localhost:8181/health || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # No healthcheck: confirmed live — openpolicyagent/opa:latest is a
+    # fully minimal image (no /bin/sh, no wget, nothing but the /opa
+    # binary itself), so any exec-based healthcheck (this one included)
+    # fails immediately with "stat /bin/sh: no such file or directory"
+    # regardless of whether OPA itself is healthy. agentos's own
+    # depends_on below uses `service_started`, not `service_healthy`,
+    # for opa specifically because of this constraint.
 
   # ── Core Services ──────────────────────────────────────────────────────────
   auth:
@@ -466,7 +473,7 @@ services:
       nats:
         condition: service_healthy
       opa:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
 volumes:

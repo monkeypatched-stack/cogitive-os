@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: monkeybrain
 
 resources:
+  - namespace.yaml
   - configmap.yaml
   - secret.yaml
   - pvc.yaml
@@ -11,6 +12,26 @@ resources:
   - servicemonitor.yaml
   - prometheusrule.yaml
   - opa.yaml
+  - rbac.yaml
+  - networkpolicy.yaml
+  - redis.yaml
+  - mongodb.yaml
+  - nats.yaml
+  - neo4j.yaml
+
+# Deliberately NOT included as base resources: edge-actor-deployment.yaml
+# and actor-deployment.yaml. Both are per-Actor TEMPLATES (ACTOR_ID
+# substituted via envsubst before apply — see each file's own header
+# comment), not static resources this base ever applies as-is. Rendering
+# and applying one of them for a real actor_id is a separate,
+# per-Actor operation:
+#
+#   ACTOR_ID=alice ACTOR_NODE_CLASS=edge \
+#     envsubst '${ACTOR_ID} ${ACTOR_NODE_CLASS} ${ACTOR_ARTIFACT_VERSION}' \
+#     < deploy/k8s/actor-deployment.yaml | kubectl apply -f -
+#
+# deployment.yaml (Society control-plane server) remains the only
+# static, always-present workload this kustomization manages directly.
 
 # Generated (not hand-copied) from the real opa/policies/*.rego source
 # files so there is exactly one source of truth for policy content — a

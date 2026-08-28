@@ -76,6 +76,17 @@ soma = ["soma-cli>=1.0.0"]
 monkeybrain = "monkey_brain.cli.main:main"
 monkeybrain-status = "install_agentos:status_main"
 monkeypatch = "repl.__main__:main"
+# Actor Artifact model (docs/ACTOR_ARTIFACT.md): the one canonical Actor
+# executable entry point every deployment mechanism (local, Docker,
+# Kubernetes, edge) ultimately invokes -- `cognitiveos-actor run
+# --actor-id X`. Distinct from `monkeybrain` above, which boots the
+# Society control-plane process (src.monkey_brain.api.main:app), not an
+# individual Actor.
+cognitiveos-actor = "monkey_brain.actor_runtime:main"
+# Declarative control CLI (docs/COGNITIVEOS_FINAL_ARCHITECTURE.md) --
+# `cogctl apply -f actor.yaml`, `cogctl get actors`, etc. A pure HTTP
+# client against the Control API; never starts an Actor process itself.
+cogctl = "monkey_brain.cogctl:main"
 
 [tool.setuptools]
 py-modules = ["install_agentos"]

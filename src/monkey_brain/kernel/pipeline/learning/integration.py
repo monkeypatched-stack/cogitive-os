@@ -151,6 +151,24 @@ class LearningIntegratedPolicy(CognitivePolicy):
                 artifact = PhiCompiler().compile(experience, result)
                 state.phi = phi_to_dict(artifact)
 
+                # CognitiveOS Constitution: "repeated verified cognition
+                # should become reusable deterministic capability." Until
+                # this, a PhiArtifact was compiled every real cycle but
+                # nothing ever looked across cycles for a repeated,
+                # verified pattern -- Compile-Φ was a dead end. See
+                # capability_promotion.py's module docstring for why
+                # "promoted" here means "recorded as a durable, versioned
+                # candidate," never "auto-registers as an executing
+                # capability" (that would itself violate the "capabilities
+                # are the boundary between cognition and reality" and
+                # "learning cannot expand authority" tenets).
+                from src.monkey_brain.kernel.pipeline.learning.capability_promotion import default_tracker
+                default_tracker().observe(
+                    goal_signature=artifact.goal_signature, reward=artifact.reward,
+                    confidence=artifact.confidence, outcome_summary=artifact.outcome_summary,
+                    top_signal_summary=artifact.top_signal_summary,
+                )
+
             return state
 
         super().configure(

@@ -79,7 +79,8 @@ def resolve_vertical(name: str = "grocery") -> VerticalRuntime:
     return builder()
 
 
-def _build_execution_engine(vertical: VerticalRuntime, context_stream: Any = None) -> Any:
+def _build_execution_engine(vertical: VerticalRuntime, context_stream: Any = None,
+                            connectivity_check: Callable[[str], tuple[bool, str, str]] | None = None) -> Any:
     """Verify an already-resolved vertical's bus is intact, and return a
     ready execution engine.
 
@@ -127,14 +128,23 @@ def _build_execution_engine(vertical: VerticalRuntime, context_stream: Any = Non
         pre_execute_hook=vertical.pre_execute_hook,
         propose_transition=vertical.propose_transition,
         transition_gate=transition_gate,
+        connectivity_check=connectivity_check,
     )
 
 
-def build_execution_engine(name: str = "grocery", context_stream: Any = None) -> Any:
+def build_execution_engine(name: str = "grocery", context_stream: Any = None,
+                           connectivity_check: Callable[[str], tuple[bool, str, str]] | None = None) -> Any:
     """Resolve a vertical and return a ready execution engine. A route
     should never construct a bus, run a security check, or wire an
-    executor itself; it just asks for something it can execute with."""
-    return _build_execution_engine(resolve_vertical(name), context_stream=context_stream)
+    executor itself; it just asks for something it can execute with.
+
+    connectivity_check (Cloud/Edge Actor Convergence, Section 11/31):
+    kernel/pipeline/offline_safety.py::make_connectivity_check(planetary_runtime)
+    — None (the default) preserves exactly the prior behavior. Every
+    existing caller of this function is unaffected; only
+    PlanetaryRuntime._attach_society passes one, and only when
+    OFFLINE_SAFETY_GATE_ENABLED is explicitly set."""
+    return _build_execution_engine(resolve_vertical(name), context_stream=context_stream, connectivity_check=connectivity_check)
 
 
 def build_runtime_engine(

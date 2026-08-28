@@ -45,11 +45,22 @@ def _redis_url() -> str:
 
 def _get_client() -> Any:
     """Lazy, module-level singleton — same shape as negotiation_store.py's
-    and approval_store.py's."""
+    and approval_store.py's.
+
+    Live Deployment finding: this used to set `_connect_attempted = True`
+    unconditionally before the connection attempt, so a single transient
+    failure (confirmed live: the first-ever call, arriving as part of a
+    synchronous multi-actor planetary cycle burst right after boot, racing
+    Docker's bridge network/DNS settling for the sibling `redis` container)
+    permanently disabled PendingPayment persistence for the rest of the
+    process's life — every later call short-circuited straight to `None`
+    even once Redis was trivially reachable again (confirmed: a fresh
+    process resolves and connects fine). Only cache success now; a failed
+    attempt retries on the next call instead of poisoning the singleton
+    forever."""
     global _client, _connect_attempted
-    if _client is not None or _connect_attempted:
+    if _client is not None:
         return _client
-    _connect_attempted = True
     try:
         import redis
         client = redis.from_url(
@@ -59,6 +70,7 @@ def _get_client() -> Any:
         )
         client.ping()
         _client = client
+        _connect_attempted = True
     except Exception as exc:
         logger.warning("PendingPayment persistence: Redis unavailable (non-fatal): %s", exc)
         _client = None

@@ -144,7 +144,21 @@ async def init_providers(app: Any, runtime: Any) -> None:
 
 
 async def init_broca(app: Any, runtime: Any) -> None:
-    from broca.registry import get_registry
+    # Live Deployment Validation finding: this module's own section header
+    # ("Optional subsystems — failures are logged, not raised") was
+    # violated by this function alone — every sibling init_* function
+    # (init_providers above, init_pcp below) wraps its own top-level
+    # import in try/except, but this one didn't. Confirmed live: a real
+    # container missing the `broca` package (packages/broca/ was never
+    # copied into docker/services/agentos/Dockerfile) crashed the entire
+    # application at startup with an uncaught ModuleNotFoundError instead
+    # of degrading, taking down every OTHER subsystem this boot sequence
+    # still needed to initialize.
+    try:
+        from broca.registry import get_registry
+    except Exception as exc:
+        logger.warning("Broca unavailable, skipping (%s)", exc)
+        return
     registry = get_registry()
 
     if registry._bootstrapped:

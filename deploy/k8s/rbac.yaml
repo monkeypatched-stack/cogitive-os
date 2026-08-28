@@ -1,0 +1,61 @@
+# RBAC for the KubernetesProvisioner (src/monkey_brain/kernel/society/
+# kubernetes_provisioner.py) — Gap Remediation audit fix. That module
+# shells out to `kubectl apply` from WITHIN a running Actor Runtime pod
+# when the Lifecycle Controller discovers an actor is UNSCHEDULABLE
+# because no healthy node is registered anywhere. Without a ServiceAccount
+# granting it permission, that `kubectl apply` would fail with a 403 the
+# moment KUBERNETES_PROVISIONING_ENABLED=true is set — this manifest is
+# the other required half of that feature, not a general hardening extra.
+#
+# Deliberately least-privilege and narrow:
+# - Only the `apps/deployments` resource, only in the monkeybrain
+#   namespace (Role, not ClusterRole) — a provisioned actor is always a
+#   Deployment rendered from actor-deployment.yaml, nothing else.
+# - get/list/watch (read, to make `kubectl apply` idempotent-diff work)
+#   plus create/patch/update (to actually apply) — no delete. A stuck or
+#   UNSCHEDULABLE actor's Deployment is provisioned or left alone;
+#   nothing in this codebase ever asks the provisioner to remove one.
+# - Applying this ServiceAccount to a pod is opt-in (actor-deployment.yaml
+#   only sets serviceAccountName when ACTOR_SERVICE_ACCOUNT is rendered
+#   non-default — see that file). A cluster that never enables
+#   KUBERNETES_PROVISIONING_ENABLED is completely unaffected by this
+#   manifest existing: an unused Role grants nothing to a pod that never
+#   references it.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cognitiveos-actor-provisioner
+  namespace: monkeybrain
+  labels:
+    app: cognitiveos-actor
+    component: kubernetes-provisioner
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cognitiveos-actor-provisioner
+  namespace: monkeybrain
+  labels:
+    app: cognitiveos-actor
+    component: kubernetes-provisioner
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cognitiveos-actor-provisioner
+  namespace: monkeybrain
+  labels:
+    app: cognitiveos-actor
+    component: kubernetes-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: cognitiveos-actor-provisioner
+    namespace: monkeybrain
+roleRef:
+  kind: Role
+  name: cognitiveos-actor-provisioner
+  apiGroup: rbac.authorization.k8s.io
