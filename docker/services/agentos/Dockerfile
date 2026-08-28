@@ -72,6 +72,21 @@ RUN uv pip install --system --no-deps -e ./packages/broca -e ./packages/cerebell
 # Dockerfile's own CMD entrypoint below.
 COPY domains/manufacturing/knowledge/services/common/ ./services/common/
 COPY domains/manufacturing/knowledge/services/auth/ ./services/auth/
+# Real, live-confirmed bug: services/auth/.env is a developer's local-dev
+# config file (real personal email, dev tokens, and — critically —
+# REDIS_URL=redis://localhost:6379) that the COPY above bakes into the
+# image. services/common/config.py's Settings loads it (env_file =
+# (".env", "services/auth/.env")), and its REDIS_URL silently overrides
+# the correctly-configured REDIS_URL this container is actually given
+# (confirmed live: /proc/1/environ shows the correct redis://redis:6379
+# at exec time, but the live process's os.environ later reads back
+# redis://localhost:6379 — traced to this exact file) — breaking Redis
+# connectivity for every module that reads REDIS_URL via this Settings
+# path (payment_store.py and its siblings), even though the container's
+# real environment was never wrong. Not a source-repo change — this file
+# is still there for actual local (non-Docker) dev — just excluded from
+# the shipped image.
+RUN rm -f services/auth/.env
 COPY domains/manufacturing/knowledge/services/agentos/ ./services/agentos/
 
 EXPOSE 8031
