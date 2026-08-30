@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 import dotenv
 
@@ -11,8 +12,19 @@ class Settings(BaseSettings):
     DB_NAME: str = "demo"
     CORS_ALLOW_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"
 
-    ACCESS_TOKEN_SECRET: str = ""
-    REFRESH_TOKEN_SECRET: str = ""
+    ACCESS_TOKEN_SECRET: str
+    REFRESH_TOKEN_SECRET: str
+
+    @field_validator("ACCESS_TOKEN_SECRET", "REFRESH_TOKEN_SECRET", mode="before")
+    @classmethod
+    def _require_non_empty_secret(cls, value: str, info) -> str:  # type: ignore[override]
+        if not value or not value.strip():
+            raise ValueError(
+                f"{info.field_name} must be set to a non-empty value. "
+                "Set it in your .env file or environment before starting the service."
+            )
+        return value
+
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
