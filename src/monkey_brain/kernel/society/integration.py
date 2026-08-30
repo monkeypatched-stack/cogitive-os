@@ -396,6 +396,7 @@ class PlanetaryRuntime:
         """The event-driven fast path (Section 26/27) — see
         start_actor_lifecycle_reconciliation()'s docstring."""
         self._background_propagation_tasks: set[asyncio.Task] = set()
+        self._inbox_subscription_tasks: set[asyncio.Task] = set()
         """In-flight ASYNCHRONOUS-mode _propagate_coordination_background()
         tasks — held here (mirrors api/routes/prompt.py's own
         _background_tasks pattern) so asyncio doesn't garbage-collect a
@@ -534,10 +535,10 @@ class PlanetaryRuntime:
         for society_runtime in self._societies.values():
             self._attach_society(society_runtime)
 
+        self._load_geography()
         self._load_actors()
         self._load_context()
         self._load_relationships()
-        self._load_geography()
         self._load_knowledge_graph()
 
         if not self._geo_registry.all():
@@ -766,7 +767,7 @@ class PlanetaryRuntime:
                     # This ensures actors don't unexpectedly become active if
                     # they were previously PAUSED/SUSPENDED/TERMINATED.
                     try:
-                        lifecycle = self.lifecycle()
+                        lifecycle = self.lifecycle
                         lifecycle_results = lifecycle.reconcile_rehydrated_actors()
                         logger.info(
                             "Rehydrated actor lifecycle reconciliation: %d total, "
@@ -2344,9 +2345,21 @@ return new_count
             goals = list(profile.goals) if getattr(profile, "goals", None) else []
             name = profile.identity.name
             actor_role = f"{name}, whose responsibilities include: {', '.join(goals)}" if goals else name
-            asyncio.create_task(subscribe_actor_inbox(self, actor_id, actor_role))
+            task = asyncio.create_task(subscribe_actor_inbox(self, actor_id, actor_role))
+            self._inbox_subscription_tasks.add(task)
+            task.add_done_callback(self._inbox_subscription_tasks.discard)
         except Exception:
             logger.debug("_subscribe_actor_inbox: suppressed exception for %s", actor_id, exc_info=True)
+
+    async def wait_for_inbox_subscriptions(self) -> None:
+        """Wait for all subscriptions scheduled during startup/registration."""
+        tasks = tuple(self._inbox_subscription_tasks)
+        if not tasks:
+            return
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        failures = [r for r in results if isinstance(r, BaseException) or r is False]
+        if failures:
+            raise RuntimeError(f"Actor inbox subscription setup failed: {failures[0]}")
 
     def unregister_actor(self, actor_id: str) -> bool:
         """Unregister an actor's cognition from wherever it currently
@@ -5836,6 +5849,15 @@ return new_count
             except (asyncio.CancelledError, Exception):
                 pass
         self._background_propagation_tasks.clear()
+        for task in list(self._inbox_subscription_tasks):
+            if not task.done():
+                task.cancel()
+        for task in list(self._inbox_subscription_tasks):
+            try:
+                await task
+            except (asyncio.CancelledError, Exception):
+                pass
+        self._inbox_subscription_tasks.clear()
         # _init_persistence's Redis client was never closed here — same
         # leaked-connection class of bug as SemanticGraph's Neo4j driver
         # (RuntimeBootstrap.shutdown) — harmless at low volume but real

@@ -147,7 +147,7 @@ async def unified_prompt(
         if planetary_runtime is None:
             raise RuntimeError("PlanetaryRuntime is not booted")
 
-        # validate the world state before executing the prompt
+        # validate the world state before executing the promptok fix the
         import os
         if os.getenv("WORLD_VALIDATION_GATE_EXECUTE", "true").strip().lower() != "false":
             from src.monkey_brain.kernel.validation.world_validator import validate_world
