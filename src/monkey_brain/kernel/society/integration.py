@@ -746,6 +746,41 @@ class PlanetaryRuntime:
             except Exception as exc:
                 logger.warning("Redis index consistency check failed: %s", exc)
             
+            # Actor State Rehydration: After Redis index is repaired, rehydrate
+            # all persisted actor_state records from MongoDB into in-memory
+            # ActorRuntime objects. This ensures actors survive PlanetaryRuntime
+            # restarts without requiring reseeding — actor identity and desired
+            # state are restored automatically from durable storage.
+            from src.monkey_brain.kernel.society.actor_state_rehydrator import (
+                ActorStateRehydrator,
+            )
+            self._actor_state_rehydrator = ActorStateRehydrator(self)
+            # Rehydrate actors from MongoDB (must happen before _load_actors)
+            # Non-blocking; errors are logged but don't block startup
+            try:
+                rehydration_result = self._actor_state_rehydrator.rehydrate_from_mongodb()
+                if rehydration_result.success:
+                    logger.info("Actor state rehydration complete: %s", rehydration_result.summary())
+                    
+                    # Enforce desired state for rehydrated actors immediately
+                    # This ensures actors don't unexpectedly become active if
+                    # they were previously PAUSED/SUSPENDED/TERMINATED.
+                    try:
+                        lifecycle = self.lifecycle()
+                        lifecycle_results = lifecycle.reconcile_rehydrated_actors()
+                        logger.info(
+                            "Rehydrated actor lifecycle reconciliation: %d total, "
+                            "%d enforced desired state",
+                            len(lifecycle_results),
+                            sum(1 for r in lifecycle_results if r.action != "none"),
+                        )
+                    except Exception as exc:
+                        logger.warning("Rehydrated actor lifecycle reconciliation failed: %s", exc)
+                else:
+                    logger.warning("Actor state rehydration failed: %d errors", len(rehydration_result.errors))
+            except Exception as exc:
+                logger.warning("Actor state rehydration failed: %s", exc)
+            
         except Exception as exc:
             logger.warning("Redis not available: %s", exc)
             self._redis = None
@@ -3200,13 +3235,51 @@ return new_count
                 model_name = backend_stats.get("model", "")
             except Exception:
                 logger.debug("[planetary] %s model backend stats unavailable (non-fatal)", actor_id, exc_info=True)
+            
+            # Capture complete actor metadata for rehydration on restart
+            # (name, actor_type, society_id, status, etc.)
+            sr = self._home_society_runtime(actor_id)
+            registry_state = sr.get_actor(actor_id) if sr is not None else None
+            
+            actor_metadata = {}
+            if registry_state and hasattr(registry_state, "profile"):
+                profile = registry_state.profile
+                if hasattr(profile, "identity"):
+                    actor_metadata["name"] = profile.identity.name
+                    actor_metadata["actor_type"] = profile.identity.actor_type
+                actor_metadata["description"] = getattr(profile, "description", "")
+                actor_metadata["capabilities"] = getattr(profile, "capabilities", [])
+                actor_metadata["constraints"] = getattr(profile, "constraints", [])
+                actor_metadata["metadata"] = getattr(profile, "metadata", {})
+            
+            if sr is not None:
+                actor_metadata["society_id"] = sr.society.society_id
+            
+            if registry_state:
+                actor_metadata["status"] = str(getattr(registry_state, "status", "registered"))
+                if hasattr(registry_state, "actor_runtime") and hasattr(registry_state.actor_runtime, "affiliations"):
+                    try:
+                        actor_metadata["affiliations"] = registry_state.actor_runtime.affiliations.to_dict()
+                    except Exception:
+                        pass
+            
+            # Capture desired state from Redis (if available)
+            try:
+                desired_state = self.get_actor_desired_state(actor_id)
+                actor_metadata["desired_state"] = {
+                    "state": desired_state.value if hasattr(desired_state, "value") else str(desired_state),
+                    "reason": "Persisted from control-plane",
+                }
+            except Exception:
+                pass
+            
             state = PersistedActorState(
                 actor_id=actor_id,
                 tenant_id=tenant_id,
                 belief_state=json.dumps(belief.to_dict()).encode(),
                 bellman_policy=b"",
                 phi_compiled=b"",
-                memory_kv={},
+                memory_kv=actor_metadata,  # Store metadata in memory_kv field
                 last_updated=datetime.now().isoformat(),
                 version=belief.version,
                 cycle_count=getattr(pipeline_actor, "cycle_count", 0),

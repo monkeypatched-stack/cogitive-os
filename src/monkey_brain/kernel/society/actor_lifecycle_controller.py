@@ -170,6 +170,46 @@ class ActorLifecycleController:
                 ))
         return results
 
+    def reconcile_rehydrated_actors(self) -> list[ReconciliationResult]:
+        """Enforce desired state for rehydrated actors at boot time.
+        
+        After actor state rehydration from MongoDB, this method immediately
+        reconciles all actors to enforce their persisted desired state,
+        ensuring actors don't unexpectedly become active if they were
+        previously PAUSED/SUSPENDED/TERMINATED.
+        
+        This is called automatically from PlanetaryRuntime._init_persistence()
+        after rehydration completes. Non-blocking: exceptions don't crash boot.
+        
+        Returns:
+            List of ReconciliationResult for each rehydrated actor
+        """
+        results: list[ReconciliationResult] = []
+        try:
+            logger.info("Enforcing desired state for rehydrated actors")
+            for entry in self._planetary.list_registry():
+                try:
+                    result = self.reconcile(entry.actor_id)
+                    results.append(result)
+                    if result.succeeded and result.action != _ACTION_NONE:
+                        logger.info(
+                            "Rehydrated actor %s: applied action %s (desired: %s)",
+                            entry.actor_id, result.action, result.desired_state,
+                        )
+                except Exception as exc:
+                    logger.warning(
+                        "reconcile_rehydrated_actors: reconcile(%r) raised: %s",
+                        entry.actor_id, exc,
+                    )
+                    results.append(ReconciliationResult(
+                        actor_id=entry.actor_id, desired_state="", observed_before="",
+                        action="error", succeeded=False, reason=str(exc),
+                    ))
+        except Exception as exc:
+            logger.error("reconcile_rehydrated_actors failed: %s", exc)
+        
+        return results
+
     def _decide(self, desired: ActorDesiredState, observed: ObservedActorState) -> str:
         if desired == ActorDesiredState.TERMINATED:
             return _ACTION_TERMINATE if observed.exists else _ACTION_NONE

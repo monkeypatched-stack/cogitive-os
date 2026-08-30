@@ -67,16 +67,20 @@ class GraphStore:
             return
         try:
             from neo4j import AsyncGraphDatabase
-            self._driver = AsyncGraphDatabase.driver(
+            driver = AsyncGraphDatabase.driver(
                 self._uri, auth=(self._user, self._password),
             )
+            # Only cache the driver on successful creation
+            # If exception occurs below, driver stays None and next call retries
+            self._driver = driver
             logger.info("GraphStore connected to %s", self._uri)
         except ImportError:
             logger.warning("neo4j driver not installed — GraphStore disabled")
-            self._driver = None
+            # Leave _driver as None (don't cache failure)
         except Exception as exc:
-            logger.warning("GraphStore connect failed: %s", exc)
-            self._driver = None
+            logger.warning("GraphStore connect failed: %s (will retry on next operation)", exc)
+            # Leave _driver as None (don't cache failure)
+            # Next operation will see _driver=None and automatically retry
 
     async def close(self) -> None:
         if self._driver:
@@ -95,7 +99,11 @@ class GraphStore:
         append=False: DELETE + CREATE (replaces graph)
         """
         if not self.is_connected():
-            return
+            logger.debug("GraphStore not connected, attempting to reconnect...")
+            await self.connect()
+            if not self.is_connected():
+                logger.warning("GraphStore reconnection failed, skipping sync")
+                return
 
         async with self._driver.session() as session:
             if not append:
