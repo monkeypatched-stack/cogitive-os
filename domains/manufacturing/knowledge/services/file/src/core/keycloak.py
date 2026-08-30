@@ -11,13 +11,50 @@ from jose import jwt, JWTError
 
 load_dotenv()
 
-# -------------------------------------------------------------------
-# Environment
-# -------------------------------------------------------------------
-KEYCLOAK_ISSUER = os.environ["KEYCLOAK_ISSUER"]
-KEYCLOAK_AUDIENCE = os.environ["KEYCLOAK_AUDIENCE"]
-KC_CLIENT_ID = os.environ["KC_CLIENT_ID"]
-KC_CLIENT_SECRET = os.environ["KC_CLIENT_SECRET"]
+# =========================================================================
+# SECURITY: Fail-Closed Keycloak Configuration
+# =========================================================================
+# Keycloak secrets are REQUIRED when Keycloak authentication is enabled.
+# The service fails to start if they are missing, rather than degrading to
+# insecure fallbacks or allowing bypasses.
+#
+# These environment variables MUST be set via deployment mechanisms:
+#   - Docker: docker run -e KEYCLOAK_ISSUER=... -e KC_CLIENT_ID=... ...
+#   - K8s: Deployment.spec.containers[].env with valueFrom.secretKeyRef
+#   - Local dev: .env file (never committed)
+
+def _require_keycloak_config(var_name: str) -> str:
+    """
+    Load a required Keycloak configuration variable.
+    
+    Fails closed: raises RuntimeError if the variable is missing or empty.
+    This forces deployment teams to explicitly provide the value.
+    """
+    value = os.environ.get(var_name, "").strip()
+    if not value:
+        raise RuntimeError(
+            f"Keycloak configuration error: {var_name} is not set.\n\n"
+            f"This is a required security-critical configuration variable.\n"
+            f"It must be provided via deployment environment variables:\n\n"
+            f"  Docker:  docker run -e {var_name}='...' ...\n"
+            f"  K8s:     Set in Deployment.spec.containers[].env\n"
+            f"  Local:   Set {var_name} in .env before running services\n\n"
+            f"Never commit .env files containing {var_name} to git."
+        )
+    return value
+
+
+# Load Keycloak configuration with fail-closed guarantees
+try:
+    KEYCLOAK_ISSUER = _require_keycloak_config("KEYCLOAK_ISSUER")
+    KEYCLOAK_AUDIENCE = _require_keycloak_config("KEYCLOAK_AUDIENCE")
+    KC_CLIENT_ID = _require_keycloak_config("KC_CLIENT_ID")
+    KC_CLIENT_SECRET = _require_keycloak_config("KC_CLIENT_SECRET")
+except RuntimeError as e:
+    # Fail at import time, before any requests can be made
+    import sys
+    print(f"FATAL: {e}", file=sys.stderr)
+    raise
 
 # Use separate URL for JWKS fetching (container-to-container)
 KEYCLOAK_INTERNAL_URL = os.getenv("KEYCLOAK_INTERNAL_URL", "http://keycloak:8080")
