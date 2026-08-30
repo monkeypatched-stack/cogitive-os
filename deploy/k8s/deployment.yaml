@@ -37,6 +37,13 @@ spec:
       labels:
         app: agentos
     spec:
+      # KubernetesProvisioner RBAC: grant permissions to create Deployments
+      # when provisioning actors on demand. Least-privilege: only what
+      # provisioning needs (apps/deployments, get/list/watch/create/patch/update,
+      # monkeybrain namespace only). See deploy/k8s/rbac.yaml for the Role/
+      # RoleBinding definitions. This is the second half of the Gap Remediation
+      # audit fix (kubernetes_provisioner.py is the first half).
+      serviceAccountName: cognitiveos-actor-provisioner
       # Gate 11 (production readiness): default is 30s. Real, live-observed
       # planetary ticks and /actors/{id}/execute calls run 30-90s+ (serial,
       # LLM-planner-bound — see docs/adr/016-performance-gate9.md); the

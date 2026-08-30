@@ -85,3 +85,12 @@ data:
   # config tuning value, not a code change -- KERNEL_PHASE_TIMEOUT
   # already existed as a documented override point.
   KERNEL_PHASE_TIMEOUT: "180"
+  # KubernetesProvisioner enablement (Gap Remediation audit fix):
+  # When true, the Lifecycle Controller will attempt to create Actor Pods
+  # via `kubectl apply` when an actor is UNSCHEDULABLE due to "no healthy
+  # nodes registered" — closing the gap where the Scheduler placement
+  # decision had no path to actually materialize a Pod. Opt-in, default
+  # false — deployments without kubectl/RBAC configured see zero behavior
+  # change. See docs/KUBERNETES_PROVISIONER_ENABLEMENT.md and
+  # src/monkey_brain/kernel/society/kubernetes_provisioner.py for details.
+  KUBERNETES_PROVISIONING_ENABLED: "false"

@@ -716,10 +716,41 @@ class PlanetaryRuntime:
             self._redis.ping()
             self._persistence_manager = None
             logger.info("Redis connected for PlanetaryRuntime persistence")
+            
+            # Redis Index Reconstruction (Ephemeral Storage): After Redis
+            # reconnects or after confirming connection, rebuild the actor
+            # registry from MongoDB if needed. This is deterministic and
+            # idempotent: if Redis was lost (pod crash, emptyDir recreation),
+            # _load_actors() above finds an empty registry and MongoDB
+            # becomes the source of truth for reconstruction. If Redis
+            # reconnected after a transient loss, consistency check skips
+            # recent entries (within 5 min) to avoid unnecessary writes.
+            from src.monkey_brain.kernel.society.redis_index_reconstruction import (
+                RedisIndexReconstructor,
+            )
+            self._redis_reconstructor = RedisIndexReconstructor(self)
+            # Try to rebuild any missing/stale entries from MongoDB
+            # Non-blocking; errors are logged but don't block startup
+            try:
+                consistency = self._redis_reconstructor.verify_consistency()
+                if consistency.has_fixable_issues():
+                    logger.info(
+                        "Detected Redis index inconsistency, rebuilding from MongoDB: %s",
+                        consistency.issues,
+                    )
+                    repair_result = self._redis_reconstructor.repair_from_consistency_check(
+                        consistency
+                    )
+                    if repair_result.success:
+                        logger.info("Redis index repair complete: %s", repair_result.summary())
+            except Exception as exc:
+                logger.warning("Redis index consistency check failed: %s", exc)
+            
         except Exception as exc:
             logger.warning("Redis not available: %s", exc)
             self._redis = None
             self._persistence_manager = None
+            self._redis_reconstructor = None
 
     def _init_event_store(self) -> None:
         """Initialize the event persistence layer."""
@@ -1158,6 +1189,67 @@ class PlanetaryRuntime:
                     runtime_version=self._runtime_version,
                 ))
         return tuple(entries)
+
+    def rebuild_redis_index_from_mongodb(self) -> "RedisReconstructionResult":
+        """Rebuild Redis actor registry from MongoDB source of truth.
+        
+        Closes ephemeral storage gap: when Redis is lost (pod crash,
+        emptyDir recreation), actors persist in MongoDB but become invisible
+        to registry lookups. This method deterministically reconstructs the
+        Redis index from MongoDB, enabling discovery again.
+        
+        **Automatic:** Called during boot if inconsistency detected.
+        **Manual:** Call explicitly to force rebuild or verify recovery.
+        **Idempotent:** Safe to run multiple times; skips recent entries.
+        
+        Returns:
+            RedisReconstructionResult with reconstruction statistics
+        """
+        if not self._redis_reconstructor:
+            logger.warning("Redis reconstructor not available")
+            from src.monkey_brain.kernel.society.redis_index_reconstruction import (
+                RedisReconstructionResult,
+            )
+            return RedisReconstructionResult(
+                success=False,
+                actors_scanned=0,
+                actors_rebuilt=0,
+                actors_skipped=0,
+                errors=[],
+                duration_seconds=0.0,
+            )
+        
+        return self._redis_reconstructor.rebuild_from_mongodb()
+    
+    def verify_redis_mongodb_consistency(self) -> "ConsistencyCheckResult":
+        """Verify consistency between Redis and MongoDB actor registries.
+        
+        Detects:
+        • Actors in MongoDB but missing from Redis (needs rebuild)
+        • Actors in Redis but missing from MongoDB (corruption)
+        • Stale Redis entries (not updated recently)
+        
+        **Use case:** Diagnostic tool; call before/after Redis recovery.
+        
+        Returns:
+            ConsistencyCheckResult with detailed findings
+        """
+        if not self._redis_reconstructor:
+            logger.warning("Redis reconstructor not available")
+            from src.monkey_brain.kernel.society.redis_index_reconstruction import (
+                ConsistencyCheckResult,
+            )
+            return ConsistencyCheckResult(
+                is_consistent=False,
+                total_in_mongodb=0,
+                total_in_redis=0,
+                missing_from_redis=[],
+                missing_from_mongodb=[],
+                stale_entries=[],
+                issues=["Redis reconstructor not available"],
+            )
+        
+        return self._redis_reconstructor.verify_consistency()
 
     # ── Actor Lifecycle Controller: desired state ──────────────────────────
     # (kernel/society/actor_lifecycle.py::ActorDesiredState,
