@@ -165,8 +165,10 @@ class ActionExecutor:
             checkpoint = load_execution_checkpoint(execution_id)
             if checkpoint is not None:
                 completed_steps = {int(k): v for k, v in checkpoint.completed_steps.items()}
+        source_plan = context.get("_source_plan") if isinstance(context, dict) else None
         plan_dict = self._plan_dict_from_actions(
             actions, goal=context.get("question", "") if isinstance(context, dict) else "",
+            source_plan=source_plan,
         )
 
         # Human approval / pause-resume (Qualification Gap Closure, Phase
@@ -633,7 +635,8 @@ class ActionExecutor:
         )
 
     @staticmethod
-    def _plan_dict_from_actions(actions: tuple[Action, ...], goal: str = "") -> dict[str, Any]:
+    def _plan_dict_from_actions(actions: tuple[Action, ...], goal: str = "",
+                                source_plan: Any = None) -> dict[str, Any]:
         """A checkpoint's stored "plan" only needs to round-trip through
         kernel/pipeline/planning/current_plan_store.py::plan_from_dict
         well enough to re-drive execution on resume -- action name,
@@ -655,6 +658,12 @@ class ActionExecutor:
         already threaded through execute()), so passing it through here
         is a genuine fix, not a new fabrication -- confidence/risk have
         no equivalent real source and stay at their honest 0.0 defaults."""
+        if source_plan is not None:
+            # Checkpoints must retain the original plan index space.  In
+            # particular, permission-denied steps are absent from `actions`;
+            # rebuilding from actions would shift later dependency indices.
+            from src.monkey_brain.kernel.pipeline.planning.current_plan_store import plan_to_dict
+            return plan_to_dict(source_plan)
         return {
             "goal": goal, "confidence": 0.0, "risk": 0.0, "planner": "resumed",
             "steps": [

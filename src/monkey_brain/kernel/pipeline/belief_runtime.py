@@ -1207,6 +1207,10 @@ class   CognitiveRuntime:
         # this exact dict at Plan time (see above).
         if isinstance(state.context, dict):
             state.context["execution_id"] = state.metrics.get("execution_id", "")
+            # Preserve the complete plan for execution checkpoints.  The
+            # Action tuple intentionally omits denied steps, but dependency
+            # indices remain anchored to the original plan.steps array.
+            state.context["_source_plan"] = plan
 
         # Execute through the execution engine. execution.active is a
         # plain instance counter (not a new class/collector — GIL makes

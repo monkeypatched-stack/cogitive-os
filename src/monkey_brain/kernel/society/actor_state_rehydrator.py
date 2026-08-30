@@ -129,12 +129,21 @@ class ActorStateRehydrator:
 
             # Rehydrate each persisted actor
             for actor_doc in persisted_actors:
+                # Registry identity is stored as a durable projection inside
+                # actor_state.  Older records may have the projection at the
+                # document root; accept both shapes during migration.
+                durable_metadata = actor_doc.get("registry_metadata") or {}
+                if durable_metadata:
+                    actor_doc = {**durable_metadata, **actor_doc}
                 actor_id = actor_doc.get("actor_id", "")
                 if not actor_id:
                     logger.warning("Skipping actor_state record with missing actor_id: %s", actor_doc.get("_id"))
                     continue
 
                 try:
+                    if actor_doc.get("is_active") is False:
+                        result.actors_skipped += 1
+                        continue
                     if self._rehydrate_single_actor(actor_id, actor_doc):
                         result.actors_rehydrated += 1
                     else:
