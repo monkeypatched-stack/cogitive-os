@@ -87,22 +87,27 @@ echo ""
 # Alternative: use 'docker save' + tar to inspect layer contents, but
 # examining the running filesystem is more straightforward for this use case.
 
-CONTAINER_ID=$(docker run -d --rm "$IMAGE" sleep infinity 2>/dev/null || true)
+# docker create + export works for any image without relying on CMD/ENTRYPOINT
+# (``docker run image sleep infinity`` passes sleep to uvicorn and fails).
+CONTAINER_ID=$(docker create "$IMAGE" 2>/dev/null || true)
 
 if [[ -z "$CONTAINER_ID" ]]; then
-    # Fallback: try to use docker inspect + docker export (requires running container)
-    echo "⚠️  Could not start a container; attempting docker save + tar inspection..."
-    docker save "$IMAGE" | tar -x -C "$TMPDIR" 2>/dev/null || {
-        echo "❌ ERROR: Could not inspect image. Verify image exists and is valid."
-        exit 2
-    }
-else
-    trap "docker stop $CONTAINER_ID 2>/dev/null || true; rm -rf \"$TMPDIR\"" EXIT
-    docker cp "$CONTAINER_ID:/" "$TMPDIR/root" 2>/dev/null || {
-        echo "❌ ERROR: Could not copy image filesystem. Verify image format."
-        exit 2
-    }
+    echo "❌ ERROR: Could not create container from image. Verify image exists and is valid."
+    exit 2
 fi
+
+trap "docker rm -f $CONTAINER_ID 2>/dev/null || true; rm -rf \"$TMPDIR\"" EXIT
+
+if ! docker export "$CONTAINER_ID" -o "$TMPDIR/image.tar" 2>/dev/null; then
+    echo "❌ ERROR: Could not export image filesystem."
+    exit 2
+fi
+
+mkdir -p "$TMPDIR/root"
+tar -xf "$TMPDIR/image.tar" -C "$TMPDIR/root" 2>/dev/null || {
+    echo "❌ ERROR: Could not unpack exported image filesystem."
+    exit 2
+}
 
 FOUND_SECRETS=0
 
