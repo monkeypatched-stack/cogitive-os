@@ -85,7 +85,6 @@ data:
   # config tuning value, not a code change -- KERNEL_PHASE_TIMEOUT
   # already existed as a documented override point.
   KERNEL_PHASE_TIMEOUT: "180"
-  # Production hardening (see kernel/production_gates.py)
   CAPABILITY_TIMEOUT_SECONDS: "120"
   COGNITIVEOS_PRODUCTION_MODE: "true"
   # KubernetesProvisioner enablement (Gap Remediation audit fix):

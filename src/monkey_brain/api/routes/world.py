@@ -51,7 +51,7 @@ router = APIRouter()
 
 
 def _require_direct_world_mutation_allowed() -> None:
-    """SharedWorld CRUD bypasses TransitionGate — blocked in production mode."""
+    """Block SharedWorld CRUD in production; those paths bypass TransitionGate."""
     from src.monkey_brain.kernel.production_gates import block_direct_world_api_mutations
 
     if block_direct_world_api_mutations():
@@ -64,7 +64,6 @@ def _require_direct_world_mutation_allowed() -> None:
         )
 
 
-# this is the default society
 def _get_planetary_runtime(request: Request) -> Any:
     selector = getattr(getattr(request.app.state, "kernel", None), "runtime_selector", None)
     if selector is not None:

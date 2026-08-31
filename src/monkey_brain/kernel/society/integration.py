@@ -1417,18 +1417,12 @@ class PlanetaryRuntime:
     bound tick, so a merely-busy actor is never misclassified as crashed."""
 
     def observe_actor(self, actor_id: str, *, reconcile_lease_token: str | None = None) -> "ObservedActorState":
-        """The Actor Lifecycle Controller's read of reality for one
-        actor_id: durable registry state (locate_actor — correct
-        regardless of which node the actor lives on) merged with this
-        process's own local residency and lease status. Never
-        reconstructs the actor's cognition — same "cheap, no side
-        effects" contract as locate_actor().
+        """Merge durable registry state with local residency and lease status.
 
-        reconcile_lease_token: when reconcile() re-observes after
-        acquiring a lease, pass that token so this call does not treat
-        OUR OWN in-flight reconcile lease as proof the actor is alive —
-        otherwise is_stale flips to False and recover downgrades to none/
-        migrate_away (Horizontal Scheduler Scaling qualification bug)."""
+        Does not reconstruct cognition. reconcile_lease_token excludes the
+        caller's own reconcile lease from the staleness calculation so crash
+        recovery is not downgraded while the lease is held.
+        """
         from src.monkey_brain.kernel.society.actor_lifecycle import ObservedActorState
 
         entry = self.locate_actor(actor_id)
@@ -1825,19 +1819,18 @@ return new_count
         if self._redis is not None:
             try:
                 self._redis.set(f"{self._ACTOR_DESIRED_NODE_KEY_PREFIX}{actor_id}", json.dumps(payload))
-                # Re-enqueue only when placement actually moves work to a
-                # different node, or when replacing a prior placement —
-                # not on the first "" -> local-node assignment while this
-                # node's reconcile is already running (register + schedule
-                # would otherwise double-enqueue every actor).
-                if current != node_id and (current or node_id != self._node_id):
+                if self._should_enqueue_placement_change(current, node_id):
                     self._enqueue_reconciliation(actor_id)
                 return
             except Exception as exc:
                 logger.warning("set_actor_desired_node(%r) Redis write failed: %s", actor_id, exc)
         self._desired_node_fallback[actor_id] = payload
-        if current != node_id and (current or node_id != self._node_id):
+        if self._should_enqueue_placement_change(current, node_id):
             self._enqueue_reconciliation(actor_id)
+
+    def _should_enqueue_placement_change(self, current: str, node_id: str) -> bool:
+        """Enqueue when placement changes or targets a remote node."""
+        return current != node_id and (bool(current) or node_id != self._node_id)
 
     def get_actor_desired_node(self, actor_id: str) -> str:
         """"" means "never scheduled" — no placement requirement has ever
@@ -1897,10 +1890,8 @@ return new_count
         if self.get_actor_runtime(actor_id) is None:
             return False
         observed = self.observe_actor(actor_id)
-        # Another node already owns this actor in the durable registry —
-        # drop the ghost local copy only; never overwrite ACTIVE@other
-        # with SUSPENDED@here (multi-replica recovery qualification bug).
         if observed.node_id and observed.node_id != self._node_id:
+            # Registry names another owner; deactivate the stale local copy only.
             from src.monkey_brain.kernel.society.domain import ActorStatus
             sr = self._home_society_runtime(actor_id)
             state = sr.get_actor(actor_id) if sr is not None else None

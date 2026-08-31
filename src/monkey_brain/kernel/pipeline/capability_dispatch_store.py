@@ -1,13 +1,11 @@
-"""Per-action capability dispatch dedup — closes the gap between a successful
-capability invoke and a persisted execution checkpoint.
+"""Per-action capability dispatch deduplication in Redis.
 
-execution_checkpoint_store.py only records success AFTER handle() returns.
-A crash in that window lets a retried tick double-charge or double-reserve.
-This store claims (execution_id, action_id) in Redis BEFORE invoke and caches
-the outcome so any retry returns the first result instead of re-dispatching.
+Claims (execution_id, action_id) before invoking a capability and caches the
+outcome so retries cannot double-apply side effects between handle() return
+and execution_checkpoint_store persistence.
 
 Enabled when COGNITIVEOS_PRODUCTION_MODE or CAPABILITY_DISPATCH_DEDUP is set.
-Never raises — a Redis outage falls back to checkpoint-only resume semantics.
+Never raises; if Redis is unavailable, checkpoint-based resume still applies.
 """
 from __future__ import annotations
 

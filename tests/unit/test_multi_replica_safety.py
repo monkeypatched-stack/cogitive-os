@@ -1,7 +1,7 @@
 """Lease fence + capability dispatch dedup production safety tests."""
 from __future__ import annotations
 
-import src.monkey_brain.kernel.domains.grocery  # noqa: F401 — register_vertical for PlanetaryRuntime
+import src.monkey_brain.kernel.domains.grocery  # noqa: F401
 
 from unittest.mock import MagicMock, patch
 

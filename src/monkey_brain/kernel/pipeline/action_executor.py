@@ -826,6 +826,7 @@ class ActionExecutor:
 
         dispatch_reserved = False
         execution_id = context.get("_execution_id") if isinstance(context, dict) else None
+        # Optional Redis claim on (execution_id, action_id) before handle().
         if execution_id and action.action_id:
             from src.monkey_brain.kernel.production_gates import capability_dispatch_dedup_enabled
             if capability_dispatch_dedup_enabled():
@@ -872,6 +873,7 @@ class ActionExecutor:
                     dispatch_reserved = True
 
         def _done(outcome: ActionOutcome) -> ActionOutcome:
+            """Persist or release the dispatch claim after handle() completes."""
             if dispatch_reserved and execution_id and action.action_id:
                 from src.monkey_brain.kernel.pipeline.capability_dispatch_store import (
                     complete_dispatch,

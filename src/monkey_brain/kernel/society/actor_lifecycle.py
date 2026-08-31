@@ -118,9 +118,7 @@ class ObservedActorState:
     threshold while desired state is RUNNING — the controller's crash
     signal (Section 12): nothing has reported this actor alive recently."""
     resident_here: bool = False
-    """True if this actor's cognition is loaded in THIS process's memory
-    right now (SocietyRuntime._actors), as opposed to only known via the
-    shared registry."""
+    """True if this actor is actively ticking in this process."""
     lease_held: bool = False
     """True if some node currently holds this actor's ownership lease —
     i.e. a tick or a reconciliation action is genuinely in flight right

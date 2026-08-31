@@ -41,7 +41,6 @@ os.environ["AGENTOS_AUTH_REQUIRED"] = "false"
 os.environ["RATE_LIMIT_RPS"] = "100000"
 os.environ["RATE_LIMIT_BURST"] = "200000"
 
-# PlanetaryRuntime.__init__ wires the grocery vertical execution engine.
 import src.monkey_brain.kernel.domains.grocery  # noqa: F401
 
 from src.monkey_brain.kernel.society.integration import PlanetaryRuntime
@@ -663,15 +662,8 @@ def test_15_destructive_multi_failure_scenario_converges_without_duplication():
 
     # Recovery capacity: add a fresh node.
     pr_cloud.register_node(ExecutionNode(node_id="cloud-2", node_class=NodeClass.CLOUD, capacity=15))
-    pr_new = _pr(redis, "cloud-2")  # "a new Scheduler/reconciler instance" takes over
+    pr_new = _pr(redis, "cloud-2")
 
-    # The whole surviving fleet's reconcilers (cloud-1, device-1, and the
-    # new cloud-2) all attempt the affected set -- exactly the real
-    # "every surviving node's reconciliation loop eventually attempts
-    # every dirty actor_id" property (the backstop sweep, or the event
-    # queue after a re-enqueue) — only whichever one the Scheduler
-    # actually reassigns each actor to will succeed in truly reactivating
-    # it locally.
     affected = set(on_edge) | {other_node_actor}
     recoverers = (pr_cloud, pr_device, pr_new)
     for aid in affected:
@@ -683,8 +675,6 @@ def test_15_destructive_multi_failure_scenario_converges_without_duplication():
             elif result.action in ("none", "scheduled_elsewhere", "skipped_lease"):
                 continue
             elif result.action == "migrate_away" and result.succeeded:
-                # Another recoverer already re-homed this actor; this node
-                # is evacuating a ghost local copy of a formerly-active actor.
                 continue
             elif result.action == "recover":
                 pytest.fail(f"{r._node_id} recover failed for {aid}: {result.reason}")
@@ -692,8 +682,6 @@ def test_15_destructive_multi_failure_scenario_converges_without_duplication():
                 pytest.fail(f"unexpected reconcile action {result.action!r} for {aid} on {r._node_id}")
         assert recovered_by, f"no recoverer succeeded for affected actor {aid}"
 
-    # Migration evac suspends ghost local copies; each actor's owning node
-    # reconciler must converge registry status back to ACTIVE.
     for aid in actor_ids:
         owner_node = pr_new.get_actor_desired_node(aid) or placements_before[aid]
         for r in (pr_cloud, pr_device, pr_new):

@@ -29,10 +29,10 @@ def idempotency_fail_closed() -> bool:
 
 
 def block_direct_world_api_mutations() -> bool:
-    """When true, POST/PUT/DELETE on /world/* SharedWorld CRUD are rejected.
+    """Reject SharedWorld CRUD mutations when production mode is on.
 
-  Commerce state belongs on knowledge_graph routes or actor capabilities.
-  Set ALLOW_DIRECT_WORLD_API=true to override (dev/seed only).
+    Commerce state should use knowledge_graph routes or actor capabilities.
+    Override with ALLOW_DIRECT_WORLD_API=true for dev/seed only.
     """
     if not production_mode_enabled():
         return False
