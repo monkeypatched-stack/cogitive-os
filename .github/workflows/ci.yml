@@ -15,7 +15,7 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Ruff check
-        run: ruff check .
+        run: ruff check src tests scripts
 
   typecheck:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
       - name: Install mypy
         run: pip install mypy
       - name: mypy (report-only)
-        run: mypy src/monkey_brain --ignore-missing-imports
+        run: mypy src/monkey_brain
 
   test:
     runs-on: ubuntu-latest
@@ -50,6 +50,11 @@ jobs:
           pip install -r requirements.txt
           pip install pytest-cov
       - name: Run test suite with coverage
+        env:
+          ACCESS_TOKEN_SECRET: ci-test-access-token-secret
+          REFRESH_TOKEN_SECRET: ci-test-refresh-token-secret
+          API_GATEWAY_REQUIRED: "false"
+          AGENTOS_AUTH_REQUIRED: "false"
         # RUN_INTEGRATION is deliberately unset: tests/conftest.py already
         # skips the suites that need a live server/LLM
         # (e2e/load/security-fuzz) when it's absent, so this stays

@@ -9,6 +9,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+# Auth service Settings (domains/manufacturing/.../config.py) requires these
+# secrets at import time. CI has no .env — provide deterministic test values
+# before any test module imports services.auth or api.main.
+os.environ.setdefault("ACCESS_TOKEN_SECRET", "test-access-token-secret")
+os.environ.setdefault("REFRESH_TOKEN_SECRET", "test-refresh-token-secret")
+os.environ.setdefault("API_GATEWAY_REQUIRED", "false")
+
+# PlanetaryRuntime.build_execution_engine() resolves the "grocery" vertical at
+# init — register it once for the whole test session.
+try:  # pragma: no cover
+    import src.monkey_brain.kernel.domains.grocery  # noqa: F401
+except Exception:
+    pass
+
 _root = os.path.dirname(os.path.dirname(__file__))
 for p in ("src", "packages/cerebellum", "packages/broca", "packages/soma-cli",
           "domains/manufacturing/knowledge"):
@@ -40,6 +54,7 @@ except Exception:
 _INTEGRATION_PATHS = (
     "e2e/test_soma_compile", "e2e/test_software_engineering", "e2e/test_e2e",
     "e2e/cognitive_loop", "load/test_load_and_soak", "security/test_api_fuzz",
+    "benchmarks/",
 )
 
 
