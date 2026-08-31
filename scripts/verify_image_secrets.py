@@ -64,7 +64,13 @@ EXCLUDED_DIR_PREFIXES = (
     "/etc/ssl/",
     "/etc/ssh/",
     "/.git/",
+    "/root/.cache/",
+    "/.cache/",
 )
+
+# CA bundles shipped by certifi/botocore — not private key material.
+ALLOWED_PEM_NAMES = frozenset({"cacert.pem"})
+ALLOWED_PEM_DIR_MARKERS = ("certifi", "botocore", "pip/_vendor/certifi")
 
 
 def should_exclude_path(path: str) -> bool:
@@ -73,6 +79,14 @@ def should_exclude_path(path: str) -> bool:
         if path.startswith(excluded):
             return True
     return False
+
+
+def is_allowed_pem_file(path: Path) -> bool:
+    """CA certificate bundles are not secret key material."""
+    if path.name in ALLOWED_PEM_NAMES:
+        return True
+    path_str = str(path)
+    return any(marker in path_str for marker in ALLOWED_PEM_DIR_MARKERS)
 
 
 def matches_pattern(filename: str, pattern: str) -> bool:
@@ -84,46 +98,59 @@ def extract_image_filesystem(image: str) -> Path:
     """
     Extract Docker image filesystem to a temporary directory.
     Returns the path to the extracted root filesystem.
+
+    Uses ``docker create`` + ``docker export`` so we never need the image
+  CMD/ENTRYPOINT to understand ``sleep`` — ``docker run image sleep infinity``
+  passes those words as *arguments* to uvicorn/python and fails on CI images.
     """
     tmpdir = Path(tempfile.mkdtemp(prefix="docker_inspect_"))
+    root = tmpdir / "root"
+    root.mkdir(parents=True, exist_ok=True)
+    tar_path = tmpdir / "image.tar"
 
-    try:
-        # Try to start a container and copy its filesystem
-        result = subprocess.run(
-            ["docker", "run", "-d", "--rm", image, "sleep", "infinity"],
-            capture_output=True,
-            text=True,
-            timeout=30,
+    create = subprocess.run(
+        ["docker", "create", image],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    if create.returncode != 0:
+        raise RuntimeError(
+            "docker create failed: "
+            f"{create.stderr.strip() or create.stdout.strip() or 'unknown error'}"
         )
 
-        if result.returncode == 0:
-            container_id = result.stdout.strip()
-            try:
-                subprocess.run(
-                    ["docker", "cp", f"{container_id}:/", str(tmpdir / "root")],
-                    check=True,
-                    capture_output=True,
-                    timeout=60,
-                )
-                subprocess.run(
-                    ["docker", "stop", container_id],
-                    capture_output=True,
-                    timeout=10,
-                )
-                return tmpdir / "root"
-            except subprocess.CalledProcessError as e:
-                subprocess.run(["docker", "stop", container_id], capture_output=True)
-                raise RuntimeError(
-                    f"Failed to extract container filesystem: {e.stderr}"
-                )
-    except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
-        pass
+    container_id = create.stdout.strip()
+    try:
+        export = subprocess.run(
+            ["docker", "export", container_id, "-o", str(tar_path)],
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        if export.returncode != 0:
+            raise RuntimeError(
+                "docker export failed: "
+                f"{export.stderr.strip() or export.stdout.strip() or 'unknown error'}"
+            )
 
-    # Fallback: inspect image layers via docker inspect + history
-    raise RuntimeError(
-        "Could not extract image filesystem. Ensure the image exists and "
-        "you have permission to run containers."
-    )
+        subprocess.run(
+            ["tar", "-xf", str(tar_path), "-C", str(root)],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        return root
+    except subprocess.CalledProcessError as e:
+        detail = e.stderr.decode() if isinstance(e.stderr, bytes) else (e.stderr or str(e))
+        raise RuntimeError(f"Failed to extract image filesystem: {detail}") from e
+    finally:
+        subprocess.run(
+            ["docker", "rm", "-f", container_id],
+            capture_output=True,
+            timeout=30,
+        )
 
 
 def scan_filesystem_for_secrets(root_path: Path) -> list[str]:
@@ -148,6 +175,8 @@ def scan_filesystem_for_secrets(root_path: Path) -> list[str]:
 
             # Check if filename matches the forbidden pattern
             if matches_pattern(fspath.name, pattern):
+                if pattern == "*.pem" and is_allowed_pem_file(fspath):
+                    continue
                 matches_found.append((pattern, str(rel_path)))
 
     return matches_found

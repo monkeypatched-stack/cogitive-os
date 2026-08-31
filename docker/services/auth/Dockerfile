@@ -2,7 +2,8 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app
 
 WORKDIR /app
 
@@ -16,8 +17,11 @@ COPY requirements.txt .
 RUN uv pip install --system -r requirements.txt
 
 COPY src/ ./src/
-COPY services/common/ ./services/common/
-COPY services/auth/ ./services/auth/
+# services/{common,auth} live under domains/manufacturing/knowledge/ (not repo-root
+# services/) — same layout as docker/services/agentos/Dockerfile.
+COPY domains/manufacturing/knowledge/services/common/ ./services/common/
+COPY domains/manufacturing/knowledge/services/auth/ ./services/auth/
+RUN rm -f services/auth/.env
 
 EXPOSE 8010
 

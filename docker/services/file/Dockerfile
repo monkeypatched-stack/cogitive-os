@@ -2,7 +2,8 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app
 
 WORKDIR /app
 
@@ -16,7 +17,8 @@ COPY requirements.txt .
 RUN uv pip install --system -r requirements.txt
 
 COPY src/ ./src/
-COPY services/common/ ./services/common/
+# Lightweight file-service stub (services/file/) — not the full manufacturing
+# file service tree under domains/manufacturing/knowledge/services/file/.
 COPY services/file/ ./services/file/
 
 EXPOSE 8030

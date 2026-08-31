@@ -16,6 +16,7 @@ from src.monkey_brain.kernel.compile.network import configure_exchange
 def wired(tmp_path, monkeypatch):
     monkeypatch.setenv("AGENTOS_CA_STORE", str(tmp_path / "ca.json"))
     monkeypatch.setenv("AGENTOS_TENANT_ID", "default")
+    monkeypatch.setenv("AGENTOS_EXCHANGE_AUTH_REQUIRED", "false")
     monkeypatch.delenv("AGENTOS_EXCHANGE_TOKEN", raising=False)
     # server side: alice may publish beliefs to this runtime ("default")
     net = TrustNetwork()

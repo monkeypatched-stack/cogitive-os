@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest-cov pytest-timeout
+          pip install pytest-cov pytest-timeout pytest-asyncio
       - name: Run test suite with coverage
         env:
           ACCESS_TOKEN_SECRET: ci-test-access-token-secret
