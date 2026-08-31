@@ -228,6 +228,13 @@ class _RedisIdempotencyBackend:
             existing = self._load(self._r.get(redis_key))
             return False, existing
         except Exception as exc:
+            from src.monkey_brain.kernel.production_gates import idempotency_fail_closed
+            if idempotency_fail_closed():
+                logger.error(
+                    "key=%r Idempotency(redis).reserve failed — refusing execution (fail-closed): %s",
+                    key, exc,
+                )
+                return False, None
             logger.warning("key=%r Idempotency(redis).reserve failed — allowing execution: %s", key, exc)
             # Fail OPEN on infra errors: a broken Redis must not permanently
             # block real orders/payments from ever executing.
@@ -395,6 +402,13 @@ def idempotent(resource: str):
             store = get_idempotency_store()
             claimed, existing = store.reserve(scoped_key, request_hash)
             if not claimed:
+                if existing is None:
+                    from src.monkey_brain.kernel.production_gates import idempotency_fail_closed
+                    if idempotency_fail_closed():
+                        raise HTTPException(
+                            status_code=503,
+                            detail="Idempotency store unavailable — request refused (fail-closed)",
+                        )
                 if existing is not None and existing.state == _COMPLETED:
                     if existing.request_hash != request_hash:
                         record_decision_event(

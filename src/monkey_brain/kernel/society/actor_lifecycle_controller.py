@@ -131,7 +131,7 @@ class ActorLifecycleController:
             # Re-observe under the lease: another reconcile pass (or the
             # actor's own tick) may have changed things between the cheap
             # read above and now.
-            observed = self._planetary.observe_actor(actor_id)
+            observed = self._planetary.observe_actor(actor_id, reconcile_lease_token=token)
             action = self._decide(desired, observed)
             if action in (_ACTION_NONE, _ACTION_SKIPPED_UNKNOWN):
                 return ReconciliationResult(

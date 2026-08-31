@@ -149,6 +149,12 @@ class CognitiveState:
     Observability/Timeline-reconstruction only -- never read by
     ActionExecutor's dispatch loop or any downstream stage's control flow."""
 
+    compiled_execution_graph: Any = None
+    """kernel.execute.graph.ExecutionGraph -- the canonical executable DAG
+    produced alongside compiled_plan_graph. Same rejection/observability
+    contract as compiled_plan_graph; ActionExecutor still dispatches the
+    flat plan.steps sequence today."""
+
     # ── Actions (populated by _execute_plan) ──────────────────────────────
 
     actions: list[ActionOutcome] = field(default_factory=list)

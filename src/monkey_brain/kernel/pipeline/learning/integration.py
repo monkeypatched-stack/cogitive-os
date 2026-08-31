@@ -162,11 +162,15 @@ class LearningIntegratedPolicy(CognitivePolicy):
                 # capability" (that would itself violate the "capabilities
                 # are the boundary between cognition and reality" and
                 # "learning cannot expand authority" tenets).
-                from src.monkey_brain.kernel.pipeline.learning.capability_promotion import default_tracker
+                from src.monkey_brain.kernel.pipeline.learning.capability_promotion import (
+                    default_tracker, extract_recipe_from_experience,
+                )
+                recipe = extract_recipe_from_experience(experience)
                 default_tracker().observe(
                     goal_signature=artifact.goal_signature, reward=artifact.reward,
                     confidence=artifact.confidence, outcome_summary=artifact.outcome_summary,
                     top_signal_summary=artifact.top_signal_summary,
+                    recipe=recipe,
                 )
 
             return state

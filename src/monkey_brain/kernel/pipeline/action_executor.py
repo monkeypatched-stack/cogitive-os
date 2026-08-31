@@ -13,7 +13,9 @@ If no CapabilityBus is available, actions are simulated (pass-through).
 """
 from __future__ import annotations
 
+import asyncio
 import logging
+import os
 import time
 from typing import Any, Callable
 
@@ -23,6 +25,8 @@ from src.monkey_brain.kernel.pipeline.execution import (
 from src.monkey_brain.kernel.society.transition_gate import ProposedTransition, TransitionGate
 
 logger = logging.getLogger("agentos.pipeline.action_executor")
+
+_CAPABILITY_TIMEOUT_SECONDS = float(os.getenv("CAPABILITY_TIMEOUT_SECONDS", "120"))
 
 
 class ActionExecutor:
@@ -108,6 +112,8 @@ class ActionExecutor:
         self,
         actions: tuple[Action, ...],
         context: Any = None,
+        *,
+        execution_graph: Any = None,
     ) -> ExecutionResult:
         """Execute a sequence of actions.
 
@@ -147,6 +153,18 @@ class ActionExecutor:
         # here, not a probability estimate.
         succeeded_step_indices: set[int] = set()
 
+        from src.monkey_brain.kernel.execute.graph import NodeState
+        from src.monkey_brain.kernel.pipeline.graph_execution import (
+            node_id_for_action,
+            order_actions_by_graph,
+            runnable_actions,
+            apply_runtime_projections,
+        )
+        if execution_graph is not None:
+            actions = order_actions_by_graph(actions, execution_graph)
+            if isinstance(context, dict):
+                context["_compiled_execution_graph"] = execution_graph
+
         # Checkpoint/restart (kernel/pipeline/execution_checkpoint_store.py):
         # every action in one execute() call shares the same tick's
         # execution_id (Action.correlation_id). A caller resuming a prior
@@ -165,6 +183,8 @@ class ActionExecutor:
             checkpoint = load_execution_checkpoint(execution_id)
             if checkpoint is not None:
                 completed_steps = {int(k): v for k, v in checkpoint.completed_steps.items()}
+        if isinstance(context, dict) and execution_id:
+            context["_execution_id"] = execution_id
         source_plan = context.get("_source_plan") if isinstance(context, dict) else None
         plan_dict = self._plan_dict_from_actions(
             actions, goal=context.get("question", "") if isinstance(context, dict) else "",
@@ -223,389 +243,425 @@ class ActionExecutor:
                 resolved_payment = pending_payment
         waiting_for_payment = False
 
-        for action in actions:
-            checkpointed = completed_steps.get(action.step_index) if action.step_index >= 0 else None
-            missing = [dep for dep in action.depends_on if dep not in succeeded_step_indices] if action.depends_on else []
-            if checkpointed is not None:
-                # Already completed in an earlier attempt at this same
-                # execution_id -- replay its real, stored outcome (never
-                # invoke the capability again).
-                outcome = ActionOutcome(
-                    action_id=checkpointed.get("action_id", action.action_id),
-                    success=bool(checkpointed.get("success", False)),
-                    result=checkpointed.get("result"),
-                    error=checkpointed.get("error", ""),
-                    latency_ms=float(checkpointed.get("latency_ms", 0.0) or 0.0),
-                    metadata={"resumed_from_checkpoint": True},
+        scheduled_indices: set[int] = set()
+        while True:
+            if execution_graph is not None:
+                pending = [a for a in actions if a.step_index not in scheduled_indices]
+                if not pending:
+                    break
+                batch = runnable_actions(
+                    tuple(pending), execution_graph, succeeded_step_indices,
+                    completed_or_terminal=scheduled_indices,
                 )
-                if outcome.success and action.step_index >= 0:
-                    succeeded_step_indices.add(action.step_index)
-            elif missing:
-                outcome = ActionOutcome(
-                    action_id=action.action_id,
-                    success=False,
-                    result={"blocked_by_dependency": missing[0]},
-                    error=f"blocked: dependency step {missing[0]} did not succeed",
-                    latency_ms=0.0,
-                )
-                # This branch never reaches _execute_action/capability.
-                # handle() at all -- the capability is never invoked, so
-                # this is the one real "blocked" boundary, separate from
-                # the success/failed/rejected classification inside
-                # _execute_action below.
-                from src.monkey_brain.kernel.compile import _obs
-                _obs.counter("capability.calls.total", capability=action.capability, status="blocked")
+                next_actions = batch if batch else pending[:1]
             else:
-                if (
-                    resolved_approval is not None
-                    and action.step_index >= 0
-                    and action.step_index == resolved_approval.step_index
-                    and isinstance(context, dict)
-                ):
-                    context["approval_decision"] = resolved_approval.decided
-                    context["approval_pending_candidate"] = resolved_approval.proposed_action
+                remaining = [a for a in actions if a.step_index not in scheduled_indices]
+                if not remaining:
+                    break
+                next_actions = remaining[:1]
 
-                if (
-                    resolved_negotiation is not None
-                    and action.step_index >= 0
-                    and action.step_index == resolved_negotiation.step_index
-                    and isinstance(context, dict)
-                ):
-                    context["negotiation_decision"] = resolved_negotiation.decided
-
-                if (
-                    resolved_payment is not None
-                    and action.step_index >= 0
-                    and action.step_index == resolved_payment.step_index
-                    and isinstance(context, dict)
-                ):
-                    # True = captured (webhook confirmed the payer
-                    # approved and capture() succeeded), False = released/
-                    # failed/expired -- a resuming capability reads this
-                    # instead of calling reserve() again, same "commit
-                    # exactly what was already decided, never a freshly
-                    # recomputed candidate" contract approval_decision
-                    # gives above.
-                    context["payment_decision"] = resolved_payment.decided
-                    context["payment_reservation_id"] = resolved_payment.reservation_id
-                    context["payment_provider_name"] = resolved_payment.provider_name
-
-                # PROPOSE -> CHECK, before the capability is ever invoked
-                # (the actual architectural fix: no capability that
-                # mutates shared state runs until this gate has had a
-                # chance to require negotiation first). transition is
-                # None for any action the vertical doesn't recognize as
-                # shared-state-mutating, or when no gate is wired in at
-                # all -- behaves exactly as before for those.
-                gate_decision = None
-                gated_outcome = None
-                if self._connectivity_check is not None:
-                    allowed, waiting_state, reason = self._connectivity_check(action.capability)
-                    if not allowed:
-                        # Refused before the capability is ever invoked --
-                        # same "never call handle() for a gated action"
-                        # contract the negotiation gate below establishes.
-                        # Never reached for TRANSITION_GATE gating below
-                        # since gated_outcome is already set.
-                        gated_outcome = ActionOutcome(
-                            action_id=action.action_id, success=False,
-                            result={"waiting_state": waiting_state, "capability": action.capability},
-                            error=reason, latency_ms=0.0,
-                        )
-                        from src.monkey_brain.kernel.compile import _obs
-                        _obs.counter("offline_safety.blocked.total", waiting_state=waiting_state, capability=action.capability)
-                if (
-                    gated_outcome is None
-                    and self._propose_transition is not None
-                    and self._transition_gate is not None
-                    and isinstance(context, dict)
-                ):
-                    transition = self._propose_transition(action, context)
-                    if transition is not None:
-                        kg = context.get("knowledge_graph")
-                        gate_decision = self._transition_gate.evaluate(transition, kg)
-                        # Lemon metrics (previously zero telemetry on this
-                        # gate — action_executor.py's own comment above
-                        # already establishes this runs "before the
-                        # capability is ever invoked"; the outcome tag is
-                        # the real, just-computed GateDecision, never
-                        # inferred after the fact).
-                        from src.monkey_brain.kernel.compile import _obs
-                        _obs.counter(
-                            "transition_gate.evaluations.total",
-                            allow=str(gate_decision.allow), requires_negotiation=str(gate_decision.requires_negotiation),
-                        )
-                        negotiation_decision = context.get("negotiation_decision")
-                        if gate_decision.requires_negotiation and negotiation_decision is None:
-                            # NEGOTIATE: pause here. capability.handle()
-                            # is never called for this action -- this is
-                            # what actually prevents "mutate first,
-                            # negotiate after".
-                            gated_outcome = ActionOutcome(
-                                action_id=action.action_id, success=False,
-                                result={
-                                    "requires_negotiation": True,
-                                    "proposed_transition": transition.to_dict(),
-                                    "counterparties": list(gate_decision.counterparties),
-                                    "reason": gate_decision.reason,
-                                    "gate_decision": gate_decision.to_dict(),
-                                },
-                                error=f"negotiation required before commit: {gate_decision.reason}",
-                                latency_ms=0.0,
-                            )
-                        elif gate_decision.requires_negotiation and negotiation_decision is False:
-                            # REJECT: negotiation concluded without
-                            # agreement -- abort, never invoke the
-                            # capability, no state mutation.
-                            gated_outcome = ActionOutcome(
-                                action_id=action.action_id, success=False,
-                                result={
-                                    "negotiation_rejected": True,
-                                    "proposed_transition": transition.to_dict(),
-                                    "counterparties": list(gate_decision.counterparties),
-                                    "gate_decision": gate_decision.to_dict(),
-                                },
-                                error=f"negotiation rejected: {gate_decision.reason}",
-                                latency_ms=0.0,
-                            )
-                        # else: allow=True, or an accepted negotiation
-                        # (negotiation_decision is True) -- fall through
-                        # to COMMIT via the real capability below.
-
-                if gate_decision is not None:
-                    # SECURITY (Doot audit P1-7): durable, execution_id-
-                    # correlated record of the policy/consent/negotiation
-                    # decision itself -- reuses the SAME DECISION timeline
-                    # audit_trail.py already writes payment_completed/
-                    # idempotency events through (no second logging
-                    # system). Never chain-of-thought/private reasoning --
-                    # just the gate's own structured decision + which
-                    # capability/action it gated, so an auditor can answer
-                    # "was consent required, was it granted, did it
-                    # commit" without needing to re-derive it from raw
-                    # application logs.
-                    from src.monkey_brain.kernel.pipeline.audit_trail import record_decision_event
-                    negotiation_decision = context.get("negotiation_decision") if isinstance(context, dict) else None
-                    if gated_outcome is None:
-                        security_outcome = "allowed"
-                    elif negotiation_decision is False:
-                        security_outcome = "negotiation_rejected"
-                    else:
-                        security_outcome = "paused_for_negotiation"
-                    record_decision_event(
-                        "transition_gate_decision",
-                        actor_id=context.get("actor_id", "") if isinstance(context, dict) else "",
-                        execution_id=action.correlation_id,
-                        reason=gate_decision.reason,
-                        metadata={
-                            "capability": action.capability, "action_id": action.action_id,
-                            "requires_negotiation": gate_decision.requires_negotiation,
-                            "contention": gate_decision.contention,
-                            "counterparties": list(gate_decision.counterparties),
-                            "negotiation_decision": negotiation_decision,
-                            "security_outcome": security_outcome,
-                        },
+            for action in next_actions:
+                scheduled_indices.add(action.step_index)
+                node_id = node_id_for_action(action, execution_graph) if execution_graph else None
+                if node_id:
+                    execution_graph.mark_running(node_id)
+                checkpointed = completed_steps.get(action.step_index) if action.step_index >= 0 else None
+                missing = [dep for dep in action.depends_on if dep not in succeeded_step_indices] if action.depends_on else []
+                if checkpointed is not None:
+                    # Already completed in an earlier attempt at this same
+                    # execution_id -- replay its real, stored outcome (never
+                    # invoke the capability again).
+                    outcome = ActionOutcome(
+                        action_id=checkpointed.get("action_id", action.action_id),
+                        success=bool(checkpointed.get("success", False)),
+                        result=checkpointed.get("result"),
+                        error=checkpointed.get("error", ""),
+                        latency_ms=float(checkpointed.get("latency_ms", 0.0) or 0.0),
+                        metadata={"resumed_from_checkpoint": True},
                     )
-                    # Lemon metrics (previously zero telemetry on World
-                    # Commit — real values only: security_outcome is the
-                    # gate's own just-computed verdict, the same value the
-                    # audit record above carries. "allowed" means this
-                    # transition is now eligible to proceed to the real
-                    # capability call below, not that the capability itself
-                    # has yet succeeded — grocery.py's own KG mutation
-                    # (try_reserve etc.) has no counter of its own to
-                    # confirm the literal write.
-                    _obs.counter("world_commit.total", security_outcome=security_outcome)
+                    if outcome.success and action.step_index >= 0:
+                        succeeded_step_indices.add(action.step_index)
+                elif missing:
+                    outcome = ActionOutcome(
+                        action_id=action.action_id,
+                        success=False,
+                        result={"blocked_by_dependency": missing[0]},
+                        error=f"blocked: dependency step {missing[0]} did not succeed",
+                        latency_ms=0.0,
+                    )
+                    # This branch never reaches _execute_action/capability.
+                    # handle() at all -- the capability is never invoked, so
+                    # this is the one real "blocked" boundary, separate from
+                    # the success/failed/rejected classification inside
+                    # _execute_action below.
+                    from src.monkey_brain.kernel.compile import _obs
+                    _obs.counter("capability.calls.total", capability=action.capability, status="blocked")
+                else:
+                    if (
+                        resolved_approval is not None
+                        and action.step_index >= 0
+                        and action.step_index == resolved_approval.step_index
+                        and isinstance(context, dict)
+                    ):
+                        context["approval_decision"] = resolved_approval.decided
+                        context["approval_pending_candidate"] = resolved_approval.proposed_action
 
-                if gated_outcome is not None:
-                    outcome = gated_outcome
-                    # gate_decision is None when this outcome came from the
-                    # connectivity gate above (refused before the
-                    # transition gate ever ran) -- that path never needs
-                    # negotiation-store bookkeeping, only the transition
-                    # gate's own requires_negotiation path does.
-                    if gate_decision is not None and gate_decision.requires_negotiation and context.get("negotiation_decision") is None:
-                        if not waiting_for_negotiation:
-                            from src.monkey_brain.kernel.pipeline.negotiation_store import (
-                                PendingNegotiation, save_pending_negotiation,
+                    if (
+                        resolved_negotiation is not None
+                        and action.step_index >= 0
+                        and action.step_index == resolved_negotiation.step_index
+                        and isinstance(context, dict)
+                    ):
+                        context["negotiation_decision"] = resolved_negotiation.decided
+
+                    if (
+                        resolved_payment is not None
+                        and action.step_index >= 0
+                        and action.step_index == resolved_payment.step_index
+                        and isinstance(context, dict)
+                    ):
+                        # True = captured (webhook confirmed the payer
+                        # approved and capture() succeeded), False = released/
+                        # failed/expired -- a resuming capability reads this
+                        # instead of calling reserve() again, same "commit
+                        # exactly what was already decided, never a freshly
+                        # recomputed candidate" contract approval_decision
+                        # gives above.
+                        context["payment_decision"] = resolved_payment.decided
+                        context["payment_reservation_id"] = resolved_payment.reservation_id
+                        context["payment_provider_name"] = resolved_payment.provider_name
+
+                    # PROPOSE -> CHECK, before the capability is ever invoked
+                    # (the actual architectural fix: no capability that
+                    # mutates shared state runs until this gate has had a
+                    # chance to require negotiation first). transition is
+                    # None for any action the vertical doesn't recognize as
+                    # shared-state-mutating, or when no gate is wired in at
+                    # all -- behaves exactly as before for those.
+                    gate_decision = None
+                    gated_outcome = None
+                    if self._connectivity_check is not None:
+                        allowed, waiting_state, reason = self._connectivity_check(action.capability)
+                        if not allowed:
+                            # Refused before the capability is ever invoked --
+                            # same "never call handle() for a gated action"
+                            # contract the negotiation gate below establishes.
+                            # Never reached for TRANSITION_GATE gating below
+                            # since gated_outcome is already set.
+                            gated_outcome = ActionOutcome(
+                                action_id=action.action_id, success=False,
+                                result={"waiting_state": waiting_state, "capability": action.capability},
+                                error=reason, latency_ms=0.0,
                             )
-                            proposing_actor = context.get("actor_id", "")
-                            counterparties = list(outcome.result.get("counterparties", []) or [])
-                            negotiation_execution_id = execution_id or action.action_id
-                            save_pending_negotiation(PendingNegotiation(
-                                execution_id=negotiation_execution_id,
-                                actor_id=proposing_actor,
+                            from src.monkey_brain.kernel.compile import _obs
+                            _obs.counter("offline_safety.blocked.total", waiting_state=waiting_state, capability=action.capability)
+                    if (
+                        gated_outcome is None
+                        and self._propose_transition is not None
+                        and self._transition_gate is not None
+                        and isinstance(context, dict)
+                    ):
+                        transition = self._propose_transition(action, context)
+                        if transition is not None:
+                            kg = context.get("knowledge_graph")
+                            gate_decision = self._transition_gate.evaluate(transition, kg)
+                            # Lemon metrics (previously zero telemetry on this
+                            # gate — action_executor.py's own comment above
+                            # already establishes this runs "before the
+                            # capability is ever invoked"; the outcome tag is
+                            # the real, just-computed GateDecision, never
+                            # inferred after the fact).
+                            from src.monkey_brain.kernel.compile import _obs
+                            _obs.counter(
+                                "transition_gate.evaluations.total",
+                                allow=str(gate_decision.allow), requires_negotiation=str(gate_decision.requires_negotiation),
+                            )
+                            negotiation_decision = context.get("negotiation_decision")
+                            if gate_decision.requires_negotiation and negotiation_decision is None:
+                                # NEGOTIATE: pause here. capability.handle()
+                                # is never called for this action -- this is
+                                # what actually prevents "mutate first,
+                                # negotiate after".
+                                gated_outcome = ActionOutcome(
+                                    action_id=action.action_id, success=False,
+                                    result={
+                                        "requires_negotiation": True,
+                                        "proposed_transition": transition.to_dict(),
+                                        "counterparties": list(gate_decision.counterparties),
+                                        "reason": gate_decision.reason,
+                                        "gate_decision": gate_decision.to_dict(),
+                                    },
+                                    error=f"negotiation required before commit: {gate_decision.reason}",
+                                    latency_ms=0.0,
+                                )
+                            elif gate_decision.requires_negotiation and negotiation_decision is False:
+                                # REJECT: negotiation concluded without
+                                # agreement -- abort, never invoke the
+                                # capability, no state mutation.
+                                gated_outcome = ActionOutcome(
+                                    action_id=action.action_id, success=False,
+                                    result={
+                                        "negotiation_rejected": True,
+                                        "proposed_transition": transition.to_dict(),
+                                        "counterparties": list(gate_decision.counterparties),
+                                        "gate_decision": gate_decision.to_dict(),
+                                    },
+                                    error=f"negotiation rejected: {gate_decision.reason}",
+                                    latency_ms=0.0,
+                                )
+                            # else: allow=True, or an accepted negotiation
+                            # (negotiation_decision is True) -- fall through
+                            # to COMMIT via the real capability below.
+
+                    if gate_decision is not None:
+                        # SECURITY (Doot audit P1-7): durable, execution_id-
+                        # correlated record of the policy/consent/negotiation
+                        # decision itself -- reuses the SAME DECISION timeline
+                        # audit_trail.py already writes payment_completed/
+                        # idempotency events through (no second logging
+                        # system). Never chain-of-thought/private reasoning --
+                        # just the gate's own structured decision + which
+                        # capability/action it gated, so an auditor can answer
+                        # "was consent required, was it granted, did it
+                        # commit" without needing to re-derive it from raw
+                        # application logs.
+                        from src.monkey_brain.kernel.pipeline.audit_trail import record_decision_event
+                        negotiation_decision = context.get("negotiation_decision") if isinstance(context, dict) else None
+                        if gated_outcome is None:
+                            security_outcome = "allowed"
+                        elif negotiation_decision is False:
+                            security_outcome = "negotiation_rejected"
+                        else:
+                            security_outcome = "paused_for_negotiation"
+                        record_decision_event(
+                            "transition_gate_decision",
+                            actor_id=context.get("actor_id", "") if isinstance(context, dict) else "",
+                            execution_id=action.correlation_id,
+                            reason=gate_decision.reason,
+                            metadata={
+                                "capability": action.capability, "action_id": action.action_id,
+                                "requires_negotiation": gate_decision.requires_negotiation,
+                                "contention": gate_decision.contention,
+                                "counterparties": list(gate_decision.counterparties),
+                                "negotiation_decision": negotiation_decision,
+                                "security_outcome": security_outcome,
+                            },
+                        )
+                        # Lemon metrics (previously zero telemetry on World
+                        # Commit — real values only: security_outcome is the
+                        # gate's own just-computed verdict, the same value the
+                        # audit record above carries. "allowed" means this
+                        # transition is now eligible to proceed to the real
+                        # capability call below, not that the capability itself
+                        # has yet succeeded — grocery.py's own KG mutation
+                        # (try_reserve etc.) has no counter of its own to
+                        # confirm the literal write.
+                        _obs.counter("world_commit.total", security_outcome=security_outcome)
+
+                    if gated_outcome is not None:
+                        outcome = gated_outcome
+                        # gate_decision is None when this outcome came from the
+                        # connectivity gate above (refused before the
+                        # transition gate ever ran) -- that path never needs
+                        # negotiation-store bookkeeping, only the transition
+                        # gate's own requires_negotiation path does.
+                        if gate_decision is not None and gate_decision.requires_negotiation and context.get("negotiation_decision") is None:
+                            if not waiting_for_negotiation:
+                                from src.monkey_brain.kernel.pipeline.negotiation_store import (
+                                    PendingNegotiation, save_pending_negotiation,
+                                )
+                                proposing_actor = context.get("actor_id", "")
+                                counterparties = list(outcome.result.get("counterparties", []) or [])
+                                negotiation_execution_id = execution_id or action.action_id
+                                save_pending_negotiation(PendingNegotiation(
+                                    execution_id=negotiation_execution_id,
+                                    actor_id=proposing_actor,
+                                    step_index=action.step_index, capability=action.capability,
+                                    action_id=action.action_id,
+                                    proposed_transition=outcome.result.get("proposed_transition", {}) or {},
+                                    counterparties=counterparties,
+                                    reason=outcome.result.get("reason", ""),
+                                    correlation_id=action.correlation_id, causation_id=action.causation_id,
+                                    original_question=context.get("question", ""),
+                                ))
+                                # Surface the proposal itself as a real conversation
+                                # message — previously the negotiation gate only ever
+                                # wrote to negotiation_store.py's own Redis record,
+                                # which the Conversations panel (society context
+                                # stream, INTERACTION events) never reads, so a real
+                                # negotiation was invisible there even though it
+                                # blocked the execution. Same publish shape
+                                # route_interaction already uses (runtime.py:638).
+                                if self._context_stream is not None:
+                                    from src.monkey_brain.kernel.society.context_stream import ContextEvent, ContextEventType
+                                    try:
+                                        self._context_stream.publish(ContextEvent(
+                                            event_type=ContextEventType.INTERACTION,
+                                            actor_id=proposing_actor,
+                                            description=(
+                                                f"{proposing_actor} proposes {action.capability} "
+                                                f"to {', '.join(counterparties) or 'a counterparty'}"
+                                            ),
+                                            payload={
+                                                "from_actor_id": proposing_actor,
+                                                "to_actor_id": counterparties[0] if len(counterparties) == 1 else "",
+                                                "participants": [proposing_actor, *counterparties],
+                                                "thread_id": negotiation_execution_id,
+                                                "interaction_id": negotiation_execution_id,
+                                                "message": outcome.result.get("reason", "") or f"Proposing {action.capability}",
+                                            },
+                                            provenance="negotiation:proposal",
+                                            correlation_id=negotiation_execution_id,
+                                            causation_id=action.causation_id,
+                                        ))
+                                    except Exception:
+                                        logger.warning("[executor] failed to publish negotiation proposal event for %s", action.capability)
+                            waiting_for_negotiation = True
+                        outcomes.append(outcome)
+                        publish_started = time.perf_counter()
+                        self._publish_action_event(action, outcome, context)
+                        event_publish_ms += (time.perf_counter() - publish_started) * 1000
+                        continue
+
+                    outcome = await self._execute_action(action, context)
+                    if gate_decision is not None and isinstance(outcome.result, dict):
+                        outcome.result["gate_decision"] = gate_decision.to_dict()
+
+                    # Same-tick cross-provider/cross-agent recovery
+                    # (Qualification Gap Closure, Phase 4; domain-independent
+                    # per "MAKE DOMAIN ISOLATION AIRTIGHT"): the SAME generic
+                    # opt-in shape as the approval contract above -- a failed
+                    # outcome whose own result carries {"recoverable": True}
+                    # (a forced-failure test fault marked recoverable, see
+                    # fault_injection.py, or a real capability's own reported
+                    # failure) gets exactly ONE re-attempt: re-ground (refresh
+                    # the KG against current world state) and re-invoke the
+                    # SAME capability with a retry-flagged copy of its OWN
+                    # original parameters, unmodified -- the executor never
+                    # inspects what those parameters mean; the capability
+                    # decides what "try again" means for itself. Bounded
+                    # structurally (not by a counter) -- this branch only ever
+                    # runs once per action because it is not itself inside a
+                    # loop.
+                    if not outcome.success and isinstance(outcome.result, dict) and outcome.result.get("recoverable"):
+                        if isinstance(context, dict):
+                            kg = context.get("knowledge_graph")
+                            refresh = getattr(kg, "refresh", None)
+                            if callable(refresh):
+                                refresh()
+                        retry_action = self._build_recovery_action(action)
+                        outcome = await self._execute_action(retry_action, context)
+
+                    this_step_requires_approval = isinstance(outcome.result, dict) and bool(outcome.result.get("requires_approval"))
+                    if this_step_requires_approval:
+                        # A real, live-only gap found by testing a multi-item
+                        # approval prompt end to end (not by any executor-level
+                        # unit test, which never exercises two INDEPENDENT
+                        # steps in one plan): only the FIRST pause in a given
+                        # tick is persisted as the resumable PendingApproval
+                        # (approval_store.py's own record is keyed one-per-
+                        # execution_id, a deliberate scope boundary -- not a
+                        # silent loss, since every step's own real outcome,
+                        # including a second requires_approval, still appears
+                        # in outcomes/actions below regardless).
+                        if not waiting_for_human:
+                            from src.monkey_brain.kernel.pipeline.approval_store import PendingApproval, save_pending_approval
+                            save_pending_approval(PendingApproval(
+                                execution_id=execution_id or action.action_id,
+                                actor_id=context.get("actor_id", "") if isinstance(context, dict) else "",
                                 step_index=action.step_index, capability=action.capability,
                                 action_id=action.action_id,
-                                proposed_transition=outcome.result.get("proposed_transition", {}) or {},
-                                counterparties=counterparties,
+                                proposed_action=outcome.result.get("proposed_action", {}) or {},
                                 reason=outcome.result.get("reason", ""),
                                 correlation_id=action.correlation_id, causation_id=action.causation_id,
-                                original_question=context.get("question", ""),
+                                original_question=context.get("question", "") if isinstance(context, dict) else "",
                             ))
-                            # Surface the proposal itself as a real conversation
-                            # message — previously the negotiation gate only ever
-                            # wrote to negotiation_store.py's own Redis record,
-                            # which the Conversations panel (society context
-                            # stream, INTERACTION events) never reads, so a real
-                            # negotiation was invisible there even though it
-                            # blocked the execution. Same publish shape
-                            # route_interaction already uses (runtime.py:638).
-                            if self._context_stream is not None:
-                                from src.monkey_brain.kernel.society.context_stream import ContextEvent, ContextEventType
-                                try:
-                                    self._context_stream.publish(ContextEvent(
-                                        event_type=ContextEventType.INTERACTION,
-                                        actor_id=proposing_actor,
-                                        description=(
-                                            f"{proposing_actor} proposes {action.capability} "
-                                            f"to {', '.join(counterparties) or 'a counterparty'}"
-                                        ),
-                                        payload={
-                                            "from_actor_id": proposing_actor,
-                                            "to_actor_id": counterparties[0] if len(counterparties) == 1 else "",
-                                            "participants": [proposing_actor, *counterparties],
-                                            "thread_id": negotiation_execution_id,
-                                            "interaction_id": negotiation_execution_id,
-                                            "message": outcome.result.get("reason", "") or f"Proposing {action.capability}",
-                                        },
-                                        provenance="negotiation:proposal",
-                                        correlation_id=negotiation_execution_id,
-                                        causation_id=action.causation_id,
-                                    ))
-                                except Exception:
-                                    logger.warning("[executor] failed to publish negotiation proposal event for %s", action.capability)
-                        waiting_for_negotiation = True
-                    outcomes.append(outcome)
-                    publish_started = time.perf_counter()
-                    self._publish_action_event(action, outcome, context)
-                    event_publish_ms += (time.perf_counter() - publish_started) * 1000
-                    continue
+                        waiting_for_human = True
 
-                outcome = await self._execute_action(action, context)
-                if gate_decision is not None and isinstance(outcome.result, dict):
-                    outcome.result["gate_decision"] = gate_decision.to_dict()
+                    this_step_requires_payment_confirmation = (
+                        isinstance(outcome.result, dict) and bool(outcome.result.get("requires_payment_confirmation"))
+                    )
+                    if this_step_requires_payment_confirmation:
+                        # Same "only the FIRST pause in a given tick is
+                        # persisted as the resumable pending record" scope
+                        # boundary as requires_approval above (PendingPayment
+                        # is keyed one-per-execution_id, same as PendingApproval/
+                        # PendingNegotiation) -- every step's own real outcome
+                        # still appears in outcomes/actions below regardless.
+                        if not waiting_for_payment:
+                            from src.monkey_brain.kernel.pipeline.payment_store import PendingPayment, save_pending_payment
+                            result = outcome.result
+                            save_pending_payment(PendingPayment(
+                                execution_id=execution_id or action.action_id,
+                                actor_id=context.get("actor_id", "") if isinstance(context, dict) else "",
+                                step_index=action.step_index, capability=action.capability,
+                                action_id=action.action_id,
+                                provider_name=result.get("provider_name", ""),
+                                reservation_id=result.get("reservation_id", ""),
+                                payer_ref=result.get("payer_ref", ""),
+                                amount=float(result.get("amount", 0.0) or 0.0),
+                                reserve_idempotency_key=result.get("reserve_idempotency_key", ""),
+                                status=result.get("status", "pending_authorization"),
+                                reason=result.get("reason", ""),
+                                correlation_id=action.correlation_id, causation_id=action.causation_id,
+                                original_question=context.get("question", "") if isinstance(context, dict) else "",
+                            ))
+                        waiting_for_payment = True
 
-                # Same-tick cross-provider/cross-agent recovery
-                # (Qualification Gap Closure, Phase 4; domain-independent
-                # per "MAKE DOMAIN ISOLATION AIRTIGHT"): the SAME generic
-                # opt-in shape as the approval contract above -- a failed
-                # outcome whose own result carries {"recoverable": True}
-                # (a forced-failure test fault marked recoverable, see
-                # fault_injection.py, or a real capability's own reported
-                # failure) gets exactly ONE re-attempt: re-ground (refresh
-                # the KG against current world state) and re-invoke the
-                # SAME capability with a retry-flagged copy of its OWN
-                # original parameters, unmodified -- the executor never
-                # inspects what those parameters mean; the capability
-                # decides what "try again" means for itself. Bounded
-                # structurally (not by a counter) -- this branch only ever
-                # runs once per action because it is not itself inside a
-                # loop.
-                if not outcome.success and isinstance(outcome.result, dict) and outcome.result.get("recoverable"):
-                    if isinstance(context, dict):
-                        kg = context.get("knowledge_graph")
-                        refresh = getattr(kg, "refresh", None)
-                        if callable(refresh):
-                            refresh()
-                    retry_action = self._build_recovery_action(action)
-                    outcome = await self._execute_action(retry_action, context)
-
-                this_step_requires_approval = isinstance(outcome.result, dict) and bool(outcome.result.get("requires_approval"))
-                if this_step_requires_approval:
-                    # A real, live-only gap found by testing a multi-item
-                    # approval prompt end to end (not by any executor-level
-                    # unit test, which never exercises two INDEPENDENT
-                    # steps in one plan): only the FIRST pause in a given
-                    # tick is persisted as the resumable PendingApproval
-                    # (approval_store.py's own record is keyed one-per-
-                    # execution_id, a deliberate scope boundary -- not a
-                    # silent loss, since every step's own real outcome,
-                    # including a second requires_approval, still appears
-                    # in outcomes/actions below regardless).
-                    if not waiting_for_human:
-                        from src.monkey_brain.kernel.pipeline.approval_store import PendingApproval, save_pending_approval
-                        save_pending_approval(PendingApproval(
-                            execution_id=execution_id or action.action_id,
-                            actor_id=context.get("actor_id", "") if isinstance(context, dict) else "",
-                            step_index=action.step_index, capability=action.capability,
-                            action_id=action.action_id,
-                            proposed_action=outcome.result.get("proposed_action", {}) or {},
-                            reason=outcome.result.get("reason", ""),
-                            correlation_id=action.correlation_id, causation_id=action.causation_id,
-                            original_question=context.get("question", "") if isinstance(context, dict) else "",
-                        ))
-                    waiting_for_human = True
-
-                this_step_requires_payment_confirmation = (
-                    isinstance(outcome.result, dict) and bool(outcome.result.get("requires_payment_confirmation"))
-                )
-                if this_step_requires_payment_confirmation:
-                    # Same "only the FIRST pause in a given tick is
-                    # persisted as the resumable pending record" scope
-                    # boundary as requires_approval above (PendingPayment
-                    # is keyed one-per-execution_id, same as PendingApproval/
-                    # PendingNegotiation) -- every step's own real outcome
-                    # still appears in outcomes/actions below regardless.
-                    if not waiting_for_payment:
-                        from src.monkey_brain.kernel.pipeline.payment_store import PendingPayment, save_pending_payment
-                        result = outcome.result
-                        save_pending_payment(PendingPayment(
-                            execution_id=execution_id or action.action_id,
-                            actor_id=context.get("actor_id", "") if isinstance(context, dict) else "",
-                            step_index=action.step_index, capability=action.capability,
-                            action_id=action.action_id,
-                            provider_name=result.get("provider_name", ""),
-                            reservation_id=result.get("reservation_id", ""),
-                            payer_ref=result.get("payer_ref", ""),
-                            amount=float(result.get("amount", 0.0) or 0.0),
-                            reserve_idempotency_key=result.get("reserve_idempotency_key", ""),
-                            status=result.get("status", "pending_authorization"),
-                            reason=result.get("reason", ""),
-                            correlation_id=action.correlation_id, causation_id=action.causation_id,
-                            original_question=context.get("question", "") if isinstance(context, dict) else "",
-                        ))
-                    waiting_for_payment = True
+                    if (
+                        outcome.success
+                        and action.step_index >= 0
+                        and not this_step_requires_approval
+                        and not this_step_requires_payment_confirmation
+                    ):
+                        succeeded_step_indices.add(action.step_index)
+                        if execution_id:
+                            completed_steps[action.step_index] = {
+                                "action_id": outcome.action_id, "success": outcome.success,
+                                "result": outcome.result, "error": outcome.error,
+                                "latency_ms": outcome.latency_ms,
+                            }
+                            from src.monkey_brain.kernel.pipeline.execution_checkpoint_store import save_execution_checkpoint
+                            save_execution_checkpoint(execution_id, plan_dict, completed_steps)
+                    self._apply_test_mutation(action, context)
+                outcomes.append(outcome)
+                publish_started = time.perf_counter()
+                self._publish_action_event(action, outcome, context)
+                event_publish_ms += (time.perf_counter() - publish_started) * 1000
 
                 if (
                     outcome.success
-                    and action.step_index >= 0
-                    and not this_step_requires_approval
-                    and not this_step_requires_payment_confirmation
+                    and isinstance(context, dict)
+                    and isinstance(outcome.result, dict)
+                    and self._context_projector is not None
                 ):
-                    succeeded_step_indices.add(action.step_index)
-                    if execution_id:
-                        completed_steps[action.step_index] = {
-                            "action_id": outcome.action_id, "success": outcome.success,
-                            "result": outcome.result, "error": outcome.error,
-                            "latency_ms": outcome.latency_ms,
-                        }
-                        from src.monkey_brain.kernel.pipeline.execution_checkpoint_store import save_execution_checkpoint
-                        save_execution_checkpoint(execution_id, plan_dict, completed_steps)
-                self._apply_test_mutation(action, context)
-            outcomes.append(outcome)
-            publish_started = time.perf_counter()
-            self._publish_action_event(action, outcome, context)
-            event_publish_ms += (time.perf_counter() - publish_started) * 1000
+                    self._context_projector(outcome.result, context)
+                if node_id and execution_graph is not None:
+                    if outcome.success:
+                        execution_graph.mark_complete(node_id, outcome.result)
+                    else:
+                        execution_graph.mark_failed(node_id, outcome.error or "failed")
+                if (
+                    execution_graph is not None
+                    and node_id
+                    and outcome.success
+                    and isinstance(context, dict)
+                    and isinstance(outcome.result, dict)
+                ):
+                    projections = (execution_graph.get_node(node_id).props or {}).get("runtime_projections") or []
+                    if projections:
+                        apply_runtime_projections(outcome.result, context, projections)
 
-            if (
-                outcome.success
-                and isinstance(context, dict)
-                and isinstance(outcome.result, dict)
-                and self._context_projector is not None
-            ):
-                self._context_projector(outcome.result, context)
-
-            # Generic execution state machine: a paused step does NOT stop
-            # the whole tick anymore (Qualification Gap Closure -- a real,
-            # live-only gap: a multi-item plan where only ONE item needed
-            # approval used to never even attempt the other, independent
-            # item). A step that genuinely depends on the paused one is
-            # already correctly blocked by the ordinary missing-dependency
-            # check above (the paused step never enters
-            # succeeded_step_indices, since it isn't a success yet) --
-            # nothing further is needed here to keep dependents honestly
-            # unreached. An independent step keeps running normally.
+                # Generic execution state machine: a paused step does NOT stop
+                # the whole tick anymore (Qualification Gap Closure -- a real,
+                # live-only gap: a multi-item plan where only ONE item needed
+                # approval used to never even attempt the other, independent
+                # item). A step that genuinely depends on the paused one is
+                # already correctly blocked by the ordinary missing-dependency
+                # check above (the paused step never enters
+                # succeeded_step_indices, since it isn't a success yet) --
+                # nothing further is needed here to keep dependents honestly
+                # unreached. An independent step keeps running normally.
 
         total_ms = (time.time() - start_time) * 1000
         success_count = sum(1 for o in outcomes if o.success)
@@ -768,6 +824,72 @@ class ActionExecutor:
         import random
         start_time = time.time()
 
+        dispatch_reserved = False
+        execution_id = context.get("_execution_id") if isinstance(context, dict) else None
+        if execution_id and action.action_id:
+            from src.monkey_brain.kernel.production_gates import capability_dispatch_dedup_enabled
+            if capability_dispatch_dedup_enabled():
+                from src.monkey_brain.kernel.pipeline.capability_dispatch_store import (
+                    complete_dispatch,
+                    load_cached_outcome,
+                    release_dispatch,
+                    reserve_dispatch,
+                )
+                cached = load_cached_outcome(execution_id, action.action_id)
+                if cached is not None:
+                    latency = (time.time() - start_time) * 1000
+                    return ActionOutcome(
+                        action_id=cached.get("action_id", action.action_id),
+                        success=bool(cached.get("success", False)),
+                        result=cached.get("result"),
+                        error=cached.get("error", ""),
+                        latency_ms=float(cached.get("latency_ms", latency) or latency),
+                        metadata={"resumed_from_dispatch_cache": True},
+                    )
+                reserve_status = reserve_dispatch(execution_id, action.action_id)
+                if reserve_status == "cached":
+                    cached = load_cached_outcome(execution_id, action.action_id)
+                    if cached is not None:
+                        latency = (time.time() - start_time) * 1000
+                        return ActionOutcome(
+                            action_id=cached.get("action_id", action.action_id),
+                            success=bool(cached.get("success", False)),
+                            result=cached.get("result"),
+                            error=cached.get("error", ""),
+                            latency_ms=float(cached.get("latency_ms", latency) or latency),
+                            metadata={"resumed_from_dispatch_cache": True},
+                        )
+                elif reserve_status == "in_progress":
+                    latency = (time.time() - start_time) * 1000
+                    return ActionOutcome(
+                        action_id=action.action_id,
+                        success=False,
+                        error="duplicate capability dispatch in progress",
+                        latency_ms=round(latency, 2),
+                        result={"duplicate_dispatch": True, "capability": action.capability},
+                    )
+                elif reserve_status == "fresh":
+                    dispatch_reserved = True
+
+        def _done(outcome: ActionOutcome) -> ActionOutcome:
+            if dispatch_reserved and execution_id and action.action_id:
+                from src.monkey_brain.kernel.pipeline.capability_dispatch_store import (
+                    complete_dispatch,
+                    release_dispatch,
+                )
+                payload = {
+                    "action_id": outcome.action_id,
+                    "success": outcome.success,
+                    "result": outcome.result,
+                    "error": outcome.error,
+                    "latency_ms": outcome.latency_ms,
+                }
+                if outcome.success:
+                    complete_dispatch(execution_id, action.action_id, payload)
+                else:
+                    release_dispatch(execution_id, action.action_id)
+            return outcome
+
         try:
             # Deterministic fault injection (kernel/testing/fault_injection.py):
             # a test registered "the next time this actor attempts an action
@@ -783,7 +905,7 @@ class ActionExecutor:
                 if forced is not None:
                     forced_error, forced_recoverable = forced
                     latency = (time.time() - start_time) * 1000
-                    return ActionOutcome(
+                    return _done(ActionOutcome(
                         action_id=action.action_id,
                         success=False,
                         result={
@@ -792,7 +914,7 @@ class ActionExecutor:
                         },
                         error=forced_error,
                         latency_ms=round(latency, 2),
-                    )
+                    ))
 
             # Stochastic failure — simulates real-world unreliability
             if self._failure_rate > 0 and random.random() < self._failure_rate:
@@ -804,13 +926,13 @@ class ActionExecutor:
                     f"Dependency unavailable: {action.capability} — upstream delayed",
                     f"State conflict: {action.capability} — concurrent modification",
                 ]
-                return ActionOutcome(
+                return _done(ActionOutcome(
                     action_id=action.action_id,
                     success=False,
                     result={"simulated": True, "stochastic_failure": True, "capability": action.capability},
                     error=random.choice(error_msgs),
                     latency_ms=round(latency, 2),
-                )
+                ))
 
             if self._capability_bus is None:
                 # No capability bus — simulate success. CognitiveOS
@@ -832,12 +954,12 @@ class ActionExecutor:
                 )
                 from src.monkey_brain.kernel.compile import _obs
                 _obs.counter("capability.calls.total", capability=action.capability, status="ungoverned")
-                return ActionOutcome(
+                return _done(ActionOutcome(
                     action_id=action.action_id,
                     success=True,
                     result={"simulated": True, "governed": False, "capability": action.capability},
                     latency_ms=0.0,
-                )
+                ))
 
             # Discover the capability
             capability = self._capability_bus.discover(action.capability)
@@ -851,12 +973,12 @@ class ActionExecutor:
                     capability = self._capability_bus.discover(name)
             if capability is None:
                 logger.warning("[executor] Capability not found: %s", action.capability)
-                return ActionOutcome(
+                return _done(ActionOutcome(
                     action_id=action.action_id,
                     success=False,
                     error=f"Capability not found: {action.capability}",
                     latency_ms=(time.time() - start_time) * 1000,
-                )
+                ))
 
             # Invoke the capability. Conditional await: every existing
             # capability's handle() is a plain sync function (unaffected);
@@ -869,10 +991,25 @@ class ActionExecutor:
                 "parameters": action.parameters,
                 "context": context,
             }
-            if inspect.iscoroutinefunction(capability.handle):
-                result = await capability.handle(handle_args)
-            else:
-                result = capability.handle(handle_args)
+
+            async def _invoke_handle() -> Any:
+                if inspect.iscoroutinefunction(capability.handle):
+                    return await capability.handle(handle_args)
+                return capability.handle(handle_args)
+
+            try:
+                result = await asyncio.wait_for(
+                    _invoke_handle(), timeout=_CAPABILITY_TIMEOUT_SECONDS,
+                )
+            except asyncio.TimeoutError:
+                latency = (time.time() - start_time) * 1000
+                return _done(ActionOutcome(
+                    action_id=action.action_id,
+                    success=False,
+                    error=f"Timeout: {action.capability} — exceeded {_CAPABILITY_TIMEOUT_SECONDS:.0f}s deadline",
+                    latency_ms=round(latency, 2),
+                    result={"timeout": True, "capability": action.capability},
+                ))
 
             latency = (time.time() - start_time) * 1000
 
@@ -914,13 +1051,13 @@ class ActionExecutor:
             )
             _obs.histogram("capability.duration_ms", latency, capability=action.capability)
 
-            return ActionOutcome(
+            return _done(ActionOutcome(
                 action_id=action.action_id,
                 success=success,
                 result=result,
                 error=error,
                 latency_ms=round(latency, 2),
-            )
+            ))
 
         except Exception as e:
             latency = (time.time() - start_time) * 1000
@@ -928,12 +1065,12 @@ class ActionExecutor:
             from src.monkey_brain.kernel.compile import _obs
             _obs.counter("capability.calls.total", capability=action.capability, status="failed")
             _obs.histogram("capability.duration_ms", latency, capability=action.capability)
-            return ActionOutcome(
+            return _done(ActionOutcome(
                 action_id=action.action_id,
                 success=False,
                 error=str(e),
                 latency_ms=round(latency, 2),
-            )
+            ))
 
     def _publish_action_event(self, action: Action, outcome: ActionOutcome, context: Any) -> None:
         """MB-3051 Context Propagation: publish one real ContextEvent for

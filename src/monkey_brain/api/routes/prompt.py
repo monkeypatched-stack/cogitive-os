@@ -151,11 +151,8 @@ async def unified_prompt(
         import os
         if os.getenv("WORLD_VALIDATION_GATE_EXECUTE", "true").strip().lower() != "false":
             from src.monkey_brain.kernel.validation.world_validator import validate_world
-            # actor_id scopes the pass/fail decision to violations
-            # relevant to THIS requester (see validate_world's own
-            # docstring) -- an unrelated actor's permanently-orphaned
-            # presence/membership record must not block every other
-            # actor's real request.
+
+            # validate the world before execution
             _report = validate_world(planetary_runtime, actor_id=user_id)
             if not _report["ok"]:
                 raise RuntimeError(

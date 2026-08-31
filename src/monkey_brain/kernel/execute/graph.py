@@ -275,6 +275,56 @@ class ExecutionGraph:
         graph._iteration = int(snapshot["iteration"])
         return graph
 
+    def _signing_payload(self) -> str:
+        """Canonical payload for signing: graph id + sorted nodes + sorted edges."""
+        nodes = sorted(
+            [{"id": n.id, "type": n.type, "label": n.label} for n in self._nodes.values()],
+            key=lambda n: n["id"],
+        )
+        edges = sorted(
+            [{"src": e.src, "dst": e.dst, "rel": e.rel} for e in self._edges],
+            key=lambda e: (e["src"], e["dst"]),
+        )
+        return json.dumps({"id": self.id, "nodes": nodes, "edges": edges}, sort_keys=True)
+
+    def sign(self) -> str:
+        """Sign the graph's topology using identity module."""
+        payload = self._signing_payload().encode()
+        try:
+            from src.monkey_brain.kernel.identity import get_identity, get_key_manager, sign_bytes
+            identity = get_identity()
+            km = get_key_manager()
+            key = km.get_or_create(identity.runtime_id)
+            sig = sign_bytes(payload, key)
+            self.metadata["graph_signer"] = identity.runtime_id
+        except Exception:
+            import hashlib
+            sig = hashlib.sha256(payload).hexdigest()
+            self.metadata["graph_signer"] = "sha256-fallback"
+        self.metadata["graph_signature"] = sig
+        return sig
+
+    def verify(self) -> bool:
+        """Verify the graph's signature using identity module."""
+        expected = self.metadata.get("graph_signature", "")
+        if not expected:
+            return False
+        payload = self._signing_payload().encode()
+        signer_id = self.metadata.get("graph_signer", "")
+        if signer_id == "sha256-fallback":
+            import hashlib
+            return hashlib.sha256(payload).hexdigest() == expected
+        try:
+            from src.monkey_brain.kernel.identity import get_identity, get_key_manager, verify_bytes
+            identity = get_identity()
+            km = get_key_manager()
+            resolved_signer = signer_id or identity.runtime_id
+            km.get_or_create(resolved_signer)
+            pub_pem = km.get_public_key_pem(resolved_signer)
+            return verify_bytes(payload, expected, pub_pem)
+        except Exception:
+            return False
+
 
 def sign_graph_dict(graph: dict[str, Any]) -> str:
     """Sign a dict-format execution graph. Returns the HMAC-SHA256 signature."""
@@ -336,45 +386,3 @@ def verify_graph_dict(graph: dict[str, Any]) -> bool:
         return verify_bytes(payload, expected, pub_pem)
     except Exception:
         return False
-
-    def _signing_payload(self) -> str:
-        """Canonical payload for signing: graph id + sorted nodes + sorted edges."""
-        nodes = sorted(
-            [{"id": n.id, "type": n.type, "label": n.label} for n in self._nodes.values()],
-            key=lambda n: n["id"],
-        )
-        edges = sorted(
-            [{"src": e.src, "dst": e.dst, "rel": e.rel} for e in self._edges],
-            key=lambda e: (e["src"], e["dst"]),
-        )
-        return json.dumps({"id": self.id, "nodes": nodes, "edges": edges}, sort_keys=True)
-
-    def sign(self) -> str:
-        """Sign the graph's topology using identity module."""
-        payload = self._signing_payload().encode()
-        try:
-            from src.monkey_brain.kernel.identity import get_identity, get_key_manager, sign_bytes
-            identity = get_identity()
-            km = get_key_manager()
-            key = km.get_or_create(identity.runtime_id)
-            sig = sign_bytes(payload, key)
-        except Exception:
-            import hashlib
-            sig = hashlib.sha256(payload).hexdigest()
-        self.metadata["graph_signature"] = sig
-        return sig
-
-    def verify(self) -> bool:
-        """Verify the graph's signature using identity module."""
-        expected = self.metadata.get("graph_signature", "")
-        if not expected:
-            return False
-        payload = self._signing_payload().encode()
-        try:
-            from src.monkey_brain.kernel.identity import get_identity, get_key_manager, verify_bytes
-            identity = get_identity()
-            km = get_key_manager()
-            pub_pem = km.get_public_key_pem(identity.runtime_id)
-            return verify_bytes(payload, expected, pub_pem)
-        except Exception:
-            return False

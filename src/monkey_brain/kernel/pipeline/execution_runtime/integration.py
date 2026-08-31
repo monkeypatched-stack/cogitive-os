@@ -84,16 +84,26 @@ class IntegratedExecutionEngine:
         self._scheduler = ExecutionScheduler(registry=self._monitor)
         self._fallback = fallback or ActionExecutor()
 
-    async def execute(self, actions: tuple[Action, ...], context: Any = None) -> LegacyExecutionResult:
+    async def execute(
+        self,
+        actions: tuple[Action, ...],
+        context: Any = None,
+        *,
+        execution_graph: Any = None,
+    ) -> LegacyExecutionResult:
         """The required ExecutionEngine.execute() signature — now async,
         matching execution.py's own Protocol (Multi-Actor Execution
         Handoff: ActionExecutor.execute() became async so a capability CAN
         be a real async def handle())."""
-        result, _ = await self.execute_with_trace(actions, context)
+        result, _ = await self.execute_with_trace(actions, context, execution_graph=execution_graph)
         return result
 
     async def execute_with_trace(
-        self, actions: tuple[Action, ...], context: Any = None,
+        self,
+        actions: tuple[Action, ...],
+        context: Any = None,
+        *,
+        execution_graph: Any = None,
     ) -> tuple[LegacyExecutionResult, ExecutionTrace]:
         """Same as execute(), but also returns the ExecutionTrace (Step 9.8)
         of how that result was reached — for callers who want it directly
@@ -106,12 +116,14 @@ class IntegratedExecutionEngine:
             )
             return result, trace
 
-        if not self._all_capabilities_known(actions):
-            result = await self._fallback.execute(actions, context)
+        if execution_graph is not None or not self._all_capabilities_known(actions):
+            result = await self._fallback.execute(
+                actions, context, execution_graph=execution_graph,
+            )
             trace = build_execution_trace(
                 ExecutionRequest(), ExecutionSchedule(), (),
-                rationale="Fell back to the legacy ActionExecutor — one or more actions used a "
-                          "capability the new pipeline has no registered handler for.",
+                rationale="Delegated to ActionExecutor — execution_graph supplied or one or more "
+                          "actions used a capability the Step 9 registry has no handler for.",
                 goal_achieved_override=result.goal_achieved,
             )
             return result, trace
@@ -142,7 +154,9 @@ class IntegratedExecutionEngine:
             # Shouldn't happen — _actions_to_plan() only ever builds a linear
             # chain, which can't violate or deadlock — but never silently
             # drop a validity problem if one somehow occurred.
-            return await self._fallback.execute(actions, context), trace
+            return await self._fallback.execute(
+                actions, context, execution_graph=execution_graph,
+            ), trace
 
         return self._to_legacy_result(outcomes), trace
 

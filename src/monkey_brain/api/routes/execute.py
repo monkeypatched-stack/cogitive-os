@@ -27,6 +27,7 @@ from src.monkey_brain.runtime.routers import get_mongo_client
 from src.monkey_brain.api.dependencies import (
     require_permission, sanitize_and_check_governance, record_request_audit, RequestRejected,
 )
+from src.monkey_brain.api.idempotency import idempotent
 from src.monkey_brain.api.helpers.run_helpers import build_citations, get_cognitive_runtime
 from src.monkey_brain.kernel.execute.grounding import assess as assess_grounding
 from src.monkey_brain.kernel.execute.grounding import enforce as enforce_grounding
@@ -195,8 +196,10 @@ async def _recover_planner_graph(run_id: str, graph_store: Any) -> tuple[dict | 
 # the policy weights are not updated during this stage, the policy weights are only updated during the learning stage which is after the execution stage, so the policy weights are
 # not updated during the execution stage
 @router.post("/execute", response_model=ExecuteResponse)
+@idempotent("execute.action")
 async def execute_action(
     payload: PlanResponse,
+    request: Request,
     mongo_client: Any = Depends(get_mongo_client),
     user_id: str = Depends(require_permission("perm-execute-action")),
     graph_store: Any = Depends(_get_graph_store),
@@ -319,10 +322,39 @@ async def execute_action(
     # 8. clone the planner graph to avoid mutating the original graph in the runtime, and set the run_id in the metadata for tracking.
     execution_graph = clone_graph_snapshot(planner_graph)
     execution_graph.setdefault("metadata", {})["run_id"] = run_id
+    execution_graph["metadata"]["goal_id"] = run_id
     runtime.execution_graph = execution_graph
 
-    # 8.1 convert the execution graph into a list of plan steps that can be executed by the runtime. If there are no executable steps, return an error response.
-    execute_steps = _graph_to_plan_steps(execution_graph)
+    # 8.1 Compile the Broca graph through the canonical plan compiler, then
+    # derive executable steps from the compiled ExecutionGraph.
+    from src.monkey_brain.kernel.pipeline.plan_compiler import (
+        compile_broca_graph, execution_graph_to_plan_steps,
+    )
+
+    compile_outcome = compile_broca_graph(
+        execution_graph,
+        plan_id=run_id,
+        actor_id=user_id,
+        goal_id=run_id,
+    )
+    if not compile_outcome.ok:
+        if lemon:
+            lemon.counter("api.execute.compile_rejected")
+            lemon.finish_trace()
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Plan rejected at compile",
+                "violations": list(compile_outcome.violations),
+                "question": payload.question,
+                "user_id": user_id,
+                "run_id": run_id,
+            },
+        )
+
+    execution_graph = compile_outcome.execution_graph.to_dict()
+    runtime.execution_graph = execution_graph
+    execute_steps = execution_graph_to_plan_steps(compile_outcome.execution_graph)
 
     # 8.2 If there are no executable steps, return an error response. This can happen if the planner produced an empty graph or if all the steps were filtered out due to preconditions or other constraints.
     if not execute_steps:

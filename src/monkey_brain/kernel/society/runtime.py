@@ -56,6 +56,8 @@ class ActorRuntimeState:
     actor: Any = None
     actor_runtime: Any = None
     last_tick_result: Any = None
+    last_lease_fence: int = 0
+    """Monotonic lease fence from the most recent tick — used to reject stale belief checkpoints."""
     """A reference to the actual Actor Runtime object (duck-typed — anything
     exposing an async `tick()`, per the corrected hierarchy's Actor Runtime
     abstraction; current implementations: CognitiveActor/ActorSystem).
@@ -871,6 +873,10 @@ class SocietyRuntime:
             # failure, or timeout alike) rather than holding the lease for
             # its full TTL -- the next tick, on any node, should not have
             # to wait out the lease window unnecessarily.
+            if planetary is not None and lease_token is not None:
+                fence = planetary.get_actor_lease_fence(actor_id)
+                if fence is not None:
+                    actor_state.last_lease_fence = fence
             if planetary is not None and lease_token is not None:
                 planetary.release_actor_lease(actor_id, lease_token)
 

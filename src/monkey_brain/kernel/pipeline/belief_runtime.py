@@ -47,7 +47,7 @@ from src.monkey_brain.kernel.pipeline.planner import PlanningEngine
 from src.monkey_brain.kernel.pipeline.llm_planner import LLMPlanner
 from src.monkey_brain.kernel.pipeline.plan_validator import PlanValidator, ValidationResult
 from src.monkey_brain.kernel.pipeline.execution import ExecutionEngine, Action, ActionOutcome, ExecutionResult
-from src.monkey_brain.kernel.pipeline.plan_compiler import compile_plan
+from src.monkey_brain.kernel.pipeline.plan_compiler import compile_plan, build_actions_from_compiled
 from src.monkey_brain.kernel.pipeline.action_executor import CapabilityRuntime
 
 logger = logging.getLogger("agentos.pipeline.belief_runtime")
@@ -1127,6 +1127,10 @@ class   CognitiveRuntime:
 
         compile_outcome = compile_plan(
             plan, plan_id=plan_id, actor_id=state.actor_id,
+            goal_id=(
+                (getattr(plan, "metadata", {}) or {}).get("goal_id")
+                or state.metrics.get("execution_id", "")
+            ),
             resolved_capabilities=resolved_capabilities,
         )
         if not compile_outcome.ok:
@@ -1134,67 +1138,17 @@ class   CognitiveRuntime:
             reason = "Plan rejected at compile: " + "; ".join(compile_outcome.violations)
             return self._reject_plan(state, plan, reason)
         state.compiled_plan_graph = compile_outcome.graph
+        state.compiled_execution_graph = compile_outcome.execution_graph
 
-        actions = []
-        denied: dict[int, ActionOutcome] = {}
-        action_ids: list[str] = []
-
-        # KNOWN GAP (Gate 11 TODO audit, not fixed here): sequential, not
-        # graph-based. Deliberately left alone — this is the same risk
-        # class as the planetary-tick serialization issue this build's own
-        # Gate 9 (docs/adr/016-performance-gate9.md) already investigated
-        # and explicitly declined to fix opportunistically: step ordering
-        # here may encode real dependencies between steps (a later step
-        # consuming an earlier one's outcome), so parallelizing needs a
-        # dependency-aware scheduler, not just wrapping this loop in
-        # asyncio.gather — a correctness-risk change, not a quick one.
-        for i, step in enumerate(plan.steps):
-
-            # check permissions for each step to see if actor can execute the step
-            action_id = f"{state.actor.actor_id}_step_{i}" if state.actor else f"step_{i}"
-            if (
-                step.required_permission
-                and step.action not in _NO_PERMISSION_NEEDED_ACTIONS
-                and step.required_permission not in resolved_permissions
-            ):
-                denied[i] = ActionOutcome(
-                    action_id=action_id, success=False,
-                    # not_attempted=True: same exclusion _reject_plan's
-                    # own outcomes now use, and for the identical reason
-                    # — the real capability was never invoked, so this
-                    # must not be learned as a real negative transition.
-                    result={"required_permission": step.required_permission, "not_attempted": True},
-                    error=f"Permission denied: missing {step.required_permission}",
-                )
-                continue
-            action_ids.append(action_id)
-            actions.append(Action(
-                action_id=action_id,
-                capability=step.action,
-                # step.parameters is the planner's own structured decision
-                # (e.g. {"selection": [{"id": ..., "qty": 1}]} for a step
-                # whose capability exposes candidates) — merged after
-                # "description" so it can't be shadowed by it, though the
-                # two keys don't currently collide.
-                parameters={"description": step.description, **step.parameters},
-                preconditions=step.preconditions,
-                expected_outcome=step.expected_outcome,
-                confidence=step.confidence,
-                source_step=step.action,
-                # correlation_id identifies this tick; causation_id
-                # identifies the plan that produced this action. Prior to
-                # the Compilation-hardening pass this always used
-                # execution_id for both (no real plan_id was in scope
-                # here) -- Action.causation_id's own docstring already
-                # promised "plan_id when available, else the tick's
-                # execution_id", so `plan_id` (computed above, real when
-                # plan-hysteresis persisted one) now fulfills that
-                # contract instead of silently falling back every time.
-                correlation_id=state.metrics.get("execution_id", ""),
-                causation_id=plan_id,
-                step_index=i,
-                depends_on=step.depends_on,
-            ))
+        actions, denied = build_actions_from_compiled(
+            compile_outcome.graph,
+            plan_id=plan_id,
+            actor_id=state.actor.actor_id if state.actor else "",
+            execution_id=state.metrics.get("execution_id", ""),
+            resolved_permissions=resolved_permissions,
+            no_permission_actions=_NO_PERMISSION_NEEDED_ACTIONS,
+        )
+        action_ids = [a.action_id for a in actions]
 
         # Real gap this closes: no capability had any way to know this
         # tick's execution_id — it lived only in state.metrics, never in
@@ -1222,8 +1176,9 @@ class   CognitiveRuntime:
         _obs.gauge("execution.active", self._active_executions)
         try:
             exec_result = await self._execution_engine.execute(
-                tuple(actions),
+                actions,
                 state.context,
+                execution_graph=compile_outcome.execution_graph,
             )
         finally:
             self._active_executions -= 1

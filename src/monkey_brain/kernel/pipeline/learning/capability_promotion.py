@@ -42,6 +42,8 @@ logger = logging.getLogger("agentos.pipeline.capability_promotion")
 
 _CANDIDATE_KEY_PREFIX = "monkeybrain:promoted_capability:"
 _CANDIDATE_INDEX_KEY = "monkeybrain:promoted_capability:index"
+_RECIPE_KEY_PREFIX = "monkeybrain:promoted_capability:recipe:"
+_ACTIVE_KEY_PREFIX = "monkeybrain:promoted_capability:active:"
 
 _DEFAULT_STREAK_THRESHOLD = 3
 _DEFAULT_CONFIDENCE_THRESHOLD = 0.75
@@ -113,7 +115,122 @@ class PromotedCapabilityCandidate:
         )
 
 
+@dataclass(frozen=True)
+class FrozenPlanStep:
+    """One verified plan step — JSON-safe, no LLM, no runtime objects."""
+    action: str
+    description: str = ""
+    parameters: dict[str, Any] = field(default_factory=dict)
+    depends_on: tuple[int, ...] = ()
+    required_permission: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "action": self.action, "description": self.description,
+            "parameters": dict(self.parameters), "depends_on": list(self.depends_on),
+            "required_permission": self.required_permission,
+        }
+
+    @staticmethod
+    def from_dict(d: dict[str, Any]) -> "FrozenPlanStep":
+        raw_depends = d.get("depends_on") or ()
+        return FrozenPlanStep(
+            action=str(d.get("action", "")),
+            description=str(d.get("description", "")),
+            parameters=dict(d.get("parameters") or {}),
+            depends_on=tuple(int(i) for i in raw_depends),
+            required_permission=str(d.get("required_permission", "")),
+        )
+
+
+@dataclass(frozen=True)
+class VerifiedExecutionRecipe:
+    """Frozen action sequence from one verified-successful cognitive cycle.
+
+    Promotion replays THIS exact sequence — no LLM re-planning, no
+    synthesized code. Authority stays bounded to capabilities already on
+    the bus when the operator activates."""
+    goal_signature: str
+    steps: tuple[FrozenPlanStep, ...]
+    source_candidate_id: str = ""
+    verified_at: float = field(default_factory=time.time)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "goal_signature": self.goal_signature,
+            "steps": [s.to_dict() for s in self.steps],
+            "source_candidate_id": self.source_candidate_id,
+            "verified_at": self.verified_at,
+        }
+
+    @staticmethod
+    def from_dict(d: dict[str, Any]) -> "VerifiedExecutionRecipe":
+        return VerifiedExecutionRecipe(
+            goal_signature=str(d.get("goal_signature", "")),
+            steps=tuple(FrozenPlanStep.from_dict(s) for s in (d.get("steps") or [])),
+            source_candidate_id=str(d.get("source_candidate_id", "")),
+            verified_at=float(d.get("verified_at", time.time())),
+        )
+
+
+def promoted_capability_name(goal_signature: str) -> str:
+    """Stable bus name for an activated promoted capability."""
+    return f"Promoted::{goal_signature}"
+
+
+def _step_permission_allowed(step: FrozenPlanStep, context: dict[str, Any]) -> bool:
+    """Re-validate planner-declared permissions at replay time."""
+    if not step.required_permission:
+        return True
+    resolved = context.get("_resolved_permissions")
+    if resolved is None:
+        return False
+    if isinstance(resolved, (list, tuple, set, frozenset)):
+        return step.required_permission in resolved
+    if isinstance(resolved, dict):
+        return step.required_permission in resolved.values() or step.required_permission in resolved
+    return False
+
+
+def extract_recipe_from_experience(experience: Any) -> VerifiedExecutionRecipe | None:
+    """Capture the verified plan steps from a learning experience.
+
+    Called from the learning integration path only — never registers or
+    activates anything."""
+    goal_signature = str((experience.metadata or {}).get("goal_name", "") or "")
+    plan = getattr(experience, "plan", None)
+    if not goal_signature or plan is None:
+        return None
+    steps = getattr(plan, "steps", None) or ()
+    if not steps:
+        return None
+    frozen: list[FrozenPlanStep] = []
+    for step in steps:
+        action = getattr(step, "action", "") or ""
+        if not action:
+            continue
+        frozen.append(FrozenPlanStep(
+            action=action,
+            description=str(getattr(step, "description", "") or ""),
+            parameters=dict(getattr(step, "parameters", None) or {}),
+            depends_on=tuple(getattr(step, "depends_on", ()) or ()),
+            required_permission=str(getattr(step, "required_permission", "") or ""),
+        ))
+    if not frozen:
+        return None
+    return VerifiedExecutionRecipe(goal_signature=goal_signature, steps=tuple(frozen))
+
+
+# Process-local fallback when Redis is unavailable (tests, dev). Learning
+# writes here too so operator activation can still find a freshly minted
+# candidate without requiring Redis.
+_memory_candidates: dict[str, PromotedCapabilityCandidate] = {}
+_memory_recipes: dict[str, VerifiedExecutionRecipe] = {}
+_active_promotions: dict[str, str] = {}  # goal_signature -> candidate_id
+
+
 def _save_candidate(candidate: PromotedCapabilityCandidate) -> bool:
+    _memory_candidates[candidate.candidate_id] = candidate
     client = _get_client()
     if client is None or not candidate.goal_signature:
         return False
@@ -125,6 +242,58 @@ def _save_candidate(candidate: PromotedCapabilityCandidate) -> bool:
     except Exception as exc:
         logger.warning("_save_candidate(%s) failed: %s", candidate.goal_signature, exc, exc_info=True)
         return False
+
+
+def _save_recipe(recipe: VerifiedExecutionRecipe) -> bool:
+    if not recipe.source_candidate_id:
+        return False
+    _memory_recipes[recipe.source_candidate_id] = recipe
+    client = _get_client()
+    if client is None:
+        return False
+    try:
+        key = f"{_RECIPE_KEY_PREFIX}{recipe.source_candidate_id}"
+        client.set(key, json.dumps(recipe.to_dict()))
+        return True
+    except Exception as exc:
+        logger.warning("_save_recipe(%s) failed: %s", recipe.source_candidate_id, exc, exc_info=True)
+        return False
+
+
+def load_candidate(candidate_id: str) -> PromotedCapabilityCandidate | None:
+    if candidate_id in _memory_candidates:
+        return _memory_candidates[candidate_id]
+    client = _get_client()
+    if client is None:
+        return None
+    try:
+        raw = client.get(f"{_CANDIDATE_KEY_PREFIX}{candidate_id}")
+        if not raw:
+            return None
+        candidate = PromotedCapabilityCandidate.from_dict(json.loads(raw))
+        _memory_candidates[candidate_id] = candidate
+        return candidate
+    except Exception as exc:
+        logger.debug("load_candidate(%s) failed: %s", candidate_id, exc)
+        return None
+
+
+def load_recipe(candidate_id: str) -> VerifiedExecutionRecipe | None:
+    if candidate_id in _memory_recipes:
+        return _memory_recipes[candidate_id]
+    client = _get_client()
+    if client is None:
+        return None
+    try:
+        raw = client.get(f"{_RECIPE_KEY_PREFIX}{candidate_id}")
+        if not raw:
+            return None
+        recipe = VerifiedExecutionRecipe.from_dict(json.loads(raw))
+        _memory_recipes[candidate_id] = recipe
+        return recipe
+    except Exception as exc:
+        logger.debug("load_recipe(%s) failed: %s", candidate_id, exc)
+        return None
 
 
 def list_promoted_capabilities() -> tuple[PromotedCapabilityCandidate, ...]:
@@ -175,7 +344,8 @@ class CapabilityPromotionTracker:
         self._confidence_threshold = confidence_threshold
 
     def observe(self, *, goal_signature: str, reward: float, confidence: float,
-                outcome_summary: str, top_signal_summary: str) -> PromotedCapabilityCandidate | None:
+                outcome_summary: str, top_signal_summary: str,
+                recipe: VerifiedExecutionRecipe | None = None) -> PromotedCapabilityCandidate | None:
         """Record one PhiArtifact's outcome. Returns a new, already-persisted
         PromotedCapabilityCandidate the moment this goal_signature's streak
         crosses the threshold; None otherwise (including on every later
@@ -212,6 +382,14 @@ class CapabilityPromotionTracker:
                     top_signal_summary=top_signal_summary, version=streak.times_promoted,
                 )
                 _save_candidate(candidate)
+                if recipe is not None:
+                    recipe = VerifiedExecutionRecipe(
+                        goal_signature=recipe.goal_signature,
+                        steps=recipe.steps,
+                        source_candidate_id=candidate.candidate_id,
+                        verified_at=recipe.verified_at,
+                    )
+                    _save_recipe(recipe)
                 logger.info(
                     "capability_promotion: %r crossed promotion threshold "
                     "(%d consecutive verified successes, confidence=%.2f) -- "
@@ -236,3 +414,216 @@ _default_tracker = CapabilityPromotionTracker()
 
 def default_tracker() -> CapabilityPromotionTracker:
     return _default_tracker
+
+
+class PromotedDeterministicCapability:
+    """Replays a verified execution recipe through an existing capability bus.
+
+    Does NOT introduce new permissions — only sequences capabilities the
+    operator already approved when calling activate_promoted_capability().
+    Learning never registers this class; only the explicit operator gate does.
+    """
+
+    def __init__(self, recipe: VerifiedExecutionRecipe, capability_bus: Any) -> None:
+        self._recipe = recipe
+        self._bus = capability_bus
+        self.goal_signature = recipe.goal_signature
+        self.candidate_id = recipe.source_candidate_id
+        self.name = promoted_capability_name(recipe.goal_signature)
+
+    def handle(self, args: dict[str, Any]) -> dict[str, Any]:
+        import inspect
+
+        context = args.get("context") if isinstance(args.get("context"), dict) else {}
+        outcomes: list[dict[str, Any]] = []
+        step_success: dict[int, bool] = {}
+
+        for idx, step in enumerate(self._recipe.steps):
+            if step.depends_on:
+                blocked = [d for d in step.depends_on if not step_success.get(d)]
+                if blocked:
+                    return {
+                        "success": False,
+                        "promoted_replay": True,
+                        "candidate_id": self.candidate_id,
+                        "error": f"blocked: dependency step(s) {blocked} not satisfied",
+                        "outcomes": outcomes,
+                    }
+
+            if not _step_permission_allowed(step, context):
+                return {
+                    "success": False,
+                    "promoted_replay": True,
+                    "candidate_id": self.candidate_id,
+                    "error": f"permission denied: {step.required_permission!r}",
+                    "outcomes": outcomes,
+                }
+
+            capability = self._bus.discover(step.action)
+            if capability is None:
+                return {
+                    "success": False,
+                    "promoted_replay": True,
+                    "candidate_id": self.candidate_id,
+                    "error": f"Capability not found: {step.action}",
+                    "outcomes": outcomes,
+                }
+
+            handle_args = {
+                "action": step.action,
+                "parameters": dict(step.parameters),
+                "context": context,
+            }
+            if inspect.iscoroutinefunction(getattr(capability, "handle", None)):
+                import asyncio
+                result = asyncio.get_event_loop().run_until_complete(capability.handle(handle_args))
+            else:
+                result = capability.handle(handle_args)
+
+            success = True
+            if isinstance(result, dict):
+                success = bool(result.get("success", True))
+            step_success[idx] = success
+            outcomes.append({"step": idx, "action": step.action, "success": success, "result": result})
+            if not success:
+                return {
+                    "success": False,
+                    "promoted_replay": True,
+                    "candidate_id": self.candidate_id,
+                    "outcomes": outcomes,
+                    "error": (result or {}).get("error", f"step {idx} ({step.action}) failed")
+                    if isinstance(result, dict) else f"step {idx} ({step.action}) failed",
+                }
+
+        return {
+            "success": True,
+            "promoted_replay": True,
+            "candidate_id": self.candidate_id,
+            "goal_signature": self.goal_signature,
+            "outcomes": outcomes,
+        }
+
+
+def _mark_active(goal_signature: str, candidate_id: str) -> None:
+    _active_promotions[goal_signature] = candidate_id
+    client = _get_client()
+    if client is None:
+        return
+    try:
+        client.set(f"{_ACTIVE_KEY_PREFIX}{goal_signature}", candidate_id)
+    except Exception as exc:
+        logger.debug("_mark_active(%s) failed: %s", goal_signature, exc)
+
+
+def _clear_active(goal_signature: str) -> None:
+    _active_promotions.pop(goal_signature, None)
+    client = _get_client()
+    if client is None:
+        return
+    try:
+        client.delete(f"{_ACTIVE_KEY_PREFIX}{goal_signature}")
+    except Exception as exc:
+        logger.debug("_clear_active(%s) failed: %s", goal_signature, exc)
+
+
+def active_candidate_id(goal_signature: str) -> str | None:
+    if goal_signature in _active_promotions:
+        return _active_promotions[goal_signature]
+    client = _get_client()
+    if client is None:
+        return None
+    try:
+        candidate_id = client.get(f"{_ACTIVE_KEY_PREFIX}{goal_signature}")
+        if candidate_id:
+            _active_promotions[goal_signature] = candidate_id
+        return candidate_id or None
+    except Exception as exc:
+        logger.debug("active_candidate_id(%s) failed: %s", goal_signature, exc)
+        return None
+
+
+def list_active_promotions() -> dict[str, str]:
+    """goal_signature -> candidate_id for every operator-activated promotion."""
+    return dict(_active_promotions)
+
+
+def activate_promoted_capability(
+    candidate_id: str,
+    capability_bus: Any,
+) -> PromotedDeterministicCapability | None:
+    """Operator-gated: register a verified recipe on the capability bus.
+
+    Learning integration never calls this — only explicit operator action
+    closes the loop from candidate to dispatchable execution."""
+    recipe = load_recipe(candidate_id)
+    candidate = load_candidate(candidate_id)
+    if recipe is None or candidate is None:
+        logger.warning(
+            "activate_promoted_capability: missing candidate or recipe for %r", candidate_id,
+        )
+        return None
+    promoted = PromotedDeterministicCapability(recipe, capability_bus)
+    capability_bus.register(promoted)
+    _mark_active(candidate.goal_signature, candidate_id)
+    logger.info(
+        "capability_promotion: operator activated %r as %r on capability bus",
+        candidate_id, promoted.name,
+    )
+    return promoted
+
+
+def deactivate_promoted_capability(goal_signature: str, capability_bus: Any) -> bool:
+    """Operator-gated: remove an activated promotion from the bus."""
+    candidate_id = active_candidate_id(goal_signature)
+    if not candidate_id:
+        return False
+    name = promoted_capability_name(goal_signature)
+    caps = getattr(capability_bus, "_capabilities", None)
+    if isinstance(caps, dict):
+        caps.pop(name, None)
+    _clear_active(goal_signature)
+    logger.info("capability_promotion: operator deactivated %r (%s)", goal_signature, candidate_id)
+    return True
+
+
+def try_resolve_promoted_plan(goal_signature: str) -> Any | None:
+    """Return a frozen belief_state.Plan when an operator has activated a promotion.
+
+    Called from LLMPlanner before any LLM call — deterministic replay of
+    the verified recipe, not learning-driven authority expansion."""
+    candidate_id = active_candidate_id(goal_signature)
+    if not candidate_id:
+        return None
+    recipe = load_recipe(candidate_id)
+    if recipe is None or not recipe.steps:
+        return None
+    from src.monkey_brain.kernel.pipeline.belief_state import Plan, PlanStep
+
+    return Plan(
+        goal=goal_signature,
+        steps=tuple(
+            PlanStep(
+                action=step.action,
+                description=step.description,
+                parameters=dict(step.parameters),
+                depends_on=step.depends_on,
+                required_permission=step.required_permission,
+                confidence=1.0,
+            )
+            for step in recipe.steps
+        ),
+        confidence=1.0,
+        planner="promoted_deterministic",
+        metadata={
+            "promoted": True,
+            "candidate_id": candidate_id,
+            "goal_id": goal_signature,
+        },
+    )
+
+
+def reset_promotion_state_for_tests() -> None:
+    """Clear in-memory promotion state — tests only."""
+    _memory_candidates.clear()
+    _memory_recipes.clear()
+    _active_promotions.clear()

@@ -161,25 +161,34 @@ class GraphScheduler:
 
     async def _execute_step(self, graph: ExecutionGraph, node: GraphNode) -> dict[str, Any]:
         """Execute a step node via the capability bus."""
+        from src.monkey_brain.kernel.pipeline.graph_execution import (
+            apply_runtime_projections,
+            step_bus_args,
+        )
+
         capability_name = node.props.get("capability", node.label)
+        bus_args = step_bus_args(node, graph.metadata if isinstance(graph.metadata, dict) else None)
 
         if self._bus is None:
             return {"status": "no_bus", "capability": capability_name}
 
         try:
-            # NOTE: the bus is duck-typed — `async execute(capability_name, args)` returning a
-            # result with .success/.output/.error (see ProcessManager.create_process). Keep the
-            # positional call; only the timeout is added around it.
-            call = self._bus.execute(capability_name, {})
+            call = self._bus.execute(capability_name, bus_args)
             if self._step_timeout is not None:
                 result = await asyncio.wait_for(call, timeout=self._step_timeout)
             else:
                 result = await call
-            return {
+            payload = {
                 "status": "ok" if result.success else "failed",
                 "output": result.output,
                 "error": result.error,
             }
+            if result.success and isinstance(result.output, dict):
+                projections = node.props.get("runtime_projections") or []
+                context = bus_args.get("context")
+                if isinstance(context, dict) and projections:
+                    apply_runtime_projections(result.output, context, projections)
+            return payload
         except asyncio.TimeoutError:
             logger.error("Step %s: capability %r exceeded %ss — cancelled",
                          node.id, capability_name, self._step_timeout)
