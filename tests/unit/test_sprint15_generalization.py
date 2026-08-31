@@ -20,13 +20,20 @@ from fastapi.testclient import TestClient
 os.environ["AGENTOS_AUTH_REQUIRED"] = "false"
 os.environ["RATE_LIMIT_RPS"] = "100000"
 os.environ["RATE_LIMIT_BURST"] = "200000"
+# Hermetic runtime: do not boot against a developer's live Redis / persisted
+# actors (see tests/scale/test_actor_scale.py and tests/conftest.py).
+os.environ["TIMELINE_STORE_BACKEND"] = "memory"
+os.environ["REDIS_PORT"] = "1"
+
+_RUN_SLOW_SCALE_TESTS = os.getenv("RUN_SCALE_TESTS") == "1"
+_skip_slow_scale = pytest.mark.skipif(
+    not _RUN_SLOW_SCALE_TESTS,
+    reason="slow scale tier; set RUN_SCALE_TESTS=1 to run",
+)
 
 
 @pytest.fixture(scope="module")
 def client():
-    from pathlib import Path
-    from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parents[2] / ".env")
     from src.monkey_brain.api.main import app
     with TestClient(app, raise_server_exceptions=False) as c:
         yield c
@@ -183,6 +190,7 @@ class TestScaleBoundaries:
     def test_100_actors(self, client):
         self._run_scale(client, 100)
 
+    @_skip_slow_scale
     def test_200_actors(self, client):
         self._run_scale(client, 200)
 

@@ -130,6 +130,7 @@ namespace_packages = true
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 # The project test suite lives in tests/. Without this, a bare `pytest` recurses the
 # whole repo and collects things that are NOT the suite: the `venv_test/` virtualenv
 # itself (its name isn't in pytest's default norecursedirs), LLM-generated placeholder
