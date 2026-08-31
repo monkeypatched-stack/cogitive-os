@@ -138,6 +138,17 @@ cogctl get actors   # COGCTL_API_URL=http://<kong>/api/v1/agentos
 | mypy / full unit suite | Low | Typecheck report-only; 4000+ tests not in CI |
 | Docker CI jobs | Low | Still `continue-on-error: true` — passing but soft gates |
 
+### Open validation todos
+
+- [ ] sustained multi-node operation
+- [ ] operational failure modes
+- [ ] upgrade paths
+- [ ] security under hostile conditions
+- [ ] performance at realistic actor counts
+- [ ] deployment reproducibility
+- [ ] resource consumption
+- [ ] LLM/provider failure behavior
+
 ---
 
 ## Go / no-go checklist
