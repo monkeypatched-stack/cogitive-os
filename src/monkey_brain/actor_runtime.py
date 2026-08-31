@@ -329,6 +329,11 @@ class ActorRuntime:
             # THIS node explicitly still reserves capacity for it.
             pr.scheduler.migrate_actor(self.config.actor_id, target_node_id=pr._node_id)
 
+        # Required inbox subscriptions must exist before the Actor is
+        # reported READY or its cognition loop is started.
+        await pr.connect_nats()
+        await pr.wait_for_inbox_subscriptions()
+
         # Gap Remediation audit fix: this process hosts exactly one actor
         # (self.config.actor_id) -- scope the backstop sweep to it so this
         # pod never fans out reconcile() calls across the whole cluster's
@@ -339,10 +344,6 @@ class ActorRuntime:
 
         if self.state == ReadinessState.READY:
             pr.start_auto_tick(interval_seconds=self.config.tick_interval)
-        try:
-            await pr.connect_nats()
-        except Exception as exc:
-            logger.warning("connect_nats() failed at Actor Runtime startup (non-fatal): %s", exc)
 
     def _bootstrap_actor(self) -> None:
         from src.monkey_brain.kernel.society.domain import ActorProfile, ActorIdentity, ActorType

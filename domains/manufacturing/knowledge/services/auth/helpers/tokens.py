@@ -7,6 +7,16 @@ from jose import JWTError, jwt
 from services.common.config import settings
 
 
+def _require_secret(name: str, value: str) -> str:
+    """Fail closed — never sign or verify with an empty key."""
+    if not value or not value.strip():
+        raise RuntimeError(
+            f"{name} is not configured. "
+            "Set it in your .env file or environment before starting the service."
+        )
+    return value
+
+
 def _create_token(data: dict, secret: str, expires_delta: timedelta) -> str:
     payload = data.copy()
     payload["exp"] = datetime.now(timezone.utc) + expires_delta
@@ -45,14 +55,14 @@ def create_access_token(user_id: str, email: str, role: str, permissions: list |
         claims["tenant"] = tenant
     return _create_token(
         claims,
-        settings.ACCESS_TOKEN_SECRET,
+        _require_secret("ACCESS_TOKEN_SECRET", settings.ACCESS_TOKEN_SECRET),
         timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
 def create_refresh_token(user_id: str) -> str:
     return _create_token(
         {"sub": user_id},
-        settings.REFRESH_TOKEN_SECRET,
+        _require_secret("REFRESH_TOKEN_SECRET", settings.REFRESH_TOKEN_SECRET),
         timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
@@ -60,14 +70,18 @@ def create_refresh_token(user_id: str) -> str:
 def create_mfa_challenge_token(user_id: str) -> str:
     return _create_token(
         {"sub": user_id, "purpose": "mfa_challenge"},
-        settings.ACCESS_TOKEN_SECRET,
+        _require_secret("ACCESS_TOKEN_SECRET", settings.ACCESS_TOKEN_SECRET),
         timedelta(minutes=5),
     )
 
 
 def decode_access_token(token: str) -> dict:
     """Raises JWTError on invalid/expired token."""
-    payload = jwt.decode(token, settings.ACCESS_TOKEN_SECRET, algorithms=[settings.ALGORITHM])
+    payload = jwt.decode(
+        token,
+        _require_secret("ACCESS_TOKEN_SECRET", settings.ACCESS_TOKEN_SECRET),
+        algorithms=[settings.ALGORITHM],
+    )
     if "permissions" not in payload and isinstance(payload.get("perms"), str):
         payload["permissions"] = [permission for permission in payload["perms"].split(",") if permission]
     return payload
@@ -75,11 +89,19 @@ def decode_access_token(token: str) -> dict:
 
 def decode_refresh_token(token: str) -> dict:
     """Raises JWTError on invalid/expired token."""
-    return jwt.decode(token, settings.REFRESH_TOKEN_SECRET, algorithms=[settings.ALGORITHM])
+    return jwt.decode(
+        token,
+        _require_secret("REFRESH_TOKEN_SECRET", settings.REFRESH_TOKEN_SECRET),
+        algorithms=[settings.ALGORITHM],
+    )
 
 
 def decode_mfa_challenge_token(token: str) -> dict:
-    payload = jwt.decode(token, settings.ACCESS_TOKEN_SECRET, algorithms=[settings.ALGORITHM])
+    payload = jwt.decode(
+        token,
+        _require_secret("ACCESS_TOKEN_SECRET", settings.ACCESS_TOKEN_SECRET),
+        algorithms=[settings.ALGORITHM],
+    )
     if payload.get("purpose") != "mfa_challenge":
         raise JWTError("Invalid MFA challenge token")
     return payload

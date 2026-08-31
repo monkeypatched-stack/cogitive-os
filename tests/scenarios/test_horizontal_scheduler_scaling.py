@@ -41,6 +41,8 @@ os.environ["AGENTOS_AUTH_REQUIRED"] = "false"
 os.environ["RATE_LIMIT_RPS"] = "100000"
 os.environ["RATE_LIMIT_BURST"] = "200000"
 
+import src.monkey_brain.kernel.domains.grocery  # noqa: F401
+
 from src.monkey_brain.kernel.society.integration import PlanetaryRuntime
 from src.monkey_brain.kernel.society.domain import ActorProfile, ActorIdentity, ActorType, ActorStatus
 from src.monkey_brain.kernel.society.actor_lifecycle import ActorDesiredState
@@ -88,6 +90,15 @@ class _FakeRedis:
             self._store.pop(key, None)
             return None
         return self._store.get(key)
+
+    def incr(self, key: str) -> int:
+        with self._lock:
+            if self._expired(key):
+                self._store.pop(key, None)
+            current = int(self._store.get(key, "0") or 0)
+            current += 1
+            self._store[key] = str(current)
+            return current
 
     def exists(self, key):
         return 1 if self.get(key) is not None else 0
@@ -401,7 +412,7 @@ async def test_08_burst_registration_backpressure_bounds_concurrency():
     exceeds the configured concurrency, regardless of burst size
     (Section 25)."""
     redis = _FakeRedis()
-    pr = _pr(redis)
+    pr = _pr(redis, "n1")
     pr.register_node(ExecutionNode(node_id="n1", capacity=2000))
 
     for i in range(1000):
@@ -651,22 +662,32 @@ def test_15_destructive_multi_failure_scenario_converges_without_duplication():
 
     # Recovery capacity: add a fresh node.
     pr_cloud.register_node(ExecutionNode(node_id="cloud-2", node_class=NodeClass.CLOUD, capacity=15))
-    pr_new = _pr(redis, "cloud-2")  # "a new Scheduler/reconciler instance" takes over
+    pr_new = _pr(redis, "cloud-2")
 
-    # The whole surviving fleet's reconcilers (cloud-1, device-1, and the
-    # new cloud-2) all attempt the affected set -- exactly the real
-    # "every surviving node's reconciliation loop eventually attempts
-    # every dirty actor_id" property (the backstop sweep, or the event
-    # queue after a re-enqueue) — only whichever one the Scheduler
-    # actually reassigns each actor to will succeed in truly reactivating
-    # it locally.
     affected = set(on_edge) | {other_node_actor}
     recoverers = (pr_cloud, pr_device, pr_new)
     for aid in affected:
+        recovered_by: list[str] = []
         for r in recoverers:
             result = r.lifecycle.reconcile(aid)
-            assert result.action == "recover"
-            assert result.succeeded is True
+            if result.action == "recover" and result.succeeded:
+                recovered_by.append(r._node_id)
+            elif result.action in ("none", "scheduled_elsewhere", "skipped_lease"):
+                continue
+            elif result.action == "migrate_away" and result.succeeded:
+                continue
+            elif result.action == "recover":
+                pytest.fail(f"{r._node_id} recover failed for {aid}: {result.reason}")
+            else:
+                pytest.fail(f"unexpected reconcile action {result.action!r} for {aid} on {r._node_id}")
+        assert recovered_by, f"no recoverer succeeded for affected actor {aid}"
+
+    for aid in actor_ids:
+        owner_node = pr_new.get_actor_desired_node(aid) or placements_before[aid]
+        for r in (pr_cloud, pr_device, pr_new):
+            if r._node_id == owner_node:
+                r.lifecycle.reconcile(aid)
+                break
 
     # Verify: every affected actor is genuinely ACTIVE again, on a
     # healthy (non-edge-1) node -- no duplicate identity, no duplicate

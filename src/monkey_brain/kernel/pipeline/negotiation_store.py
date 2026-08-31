@@ -33,9 +33,8 @@ def _redis_url() -> str:
 def _get_client() -> Any:
     """Lazy, module-level singleton — same shape as approval_store.py's."""
     global _client, _connect_attempted
-    if _client is not None or _connect_attempted:
+    if _client is not None:
         return _client
-    _connect_attempted = True
     try:
         import redis
         client = redis.from_url(
@@ -45,6 +44,7 @@ def _get_client() -> Any:
         )
         client.ping()
         _client = client
+        _connect_attempted = True
     except Exception as exc:
         logger.warning("PendingNegotiation persistence: Redis unavailable (non-fatal): %s", exc)
         _client = None

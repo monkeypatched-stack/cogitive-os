@@ -126,7 +126,22 @@ class GovernanceEngine:
         reachable, the policy itself defaults to deny internally and only
         allows through explicit rules (see the .rego file), so a
         misconfigured-but-reachable OPA fails closed, not silently open.
+
+        When OPA_REQUIRED or COGNITIVEOS_PRODUCTION_MODE is set, an unset
+        OPA_URL is a hard deny (production gate).
         """
+        from src.monkey_brain.kernel.production_gates import require_opa
+        if require_opa() and not self.is_configured():
+            decision = {
+                "allowed": False,
+                "reason": "opa_required_but_not_configured",
+                "violations": [{"rule": "opa_required_but_not_configured", "type": "production_gate"}],
+            }
+            self._decisions.append({
+                "runtime_id": runtime_id, "action": action, **decision,
+                "timestamp": time.time(),
+            })
+            return decision
         try:
             from services.common.opa import evaluate_full
         except Exception as exc:

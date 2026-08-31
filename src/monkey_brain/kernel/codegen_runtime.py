@@ -354,7 +354,14 @@ class CodeGenRuntime:
             comparator_node = add("sdlc:comparator", "comparator", execute_real)
             add("sdlc:policy_update", "policy_update", comparator_node)
 
-        return graph
+        graph.metadata = {
+            "compiler": "sdlc_builder",
+            "graph_kind": "codegen_sdlc",
+            "question": question,
+            "include_release": include_release,
+        }
+        from src.monkey_brain.kernel.pipeline.graph_execution import normalize_execution_graph
+        return normalize_execution_graph(graph)
 
     # ------------------------------------------------------------------
     # Run — full lifecycle via the shared Process Manager

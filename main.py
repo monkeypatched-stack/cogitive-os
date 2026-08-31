@@ -69,7 +69,10 @@ _SERVICE_DEFAULTS: dict[str, str] = {
     "INFLUXDB_TOKEN": "",
 }
 
-_REQUIRED_ENV_VARS = ()
+_REQUIRED_ENV_VARS = (
+    "ACCESS_TOKEN_SECRET",
+    "REFRESH_TOKEN_SECRET",
+)
 
 
 def _validate_required_env() -> None:

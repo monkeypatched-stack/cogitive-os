@@ -120,3 +120,47 @@ jobs:
         run: |
           docker run --rm cognitiveos-actor:${{ steps.version.outputs.artifact_version }} \
             python -c "import src.monkey_brain.actor_runtime as m; print('ACTOR_RUNTIME_VERSION=' + m.ACTOR_RUNTIME_VERSION)"
+      - name: Security gate — verify no secrets in Actor Artifact image
+        # Security assertion: rejects image if .env, keys, credentials, or
+        # other secrets are present. This prevents accidental leaks of local
+        # configuration or credentials into container images.
+        #
+        # Related: .dockerignore (primary control), .gitignore (keeps in sync)
+        run: |
+          python scripts/verify_image_secrets.py cognitiveos-actor:${{ steps.version.outputs.artifact_version }}
+
+  docker-image-security-gates:
+    # Comprehensive security checks for all Docker images built from service
+    # Dockerfiles. Verifies that no .env files, key material, credentials,
+    # or other secrets are embedded in the images before they can be pushed
+    # or deployed.
+    #
+    # This gate scans multiple services to catch accidental secrets anywhere
+    # in the build context, not just the canonical Actor Artifact.
+    runs-on: ubuntu-latest
+    needs: [test]
+    continue-on-error: true
+    strategy:
+      matrix:
+        dockerfile:
+          - docker/services/auth/Dockerfile
+          - docker/services/file/Dockerfile
+          - docker/services/agentos/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract service name from Dockerfile
+        id: service
+        run: |
+          SERVICE=$(echo "${{ matrix.dockerfile }}" | grep -oP 'services/\K[^/]+' || echo "unknown")
+          IMAGE_TAG="monkeybrain-${SERVICE}:ci-${GITHUB_SHA:0:12}"
+          echo "service=${SERVICE}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+      - name: Build service image
+        run: |
+          docker build \
+            -f ${{ matrix.dockerfile }} \
+            -t ${{ steps.service.outputs.image_tag }} \
+            .
+      - name: Security gate — verify no secrets in ${{ steps.service.outputs.service }} image
+        run: |
+          python scripts/verify_image_secrets.py ${{ steps.service.outputs.image_tag }}

@@ -41,11 +41,21 @@ class MongoDBAdapter(IStoreAdapter):
             from src.monkey_brain.persistence.client_options import mongo_client_options, redact_url
             # Explicit timeouts: the driver default (serverSelectionTimeoutMS=30s) stalls every
             # operation for 30s when Mongo is unreachable, saturating the worker pool.
-            self._client = AsyncIOMotorClient(self._url, **mongo_client_options())
-            self._db = self._client[self._database]
+            client = AsyncIOMotorClient(self._url, **mongo_client_options())
+            db = client[self._database]
+            # Only cache on success - if exception occurs below, connection stays None
+            self._client = client
+            self._db = db
             self._connected = True
             logger.info("MongoDB adapter connected to %s", redact_url(self._url))
         except ImportError:
+            logger.warning("motor driver not installed — MongoDB adapter disabled")
+            # Leave _client/_db as None (don't cache failure)
+            self._connected = False
+        except Exception as exc:
+            logger.warning("MongoDB connection failed: %s (will retry on next operation)", exc)
+            # Leave _client/_db as None (don't cache failure)
+            # Next operation will see _connected=False and automatically retry
             self._connected = False
     
     async def disconnect(self) -> None:
@@ -61,7 +71,11 @@ class MongoDBAdapter(IStoreAdapter):
     
     async def persist(self, event: PersistenceEvent) -> dict[str, Any]:
         if not self._connected:
-            return {"status": "disconnected"}
+            logger.debug("MongoDB not connected, attempting to reconnect...")
+            await self.connect()
+            if not self._connected:
+                logger.warning("MongoDB reconnection failed, cannot persist")
+                return {"status": "disconnected"}
         
         collection = self._db[event.entity_type]
         
@@ -85,7 +99,11 @@ class MongoDBAdapter(IStoreAdapter):
     
     async def query(self, entity_type: str, entity_id: str | None = None) -> Any:
         if not self._connected:
-            return None
+            logger.debug("MongoDB not connected, attempting to reconnect...")
+            await self.connect()
+            if not self._connected:
+                logger.warning("MongoDB reconnection failed, cannot query")
+                return None
         
         collection = self._db[entity_type]
         

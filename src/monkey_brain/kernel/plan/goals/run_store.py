@@ -220,20 +220,28 @@ class _RedisRunBackend:
         )
 
     def available(self) -> bool:
-        """True if Redis is reachable — decided ONCE at RunStore construction."""
+        """Check if Redis is reachable. Can be called multiple times to retry."""
         try:
-            self._client = self._connect()
-            self._client.ping()
+            client = self._connect()
+            client.ping()
+            self._client = client  # Only cache on success
             return True
         except Exception as exc:
-            logger.warning("RunStore Redis backend unreachable: %s", exc)
-            self._client = None
+            logger.warning("RunStore Redis backend unreachable: %s (will retry on next operation)", exc)
+            # Leave _client as None (don't cache failure)
+            # Next property access to _r will attempt reconnection
             return False
 
     @property
     def _r(self) -> Any:
         if self._client is None:
-            self._client = self._connect()
+            logger.debug("Attempting to connect to Redis...")
+            try:
+                self._client = self._connect()
+                self._client.ping()
+            except Exception as exc:
+                logger.warning("Redis connection failed: %s", exc)
+                self._client = None
         return self._client
 
     def _load(self, run_id: str) -> dict[str, Any] | None:

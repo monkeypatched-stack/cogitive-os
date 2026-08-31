@@ -124,7 +124,7 @@ async def unified_prompt(
     # Determine the run type and max healing level for this prompt execution.
     run_type, max_healing = resolve_run_type(payload)
 
-
+    # get the propagation scope
     validate_propagation_scope(payload)
 
     # Set up a logging capture to collect any errors that occur during execution.
@@ -136,20 +136,23 @@ async def unified_prompt(
 
     try:
         # get the planetary runtime to run the cycle this is inti on app boot and is used to run the planetary cycle 
-        # for the actor.
+        # for the actor. this is the world level runtime
+        # the planetary runtime takes care of
+            # 1. actor/society/geography resolution,
+            # 2. recursive traversal,
+            # 3. context/world updates,
+            # 4. and actor coordination
+        # the planetary runtime acts as a controller for actor scheduling and execution
         planetary_runtime = getattr(request.app.state, "planetary_runtime", None)
         if planetary_runtime is None:
             raise RuntimeError("PlanetaryRuntime is not booted")
 
-        # validate the world state before executing the prompt
+        # validate the world state before executing the promptok fix the
         import os
         if os.getenv("WORLD_VALIDATION_GATE_EXECUTE", "true").strip().lower() != "false":
             from src.monkey_brain.kernel.validation.world_validator import validate_world
-            # actor_id scopes the pass/fail decision to violations
-            # relevant to THIS requester (see validate_world's own
-            # docstring) -- an unrelated actor's permanently-orphaned
-            # presence/membership record must not block every other
-            # actor's real request.
+
+            # validate the world before execution
             _report = validate_world(planetary_runtime, actor_id=user_id)
             if not _report["ok"]:
                 raise RuntimeError(
@@ -160,18 +163,12 @@ async def unified_prompt(
         # on getting the  world validation result we have to create a local copy of the worlds state as the belief state of the actor and then we have to run the
         # prompt on that local copy of the world state and then we have to update the world state with the result of the prompt execution.
         # This is to ensure that the world state is not modified by the prompt execution and that the world state is consistent across all actors.
-
         planetary_runtime.restore_actor_belief(user_id)
 
-        # execute the actor requests from the planetary runtime
-        # the planetary runtime takes care of
-        # 1. actor/society/geography resolution,
-        # 2. recursive traversal,
-        # 3. context/world updates,
-        # 4. and actor coordination
-
+        # execute the actor requests recieved from the planetary runtime
         actor_result = await planetary_runtime.execute_actor_request(user_id, payload)
-
+        
+        # checkpont the local belief for the actor after the execution of the actor request
         planetary_runtime.checkpoint_actor_belief(user_id)
 
         # Adapt the scheduler's actor result to the existing prompt response shape.

@@ -216,8 +216,16 @@ async def get_current_user() -> None:
         elif auth.type == "bearer":
             auth_dep = f'''\
 from jose import JWTError, jwt
+import sys as _sys
 
-_SECRET = os.environ.get({auth.secret_env!r}, "change-me-in-production")
+_SECRET = os.environ.get({auth.secret_env!r}, "").strip()
+if not _SECRET:
+    print(
+        "FATAL: {auth.secret_env} is not set or is empty. "
+        "Set it in your environment or .env file before starting this service.",
+        file=_sys.stderr,
+    )
+    _sys.exit(1)
 _ALGORITHM = "HS256"
 
 
@@ -236,12 +244,12 @@ async def get_current_user(authorization: str = Header(default="")) -> str:
 '''
         else:  # api_key
             auth_dep = f'''\
-_API_KEY = os.environ.get({auth.api_key_env!r}, "")
+_API_KEY = os.environ.get({auth.api_key_env!r}, "").strip()
 
 
 async def get_current_user(x_api_key: str = Header(alias={auth.api_key_header!r}, default="")) -> str:
     if not _API_KEY:
-        return "anonymous"
+        raise HTTPException(status_code=503, detail="API key auth is not configured on this server")
     if x_api_key != _API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API key")
     return "api-key-user"

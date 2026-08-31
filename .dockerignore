@@ -1,0 +1,90 @@
+# =============================================================================
+# .dockerignore — authoritative secrets / dev-artifact exclusion list
+# =============================================================================
+# The build daemon applies this file BEFORE sending any file to the builder,
+# so excluded paths never appear in any image layer — including intermediate
+# layers created by earlier COPY instructions.  This is the correct place to
+# prevent secret leakage; a RUN rm -f inside a Dockerfile only removes the
+# file from the *filesystem* view of that layer but leaves it readable in the
+# prior layer's tarball.
+#
+# Keep this list in sync with .gitignore.  When adding a new secret-adjacent
+# file type to either file, add it to both.
+# =============================================================================
+
+
+# ── Environment / secrets files ───────────────────────────────────────────────
+# All .env variants, wherever they appear in the build context.
+.env
+.env.*
+**/.env
+**/.env.*
+# Explicitly name the files that triggered this guard (belt-and-suspenders).
+domains/manufacturing/knowledge/services/auth/.env
+domains/manufacturing/knowledge/services/file/.env
+domains/manufacturing/knowledge/services/facilities/.env
+
+# Key material and credential stores
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+.aws/
+.ssh/
+credentials.json
+secrets.json
+secrets.yaml
+secrets.yml
+*.local.yaml
+*.local.yml
+
+
+# ── Python build artefacts ────────────────────────────────────────────────────
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+**/*.egg-info/
+.pytest_cache/
+**/.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+dist/
+build/
+
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+venv_test/
+
+
+# ── Node ──────────────────────────────────────────────────────────────────────
+node_modules/
+**/.node_modules/
+
+
+# ── Runtime / data directories (large, not needed in images) ─────────────────
+.data/
+logs/
+output/
+benchmarks/
+generated/
+
+
+# ── OS / editor noise ────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+
+# ── Git internals ─────────────────────────────────────────────────────────────
+.git/
+.github/

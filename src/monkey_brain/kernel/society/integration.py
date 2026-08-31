@@ -24,6 +24,9 @@ from enum import Enum
 from typing import Any, Callable, Awaitable
 from uuid import uuid4
 
+from src.monkey_brain.kernel.society.actor_lifecycle import ActorDesiredState, ObservedActorState
+from src.monkey_brain.kernel.society.actor_scheduler import ActorPlacementRequirements, ActorScheduler, ExecutionNode, NodeClass
+from src.monkey_brain.kernel.society.redis_index_reconstruction import ConsistencyCheckResult, RedisReconstructionResult
 from src.monkey_brain.kernel.timeline.presence import PresenceTimeline
 from src.monkey_brain.kernel.society.domain import Society, ActorProfile, Team
 from src.monkey_brain.kernel.society.world import SharedWorld, WorldEntity, WorldEvent, EventType
@@ -52,6 +55,9 @@ from src.monkey_brain.kernel.society.movement_perturbation import MovementPertur
 from src.monkey_brain.kernel.society.activation import SocietyActivationEngine, SocietyActivationResult
 from src.monkey_brain.kernel.society.commerce_network import CommerceNetwork
 from src.monkey_brain.kernel.relationships import RelationshipGraph, RelationshipKind
+from src.monkey_brain.kernel.society.actor_lifecycle_controller import (
+            ActorLifecycleController,
+        )
 
 logger = logging.getLogger("agentos.planetary_runtime")
 
@@ -235,6 +241,7 @@ server-side via EVAL so the two operations are atomic, the same reasoning
 _RELEASE_LOCK_IF_OWNER_SCRIPT already documents for the actor lease."""
 
 _ACTOR_LEASE_KEY_PREFIX = "monkeybrain:actor:lease:"
+_ACTOR_FENCE_KEY_PREFIX = "monkeybrain:actor:fence:"
 _ACTOR_LEASE_DEFAULT_TTL_SECONDS = 330.0
 """Covers SocietyRuntime.tick_one_actor()'s own 300s outer timeout plus
 margin -- the lease must outlive the longest a single real tick is ever
@@ -260,147 +267,221 @@ it's meant to close."""
 
 
 class PlanetaryRuntime:
-    """The complete end-state architecture integrating all society steps.
+    """
+
+    This is the world level runtime
+        # the planetary runtime takes care of
+            # 1. actor/society/geography resolution,
+            # 2. recursive traversal,
+            # 3. context/world updates,
+            # 4. and actor coordination
+        # the planetary runtime acts as a controller for actor scheduling and execution
 
     Continuously evolves through:
         Context Stream → Shared Semantic World → Actor Observations →
         Beliefs → Plans → Actions → Learning → Context Stream
 
     SocietyRuntime coordinates this cycle without centralizing cognition.
+
+    Architecturally this is similar to Kubernetes and extends the kubernetees infra to help manage actors 
+    where each actor is analogus to a pod with multiple runtimes for resiliency purposes
+    
+    NOTE: Ideally this should be in go . python is ok for now right now 
+
     """
 
     def __init__(self, society: Society | None = None, default_bootstrap_space_id: str | None = None) -> None:
+        
         self._boot_time = time.time()
-        """Prompt 8 — Lemon Observability's simulation_time metric measures
-        elapsed wall-clock time since this PlanetaryRuntime booted."""
+
         self._peak_queue_depth = 0
-        """Running maximum message-queue depth (across every managed
-        Society) ever observed — Prompt 8's peak_queue_depth metric."""
+        
+        # Identify this runtime instance for actor ownership, node registration,
+        # and distributed lease/lock coordination. Operators can provide a stable
+        # node identity; otherwise each process receives a unique execution-node ID.
         self._node_id = os.getenv("COGNITIVEOS_NODE_ID") or f"node-{uuid4().hex[:12]}"
-        """Actor Registry (Deployment Architecture, Section 7): stable
-        identity for THIS execution process/pod, distinct from any
-        society/actor id. Recorded alongside every actor this process
-        persists to the Redis actor registry (_actor_state_to_dict) so a
-        second process reading the same registry can tell which node last
-        owned/updated a given actor — the missing half of "Actor A must
-        remain addressable even if its execution location changes."
-        Configurable (COGNITIVEOS_NODE_ID, e.g. the pod name in
-        Kubernetes) so restarts of the SAME pod keep a stable identity;
-        falls back to a random id for local/dev processes that don't set
-        it."""
+
+        # Version of the actor artifact being executed. This is used to identify
+        # the actor's deployed/application artifact independently of the runtime.
         self._artifact_version = os.getenv("ACTOR_ARTIFACT_VERSION", "")
+
+        # Version of the CognitiveOS actor runtime executing the actor. Keeping
+        # this separate from the artifact version allows runtime upgrades to be
+        # distinguished from changes to the actor itself.
         self._runtime_version = os.getenv("ACTOR_RUNTIME_VERSION", "")
-        """Actor Artifact model (docs/ACTOR_ARTIFACT.md) — purely
-        observability, recorded alongside every actor this process
-        persists (see ActorRegistryEntry.artifact_version/runtime_version
-        above). Empty for any process that never sets these (every
-        pre-existing deployment) — never required for correctness."""
+
+        # ID of the space used when an actor does not explicitly specify a space
+        # during bootstrap. This can be supplied programmatically or configured
+        # globally through the environment.
         self._default_bootstrap_space_id: str | None = (
-            default_bootstrap_space_id or os.getenv("PLANETARY_DEFAULT_BOOTSTRAP_SPACE_ID") or None
+            default_bootstrap_space_id
+            or os.getenv("PLANETARY_DEFAULT_BOOTSTRAP_SPACE_ID")
+            or None
         )
-        """Governance/Membership/Registration Model refactor: the Space
-        register_actor() hosts an Actor's home Society at when the caller
-        doesn't supply one explicitly. Configurable (constructor arg, then
-        PLANETARY_DEFAULT_BOOTSTRAP_SPACE_ID env var), never hard-coded —
-        if neither is set, the geography-bootstrap block below fills in a
-        real "Default Space" it creates for exactly this purpose, so
-        register_actor() always has a valid target without requiring the
-        caller to configure anything."""
+
+        # Create the single shared semantic world for this Planetary runtime.
+        # Actors and runtime services that need world state should reference this
+        # instance rather than maintaining independent copies.
         self._world = SharedWorld()
-        # Planetary owns the semantic world through the existing world-model
-        # runtime facade; no second SharedWorld is constructed.
+
+        # Expose the same world through the WorldModel runtime facade. The facade
+        # provides world-model operations while preserving a single underlying
+        # SharedWorld instance.
         self._world_model = WorldModelRuntime(semantic_world=self._world)
+
+        # Persistence is initialized during runtime startup. Keep the attribute
+        # explicitly unset until the persistence layer has been constructed.
         self._persistence_manager = None
+
+        # Local durable actor state store. This is the runtime's access point for
+        # persisted actor belief/state and is populated during initialization.
         self._actor_state_store: Any = None
-        """Lazy-constructed ActorStateStore (Mongo) — Step 14's canonical
-        belief persistence backend. None until the first restore_actor_belief()/
-        checkpoint_actor_belief() call; stays None (fail-soft) if Mongo is
-        unreachable, see _get_actor_state_store()."""
+
+        # In-memory fallback for desired actor state when the persistent state store
+        # is temporarily unavailable. This is not the authoritative durable state.
         self._desired_state_fallback: dict[str, dict[str, Any]] = {}
-        """In-memory-only fallback for set_actor_desired_state()/
-        get_actor_desired_state() when Redis is unavailable — same
-        degraded-but-functional shape as every other Redis-backed store
-        in this class. Non-durable, single-process only."""
+
+        # Controls actor lifecycle transitions such as startup, shutdown,
+        # reconciliation, and state restoration.
         self._lifecycle_controller: Any = None
-        """Lazy-constructed ActorLifecycleController — see the `lifecycle`
-        property below."""
+
+        # Scheduler responsible for runtime-managed scheduled work.
         self._scheduler: Any = None
-        """Lazy-constructed ActorScheduler — see the `scheduler` property
-        below."""
+
+        # Provisioner used when actor workloads need to be created or managed
+        # on Kubernetes-backed infrastructure.
         self._kubernetes_provisioner: Any = None
-        """Lazy-constructed KubernetesProvisioner — see the
-        `kubernetes_provisioner` property below."""
+
+        # Provisioner used to manage actor workloads on edge infrastructure.
         self._edge_provisioner: Any = None
-        """Lazy-constructed EdgeProvisioner — see the `edge_provisioner`
-        property below."""
+
+        # In-memory fallback for node registration state when the persistent
+        # node registry is unavailable. Durable node registration remains the
+        # authoritative source when persistence is available.
         self._node_registry_fallback: dict[str, dict[str, Any]] = {}
+
+        # In-memory fallback for desired node state. This allows reconciliation
+        # logic to retain the requested node configuration when the durable
+        # state store is temporarily unavailable.
         self._desired_node_fallback: dict[str, dict[str, Any]] = {}
+
+        # In-memory fallback for placement requirements. These requirements
+        # describe the infrastructure constraints used when deciding where
+        # actor workloads should run.
         self._placement_requirements_fallback: dict[str, dict[str, Any]] = {}
-        """In-memory-only fallbacks for the node registry / desired
-        placement / placement requirements when Redis is unavailable —
-        same degraded-but-functional, single-process-only shape as
-        _desired_state_fallback above."""
+
+        # NATS client used for asynchronous messaging, subscriptions, and
+        # distributed runtime communication. The connection is established
+        # during the explicit async startup lifecycle.
         self._nats_client: Any = None
-        """Set by connect_nats() (async, called from kernel.py's boot
-        sequence after construction — nats.connect() is a coroutine,
-        can't run inside this sync __init__). None means either not yet
-        connected or genuinely unavailable — both are valid, non-fatal
-        states; context_stream.publish() already treats a None NATS
-        client as "skip the live publish, keep the Redis durability."""
+
+        # Initialize the persistence subsystem. Durable actor, node, placement,
+        # and reconciliation state should be recovered from persistence rather
+        # than reconstructed solely from in-memory defaults.
         self._init_persistence()
-        self._game_theory = GameTheoryRuntime(world_state={"planetary_agreements": {}})
+
+        # Strategic negotiation runtime used by the society to evaluate and
+        # maintain agreements between actors. Planetary agreements are part of
+        # the strategic world state shared with the society runtime.
+        self._game_theory = GameTheoryRuntime(
+            world_state={"planetary_agreements": {}}
+        )
+
+        # Initialize the society runtime. The society owns coordination at the
+        # social level while delegating strategic reasoning to the game-theory
+        # runtime above.
         self._society_runtime = SocietyRuntime(
             society or Society(name="Planetary Society"),
             strategic_runtime=self._game_theory,
         )
         self._society_runtime._world = self._world
-        # Keep the public Planetary and Society coordination boundaries on the
-        # same strategic runtime; agreements must be visible to later ticks.
+
+        # Establish the coordination engine from the society runtime. Keeping
+        # this reference allows subsequent ticks to use the same coordination
+        # state and strategic runtime rather than creating a new coordination
+        # context for every cycle.
         self._coordination_engine = self._society_runtime.coordinate()
+
+        # Observability for society-level operations, including coordination,
+        # lifecycle activity, and runtime execution metrics.
         self._observability = SocietyObservability()
+
+        # Serialize tick execution so concurrent callers cannot execute multiple
+        # Planetary cycles against the same mutable runtime state simultaneously.
         self._tick_lock = asyncio.Lock()
+        self._actor_lease_fences: dict[str, int] = {}
+
+        # Token representing the distributed lease/lock acquired for the current
+        # execution cycle. It is used to identify ownership of a cycle across
+        # competing runtime instances.
         self._cycle_lock_token: str | None = None
-        """Set by _acquire_planetary_cycle_lock, consumed by
-        _release_planetary_cycle_lock — see both for why an ownership
-        token (not an unconditional DEL) is required for a safe release."""
+
+        # Per-actor timing measurements collected during the current or most
+        # recent execution cycle. Used for diagnostics and performance analysis.
         self._cycle_actor_timing_ms: dict[str, float] = {}
-        """Performance analysis instrumentation only (measurement, not a
-        behavior change) — Runtime Performance Audit: per-actor total tick
-        wall time for the CURRENT cycle, written by _tick_present_actor,
-        reset at the start of each _run_cycle(), read at the end of
-        _run_cycle() to build the per-actor timing report."""
+
+        # Most recent complete cycle report, containing the results and metadata
+        # produced by the Planetary execution cycle.
         self._last_cycle_report: Any = None
-        """Most recent _run_cycle()'s full CyclePerformanceReport
-        (kernel/society/cycle_performance.py) — instrumentation only,
-        also logged in full at the end of every cycle; not used by any
-        control-flow decision. No dedicated REST route yet — inspect via
-        this attribute or the log line."""
+
+        # Duration of the most recently completed Planetary tick in milliseconds.
         self._last_tick_duration_ms: float = 0.0
+
+        # Timestamp at which the most recent Planetary tick completed.
         self._last_tick_timestamp: float = 0.0
+
+        # Background task responsible for automatically triggering Planetary ticks
+        # when auto-ticking is enabled.
         self._auto_tick_task: asyncio.Task | None = None
+
+        # Interval between automatically triggered ticks. Five minutes is the
+        # default cadence when no explicit interval is configured.
         self._auto_tick_interval: float = 300.0  # 5 minutes default
+
+        # Background task that periodically reconciles desired actor/node state
+        # with the actual runtime and infrastructure state.
         self._lifecycle_reconciliation_task: asyncio.Task | None = None
+
+        # Interval between full lifecycle reconciliation passes.
         self._lifecycle_reconciliation_interval: float = 300.0
-        """Actor Lifecycle Controller's full-table backstop sweep —
-        independent of auto-tick (cognition) above; see
-        start_actor_lifecycle_reconciliation()."""
+
+        # Background worker that drains the reconciliation queue and processes
+        # pending lifecycle/state changes asynchronously.
         self._reconcile_queue_task: asyncio.Task | None = None
+
+        # Polling interval used by the reconciliation queue worker when looking
+        # for newly queued reconciliation work.
         self._reconcile_queue_interval: float = 2.0
+
+        # Maximum number of reconciliation items processed in a single queue
+        # batch, preventing an unexpectedly large queue from monopolizing the
+        # runtime event loop.
         self._reconcile_queue_batch_size: int = 50
+
+        # Limits concurrent reconciliation operations so infrastructure and
+        # persistence systems are not overwhelmed by a large reconciliation batch.
         self._reconcile_queue_semaphore: asyncio.Semaphore | None = None
+
+        # Actor ID whose lifecycle state is currently being reconciled when
+        # reconciliation is scoped to a specific actor. None means reconciliation
+        # is not currently restricted to one actor.
         self._reconciliation_scope_actor_id: str | None = None
-        """None = full-registry backstop sweep (default, every pre-existing
-        caller). Set by start_actor_lifecycle_reconciliation(scope_actor_id=...)
-        for a single-actor Actor Runtime pod so its backstop sweep only
-        ever reconciles itself."""
-        """The event-driven fast path (Section 26/27) — see
-        start_actor_lifecycle_reconciliation()'s docstring."""
+
+        # Tracks asynchronous background propagation operations so they can be
+        # observed, awaited, and cancelled during runtime shutdown.
         self._background_propagation_tasks: set[asyncio.Task] = set()
-        """In-flight ASYNCHRONOUS-mode _propagate_coordination_background()
-        tasks — held here (mirrors api/routes/prompt.py's own
-        _background_tasks pattern) so asyncio doesn't garbage-collect a
-        still-running task, and so shutdown() has something to cancel."""
+
+        # Tracks NATS subscription tasks so subscriptions can be explicitly
+        # managed and cancelled during runtime shutdown.
+        self._inbox_subscription_tasks: set[asyncio.Task] = set()
+
+        # Manages federation between this runtime and other CognitiveOS/runtime
+        # domains, including cross-node or cross-geography coordination.
         self._federation_manager = FederationManager()
+
+        # Registry responsible for mapping actors/nodes to their geographic
+        # presence and restoring geographic context required for correct
+        # placement and actor rehydration.
         self._geo_registry = GeographicRegistry()
 
         from src.monkey_brain.kernel.learn.memory.manager import MemoryManager
@@ -408,291 +489,281 @@ class PlanetaryRuntime:
         from src.monkey_brain.kernel.learn.memory.graph_adapter import KnowledgeGraphMemoryAdapter
         from src.monkey_brain.kernel.knowledge_graph import KnowledgeGraph
         from src.monkey_brain.kernel.pipeline.planning.context_engine import ContextConstructionEngine
+
+        # In-memory semantic knowledge graph for the actor/society runtime.
+        # This is the structured representation of entities and relationships
+        # accumulated by the runtime.
         self._knowledge_graph = KnowledgeGraph()
+
+        # Register the callback used to propagate knowledge-graph mutations into
+        # the rest of the runtime. Changes to the graph therefore flow through
+        # the runtime's knowledge/state propagation path rather than remaining
+        # isolated inside the graph.
         self._knowledge_graph.set_on_change(self._on_knowledge_graph_change)
-        # Redis-backed (self._redis, already connected above by
-        # _init_persistence) so an actor's episodic memory — experiences,
-        # conversations, prior executions — survives a restart the same
-        # way self._knowledge_graph already does, instead of the whole
-        # store silently going back to empty every time.
+
+        # Unified memory subsystem combining vector-based retrieval with the
+        # structured knowledge graph. Redis provides the vector-backed memory
+        # store, while the graph adapter exposes structured knowledge as part
+        # of the same memory interface.
         self._memory_manager = MemoryManager(
-            RedisBackedVectorBackend(self._redis), KnowledgeGraphMemoryAdapter(self._knowledge_graph),
+            RedisBackedVectorBackend(self._redis),
+            KnowledgeGraphMemoryAdapter(self._knowledge_graph),
         )
-        self._membership_registry = SocietyMembershipRegistry(memory_manager=self._memory_manager)
-        # PresenceTimeline is constructed once and cached (not re-created
-        # per self.presence access) so MembershipGovernor's subscription —
-        # and its own per-actor temporary-membership state — actually stay
-        # attached across calls to move_actor().
+
+        # Registry of society membership and membership history. The registry
+        # uses the memory subsystem to persist/retrieve membership-related
+        # context rather than maintaining an independent persistence mechanism.
+        self._membership_registry = SocietyMembershipRegistry(
+            memory_manager=self._memory_manager
+        )
+
+        # Timeline of actor geographic presence. Presence is maintained separately
+        # from the geographic registry: the registry describes geographic context,
+        # while the timeline records how an actor's presence changes over time.
         self._presence = PresenceTimeline(self._geo_registry)
+
+        # Governs membership transitions and their relationship to geographic
+        # presence. Temporary membership grants/revocations are routed back into
+        # the runtime through the supplied callbacks so membership changes can
+        # trigger the appropriate state propagation.
         self._membership_governor = MembershipGovernor(
-            self._presence, self._geo_registry, self._membership_registry,
+            self._presence,
+            self._geo_registry,
+            self._membership_registry,
             context_stream=self.context_stream,
             on_temporary_granted=self._on_temporary_membership_granted,
             on_temporary_revoked=self._on_temporary_membership_revoked,
         )
-        # Prompt 7 — Context-Driven Perturbation Engine: movement
-        # perturbations relocate Actors through self.move_actor, the exact
-        # same write path voluntary movement uses, so PresenceTimeline
-        # updates, MembershipGovernor grant/revoke, and ContextStream
-        # publication all already happen without this engine knowing any
-        # of that exists.
+
+        # Models movement-related changes to actor state. The engine is given
+        # the runtime's actor-movement operation so that simulated or policy-driven
+        # movement goes through the same movement path as normal actor relocation.
         self._movement_perturbation = MovementPerturbationEngine(
-            self.move_actor, self._presence, self._geo_registry,
+            self.move_actor,
+            self._presence,
+            self._geo_registry,
         )
+
+        # Society-level commerce network representing economic relationships and
+        # interactions between actors. This is maintained as a separate domain
+        # subsystem from the actor runtime and can evolve independently.
+
+        #TODO: this must not be injected here the two systems must be completely separated 
         self._commerce_network = CommerceNetwork()
+
         from src.monkey_brain.kernel.society.delegation import DelegationRegistry
+
+        # Registry for permissions delegated through the actor's membership relationships.
         self._delegation_registry = DelegationRegistry(self._membership_registry)
+
+        # Coordinates activation and lifecycle of societies available to this actor.
         self._society_activation = SocietyActivationEngine(
             self.societies_for_actor, self.get_society_runtime,
         )
+
+        # Graph representing relationships between actors and other entities.
         self._relationships = RelationshipGraph()
+
+        # Builds the contextual state used by cognition from memory and knowledge.
         self._context_engine = ContextConstructionEngine(
             planetary_runtime=self, memory_manager=self._memory_manager,
             knowledge_graph=self._knowledge_graph,
         )
+
+        # Graph representing the actor's affiliations with societies and other entities.
         from src.monkey_brain.kernel.affiliations.graph import AffiliationGraph
+
+        # initate the affiliation graph
         self._affiliation_graph = AffiliationGraph(self)
+
+        # Coordinates transactional operations across society-level state changes.
         from src.monkey_brain.kernel.society.transaction import TransactionCoordinator
+
+        # initate the transaction cordinator
         self._transaction_coordinator = TransactionCoordinator(self)
+
+        # Queue for external perturbations that may affect the actor or its environment.
         self._perturbation_queue = PerturbationQueue()
-        # World Changes refactor: ONE real capability-bus execution engine
-        # for the whole PlanetaryRuntime, built here (same place/pattern as
-        # _context_engine above) and threaded to every SocietyRuntime via
-        # _attach_society — never rebuilt per actor. Previously every
-        # actor's cognitive tick executed through ActionExecutor
-        # (capability_bus=None)'s "No capability bus — simulate success"
-        # fallback (action_executor.py) regardless of whether a real
-        # product/order/payment existed; POST /actors (api/routes/
-        # actors.py) already builds a real one this same way for actors
-        # created there, so this makes every OTHER actor-registration path
-        # consistent with it instead of leaving them permanently simulated.
-        from src.monkey_brain.kernel.domains import grocery as _grocery_vertical  # noqa: F401 -- registers "grocery" on import
+
+        # Factory for constructing the execution engine used by domain-specific capabilities.
         from src.monkey_brain.kernel.domains.vertical_router import build_execution_engine
+        
+        # In-memory registry of all society runtimes managed by this planetary runtime.
         self._societies: dict[str, SocietyRuntime] = {}
+
+        # Number of completed cognitive/runtime cycles.
         self._cycle_count = 0
+
+        # Version of the world perturbation context used to track world-state changes.
         self._world_perturbation_context_version = 0
+
+        # Restore the persisted world state before reconstructing dependent runtime state.
         self._load_world()
+
+        # Restore persisted societies and their runtime state.
         self._load_societies()
+
+        # Use the first persisted society as the active society runtime when available.
         if self._societies:
             first_id = next(iter(self._societies))
             self._society_runtime = self._societies[first_id]
         else:
+            # Persist the initially configured society when no societies have been stored yet.
             self._societies[self._society_runtime.society.society_id] = self._society_runtime
-            # World persistence gap: the bootstrap default society
-            # (constructed directly by kernel.py::_phase_planetary(),
-            # never routed through create_society() — the only other
-            # path that already calls _save_societies()) was never
-            # itself persisted. Every restart, _load_societies() above
-            # found nothing in Redis, minted a brand-new Society with a
-            # brand-new random ID, and every real Membership already
-            # persisted for the OLD id silently orphaned (confirmed live:
-            # /verify/world's membership_invalid_society violations).
-            # Saving it here means every boot AFTER this one finds the
-            # same, stable-ID society via _load_societies() instead.
             self._save_societies()
 
-        # Actor Rehydration Wiring fix: must be built AFTER _load_societies()
-        # settles self._society_runtime, not before. self.context_stream
-        # (read here) is a property that delegates to
-        # self._society_runtime.context_stream (see below) — on every
-        # restart after the very first, _load_societies() above rebuilds a
-        # BRAND NEW SocietyRuntime (its own fresh SocietyContextStream) from
-        # persisted Redis data and reassigns self._society_runtime to it. If
-        # this engine were built (as it previously was) before that
-        # reassignment, it would capture the ORIGINAL, now-orphaned
-        # SocietyRuntime's context_stream as a plain constructor value
-        # (CapabilityRuntime/ActionExecutor never re-reads it) — every real
-        # action would keep publishing into a near-empty, disconnected
-        # stream forever, while every read path (context_engine.py's
-        # self._planetary_runtime.context_stream) evaluates the property
-        # fresh and sees the real, rehydrated one. Confirmed live via id()
-        # diagnostics on both the write side (ActionExecutor._context_stream)
-        # and read side (ContextConstructionEngine._retrieve_context_stream)
-        # for an actor that had survived many restarts: different objects,
-        # 0-1 events vs 4000+. Building this after settlement means every
-        # SocietyRuntime this engine gets threaded into via _attach_society
-        # below shares the one real context_stream instance for this boot.
-        # Cloud/Edge Actor Convergence, Section 11/31: the offline-safety
-        # gate is opt-in, defaulting to unchanged behavior everywhere
-        # (OFFLINE_SAFETY_GATE_ENABLED unset/false) -- unconditionally
-        # gating every REQUIRES_WORLD_STATE/REQUIRES_AUTHORITY capability
-        # on Redis reachability would break any lightweight/no-Redis
-        # deployment or test that currently runs capabilities successfully
-        # with self._redis is None (a well-supported, intentional
-        # configuration throughout this codebase, not a degraded state to
-        # treat as "disconnected"). The edge runtime (edge_runtime.py)
-        # enables this explicitly; a cloud boot may too, but never by
-        # default.
+        # Optional connectivity validation used by the offline safety gate.
         connectivity_check = None
         if os.getenv("OFFLINE_SAFETY_GATE_ENABLED", "false").lower() not in ("false", "0", "no"):
             from src.monkey_brain.kernel.pipeline.offline_safety import make_connectivity_check
             connectivity_check = make_connectivity_check(self)
+
+        # Build the domain execution engine with the current context stream and safety checks.
         self._execution_engine = build_execution_engine(
             "grocery", context_stream=self.context_stream, connectivity_check=connectivity_check,
         )
 
+        # Attach each restored society to the planetary runtime.
         for society_runtime in self._societies.values():
             self._attach_society(society_runtime)
 
-        self._load_actors()
-        self._load_context()
-        self._load_relationships()
+        # Restore the persisted geographic hierarchy before loading actors that depend on it.
         self._load_geography()
+
+        # Restore persisted actors and their runtime state.
+        self._load_actors()
+
+        # Restore persisted contextual state used by the runtime.
+        self._load_context()
+
+        # Restore persisted relationships between actors and other entities.
+        self._load_relationships()
+
+        # Restore the persisted knowledge graph.
         self._load_knowledge_graph()
 
+        # Bootstrap a default geographic hierarchy when no geography exists yet.
         if not self._geo_registry.all():
+            # Create the root planetary geographic entity.
             self._default_planet = self._geo_registry.create(GeographicEntityType.PLANET, "Default Planet")
+
+            # Create the country within the default planet.
             self._default_country = self._geo_registry.create(
                 GeographicEntityType.COUNTRY, "Default Country", parent_id=self._default_planet.entity_id,
             )
+
+            # Create the state within the default country.
             self._default_state = self._geo_registry.create(
                 GeographicEntityType.STATE, "Default State", parent_id=self._default_country.entity_id,
             )
+
+            # Create the county within the default state.
             self._default_county = self._geo_registry.create(
                 GeographicEntityType.COUNTY, "Default County", parent_id=self._default_state.entity_id,
             )
+
+            # Create the city within the default county.
             self._default_city = self._geo_registry.create(
                 GeographicEntityType.CITY, "Default City", parent_id=self._default_county.entity_id,
             )
-            # Governance/Membership/Registration Model refactor: a Society
-            # hosted at "Default City" alone does NOT satisfy "every Society
-            # must be associated with at least one Space" — spaces_for_
-            # society() needs an actual SPACE-tier descendant to find.
-            # "Default Street"/"Default Building"/"Default Space" exist
-            # purely to make that always true, without callers configuring
-            # anything (mirrors the pre-existing "new societies auto-host at
-            # the default city" convenience, extended one tier further).
+
+            # Create the default street within the city.
             default_street = self._geo_registry.create(
                 GeographicEntityType.STREET, "Default Street", parent_id=self._default_city.entity_id,
             )
+
+            # Create the default building within the street.
             default_building = self._geo_registry.create(
                 GeographicEntityType.BUILDING, "Default Building", parent_id=default_street.entity_id,
             )
+
+            # Create the default space used as the runtime's bootstrap location.
             self._default_space = self._geo_registry.create(
                 GeographicEntityType.SPACE, "Default Space", parent_id=default_building.entity_id,
             )
+
+            # Record the default space as the bootstrap location when one has not been configured.
             if self._default_bootstrap_space_id is None:
                 self._default_bootstrap_space_id = self._default_space.entity_id
+
+            # Associate every restored society with the default city.
             for society_runtime in self._societies.values():
-                self._default_city = self._geo_registry.host_society(self._default_city.entity_id, society_runtime.society.society_id)
+                self._default_city = self._geo_registry.host_society(
+                    self._default_city.entity_id, society_runtime.society.society_id
+                )
+
+            # Persist the newly created geographic hierarchy.
             self._save_geography()
         else:
+            # Locate the existing default geographic entities by type and name.
             def _find_default(entity_type: GeographicEntityType, name: str) -> Any:
-                # Exact name match ONLY — no candidates[0] fallback. That
-                # fallback used to silently repurpose the first REAL entity
-                # of this type (e.g. an actual "Earth"/"San Francisco" a
-                # user created) as if it were the internal bootstrap
-                # default the instant "Default X" itself didn't exist
-                # (deleted, or never created) — which then cascades into
-                # the "create Default Street/Building/Space under
-                # _default_city" and "auto-host any unhosted Society at
-                # _default_city" blocks below silently attaching bootstrap
-                # scaffolding, and other Societies, onto a real, user-
-                # meaningful entity. Returning None here instead means
-                # "no bootstrap default configured" stays genuinely None.
                 candidates = self._geo_registry.all(entity_type)
                 return next((e for e in candidates if e.name == name), None)
+
+            # Restore references to the existing default geographic hierarchy.
             self._default_planet = _find_default(GeographicEntityType.PLANET, "Default Planet")
             self._default_country = _find_default(GeographicEntityType.COUNTRY, "Default Country")
             self._default_state = _find_default(GeographicEntityType.STATE, "Default State")
             self._default_county = _find_default(GeographicEntityType.COUNTY, "Default County")
             self._default_city = _find_default(GeographicEntityType.CITY, "Default City")
             self._default_space = _find_default(GeographicEntityType.SPACE, "Default Space")
+
+            # Reconstruct the lower geographic hierarchy if the persisted space is missing.
             if self._default_space is None and self._default_city is not None:
-                # Restoring geography persisted before this refactor added
-                # "Default Space" — build it now rather than leaving every
-                # restored society unable to satisfy the Space invariant.
+                # Create the missing default street.
                 default_street = self._geo_registry.create(
                     GeographicEntityType.STREET, "Default Street", parent_id=self._default_city.entity_id,
                 )
+
+                # Create the missing default building.
                 default_building = self._geo_registry.create(
                     GeographicEntityType.BUILDING, "Default Building", parent_id=default_street.entity_id,
                 )
+
+                # Create the missing default space.
                 self._default_space = self._geo_registry.create(
                     GeographicEntityType.SPACE, "Default Space", parent_id=default_building.entity_id,
                 )
+
+                # Persist the reconstructed geographic hierarchy.
                 self._save_geography()
+
+            # Establish the bootstrap space from the restored default space when necessary.
             if self._default_bootstrap_space_id is None and self._default_space is not None:
                 self._default_bootstrap_space_id = self._default_space.entity_id
-            # A society created after the last save (or before geography
-            # persistence existed at all) still needs to be reachable from
-            # the automatic cycle — host it at the restored default city,
-            # same as the fresh-boot path, if it isn't hosted anywhere yet.
+
+            # Ensure every society has a geographic host in the restored city.
             if self._default_city is not None:
                 hosted_changed = False
                 for society_runtime in self._societies.values():
                     sid = society_runtime.society.society_id
+
+                    # Add the society to the default city when no geographic host exists.
                     if self._geo_registry.entity_for_society(sid) is None:
                         self._default_city = self._geo_registry.host_society(self._default_city.entity_id, sid)
                         hosted_changed = True
+
+                # Persist geography only when society hosting was changed.
                 if hosted_changed:
                     self._save_geography()
 
-        # Initialize event persistence layer
+        # Initialize the event persistence layer after the core runtime state has been restored.
         self._event_store = None
         self._init_event_store()
+
+        # Track the persisted version of each actor's context for incremental persistence.
         self._context_persisted_version: dict[str, int] = {}
 
+        # Register persistence as the callback invoked whenever the context stream publishes changes.
         self.context_stream.set_on_publish(self._save_context)
 
+        # Initialize persistence for collective learning state.
         self._init_collective_learning_persistence()
 
     def _init_persistence(self) -> None:
         """Initialize Redis client for world/actor/society persistence."""
         try:
             import redis as _redis
-            # REDIS_DB (default 0, unchanged for every existing deployment):
-            # every other Redis connection point besides host/port was
-            # already env-overridable; db was a bare literal, the one
-            # thing making it structurally impossible to point a test
-            # suite or a second environment at an isolated logical
-            # database on the same Redis server. Confirmed live: a
-            # pre-existing unit test (test_society.py::TestPlanetaryRuntime
-            # .setup_method) unconditionally flushdb()'d this same
-            # hardcoded db 0 before every test, silently wiping a real,
-            # actively-demoed dev world's entire Redis-backed state with
-            # no way to have redirected it away from that risk.
-            # Gap Remediation audit finding: this codebase has two
-            # genuinely different, pre-existing Redis env-var
-            # conventions — this constructor's own REDIS_HOST/REDIS_PORT/
-            # REDIS_DB, and REDIS_URL (used by execution_checkpoint_
-            # store.py, negotiation_store.py, and several other
-            # standalone stores via redis.from_url()). Confirmed live
-            # during Deployment Conformance testing: a real container
-            # given only REDIS_URL silently connected to "localhost"
-            # instead (this constructor's own default), degrading the
-            # entire Actor Registry/Scheduler/Lifecycle Controller to
-            # process-local-only with just a WARNING log line — a real
-            # correctness gap, not merely inconsistent naming. REDIS_URL
-            # is now accepted here too, WHEN REDIS_HOST is not itself
-            # explicitly set — an existing deployment that already sets
-            # REDIS_HOST is completely unaffected; one that only ever
-            # set REDIS_URL (the convention every OTHER Redis-backed
-            # store in this codebase already used) now actually connects
-            # instead of silently falling back to localhost.
-            # Live Deployment Validation finding: a real, long-running
-            # control-plane process was observed to silently stop
-            # persisting new actor registrations to this Redis client
-            # after a period of otherwise-normal operation (in-memory
-            # registration kept succeeding; the durable write did not) —
-            # a fresh process against the identical Redis server and
-            # code registered and persisted correctly on the first try.
-            # No code path ever reassigns self._redis after this method
-            # returns, so a lingering stale connection in the pool (e.g.
-            # from a transient network blip — this environment saw many
-            # during a chaotic multi-service simultaneous startup) is
-            # the most likely explanation: without retry_on_timeout/
-            # retry_on_error, redis-py's default client does not retry
-            # the FIRST command that hits a connection already gone bad;
-            # it just raises once (silently swallowed by _save_actor's
-            # own DEBUG-level except, see below) rather than
-            # transparently reconnecting and succeeding, the way the
-            # very next call on a fresh connection normally would.
-            # retry_on_timeout deliberately omitted: redis-py >= 6.0
-            # deprecated it in favor of retry_on_error, which already
-            # includes TimeoutError by default -- listing it explicitly
-            # below keeps the intent self-documenting without the
-            # deprecation warning.
             retry = _redis.retry.Retry(_redis.backoff.ExponentialBackoff(cap=2, base=0.1), 3)
             retry_kwargs = dict(
                 retry=retry,
@@ -716,10 +787,72 @@ class PlanetaryRuntime:
             self._redis.ping()
             self._persistence_manager = None
             logger.info("Redis connected for PlanetaryRuntime persistence")
+            from src.monkey_brain.kernel.production_gates import validate_production_gates
+            validate_production_gates(
+                redis_available=True,
+                opa_configured=bool(os.getenv("OPA_URL", "").strip()),
+            )
+            
+            from src.monkey_brain.kernel.society.redis_index_reconstruction import (
+                RedisIndexReconstructor,
+            )
+            self._redis_reconstructor = RedisIndexReconstructor(self)
+
+            try:
+                consistency = self._redis_reconstructor.verify_consistency()
+                if consistency.has_fixable_issues():
+                    logger.info(
+                        "Detected Redis index inconsistency, rebuilding from MongoDB: %s",
+                        consistency.issues,
+                    )
+                    repair_result = self._redis_reconstructor.repair_from_consistency_check(
+                        consistency
+                    )
+                    if repair_result.success:
+                        logger.info("Redis index repair complete: %s", repair_result.summary())
+            except Exception as exc:
+                logger.warning("Redis index consistency check failed: %s", exc)
+            
+            from src.monkey_brain.kernel.society.actor_state_rehydrator import (
+                ActorStateRehydrator,
+            )
+            self._actor_state_rehydrator = ActorStateRehydrator(self)
+            # Rehydrate actors from MongoDB (must happen before _load_actors)
+            # Non-blocking; errors are logged but don't block startup
+            try:
+                rehydration_result = self._actor_state_rehydrator.rehydrate_from_mongodb()
+                if rehydration_result.success:
+                    logger.info("Actor state rehydration complete: %s", rehydration_result.summary())
+                    
+                    # Enforce desired state for rehydrated actors immediately
+                    # This ensures actors don't unexpectedly become active if
+                    # they were previously PAUSED/SUSPENDED/TERMINATED.
+                    try:
+                        lifecycle = self.lifecycle
+                        lifecycle_results = lifecycle.reconcile_rehydrated_actors()
+                        logger.info(
+                            "Rehydrated actor lifecycle reconciliation: %d total, "
+                            "%d enforced desired state",
+                            len(lifecycle_results),
+                            sum(1 for r in lifecycle_results if r.action != "none"),
+                        )
+                    except Exception as exc:
+                        logger.warning("Rehydrated actor lifecycle reconciliation failed: %s", exc)
+                else:
+                    logger.warning("Actor state rehydration failed: %d errors", len(rehydration_result.errors))
+            except Exception as exc:
+                logger.warning("Actor state rehydration failed: %s", exc)
+            
         except Exception as exc:
             logger.warning("Redis not available: %s", exc)
             self._redis = None
             self._persistence_manager = None
+            self._redis_reconstructor = None
+            from src.monkey_brain.kernel.production_gates import validate_production_gates
+            validate_production_gates(
+                redis_available=False,
+                opa_configured=bool(os.getenv("OPA_URL", "").strip()),
+            )
 
     def _init_event_store(self) -> None:
         """Initialize the event persistence layer."""
@@ -1159,6 +1292,67 @@ class PlanetaryRuntime:
                 ))
         return tuple(entries)
 
+    def rebuild_redis_index_from_mongodb(self) -> "RedisReconstructionResult":
+        """Rebuild Redis actor registry from MongoDB source of truth.
+        
+        Closes ephemeral storage gap: when Redis is lost (pod crash,
+        emptyDir recreation), actors persist in MongoDB but become invisible
+        to registry lookups. This method deterministically reconstructs the
+        Redis index from MongoDB, enabling discovery again.
+        
+        **Automatic:** Called during boot if inconsistency detected.
+        **Manual:** Call explicitly to force rebuild or verify recovery.
+        **Idempotent:** Safe to run multiple times; skips recent entries.
+        
+        Returns:
+            RedisReconstructionResult with reconstruction statistics
+        """
+        if not self._redis_reconstructor:
+            logger.warning("Redis reconstructor not available")
+            from src.monkey_brain.kernel.society.redis_index_reconstruction import (
+                RedisReconstructionResult,
+            )
+            return RedisReconstructionResult(
+                success=False,
+                actors_scanned=0,
+                actors_rebuilt=0,
+                actors_skipped=0,
+                errors=[],
+                duration_seconds=0.0,
+            )
+        
+        return self._redis_reconstructor.rebuild_from_mongodb()
+    
+    def verify_redis_mongodb_consistency(self) -> "ConsistencyCheckResult":
+        """Verify consistency between Redis and MongoDB actor registries.
+        
+        Detects:
+        • Actors in MongoDB but missing from Redis (needs rebuild)
+        • Actors in Redis but missing from MongoDB (corruption)
+        • Stale Redis entries (not updated recently)
+        
+        **Use case:** Diagnostic tool; call before/after Redis recovery.
+        
+        Returns:
+            ConsistencyCheckResult with detailed findings
+        """
+        if not self._redis_reconstructor:
+            logger.warning("Redis reconstructor not available")
+            from src.monkey_brain.kernel.society.redis_index_reconstruction import (
+                ConsistencyCheckResult,
+            )
+            return ConsistencyCheckResult(
+                is_consistent=False,
+                total_in_mongodb=0,
+                total_in_redis=0,
+                missing_from_redis=[],
+                missing_from_mongodb=[],
+                stale_entries=[],
+                issues=["Redis reconstructor not available"],
+            )
+        
+        return self._redis_reconstructor.verify_consistency()
+
     # ── Actor Lifecycle Controller: desired state ──────────────────────────
     # (kernel/society/actor_lifecycle.py::ActorDesiredState,
     # actor_lifecycle_controller.py::ActorLifecycleController). A dedicated
@@ -1222,17 +1416,22 @@ class PlanetaryRuntime:
     (AGENTOS_TICK_INTERVAL, kernel.py) plus real margin for a slow LLM-
     bound tick, so a merely-busy actor is never misclassified as crashed."""
 
-    def observe_actor(self, actor_id: str) -> "ObservedActorState":
-        """The Actor Lifecycle Controller's read of reality for one
-        actor_id: durable registry state (locate_actor — correct
-        regardless of which node the actor lives on) merged with this
-        process's own local residency and lease status. Never
-        reconstructs the actor's cognition — same "cheap, no side
-        effects" contract as locate_actor()."""
+    def observe_actor(self, actor_id: str, *, reconcile_lease_token: str | None = None) -> "ObservedActorState":
+        """Merge durable registry state with local residency and lease status.
+
+        Does not reconstruct cognition. reconcile_lease_token excludes the
+        caller's own reconcile lease from the staleness calculation so crash
+        recovery is not downgraded while the lease is held.
+        """
         from src.monkey_brain.kernel.society.actor_lifecycle import ObservedActorState
 
         entry = self.locate_actor(actor_id)
-        resident_here = self.get_actor_runtime(actor_id) is not None
+        resident_here = False
+        home_sr = self._home_society_runtime(actor_id)
+        if home_sr is not None:
+            local_state = home_sr.get_actor(actor_id)
+            if local_state is not None and local_state.is_active:
+                resident_here = True
         if entry is None and not resident_here:
             return ObservedActorState(actor_id=actor_id, exists=False)
 
@@ -1240,15 +1439,21 @@ class PlanetaryRuntime:
         node_id = entry.node_id if entry is not None else self._node_id
         updated_at = entry.updated_at if entry is not None else self._boot_time
         lease_held = False
+        lease_held_by_other = False
         if self._redis is not None:
             try:
-                lease_held = bool(self._redis.exists(f"{_ACTOR_LEASE_KEY_PREFIX}{actor_id}"))
+                raw = self._redis.get(f"{_ACTOR_LEASE_KEY_PREFIX}{actor_id}")
+                if raw:
+                    lease_held = True
+                    lease_held_by_other = not (
+                        reconcile_lease_token is not None and raw == reconcile_lease_token
+                    )
             except Exception as exc:
                 logger.debug("observe_actor(%r) lease check failed: %s", actor_id, exc)
         desired = self.get_actor_desired_state(actor_id)
         is_stale = (
             desired.value == "running"
-            and not lease_held
+            and not lease_held_by_other
             and (time.time() - updated_at) > self._ACTOR_STALE_SECONDS
         )
         return ObservedActorState(
@@ -1609,19 +1814,23 @@ return new_count
     _ACTOR_PLACEMENT_REQ_KEY_PREFIX = "monkeybrain:actor:placement_requirements:"
 
     def set_actor_desired_node(self, actor_id: str, node_id: str) -> None:
+        current = self.get_actor_desired_node(actor_id)
         payload = {"node_id": node_id, "set_at": time.time()}
         if self._redis is not None:
             try:
                 self._redis.set(f"{self._ACTOR_DESIRED_NODE_KEY_PREFIX}{actor_id}", json.dumps(payload))
-                # A placement change (initial schedule OR migration) means
-                # the Lifecycle Controller may now have something to do on
-                # either the old or the new node -- wake the fast path
-                # rather than waiting for the backstop sweep.
-                self._enqueue_reconciliation(actor_id)
+                if self._should_enqueue_placement_change(current, node_id):
+                    self._enqueue_reconciliation(actor_id)
                 return
             except Exception as exc:
                 logger.warning("set_actor_desired_node(%r) Redis write failed: %s", actor_id, exc)
         self._desired_node_fallback[actor_id] = payload
+        if self._should_enqueue_placement_change(current, node_id):
+            self._enqueue_reconciliation(actor_id)
+
+    def _should_enqueue_placement_change(self, current: str, node_id: str) -> bool:
+        """Enqueue when placement changes or targets a remote node."""
+        return current != node_id and (bool(current) or node_id != self._node_id)
 
     def get_actor_desired_node(self, actor_id: str) -> str:
         """"" means "never scheduled" — no placement requirement has ever
@@ -1681,6 +1890,15 @@ return new_count
         if self.get_actor_runtime(actor_id) is None:
             return False
         observed = self.observe_actor(actor_id)
+        if observed.node_id and observed.node_id != self._node_id:
+            # Registry names another owner; deactivate the stale local copy only.
+            from src.monkey_brain.kernel.society.domain import ActorStatus
+            sr = self._home_society_runtime(actor_id)
+            state = sr.get_actor(actor_id) if sr is not None else None
+            if state is not None:
+                state.is_active = False
+                state.status = ActorStatus.SUSPENDED
+            return True
         desired = self.get_actor_desired_state(actor_id)
         result = self.lifecycle._do_suspend(actor_id, desired, observed, reason="migrating to a different node")
         return result.succeeded
@@ -2217,9 +2435,21 @@ return new_count
             goals = list(profile.goals) if getattr(profile, "goals", None) else []
             name = profile.identity.name
             actor_role = f"{name}, whose responsibilities include: {', '.join(goals)}" if goals else name
-            asyncio.create_task(subscribe_actor_inbox(self, actor_id, actor_role))
+            task = asyncio.create_task(subscribe_actor_inbox(self, actor_id, actor_role))
+            self._inbox_subscription_tasks.add(task)
+            task.add_done_callback(self._inbox_subscription_tasks.discard)
         except Exception:
             logger.debug("_subscribe_actor_inbox: suppressed exception for %s", actor_id, exc_info=True)
+
+    async def wait_for_inbox_subscriptions(self) -> None:
+        """Wait for all subscriptions scheduled during startup/registration."""
+        tasks = tuple(self._inbox_subscription_tasks)
+        if not tasks:
+            return
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        failures = [r for r in results if isinstance(r, BaseException) or r is False]
+        if failures:
+            raise RuntimeError(f"Actor inbox subscription setup failed: {failures[0]}")
 
     def unregister_actor(self, actor_id: str) -> bool:
         """Unregister an actor's cognition from wherever it currently
@@ -3032,25 +3262,6 @@ return new_count
     def restore_actor_belief(self, actor_id: str) -> bool:
         """Belief Runtime Reconstruction: load the actor's most recently
         persisted canonical belief and rebuild it on the live actor.
-
-        Step 14 — Architecture Consolidation: this now targets
-        kernel/pipeline/belief_state.py::BeliefState — the representation
-        CognitiveRuntime.tick() actually reads/writes on every real
-        request — persisted via ActorStateStore (Mongo). The original
-        implementation targeted ActorRuntime's SparseTransitionTensor/
-        BeliefRuntime bundle, which the live tick path never consults; see
-        ActorRuntime.checkpoint()/.restore() (kernel/compile/actor_runtime.py)
-        for that now-demoted, still-functional legacy path.
-
-        Callers (unified_prompt) MUST call this immediately after world
-        validation succeeds and BEFORE execute_actor_request — no actor
-        execution, planning, or negotiation may run against a belief that
-        hasn't gone through this step first.
-
-        No-op (the actor's freshly-constructed BeliefState stands as-is)
-        when there is no checkpoint yet — e.g. the actor's first request,
-        or Mongo unreachable. Returns True if a checkpoint was found and
-        restored.
         """
         actor_runtime = self.get_actor_runtime(actor_id)
         if actor_runtime is None:
@@ -3108,13 +3319,68 @@ return new_count
                 model_name = backend_stats.get("model", "")
             except Exception:
                 logger.debug("[planetary] %s model backend stats unavailable (non-fatal)", actor_id, exc_info=True)
+            
+            # Capture complete actor metadata for rehydration on restart
+            # (name, actor_type, society_id, status, etc.)
+            sr = self._home_society_runtime(actor_id)
+            registry_state = sr.get_actor(actor_id) if sr is not None else None
+
+            lease_fence = int(getattr(registry_state, "last_lease_fence", 0) or 0) if registry_state else 0
+            if lease_fence and self._redis is not None:
+                try:
+                    current_fence = int(self._redis.get(f"{_ACTOR_FENCE_KEY_PREFIX}{actor_id}") or 0)
+                    if current_fence > lease_fence:
+                        logger.warning(
+                            "[planetary] %s belief checkpoint skipped — lease fence superseded "
+                            "(current=%d tick=%d); another node may own this actor",
+                            actor_id, current_fence, lease_fence,
+                        )
+                        return
+                except Exception as exc:
+                    logger.debug("[planetary] lease fence check failed (non-fatal): %s", exc)
+            
+            actor_metadata = {}
+            if registry_state and hasattr(registry_state, "profile"):
+                profile = registry_state.profile
+                if hasattr(profile, "identity"):
+                    actor_metadata["name"] = profile.identity.name
+                    actor_metadata["actor_type"] = profile.identity.actor_type
+                actor_metadata["description"] = getattr(profile, "description", "")
+                actor_metadata["capabilities"] = getattr(profile, "capabilities", [])
+                actor_metadata["constraints"] = getattr(profile, "constraints", [])
+                actor_metadata["metadata"] = getattr(profile, "metadata", {})
+            
+            if sr is not None:
+                actor_metadata["society_id"] = sr.society.society_id
+            
+            if registry_state:
+                actor_metadata["status"] = str(getattr(registry_state, "status", "registered"))
+                if hasattr(registry_state, "actor_runtime") and hasattr(registry_state.actor_runtime, "affiliations"):
+                    try:
+                        actor_metadata["affiliations"] = registry_state.actor_runtime.affiliations.to_dict()
+                    except Exception:
+                        pass
+            
+            # Capture desired state from Redis (if available)
+            try:
+                desired_state = self.get_actor_desired_state(actor_id)
+                actor_metadata["desired_state"] = {
+                    "state": desired_state.value if hasattr(desired_state, "value") else str(desired_state),
+                    "reason": "Persisted from control-plane",
+                }
+            except Exception:
+                pass
+
+            if lease_fence:
+                actor_metadata["lease_fence"] = lease_fence
+            
             state = PersistedActorState(
                 actor_id=actor_id,
                 tenant_id=tenant_id,
                 belief_state=json.dumps(belief.to_dict()).encode(),
                 bellman_policy=b"",
                 phi_compiled=b"",
-                memory_kv={},
+                memory_kv=actor_metadata,  # Store metadata in memory_kv field
                 last_updated=datetime.now().isoformat(),
                 version=belief.version,
                 cycle_count=getattr(pipeline_actor, "cycle_count", 0),
@@ -5298,6 +5564,9 @@ return new_count
                 f"{_ACTOR_LEASE_KEY_PREFIX}{actor_id}", token,
                 nx=True, ex=max(1, int(ttl_seconds)),
             ))
+            if acquired:
+                fence = int(self._redis.incr(f"{_ACTOR_FENCE_KEY_PREFIX}{actor_id}"))
+                self._actor_lease_fences[actor_id] = fence
         except Exception as exc:
             if self._lease_fail_open_single_node():
                 # Explicit operator opt-in (ACTOR_LEASE_FAIL_OPEN_SINGLE_NODE
@@ -5328,6 +5597,10 @@ return new_count
             return None
         return token if acquired else None
 
+    def get_actor_lease_fence(self, actor_id: str) -> int | None:
+        """Monotonic fence acquired with the current actor lease (if any)."""
+        return self._actor_lease_fences.get(actor_id)
+
     @staticmethod
     def _lease_fail_open_single_node() -> bool:
         return os.getenv("ACTOR_LEASE_FAIL_OPEN_SINGLE_NODE", "false").lower() not in ("false", "0", "no")
@@ -5348,6 +5621,8 @@ return new_count
             self._redis.eval(_RELEASE_LOCK_IF_OWNER_SCRIPT, 1, f"{_ACTOR_LEASE_KEY_PREFIX}{actor_id}", token)
         except Exception as exc:
             logger.debug("Actor lease release failed for %r (non-fatal, TTL will expire it): %s", actor_id, exc)
+        finally:
+            self._actor_lease_fences.pop(actor_id, None)
 
     #################################################################################################
     #                                   Actor Messaging (durable inbox)                            #
@@ -5671,6 +5946,15 @@ return new_count
             except (asyncio.CancelledError, Exception):
                 pass
         self._background_propagation_tasks.clear()
+        for task in list(self._inbox_subscription_tasks):
+            if not task.done():
+                task.cancel()
+        for task in list(self._inbox_subscription_tasks):
+            try:
+                await task
+            except (asyncio.CancelledError, Exception):
+                pass
+        self._inbox_subscription_tasks.clear()
         # _init_persistence's Redis client was never closed here — same
         # leaked-connection class of bug as SemanticGraph's Neo4j driver
         # (RuntimeBootstrap.shutdown) — harmless at low volume but real

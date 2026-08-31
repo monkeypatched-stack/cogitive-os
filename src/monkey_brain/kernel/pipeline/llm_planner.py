@@ -452,8 +452,30 @@ class LLMPlanner:
             context = PlanningContext.from_legacy(context_or_belief, goal, runtime_context)
 
         resolved_goal = context.goal
+        goal_id = ""
+        if resolved_goal is not None:
+            goal_id = (
+                getattr(resolved_goal, "goal_id", "")
+                or str(context.metadata.get("execution_id", "") or "")
+            )
         if resolved_goal is None or not getattr(resolved_goal, "name", ""):
-            return Plan(goal="", confidence=0.0, planner="llm")
+            return Plan(goal="", confidence=0.0, planner="llm", metadata={"goal_id": goal_id})
+
+        # Operator-activated promoted plans bypass LLM — deterministic replay
+        # of a verified recipe. Learning never activates; see
+        # capability_promotion.activate_promoted_capability().
+        from src.monkey_brain.kernel.pipeline.learning.capability_promotion import try_resolve_promoted_plan
+        promoted_plan = try_resolve_promoted_plan(resolved_goal.name)
+        if promoted_plan is not None:
+            if goal_id and not promoted_plan.metadata.get("goal_id"):
+                promoted_plan = Plan(
+                    goal=promoted_plan.goal,
+                    steps=promoted_plan.steps,
+                    confidence=promoted_plan.confidence,
+                    planner=promoted_plan.planner,
+                    metadata={**promoted_plan.metadata, "goal_id": goal_id},
+                )
+            return promoted_plan
 
         belief = context.metadata.get("_legacy_belief")
         facts = list(getattr(belief, "facts", ())) if belief is not None else []
@@ -589,6 +611,10 @@ class LLMPlanner:
             if step_confidences:
                 overall_confidence = min(step_confidences)
         summary = str(parsed.get("summary", ""))
+        goal_id = (
+            getattr(resolved_goal, "goal_id", "")
+            or str(context.metadata.get("execution_id", "") or "")
+        )
         return Plan(
             goal=resolved_goal.name,
             steps=steps,
@@ -597,7 +623,7 @@ class LLMPlanner:
             risk=max(0.0, 1.0 - overall_confidence),
             goal_state=resolved_goal.name,
             planner="llm",
-            metadata={"summary": summary},
+            metadata={"summary": summary, "goal_id": goal_id},
         )
 
     def _build_prompt(self, goal: Goal, facts: list, context: Any = None) -> str:

@@ -42,15 +42,25 @@ class RedisAdapter(IStoreAdapter):
             # redis-py defaults socket_timeout to None — a HUNG (not merely slow) server means
             # a read that never returns, blocking the awaiting coroutine forever. Bound both
             # the connect and the per-operation socket.
-            self._client = aioredis.from_url(
+            client = aioredis.from_url(
                 self._url,
                 decode_responses=True,
                 socket_connect_timeout=float(os.getenv("REDIS_CONNECT_TIMEOUT_SEC", "5")),
                 socket_timeout=float(os.getenv("REDIS_SOCKET_TIMEOUT_SEC", "5")),
                 health_check_interval=int(os.getenv("REDIS_HEALTH_CHECK_INTERVAL_SEC", "30")),
             )
+            # Only cache on success - if exception occurs below, connection stays None
+            self._client = client
             self._connected = True
+            logger.info("Redis adapter connected to %s", self._url)
         except ImportError:
+            logger.warning("redis driver not installed — Redis adapter disabled")
+            # Leave _client as None (don't cache failure)
+            self._connected = False
+        except Exception as exc:
+            logger.warning("Redis connection failed: %s (will retry on next operation)", exc)
+            # Leave _client as None (don't cache failure)
+            # Next operation will see _connected=False and automatically retry
             self._connected = False
     
     async def disconnect(self) -> None:
@@ -65,7 +75,11 @@ class RedisAdapter(IStoreAdapter):
     
     async def persist(self, event: PersistenceEvent) -> dict[str, Any]:
         if not self._connected:
-            return {"status": "disconnected"}
+            logger.debug("Redis not connected, attempting to reconnect...")
+            await self.connect()
+            if not self._connected:
+                logger.warning("Redis reconnection failed, cannot persist")
+                return {"status": "disconnected"}
         
         key = f"{event.entity_type}:{event.entity_id}"
         
@@ -90,7 +104,11 @@ class RedisAdapter(IStoreAdapter):
     
     async def query(self, entity_type: str, entity_id: str | None = None) -> Any:
         if not self._connected:
-            return None
+            logger.debug("Redis not connected, attempting to reconnect...")
+            await self.connect()
+            if not self._connected:
+                logger.warning("Redis reconnection failed, cannot query")
+                return None
         
         if entity_id:
             key = f"{entity_type}:{entity_id}"
@@ -101,16 +119,27 @@ class RedisAdapter(IStoreAdapter):
         return keys
     
     async def set(self, key: str, value: Any, ttl: int | None = None) -> None:
-        if self._connected:
-            if ttl:
-                await self._client.setex(key, ttl, str(value))
-            else:
-                await self._client.set(key, str(value))
+        if not self._connected:
+            logger.debug("Redis not connected, attempting to reconnect...")
+            await self.connect()
+            if not self._connected:
+                logger.warning("Redis reconnection failed, cannot set value")
+                return
+        
+        if ttl:
+            await self._client.setex(key, ttl, str(value))
+        else:
+            await self._client.set(key, str(value))
     
     async def get(self, key: str) -> Any:
-        if self._connected:
-            return await self._client.get(key)
-        return None
+        if not self._connected:
+            logger.debug("Redis not connected, attempting to reconnect...")
+            await self.connect()
+            if not self._connected:
+                logger.warning("Redis reconnection failed, cannot get value")
+                return None
+        
+        return await self._client.get(key)
     
     def is_connected(self) -> bool:
         return self._connected

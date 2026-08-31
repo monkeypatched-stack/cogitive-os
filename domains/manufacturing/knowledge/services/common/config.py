@@ -1,7 +1,27 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 import dotenv
+import os
 
-# Load environment variables from .env files
+# =========================================================================
+# SECURITY: Secrets Loading Policy
+# =========================================================================
+# This module enforces fail-closed secrets handling:
+#
+# 1. .env files are ONLY loaded for local development
+# 2. In production, secrets MUST come from deployment mechanisms:
+#    - Environment variables (set by Docker/K8s)
+#    - Secret managers (Vault, AWS Secrets Manager)
+#    - Secret injection (init containers, sidecar agents)
+# 3. Required secrets are validated at startup — service fails if missing
+# 4. No secrets are logged or displayed in error messages
+#
+# DO NOT add fallback defaults for security-sensitive values.
+# DO NOT load secrets from .env files in production (they're never committed but can leak).
+# DO NOT use os.getenv() with a default for secrets — fail closed instead.
+
+# Load environment variables from .env files (dev/local only)
+# In production, these files will not exist — secrets come from deployment
 dotenv.load_dotenv(".env")
 dotenv.load_dotenv("services/auth/.env", override=True)
 
@@ -11,8 +31,30 @@ class Settings(BaseSettings):
     DB_NAME: str = "demo"
     CORS_ALLOW_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"
 
-    ACCESS_TOKEN_SECRET: str = ""
-    REFRESH_TOKEN_SECRET: str = ""
+    # ====================================================================
+    # Security-Critical Secrets (REQUIRED, fail-closed)
+    # ====================================================================
+    # These are validated at startup and must come from explicit
+    # deployment sources (env vars, secrets managers). No defaults,
+    # no fallbacks. If missing, the service refuses to start.
+    ACCESS_TOKEN_SECRET: str
+    REFRESH_TOKEN_SECRET: str
+
+    @field_validator("ACCESS_TOKEN_SECRET", "REFRESH_TOKEN_SECRET", mode="before")
+    @classmethod
+    def _require_non_empty_secret(cls, value: str, info) -> str:  # type: ignore[override]
+        # Fail closed: reject empty or whitespace-only secrets
+        if not value or not value.strip():
+            raise ValueError(
+                f"{info.field_name} is a security-critical secret and must be "
+                f"set to a non-empty value. It cannot be loaded from .env files "
+                f"in production. Ensure it is set via:\n"
+                f"  1. Deployment environment variables (Docker: -e, K8s: env)\n"
+                f"  2. Secret manager (Vault, AWS Secrets Manager)\n"
+                f"  3. For local dev only: .env or services/auth/.env file"
+            )
+        return value
+
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"

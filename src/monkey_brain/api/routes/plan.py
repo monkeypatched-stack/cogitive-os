@@ -25,6 +25,7 @@ from src.monkey_brain.kernel.execute.models import ExecutionMode
 from src.monkey_brain.kernel.execute.orchestration.routing import unsupported_response
 from src.monkey_brain.runtime.routers import get_mongo_client
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 from src.monkey_brain.kernel.learn.telemetry.telemetry import profile_start, profile_end, profile_add
 from src.monkey_brain.kernel.models.plan import PlanRequest, PlanResponse
 from src.monkey_brain.api.helpers.run_helpers import get_cognitive_runtime, _get_grounding_confidence
@@ -77,6 +78,7 @@ def _normalize_execution_order(order: Any) -> list[list[str]]:
 # and returns the plan without executing it. each plan execution updates the policy weights
 # based on the plan selected and the grounding confidence of the knowledge pack.
 @router.post("/plan", response_model=PlanResponse)
+@idempotent("plan.execute")
 async def plan_execution(
     payload: PlanRequest,
     request: Request,
@@ -271,6 +273,24 @@ async def plan_execution(
             execution_graph.setdefault("metadata", {})
             execution_graph["metadata"].setdefault("graph_id", execution_graph["graph_id"])
             execution_graph["metadata"].setdefault("run_id", run_id)
+            execution_graph["metadata"].setdefault("goal_id", run_id)
+
+            from src.monkey_brain.kernel.pipeline.plan_compiler import compile_broca_graph
+            compile_outcome = compile_broca_graph(
+                execution_graph,
+                plan_id=run_id,
+                actor_id=user_id or "",
+                goal_id=run_id,
+                goal=execution_goal.name,
+            )
+            if not compile_outcome.ok:
+                logger.warning(
+                    "run=%r [plan] compile rejected: %s",
+                    run_id, "; ".join(compile_outcome.violations),
+                )
+            else:
+                execution_graph = compile_outcome.execution_graph.to_dict()
+            execution_graph.setdefault("metadata", {})["goal_id"] = run_id
             execution_graph["metadata"].setdefault("execution_order", _normalize_execution_order(execution_graph.get("execution_order")))
             answer = json.dumps(execution_graph, indent=2, default=str)
 
