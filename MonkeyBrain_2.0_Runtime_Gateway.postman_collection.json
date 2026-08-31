@@ -1,17 +1,17 @@
 {
 	"info": {
 		"name": "MonkeyBrain 2.0 Runtime Gateway",
-		"description": "Complete API collection for the MonkeyBrain Cognitive OS Runtime Gateway.\n\nBase URL: http://localhost:8031/api/v1/agentos\n\nAuthentication: Disabled in dev (AGENTOS_AUTH_REQUIRED=false). Enable in production.\n\nAll endpoints delegate to existing runtime components \u2014 no business logic in the gateway.\n\nNew endpoints added:\n- Knowledge Graph: GET /api/v1/knowledge-graph/{person_id}\n- Actor Profile: GET /api/v1/actors/{actor_id}/profile\n- Actor Account: GET /api/v1/actors/{actor_id}/account\n- Login: POST /api/v1/actors/{actor_id}/login\n- Prompt: POST /api/v1/agentos/prompt\n\nWorld Graph Builder / Cognitive Reasoning separation (added in this pass):\n- Commerce: POST /merchants, /wallets, /products, /cart/{actor_id}/items, /inventory/*\n- Orders: POST /orders, /orders/{id}/payment, /cancel, /confirm-receipt, /return, /return/approve, /refund\n- Fulfillment: POST /fulfillment/pick, /pack, /shipments, /shipments/{id}/transit|deliver|lost|replace|delay\n- Events: POST /events (fire, flood, promotion, flash_sale, ...) \u2014 populates ContextStream\n- Presence: GET /presence, /presence/actors/{id}, /presence/spaces/{id}, /presence/history/*\n- Verify: POST /verify, GET /verify/invariants \u2014 world invariant checks\n\nPrinciple: REST APIs build/mutate the world graph deterministically. /prompt, /plan, /execute reason over it \u2014 never used to create entities.",
+		"description": "Complete API collection for the MonkeyBrain Cognitive OS Runtime Gateway.\n\nBase URL: http://localhost:8031/api/v1/agentos\n\nAuthentication: Disabled in dev (AGENTOS_AUTH_REQUIRED=false). Enable in production.\n\nProduction mode (COGNITIVEOS_PRODUCTION_MODE=true):\n- Requires Redis (REQUIRE_REDIS) and OPA when OPA_REQUIRED\n- Idempotent POSTs fail closed (503) if Redis idempotency reserve fails\n- Direct SharedWorld mutations (POST/PUT/DELETE /world/* except /world/query) return 403 unless ALLOW_DIRECT_WORLD_API=true — use Commerce/Orders/Fulfillment APIs to build the world graph\n- See docs/PRODUCTION_HARDENING_SUMMARY.md for full gate inventory\n\nIdempotency: Mutating commerce, cognitive, and event routes send Idempotency-Key. Reuse the same key to safely retry after a dropped connection; omit pinning (leave idempotency_key empty) for a fresh UUID each send.\n\nPrinciple: REST APIs build/mutate the world graph deterministically. /prompt, /plan, /execute reason over it — never used to create entities.\n\nCommerce: POST /merchants, /wallets, /products, /cart/{actor_id}/items, /inventory/*\nOrders: POST /orders, /orders/{id}/payment, /cancel, /confirm-receipt, /return, /return/approve, /refund\nFulfillment: POST /fulfillment/pick, /pack, /shipments, /shipments/{id}/transit|deliver|lost|replace|delay\nEvents: POST /events\nCognitive: POST /prompt, /plan, /execute (Idempotency-Key supported on /prompt, /plan, /execute — not /execute/stream)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:8031/api/v1/agentos"
+			"value": "http://localhost:8000/api/v1/agentos"
 		},
 		{
 			"key": "health_url",
-			"value": "http://localhost:8031"
+			"value": "http://localhost:8000"
 		},
 		{
 			"key": "user_id",
@@ -191,19 +191,24 @@
 		{
 			"key": "team_id",
 			"value": ""
+		},
+		{
+			"key": "idempotency_key",
+			"value": "",
+			"description": "Optional pinned idempotency key for safe retries. Leave empty to auto-generate a UUID per request. When COGNITIVEOS_PRODUCTION_MODE=true, Redis must be reachable or idempotent POSTs return 503 (fail-closed)."
 		}
 	],
 	"item": [
 		{
 			"name": "Planet",
-			"description": "Top-level view of the Cognitive OS \u2014 societies, actors, statistics.",
+			"description": "Top-level view of the Cognitive OS — societies, actors, statistics.",
 			"item": [
 				{
 					"name": "Get Planet",
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/planet",
-						"description": "Full planet state \u2014 society_id, actor_count, world_version, etc.",
+						"description": "Full planet state — society_id, actor_count, world_version, etc.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -222,7 +227,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/planet/status",
-						"description": "Health/status summary \u2014 uptime, cycle_count, societies, actors.",
+						"description": "Health/status summary — uptime, cycle_count, societies, actors.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -279,7 +284,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/planet/statistics",
-						"description": "Aggregate statistics \u2014 total actors, societies, reputations, etc.",
+						"description": "Aggregate statistics — total actors, societies, reputations, etc.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -313,7 +318,7 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Execute one complete planetary cycle \u2014 tick all societies."
+						"description": "Execute one complete planetary cycle — tick all societies."
 					}
 				},
 				{
@@ -341,7 +346,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/planet/cities/{{city_id}}/societies",
-						"description": "Assign an existing society to a city (strict: a society belongs to\nat most one city \u2014 reassigning removes it from any prior city)."
+						"description": "Assign an existing society to a city (strict: a society belongs to\nat most one city — reassigning removes it from any prior city)."
 					},
 					"response": []
 				},
@@ -400,7 +405,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/planet/geo",
-						"description": "Create a geographic entity at any tier. Body: entity_type (planet,\ncountry, state, county, city, street, building, space), name, parent_id\n(required for every tier except planet), description, and \u2014 for\nbuilding/space \u2014 building_type/space_type."
+						"description": "Create a geographic entity at any tier. Body: entity_type (planet,\ncountry, state, county, city, street, building, space), name, parent_id\n(required for every tier except planet), description, and — for\nbuilding/space — building_type/space_type."
 					},
 					"response": []
 				},
@@ -428,7 +433,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/planet/geo/{{entity_id}}/contents",
-						"description": "What's attached to a Space: its current actor occupants and its\nhosted societies, as siblings (see kernel/geography/entity.py module\ndocstring \u2014 Actors are not children of Societies)."
+						"description": "What's attached to a Space: its current actor occupants and its\nhosted societies, as siblings (see kernel/geography/entity.py module\ndocstring — Actors are not children of Societies)."
 					},
 					"response": []
 				},
@@ -529,7 +534,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/societies/{{society_id}}",
-						"description": "Get society details \u2014 actors, interactions, policies.",
+						"description": "Get society details — actors, interactions, policies.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -594,7 +599,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/societies/{{society_id}}/status",
-						"description": "Society health/status \u2014 actors, ticks, world version.",
+						"description": "Society health/status — actors, ticks, world version.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -704,7 +709,7 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Execute one society tick \u2014 tick all actors in the society."
+						"description": "Execute one society tick — tick all actors in the society."
 					}
 				},
 				{
@@ -881,7 +886,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/societies/{{society_id}}/actors/{{actor_id}}/permissions",
-						"description": "Real, per-actor Permission grants (kernel/society/governance.py) \u2014\nwhat Membership.resolve_permissions() actually reads."
+						"description": "Real, per-actor Permission grants (kernel/society/governance.py) —\nwhat Membership.resolve_permissions() actually reads."
 					},
 					"response": []
 				},
@@ -901,7 +906,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/societies/{{society_id}}/governance-policies",
-						"description": "Real GovernancePolicy objects (kernel/society/governance.py) \u2014\ndistinct from GET /societies/{id}/policies, which reads the plain\nstring list Society.policies. This is what PlanningContext.\nactive_policies (and the planner's prompt) actually reads."
+						"description": "Real GovernancePolicy objects (kernel/society/governance.py) —\ndistinct from GET /societies/{id}/policies, which reads the plain\nstring list Society.policies. This is what PlanningContext.\nactive_policies (and the planner's prompt) actually reads."
 					},
 					"response": []
 				},
@@ -1026,7 +1031,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/actors/{{actor_id}}",
-						"description": "Get actor details \u2014 type, status, cycle_count.",
+						"description": "Get actor details — type, status, cycle_count.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -1167,7 +1172,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/actors/{{actor_id}}/status",
-						"description": "Actor status \u2014 tick_count, enabled.",
+						"description": "Actor status — tick_count, enabled.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -1205,7 +1210,7 @@
 							"mode": "raw",
 							"raw": "{\n  \"start\": \"warehouse\",\n  \"goal\": \"customer_door\",\n  \"reward\": 1.0\n}"
 						},
-						"description": "Execute one complete cognitive tick \u2014 Observe\u2192Believe\u2192Plan\u2192Execute\u2192Learn\u2192Commit."
+						"description": "Execute one complete cognitive tick — Observe→Believe→Plan→Execute→Learn→Commit."
 					}
 				},
 				{
@@ -1302,7 +1307,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/actors/teams/{{team_id}}/members",
-						"description": "Add an actor to a team. Strict membership: an actor belongs to at\nmost one team per society \u2014 adding to a new team removes it from any\nprior one in the same society."
+						"description": "Add an actor to a team. Strict membership: an actor belongs to at\nmost one team per society — adding to a new team removes it from any\nprior one in the same society."
 					},
 					"response": []
 				},
@@ -1381,7 +1386,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/beliefs_timeline",
-						"description": "Named beliefs_timeline (not /beliefs, already taken by the existing\ncurrent-belief-state route below) \u2014 full BeliefRecord history."
+						"description": "Named beliefs_timeline (not /beliefs, already taken by the existing\ncurrent-belief-state route below) — full BeliefRecord history."
 					},
 					"response": []
 				},
@@ -1401,7 +1406,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/effective-policies",
-						"description": "Effective policies across every active membership \u2014 union of each\nmembership's society's resolved policies (kernel/society/membership.py::\nSocietyMembershipRegistry.resolve_policies)."
+						"description": "Effective policies across every active membership — union of each\nmembership's society's resolved policies (kernel/society/membership.py::\nSocietyMembershipRegistry.resolve_policies)."
 					},
 					"response": []
 				},
@@ -1425,7 +1430,7 @@
 							}
 						],
 						"url": "{{base_url}}/actors/{{actor_id}}/experiences",
-						"description": "Record a completed experience for this actor into the shared\nCognitiveMemory/KnowledgeGraph (MemoryManager.record_experience) \u2014 the\nmechanism other actors' goal-driven knowledge search can later surface,\nvia PlanningContext.relevant_knowledge, when they share real keywords.",
+						"description": "Record a completed experience for this actor into the shared\nCognitiveMemory/KnowledgeGraph (MemoryManager.record_experience) — the\nmechanism other actors' goal-driven knowledge search can later surface,\nvia PlanningContext.relevant_knowledge, when they share real keywords.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"kind\": \"\",\n  \"text\": \"\",\n  \"metadata\": {},\n  \"visibility\": \"private\"\n}",
@@ -1444,7 +1449,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/experiences/shared",
-						"description": "Cognitive Network (CCB-600): other actors' `visibility=\"shared\"`\nexperiences this actor may currently receive (co-membership in at\nleast one Society \u2014 ContextConstructionEngine._may_receive_shared_\nexperience). Thin wrapper for demoing/verifying retrieval directly,\nindependent of running a full planning cycle."
+						"description": "Cognitive Network (CCB-600): other actors' `visibility=\"shared\"`\nexperiences this actor may currently receive (co-membership in at\nleast one Society — ContextConstructionEngine._may_receive_shared_\nexperience). Thin wrapper for demoing/verifying retrieval directly,\nindependent of running a full planning cycle."
 					},
 					"response": []
 				},
@@ -1454,7 +1459,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/goals_timeline",
-						"description": "Named goals_timeline (not /goals, already taken by the existing\ncurrent-goals route below) \u2014 full GoalRecord history."
+						"description": "Named goals_timeline (not /goals, already taken by the existing\ncurrent-goals route below) — full GoalRecord history."
 					},
 					"response": []
 				},
@@ -1464,7 +1469,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/memberships_timeline",
-						"description": "Named memberships_timeline (not /memberships, a separate router in\napi/routes/memberships.py) \u2014 full MembershipRecord history, including\nclosed/past memberships (kernel/society/membership.py::\nSocietyMembershipRegistry.history_for_actor)."
+						"description": "Named memberships_timeline (not /memberships, a separate router in\napi/routes/memberships.py) — full MembershipRecord history, including\nclosed/past memberships (kernel/society/membership.py::\nSocietyMembershipRegistry.history_for_actor)."
 					},
 					"response": []
 				},
@@ -1474,7 +1479,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/move",
-						"description": "Record a Presence change \u2014 body: {space_id, activity, confidence,\nsource}. The write path PresenceTimeline enforces (no overlap, exactly\none open interval) is on PlanetaryRuntime.move_actor()/PresenceTimeline\nitself, not this route."
+						"description": "Record a Presence change — body: {space_id, activity, confidence,\nsource}. The write path PresenceTimeline enforces (no overlap, exactly\none open interval) is on PlanetaryRuntime.move_actor()/PresenceTimeline\nitself, not this route."
 					},
 					"response": []
 				},
@@ -1484,7 +1489,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/planning-context/memberships",
-						"description": "Membership context for planning \u2014 supports the Context Construction\nEngine/Contextual Planner (kernel/pipeline/planning/context_engine.py),\nsame information it reads internally via PlanningContext.metadata[\n\"active_memberships\"], exposed here for direct inspection/debugging."
+						"description": "Membership context for planning — supports the Context Construction\nEngine/Contextual Planner (kernel/pipeline/planning/context_engine.py),\nsame information it reads internally via PlanningContext.metadata[\n\"active_memberships\"], exposed here for direct inspection/debugging."
 					},
 					"response": []
 				},
@@ -1494,7 +1499,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/presence",
-						"description": "Presence history, or (with ?at=) the Presence valid at a single\npoint in time \u2014 \"where was Alice yesterday at 3pm.\"."
+						"description": "Presence history, or (with ?at=) the Presence valid at a single\npoint in time — \"where was Alice yesterday at 3pm.\"."
 					},
 					"response": []
 				},
@@ -1536,7 +1541,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/societies",
-						"description": "Every society actor_id is a member of (Society as Organizational\nContext refactor) \u2014 the real, single source of truth via\nPlanetaryRuntime.societies_for_actor(), replacing the ad-hoc per-route\nscans this file used before real multi-membership existed."
+						"description": "Every society actor_id is a member of (Society as Organizational\nContext refactor) — the real, single source of truth via\nPlanetaryRuntime.societies_for_actor(), replacing the ad-hoc per-route\nscans this file used before real multi-membership existed."
 					},
 					"response": []
 				},
@@ -1546,7 +1551,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/actors/{{actor_id}}/timeline",
-						"description": "Replay every timeline entry (all 7 kinds) for actor_id, merged and\ntime-ordered \u2014 \"replay Alice's day.\"."
+						"description": "Replay every timeline entry (all 7 kinds) for actor_id, merged and\ntime-ordered — \"replay Alice's day.\"."
 					},
 					"response": []
 				}
@@ -1599,7 +1604,7 @@
 							"mode": "raw",
 							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"society_id\": \"{{society_id}}\",\n  \"role\": \"worker\",\n  \"permissions\": [\"read\", \"write\"],\n  \"metadata\": {}\n}"
 						},
-						"description": "Create a membership (actor \u2194 society)."
+						"description": "Create a membership (actor ↔ society)."
 					}
 				},
 				{
@@ -1940,14 +1945,14 @@
 		},
 		{
 			"name": "Runtime",
-			"description": "Introspect the runtime system \u2014 health, status, configuration.",
+			"description": "Introspect the runtime system — health, status, configuration.",
 			"item": [
 				{
 					"name": "Get Runtime",
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/runtime",
-						"description": "Runtime overview \u2014 name, status, components.",
+						"description": "Runtime overview — name, status, components.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -1966,7 +1971,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/runtime/status",
-						"description": "Health status of all runtimes \u2014 cognitive, simulation, comparator, society.",
+						"description": "Health status of all runtimes — cognitive, simulation, comparator, society.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -1985,7 +1990,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/runtime/health",
-						"description": "Detailed component health \u2014 wolverine, policy, society.",
+						"description": "Detailed component health — wolverine, policy, society.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -2004,7 +2009,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/runtime/configuration",
-						"description": "Runtime configuration \u2014 auth, rate limits, CORS.",
+						"description": "Runtime configuration — auth, rate limits, CORS.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -2023,7 +2028,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/runtime/metrics",
-						"description": "Performance metrics \u2014 requests, cycles, latency.",
+						"description": "Performance metrics — requests, cycles, latency.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -2052,9 +2057,22 @@
 								"type": "text/javascript",
 								"exec": [
 									"// Captures the full PlanResponse so the next request",
-									"// (Simulate/Compare) can reuse it verbatim \u2014 those routes",
+									"// (Simulate/Compare) can reuse it verbatim — those routes",
 									"// require the exact graph /plan produced, not a hand-built body.",
 									"pm.collectionVariables.set('plan_response', pm.response.text());"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
 								]
 							}
 						}
@@ -2065,6 +2083,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							}
 						],
 						"body": {
@@ -2099,7 +2122,7 @@
 							"mode": "raw",
 							"raw": "{{plan_response}}"
 						},
-						"description": "Requires the 'Plan (prerequisite for Simulate)' request to run first in the same session \u2014 /simulate takes the full PlanResponse (graph + run_id + question + ...) from a prior POST /plan {target: simulate} call, not a hand-built body. The graph IS the request; there's no separate 'question' shorthand."
+						"description": "Requires the 'Plan (prerequisite for Simulate)' request to run first in the same session — /simulate takes the full PlanResponse (graph + run_id + question + ...) from a prior POST /plan {target: simulate} call, not a hand-built body. The graph IS the request; there's no separate 'question' shorthand."
 					}
 				},
 				{
@@ -2205,7 +2228,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/learn",
-						"description": "POST /learn \u2014 iterative learning loop.\n\nLoads the latest execution and simulation graphs from the run store,\ncomputes topological loss between them, updates the Q-table via\nBellman TD updates, and returns per-iteration metrics."
+						"description": "POST /learn — iterative learning loop.\n\nLoads the latest execution and simulation graphs from the run store,\ncomputes topological loss between them, updates the Q-table via\nBellman TD updates, and returns per-iteration metrics."
 					},
 					"response": []
 				},
@@ -2238,7 +2261,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/test-bellman-cycle",
-						"description": "Run a sample workload through the full Bellman cycle and return results.\n\nVerifies: simulate \u2192 query \u2192 loss \u2192 transition store \u2192 transition lookup."
+						"description": "Run a sample workload through the full Bellman cycle and return results.\n\nVerifies: simulate → query → loss → transition store → transition lookup."
 					},
 					"response": []
 				},
@@ -2267,9 +2290,22 @@
 								"type": "text/javascript",
 								"exec": [
 									"// Captures the full PlanResponse so the next request",
-									"// (Simulate/Compare) can reuse it verbatim \u2014 those routes",
+									"// (Simulate/Compare) can reuse it verbatim — those routes",
 									"// require the exact graph /plan produced, not a hand-built body.",
 									"pm.collectionVariables.set('plan_response', pm.response.text());"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
 								]
 							}
 						}
@@ -2280,6 +2316,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							}
 						],
 						"body": {
@@ -2314,7 +2355,7 @@
 							"mode": "raw",
 							"raw": "{{plan_response}}"
 						},
-						"description": "Requires the 'Plan (prerequisite for Compare)' request to run first in the same session \u2014 /compare takes the full PlanResponse from a prior POST /plan {target: compare} call, same as /simulate."
+						"description": "Requires the 'Plan (prerequisite for Compare)' request to run first in the same session — /compare takes the full PlanResponse from a prior POST /plan {target: compare} call, same as /simulate."
 					}
 				},
 				{
@@ -2390,7 +2431,7 @@
 		},
 		{
 			"name": "Learning",
-			"description": "Collective learning \u2014 share experiences, track statistics.",
+			"description": "Collective learning — share experiences, track statistics.",
 			"item": [
 				{
 					"name": "Share Experience",
@@ -2478,7 +2519,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/learn/statistics",
-						"description": "Learning statistics \u2014 total_experiences, reputations, improvements.",
+						"description": "Learning statistics — total_experiences, reputations, improvements.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -2496,14 +2537,14 @@
 		},
 		{
 			"name": "World",
-			"description": "Full CRUD for the shared world state \u2014 entities, relationships, events, resources.",
+			"description": "SharedWorld CRUD and query. In production mode (COGNITIVEOS_PRODUCTION_MODE=true), POST/PUT/DELETE on /world/* (except POST /world/query) are blocked unless ALLOW_DIRECT_WORLD_API=true. Prefer Commerce, Orders, and Fulfillment APIs for deterministic world-graph mutations.",
 			"item": [
 				{
 					"name": "Get World",
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/world",
-						"description": "Full world state \u2014 version, entities, relationships, events, resources.",
+						"description": "Full world state — version, entities, relationships, events, resources.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -2979,7 +3020,7 @@
 		},
 		{
 			"name": "Commerce",
-			"description": "World Graph Builder APIs for the commerce domain \u2014 merchants, products, wallets, cart, and inventory. Deterministic mutations of the KnowledgeGraph; no reasoning.",
+			"description": "World Graph Builder APIs for the commerce domain — merchants, products, wallets, cart, and inventory. Deterministic mutations of the KnowledgeGraph; no reasoning.",
 			"item": [
 				{
 					"name": "Create Merchant",
@@ -2990,6 +3031,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3006,7 +3052,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"store_name\": \"Bob's Store\",\n  \"delivery_fee\": 0.0,\n  \"address\": \"200 W 23rd St, New York, NY\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Create Wallet",
@@ -3019,6 +3080,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3028,12 +3094,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Creates a real payment ACCOUNT \u2014 the financial identity Payment/PaymentConfirmation need.",
+						"description": "Creates a real payment ACCOUNT — the financial identity Payment/PaymentConfirmation need.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"owner\": \"{{actor_id}}\",\n  \"name\": \"Alice's Wallet\",\n  \"account_type\": \"debit\",\n  \"balance\": 500.0\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Create Product",
@@ -3044,6 +3125,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3060,7 +3146,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"store_id\": \"{{store_id}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"name\": \"Wireless Gaming Mouse\",\n  \"price\": 59.99,\n  \"quantity\": 25\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Browse / Search Products",
@@ -3120,7 +3221,7 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "A merchant edits their own listing \u2014 partial update, only owner may edit.",
+						"description": "A merchant edits their own listing — partial update, only owner may edit.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"price\": 54.99\n}"
@@ -3143,7 +3244,7 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Soft-delists a product \u2014 excluded from the catalog, entity itself survives."
+						"description": "Soft-delists a product — excluded from the catalog, entity itself survives."
 					}
 				},
 				{
@@ -3157,6 +3258,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3166,12 +3272,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "A merchant runs a time-limited sale \u2014 applies automatically at checkout, no coupon code needed.",
+						"description": "A merchant runs a time-limited sale — applies automatically at checkout, no coupon code needed.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"sale_price\": 44.99\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Leave Review",
@@ -3184,6 +3305,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3193,12 +3319,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Requires a verified purchase \u2014 a real completed order containing this product.",
+						"description": "Requires a verified purchase — a real completed order containing this product.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"rating\": 5,\n  \"comment\": \"Great mouse!\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Add To Cart",
@@ -3209,6 +3350,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3224,7 +3370,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"quantity\": 1\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Get Cart",
@@ -3255,6 +3416,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3268,7 +3434,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"code\": \"SAVE10\",\n  \"store_id\": \"{{store_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Reserve Inventory",
@@ -3281,6 +3462,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3290,12 +3476,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "CAS-based hold \u2014 no-oversell, even under concurrent requests.",
+						"description": "CAS-based hold — no-oversell, even under concurrent requests.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"actor_id\": \"{{actor_id}}\",\n  \"qty\": 1,\n  \"hold_seconds\": 30.0\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Confirm Reservation",
@@ -3306,6 +3507,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3322,7 +3528,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"actor_id\": \"{{actor_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Place Backorder",
@@ -3333,6 +3554,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3349,7 +3575,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"actor_id\": \"{{actor_id}}\",\n  \"qty\": 1\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Fulfill Backorders",
@@ -3360,6 +3601,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3375,7 +3621,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"product_id\": \"{{product_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				}
 			]
 		},
@@ -3394,6 +3655,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3408,7 +3674,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"items\": [\n    {\n      \"id\": \"{{product_id}}\",\n      \"name\": \"Wireless Gaming Mouse\",\n      \"price\": 59.99,\n      \"qty\": 1,\n      \"store_id\": \"{{store_id}}\",\n      \"store_name\": \"Bob's Store\"\n    }\n  ],\n  \"question\": \"deliver my order\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Get Order",
@@ -3439,6 +3720,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3448,12 +3734,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Authorizes + charges \u2014 converts the held reservation into a permanent stock decrement.",
+						"description": "Authorizes + charges — converts the held reservation into a permanent stock decrement.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"actor_id\": \"{{actor_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Cancel Order",
@@ -3466,6 +3767,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3475,12 +3781,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Refunds + restocks \u2014 only before the order has shipped.",
+						"description": "Refunds + restocks — only before the order has shipped.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"actor_id\": \"{{actor_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Confirm Receipt",
@@ -3493,6 +3814,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3502,12 +3828,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Customer's own sign-off \u2014 closes the order lifecycle to 'completed'.",
+						"description": "Customer's own sign-off — closes the order lifecycle to 'completed'.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"actor_id\": \"{{actor_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Request Return",
@@ -3520,6 +3861,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3529,12 +3875,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Files a return request \u2014 does not refund yet, moves order to 'return_requested'.",
+						"description": "Files a return request — does not refund yet, moves order to 'return_requested'.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"actor_id\": \"{{actor_id}}\",\n  \"reason\": \"changed my mind\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Approve Return",
@@ -3545,6 +3906,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3561,7 +3927,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"approved_by\": \"{{merchant_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Refund Order",
@@ -3574,6 +3955,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3583,12 +3969,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Standalone partial/goodwill refund \u2014 does not restock or change order status.",
+						"description": "Standalone partial/goodwill refund — does not restock or change order status.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"amount\": 10.0,\n  \"reason\": \"goodwill credit for damaged packaging\",\n  \"refunded_by\": \"{{merchant_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				}
 			]
 		},
@@ -3607,6 +4008,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3621,7 +4027,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"store_id\": \"{{store_id}}\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Pack Order",
@@ -3634,6 +4055,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3643,12 +4069,27 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Splits items into real packages \u2014 cold-chain items always segregated.",
+						"description": "Splits items into real packages — cold-chain items always segregated.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"items\": [\n    {\n      \"id\": \"{{product_id}}\",\n      \"name\": \"Wireless Gaming Mouse\",\n      \"qty\": 1\n    }\n  ],\n  \"box_capacity\": 12\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Create Shipment",
@@ -3659,6 +4100,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3674,7 +4120,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"order_id\": \"{{order_id}}\",\n  \"packages\": [\n    {\n      \"box_type\": \"standard\",\n      \"items\": [\n        {\n          \"product_id\": \"{{product_id}}\",\n          \"name\": \"Wireless Gaming Mouse\",\n          \"qty\": 1\n        }\n      ],\n      \"qty\": 1\n    }\n  ],\n  \"rider_id\": \"\",\n  \"carrier\": \"InternalFleet\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Get Shipment",
@@ -3705,6 +4166,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3714,7 +4180,22 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						]
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Mark Shipment Delivered",
@@ -3727,6 +4208,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3737,7 +4223,22 @@
 							}
 						],
 						"description": "Once every shipment for an order is delivered, the order itself moves to 'delivered'."
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Mark Shipment Lost",
@@ -3748,6 +4249,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3764,7 +4270,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"reported_by\": \"carrier_agent\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Issue Replacement Shipment",
@@ -3777,6 +4298,11 @@
 								"value": "application/json"
 							},
 							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
+							},
+							{
 								"key": "X-User-ID",
 								"value": "{{user_id}}"
 							},
@@ -3786,8 +4312,23 @@
 								"description": "JWT token (leave empty for dev mode with X-User-ID)"
 							}
 						],
-						"description": "Issues a brand-new shipment for the same order \u2014 only for a shipment marked 'lost'."
-					}
+						"description": "Issues a brand-new shipment for the same order — only for a shipment marked 'lost'."
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Report Shipment Delay",
@@ -3798,6 +4339,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3813,7 +4359,22 @@
 							"mode": "raw",
 							"raw": "{\n  \"reason\": \"severe weather\",\n  \"new_eta\": 1735776000\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Track Order",
@@ -3838,7 +4399,7 @@
 		},
 		{
 			"name": "Events",
-			"description": "World Graph Builder APIs for populating the ContextStream \u2014 fire, flood, promotion, flash sale, power failure, traffic, weather, strike, ...",
+			"description": "World Graph Builder APIs for populating the ContextStream — fire, flood, promotion, flash sale, power failure, traffic, weather, strike, ...",
 			"item": [
 				{
 					"name": "Create Event",
@@ -3849,6 +4410,11 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -3865,13 +4431,28 @@
 							"mode": "raw",
 							"raw": "{\n  \"type\": \"fire\",\n  \"space_id\": \"{{space_id}}\",\n  \"description\": \"Warehouse fire\"\n}"
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				}
 			]
 		},
 		{
 			"name": "Presence",
-			"description": "Read-only queries over PresenceTimeline \u2014 where_is/history/who_is_in.",
+			"description": "Read-only queries over PresenceTimeline — where_is/history/who_is_in.",
 			"item": [
 				{
 					"name": "Current Occupancy (All Actors)",
@@ -3968,7 +4549,7 @@
 		},
 		{
 			"name": "Verify",
-			"description": "World invariant checks \u2014 every Society has a Space, every Actor has exactly one open Presence, no orphaned geographic entities, no invalid Memberships. Read-only.",
+			"description": "World invariant checks — every Society has a Space, every Actor has exactly one open Presence, no orphaned geographic entities, no invalid Memberships. Read-only.",
 			"item": [
 				{
 					"name": "Verify World Invariants",
@@ -4196,7 +4777,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{base_url}}/configuration",
-						"description": "System configuration \u2014 auth, rate limits, CORS.",
+						"description": "System configuration — auth, rate limits, CORS.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -4376,7 +4957,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{health_url}}/health",
-						"description": "LIVENESS \u2014 is this process alive? No auth required.",
+						"description": "LIVENESS — is this process alive? No auth required.",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -4395,7 +4976,7 @@
 					"request": {
 						"method": "GET",
 						"url": "{{health_url}}/ready",
-						"description": "READINESS \u2014 should this instance receive traffic?",
+						"description": "READINESS — should this instance receive traffic?",
 						"header": [
 							{
 								"key": "X-User-ID",
@@ -4415,7 +4996,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{health_url}}/live",
-						"description": "LIVENESS, minimal \u2014 Gate 8 (Operations).\n\n/health already documents itself as \"LIVENESS \u2014 is this process\nalive?\" and deliberately avoids gating on external dependencies \u2014\nbut it still calls lemon.overall_health() and walks lemon.health.\n_checks, i.e. it depends on Lemon having booted correctly. This\nendpoint depends on nothing at all beyond the ASGI server itself\nbeing able to route a request to a handler and return \u2014 the truest\npossible liveness signal, and the correct one for a Kubernetes\nliv"
+						"description": "LIVENESS, minimal — Gate 8 (Operations).\n\n/health already documents itself as \"LIVENESS — is this process\nalive?\" and deliberately avoids gating on external dependencies —\nbut it still calls lemon.overall_health() and walks lemon.health.\n_checks, i.e. it depends on Lemon having booted correctly. This\nendpoint depends on nothing at all beyond the ASGI server itself\nbeing able to route a request to a handler and return — the truest\npossible liveness signal, and the correct one for a Kubernetes\nliv"
 					},
 					"response": []
 				}
@@ -4560,23 +5141,17 @@
 					"name": "Send Prompt",
 					"request": {
 						"method": "POST",
-						"url": {
-							"raw": "http://localhost:8031/api/v1/agentos/prompt",
-							"host": [
-								"http://localhost:8031"
-							],
-							"path": [
-								"api",
-								"v1",
-								"agentos",
-								"prompt"
-							]
-						},
-						"description": "Send prompt to the system",
+						"url": "{{base_url}}/prompt",
+						"description": "POST /prompt — unified planetary tick for the requesting actor. Supports Idempotency-Key for safe retries (Redis-backed in production mode).",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							},
 							{
 								"key": "X-User-ID",
@@ -4585,9 +5160,29 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"prompt\": \"buy 1L of milk\"}"
+							"raw": "{\n  \"question\": \"buy 1L of milk\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						}
-					}
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Update Account",
@@ -4600,7 +5195,7 @@
 							}
 						],
 						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/account",
-						"description": "Update actor account. A `password` in the request sets/replaces\nthis actor's login credentials via the real LoginInfo implementation\n(kernel/login_info.py) \u2014 hashed with PBKDF2-HMAC-SHA256, never stored\nor returned in plaintext.",
+						"description": "Update actor account. A `password` in the request sets/replaces\nthis actor's login credentials via the real LoginInfo implementation\n(kernel/login_info.py) — hashed with PBKDF2-HMAC-SHA256, never stored\nor returned in plaintext.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"email\": \"string\",\n  \"password\": \"string\",\n  \"subscription\": \"string\",\n  \"metadata\": {}\n}",
@@ -4619,7 +5214,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/logout",
-						"description": "Logout \u2014 invalidates every active session for this actor."
+						"description": "Logout — invalidates every active session for this actor."
 					},
 					"response": []
 				},
@@ -4634,7 +5229,7 @@
 							}
 						],
 						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/otp/request",
-						"description": "Generate a real, time-limited OTP (kernel/login_info.py::\nLoginInfo.generate_otp()) \u2014 see module docstring for why the code\nitself is only returned in dev mode.",
+						"description": "Generate a real, time-limited OTP (kernel/login_info.py::\nLoginInfo.generate_otp()) — see module docstring for why the code\nitself is only returned in dev mode.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"destination\": \"string\"\n}",
@@ -4658,7 +5253,7 @@
 							}
 						],
 						"url": "{{health_url}}/api/v1/actors/{{actor_id}}/otp/verify",
-						"description": "Verify an OTP code (constant-time, max 3 attempts, 5-minute\nexpiry \u2014 all real, in kernel/login_info.py::OTPInfo.verify()) and,\non success, log in exactly like password login does: a real session\nplus a real signed JWT.",
+						"description": "Verify an OTP code (constant-time, max 3 attempts, 5-minute\nexpiry — all real, in kernel/login_info.py::OTPInfo.verify()) and,\non success, log in exactly like password login does: a real session\nplus a real signed JWT.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"code\": \"Code\"\n}",
@@ -4794,7 +5389,7 @@
 							}
 						],
 						"url": "{{base_url}}/acquire",
-						"description": "POST /acquire \u2014 the remediation for a low-grounding /plan.\n\nWhen /plan returns metadata.grounding.remediation == \"acquire_knowledge_and_replan\",\ncall this with the same question, then re-plan. It queries every available knowledge\nsource, folds what it finds into the grounding knowledge pack, and returns the\ngrounding delta so the caller can decide whether re-planning is worthwhile.\n\nDeliberately separate from /plan: acquisition can incur web-search latency and MUST\nNOT block plan selection. Requ",
+						"description": "POST /acquire — the remediation for a low-grounding /plan.\n\nWhen /plan returns metadata.grounding.remediation == \"acquire_knowledge_and_replan\",\ncall this with the same question, then re-plan. It queries every available knowledge\nsource, folds what it finds into the grounding knowledge pack, and returns the\ngrounding delta so the caller can decide whether re-planning is worthwhile.\n\nDeliberately separate from /plan: acquisition can incur web-search latency and MUST\nNOT block plan selection. Requ",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"question\": \"Question\"\n}",
@@ -4815,10 +5410,15 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							}
 						],
 						"url": "{{base_url}}/plan",
-						"description": "POST /plan \u2014 select a workload for the question without executing it.\n\nReturns the workload_id, steps, and grounding_confidence the runtime computed.\nlow_grounding=True means the knowledge pack had insufficient coverage at plan\ntime \u2014 consider retrieving more data before committing to execution.\nRequires perm-execute-plan.\n\n1. Input validation via security module\n2. get the graph store from the request context; this is used to persist the execution graph and related data\n3. Governance check \u2014 va",
+						"description": "POST /plan — select a workload for the question without executing it.\n\nReturns the workload_id, steps, and grounding_confidence the runtime computed.\nlow_grounding=True means the knowledge pack had insufficient coverage at plan\ntime — consider retrieving more data before committing to execution.\nRequires perm-execute-plan.\n\n1. Input validation via security module\n2. get the graph store from the request context; this is used to persist the execution graph and related data\n3. Governance check — va",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"question\": \"Question\"\n}",
@@ -4829,7 +5429,22 @@
 							}
 						}
 					},
-					"response": []
+					"response": [],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				}
 			]
 		},
@@ -4882,7 +5497,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/execute-direct",
-						"description": "Execute directly via capability classification \u2014 no agent name needed.\n\nThe runtime classifies the capability, routes it, resolves implementation,\nand executes. Users never need to specify agent names."
+						"description": "Execute directly via capability classification — no agent name needed.\n\nThe runtime classifies the capability, routes it, resolves implementation,\nand executes. Users never need to specify agent names."
 					},
 					"response": []
 				}
@@ -4897,7 +5512,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/capabilities/bus/graph",
-						"description": "Get the agent\u2192capability\u2192preconditions/effects graph."
+						"description": "Get the agent→capability→preconditions/effects graph."
 					},
 					"response": []
 				},
@@ -5057,10 +5672,15 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{idempotency_key}}",
+								"description": "Safe-retry key (Redis-backed when COGNITIVEOS_PRODUCTION_MODE=true). Leave idempotency_key empty for a fresh UUID per send; set the collection variable to the same value to replay a prior successful response."
 							}
 						],
 						"url": "{{base_url}}/execute",
-						"description": "POST /execute \u2014 full workload execution for action-oriented requests.\n\nRuns Intent IR \u2192 validation \u2192 preconditions \u2192 execution (GoalExecutor,\nthe runtime). /execute never classifies natural language \u2014 it requires\npayload.intent_ir from a prior /plan call and executes exactly that,\nrejecting outright (400) if it's missing, malformed, unsupported-version,\nor fails signature verification. Requires perm-execute-action.",
+						"description": "POST /execute — full workload execution for action-oriented requests.\n\nRuns Intent IR → validation → preconditions → execution (GoalExecutor,\nthe runtime). /execute never classifies natural language — it requires\npayload.intent_ir from a prior /plan call and executes exactly that,\nrejecting outright (400) if it's missing, malformed, unsupported-version,\nor fails signature verification. Requires perm-execute-action.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"graph\": {\n    \"graph_id\": \"\",\n    \"graph_type\": \"execution\",\n    \"timestamp\": \"\",\n    \"nodes\": [\n      {}\n    ],\n    \"edges\": [\n      {}\n    ],\n    \"execution_order\": [\n      [\n        \"string\"\n      ]\n    ],\n    \"annotations\": {},\n    \"state\": {}\n  },\n  \"run_id\": \"Run Id\",\n  \"question\": \"Question\",\n  \"elapsed_ms\": 0.0\n}",
@@ -5071,7 +5691,22 @@
 							}
 						}
 					},
-					"response": []
+					"response": [],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const pinned = pm.collectionVariables.get('idempotency_key');",
+									"pm.request.headers.upsert({",
+									"    key: 'Idempotency-Key',",
+									"    value: pinned || pm.variables.replaceIn('{{$guid}}'),",
+									"});"
+								]
+							}
+						}
+					]
 				},
 				{
 					"name": "Execute Stream",
@@ -5084,7 +5719,7 @@
 							}
 						],
 						"url": "{{base_url}}/execute/stream",
-						"description": "POST /execute/stream \u2014 SSE streaming execution with live progress events.\n\nSame semantics as /execute but streams layer/step events as they happen.",
+						"description": "POST /execute/stream — SSE streaming execution with live progress events.\n\nSame semantics as /execute but streams layer/step events as they happen.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"graph\": {\n    \"graph_id\": \"\",\n    \"graph_type\": \"execution\",\n    \"timestamp\": \"\",\n    \"nodes\": [\n      {}\n    ],\n    \"edges\": [\n      {}\n    ],\n    \"execution_order\": [\n      [\n        \"string\"\n      ]\n    ],\n    \"annotations\": {},\n    \"state\": {}\n  },\n  \"run_id\": \"Run Id\",\n  \"question\": \"Question\",\n  \"elapsed_ms\": 0.0\n}",
@@ -5103,7 +5738,7 @@
 						"method": "POST",
 						"header": [],
 						"url": "{{base_url}}/replay/{{run_id}}",
-						"description": "POST /replay/{run_id} \u2014 shared across all three runtimes.\n\nLooks up which runtime (Cognitive/Simulation/Comparator) originally\ncompiled `run_id` and dispatches back to that runtime's Run stage with\nthe exact stored IntentIR \u2014 never re-classifies the original question.\n404 if no plan was stored for this run_id (process-local store \u2014 not\ndurable across restarts).\n\nResponse shape depends on which runtime compiled the run: target=\"execute\"\nreturns ExecuteResponse; target=\"simulate\"/\"compare\" return "
+						"description": "POST /replay/{run_id} — shared across all three runtimes.\n\nLooks up which runtime (Cognitive/Simulation/Comparator) originally\ncompiled `run_id` and dispatches back to that runtime's Run stage with\nthe exact stored IntentIR — never re-classifies the original question.\n404 if no plan was stored for this run_id (process-local store — not\ndurable across restarts).\n\nResponse shape depends on which runtime compiled the run: target=\"execute\"\nreturns ExecuteResponse; target=\"simulate\"/\"compare\" return "
 					},
 					"response": []
 				}
@@ -5315,7 +5950,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/mesh",
-						"description": "Layer 1 view \u2014 the Execution Mesh: reusable ExecutionGraph nodes,\ntheir mesh-level edges (SIMILAR_TO/COMPOSES/...), plus the top-ranked\ncapabilities and workflows. Ranks refresh automatically after every\nexecuted run \u2014 see CognitiveRuntime._persist_execution_mesh. This view\nshows ONLY mesh nodes; drill into a workflow with /mesh/graph/{key} and\ninto an agent with /mesh/agent/{name}."
+						"description": "Layer 1 view — the Execution Mesh: reusable ExecutionGraph nodes,\ntheir mesh-level edges (SIMILAR_TO/COMPOSES/...), plus the top-ranked\ncapabilities and workflows. Ranks refresh automatically after every\nexecuted run — see CognitiveRuntime._persist_execution_mesh. This view\nshows ONLY mesh nodes; drill into a workflow with /mesh/graph/{key} and\ninto an agent with /mesh/agent/{name}."
 					},
 					"response": []
 				},
@@ -5325,7 +5960,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/mesh/agent/{{agent_name}}",
-						"description": "Layer 3 view \u2014 one Agent's private Capability Graph: capabilities,\nthe Providers that resolve them, and the Tools those providers expose."
+						"description": "Layer 3 view — one Agent's private Capability Graph: capabilities,\nthe Providers that resolve them, and the Tools those providers expose."
 					},
 					"response": []
 				},
@@ -5335,7 +5970,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/mesh/graph/{{graph_key}}",
-						"description": "Layer 2 view \u2014 one Execution Graph: its Agents and their DEPENDS_ON\nexecution ordering. Agents only; capabilities live one layer down."
+						"description": "Layer 2 view — one Execution Graph: its Agents and their DEPENDS_ON\nexecution ordering. Agents only; capabilities live one layer down."
 					},
 					"response": []
 				},
@@ -5345,7 +5980,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/mesh/ontology",
-						"description": "Ontology view \u2014 OntologyConcept nodes and IS_A/PART_OF/SPECIALIZES/\nGENERALIZES relations, stored separately from all execution structure."
+						"description": "Ontology view — OntologyConcept nodes and IS_A/PART_OF/SPECIALIZES/\nGENERALIZES relations, stored separately from all execution structure."
 					},
 					"response": []
 				},
@@ -5415,7 +6050,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/observability/triggers",
-						"description": "Analytical trigger findings: shadow_capability, convergence_delay, context_drift.\n\nQuery params:\n  n \u2014 how many recent findings to return (default 20)"
+						"description": "Analytical trigger findings: shadow_capability, convergence_delay, context_drift.\n\nQuery params:\n  n — how many recent findings to return (default 20)"
 					},
 					"response": []
 				},
@@ -5667,7 +6302,7 @@
 							}
 						],
 						"url": "{{base_url}}/query",
-						"description": "POST /query \u2014 Process query through hybrid router.\n\nSingle endpoint for end-to-end query handling:\n1. Classify query type (LLM or pattern-based)\n2. Route to appropriate handler\n3. Execute and return response\n\nRequires perm-query permission.",
+						"description": "POST /query — Process query through hybrid router.\n\nSingle endpoint for end-to-end query handling:\n1. Classify query type (LLM or pattern-based)\n2. Route to appropriate handler\n3. Execute and return response\n\nRequires perm-query permission.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"question\": \"Question\"\n}",
@@ -5686,7 +6321,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/query/health",
-						"description": "GET /query/health \u2014 Check hybrid router health status"
+						"description": "GET /query/health — Check hybrid router health status"
 					},
 					"response": []
 				}
@@ -5706,7 +6341,7 @@
 							}
 						],
 						"url": "{{base_url}}/sdlc/run",
-						"description": "Start a fresh SDLC pipeline run for `question` and return its run_id\nimmediately, before any stage has executed. The pipeline itself (a real\nLLM call at every stage, run serially) keeps going in the background \u2014\npoll GET /sdlc/{run_id} for progress, or use `sdlc discovery/requirements/\narchitecture/.../release <run_id>` (CLI) to inspect one stage at a time.",
+						"description": "Start a fresh SDLC pipeline run for `question` and return its run_id\nimmediately, before any stage has executed. The pipeline itself (a real\nLLM call at every stage, run serially) keeps going in the background —\npoll GET /sdlc/{run_id} for progress, or use `sdlc discovery/requirements/\narchitecture/.../release <run_id>` (CLI) to inspect one stage at a time.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"question\": \"Question\"\n}",
@@ -5725,7 +6360,7 @@
 						"method": "GET",
 						"header": [],
 						"url": "{{base_url}}/sdlc/{{run_id}}",
-						"description": "Poll a Runtime Process's current state. 404 if run_id is unknown \u2014\nthe Process Table is process-local (not durable across restarts, same\nscope cut as run_store.RunStore) unless it was checkpointed."
+						"description": "Poll a Runtime Process's current state. 404 if run_id is unknown —\nthe Process Table is process-local (not durable across restarts, same\nscope cut as run_store.RunStore) unless it was checkpointed."
 					},
 					"response": []
 				},
@@ -5740,7 +6375,7 @@
 							}
 						],
 						"url": "{{base_url}}/sdlc/{{run_id}}/approve",
-						"description": "Grant or reject the run's pending approval gate. 409 if the run isn't\nactually WAITING on one \u2014 approving a gate that doesn't exist (already\ndecided, or the pipeline never reached one) is a caller error, not\nsomething to silently accept.",
+						"description": "Grant or reject the run's pending approval gate. 409 if the run isn't\nactually WAITING on one — approving a gate that doesn't exist (already\ndecided, or the pipeline never reached one) is a caller error, not\nsomething to silently accept.",
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"decision\": \"approve\"\n}",
@@ -5877,7 +6512,7 @@
 							}
 						],
 						"url": "{{health_url}}/api/v1/codegen/microservice",
-						"description": "Generate a complete, production-ready FastAPI microservice.\n\n**Input** \u2014 a MicroserviceSpec JSON object:\n\n```json\n{\n  \"name\": \"products\",\n  \"domain\": \"inventory\",\n  \"description\": \"Product catalog\",\n  \"db\": {\"type\": \"postgresql\"},\n  \"fields\": [\n    {\"name\": \"sku\",   \"type\": \"str\",   \"unique\": true, \"index\": true},\n    {\"name\": \"name\",  \"type\": \"str\"},\n    {\"name\": \"price\", \"type\": \"float\", \"gt\": 0},\n    {\"name\": \"stock\", \"type\": \"int\",   \"default\": 0},\n    {\"name\": \"status\",\"type\": \"str\",   \"enu",
+						"description": "Generate a complete, production-ready FastAPI microservice.\n\n**Input** — a MicroserviceSpec JSON object:\n\n```json\n{\n  \"name\": \"products\",\n  \"domain\": \"inventory\",\n  \"description\": \"Product catalog\",\n  \"db\": {\"type\": \"postgresql\"},\n  \"fields\": [\n    {\"name\": \"sku\",   \"type\": \"str\",   \"unique\": true, \"index\": true},\n    {\"name\": \"name\",  \"type\": \"str\"},\n    {\"name\": \"price\", \"type\": \"float\", \"gt\": 0},\n    {\"name\": \"stock\", \"type\": \"int\",   \"default\": 0},\n    {\"name\": \"status\",\"type\": \"str\",   \"enu",
 						"body": {
 							"mode": "raw",
 							"raw": "{}",

@@ -87,6 +87,8 @@ data:
   KERNEL_PHASE_TIMEOUT: "180"
   CAPABILITY_TIMEOUT_SECONDS: "120"
   COGNITIVEOS_PRODUCTION_MODE: "true"
+  API_GATEWAY_REQUIRED: "true"
+  ACTOR_RUNTIME_INTERNAL_ONLY: "true"
   # KubernetesProvisioner enablement (Gap Remediation audit fix):
   # When true, the Lifecycle Controller will attempt to create Actor Pods
   # via `kubectl apply` when an actor is UNSCHEDULABLE due to "no healthy

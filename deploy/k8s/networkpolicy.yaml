@@ -95,3 +95,59 @@ spec:
       ports:
         - protocol: TCP
           port: 8031
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external-to-kong
+  namespace: monkeybrain
+spec:
+  podSelector:
+    matchLabels:
+      app: kong
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kong-to-agentos
+  namespace: monkeybrain
+spec:
+  podSelector:
+    matchLabels:
+      app: agentos
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kong
+      ports:
+        - protocol: TCP
+          port: 8031
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-agentos-to-actor-runtime
+  namespace: monkeybrain
+spec:
+  podSelector:
+    matchLabels:
+      app: cognitiveos-actor
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: agentos
+      ports:
+        - protocol: TCP
+          port: 8051

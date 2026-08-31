@@ -162,6 +162,11 @@ spec:
                 secretKeyRef:
                   name: agentos-secrets
                   key: neo4j-password
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: agentos-secrets
+                  key: internal-service-token
           volumeMounts:
             - name: data
               mountPath: /data

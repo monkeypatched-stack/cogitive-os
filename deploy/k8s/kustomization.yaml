@@ -14,6 +14,7 @@ resources:
   - opa.yaml
   - rbac.yaml
   - networkpolicy.yaml
+  - kong.yaml
   - redis.yaml
   - mongodb.yaml
   - nats.yaml
@@ -51,6 +52,9 @@ resources:
 # opa/policies/compliance/*.rego are mounted as two separate volumes at
 # /policies and /policies/compliance in opa.yaml.
 configMapGenerator:
+  - name: kong-config
+    files:
+      - kong.yml=../../kong/kong.yml
   - name: opa-policies
     files:
       - ../../opa/policies/agent_mesh.rego

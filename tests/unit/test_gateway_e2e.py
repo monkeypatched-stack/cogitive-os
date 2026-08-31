@@ -14,6 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 os.environ["AGENTOS_AUTH_REQUIRED"] = "false"
+os.environ["API_GATEWAY_REQUIRED"] = "false"
 
 
 @pytest.fixture(scope="module")

@@ -28,7 +28,7 @@ invariant:
 cogctl sits at the top of that chain and nowhere else in it.
 
 Configuration (env vars, matching this repo's convention elsewhere):
-    COGCTL_API_URL   — base URL, default http://localhost:8031/api/v1/agentos
+    COGCTL_API_URL   — base URL, default http://localhost:8000/api/v1/agentos (Kong gateway)
     COGCTL_USER_ID    — sent as X-User-ID (dev-mode auth)
     COGCTL_API_KEY    — sent as `Authorization: Bearer <key>` (production auth)
 """
@@ -40,7 +40,7 @@ import os
 import sys
 from typing import Any
 
-DEFAULT_API_URL = "http://localhost:8031/api/v1/agentos"
+DEFAULT_API_URL = "http://localhost:8000/api/v1/agentos"
 
 
 def _base_url() -> str:
