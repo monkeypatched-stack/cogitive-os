@@ -362,7 +362,7 @@ class ETASSPipelineOrchestrator:
         try:
             lines = [
                 "```mermaid",
-                "graph TD",
+                "flowchart TD",
                 f"    classDef fanout fill:#4a90d9,color:#fff,stroke:#2c6fad",
                 f"    classDef spine fill:#2ecc71,color:#fff,stroke:#27ae60",
             ]
@@ -373,9 +373,9 @@ class ETASSPipelineOrchestrator:
                 op = node.operator_type
                 label_map = {
                     "etass_spec": f"ETASS Spec\\n[{spec.workload}]",
-                    "prompt_compiler": "Prompt Compiler\\n→ StructuredPromptIR",
-                    "planner": "Planner\\n→ ExecutionDAG",
-                    "dispatcher": "Dispatcher\\n[fan-out × 4]",
+                    "prompt_compiler": "Prompt Compiler\\nto StructuredPromptIR",
+                    "planner": "Planner\\nto ExecutionDAG",
+                    "dispatcher": "Dispatcher\\n[fan-out x 4]",
                     "monkeybrain_runtime": "MonkeyBrain Runtime\\n:8031",
                     "n8n_workflow": "n8n JSON Workflow\\n:5678",
                     "openclaw_a2a": "OpenClaw A2A\\nExecution Plan",

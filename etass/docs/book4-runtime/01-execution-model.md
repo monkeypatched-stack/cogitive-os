@@ -98,29 +98,29 @@ graph TD
 The ETASS Runtime follows a layered, microservices-based architecture:
 
 ```mermaid
-graph TD
-    subgraph Control Plane
+flowchart TD
+    subgraph cp ["Control Plane"]
         A[API Server] --> B[Scheduler]
         B --> C[Orchestrator]
         C --> D[State Manager]
         D --> E[Event Bus]
     end
-    
-    subgraph Data Plane
+
+    subgraph dp ["Data Plane"]
         F[Agent Pool] --> G[Execution Engine]
         G --> H[Artifact Store]
         H --> I[Evidence Database]
     end
-    
-    subgraph Observability
+
+    subgraph obs ["Observability"]
         J[Telemetry] --> K[Monitoring]
         K --> L[Logging]
         L --> M[Tracing]
     end
-    
-    Control Plane -->|Commands| Data Plane
-    Data Plane -->|Events| Control Plane
-    Data Plane -->|Metrics| Observability
+
+    E -->|Commands| F
+    G -->|Events| E
+    G -->|Metrics| J
 ```
 
 ### Core Components
@@ -441,10 +441,10 @@ The runtime builds a dependency-aware execution graph:
 
 ```mermaid
 graph TD
-    A[Start] --> B[Cerebellum: Plan]
-    A --> C[Broca: Document]
+    A[Start] --> B["Cerebellum: Plan"]
+    A --> C["Broca: Document"]
     
-    B --> D[Motor Cortex: Code]
+    B --> D["Motor Cortex: Code"]
     C --> D
     
     D --> E[Unit Test]
