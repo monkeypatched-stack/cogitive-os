@@ -3394,11 +3394,13 @@ async def _proxy_execute_to_actor_pod(actor_id: str, pr: Any) -> dict[str, Any] 
         return None
     import httpx
 
+    from src.monkey_brain.api.internal_auth import internal_service_headers
+
     namespace = os.getenv("POD_NAMESPACE", "monkeybrain")
     url = f"http://cognitiveos-actor-{actor_id}.{namespace}.svc.cluster.local:8051/execute"
     try:
         async with httpx.AsyncClient(timeout=35.0) as client:
-            resp = await client.post(url)
+            resp = await client.post(url, headers=internal_service_headers())
     except httpx.RequestError as exc:
         raise HTTPException(status_code=502, detail=f"Could not reach Actor {actor_id}'s own Pod: {exc}") from exc
     if resp.status_code >= 400:

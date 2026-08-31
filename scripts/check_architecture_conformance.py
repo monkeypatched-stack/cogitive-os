@@ -191,7 +191,7 @@ def _boundary_violations() -> dict[str, list[str]]:
       the established boundary-respecting DI pattern in this codebase).
     """
     call_rules = {
-        "ActorRuntime": {"kernel/society/runtime.py"},
+        "ActorRuntime": {"kernel/society/runtime.py", "actor_runtime.py"},
         "AgentRuntime": {"runtime/runtime.py", "api/routes/agents.py"},
         "AgentMiddleware": {"runtime/runtime.py", "api/routes/agents.py"},
         "ActionExecutor": {"kernel/pipeline/execution_runtime/integration.py"},
@@ -371,9 +371,11 @@ def _positive_ownership_checks() -> dict:
     cognitive_path = SRC / "kernel" / "cognitive_os" / "cognitive_os.py"
     cognitive_members = _class_members(_class_node(cognitive_path, "CognitiveOS"))
     required_cognitive = {"evaluate_goals", "match_capabilities", "synthesize", "tick"}
+    cognitive_text = cognitive_path.read_text(errors="ignore")
     check("CognitiveOS.cognitive_loop", required_cognitive.issubset(cognitive_members),
           "CognitiveOS exposes the actor-facing reasoning and tick boundary")
-    check("CognitiveOS.single_tick_delegate", "return await tick()" in cognitive_path.read_text(errors="ignore"),
+    check("CognitiveOS.single_tick_delegate",
+          "await tick(" in cognitive_text and 'getattr(actor, "tick"' in cognitive_text,
           "CognitiveOS delegates to the canonical actor cognitive tick")
 
     agent_adapter = SRC / "runtime" / "agent_runtime.py"

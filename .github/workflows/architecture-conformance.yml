@@ -12,13 +12,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
       - name: Validate hard architecture invariants
         run: python scripts/check_architecture_conformance.py --strict
       - name: Run architecture regression tests
-        run: python -m pytest -q tests/test_kernel_runtime_registry_wave1.py tests/test_wave2_actor_architecture.py tests/test_wave3_planetary_world_convergence.py tests/test_cognitive_os.py tests/test_wave5_execution_architecture.py tests/test_wave6_architecture_certification.py
+        env:
+          ACCESS_TOKEN_SECRET: ci-test-access-token-secret
+          REFRESH_TOKEN_SECRET: ci-test-refresh-token-secret
+          API_GATEWAY_REQUIRED: "false"
+          AGENTOS_AUTH_REQUIRED: "false"
+        run: python -m pytest -q tests/test_kernel_runtime_registry_wave1.py tests/test_wave2_actor_architecture.py tests/test_wave3_planetary_world_convergence.py tests/test_wave5_execution_architecture.py tests/test_wave6_architecture_certification.py tests/unit/test_cognitive_kernel.py
       - name: Run Gate 3 world validation engine tests
+        env:
+          ACCESS_TOKEN_SECRET: ci-test-access-token-secret
+          REFRESH_TOKEN_SECRET: ci-test-refresh-token-secret
+          API_GATEWAY_REQUIRED: "false"
+          AGENTOS_AUTH_REQUIRED: "false"
         run: python -m pytest -q tests/scenarios/test_gate3_world_validation.py
       - name: Run Gate 4 unit tests (validator, idempotency, gateway models)
-        run: python -m pytest -q tests/unit/test_world_validator.py tests/unit/test_idempotency.py tests/unit/test_gateway_models_commerce.py
+        env:
+          ACCESS_TOKEN_SECRET: ci-test-access-token-secret
+          REFRESH_TOKEN_SECRET: ci-test-refresh-token-secret
+          API_GATEWAY_REQUIRED: "false"
+          AGENTOS_AUTH_REQUIRED: "false"
+        run: python -m pytest -q tests/unit/test_world_validator.py tests/unit/test_idempotency.py tests/unit/test_gateway_models_commerce.py tests/unit/test_api_gateway_boundary.py tests/unit/test_internal_auth.py
       - name: Run Gate 4 scale tests (fast tiers only — 10/100/1,000 actors)
+        env:
+          ACCESS_TOKEN_SECRET: ci-test-access-token-secret
+          REFRESH_TOKEN_SECRET: ci-test-refresh-token-secret
+          API_GATEWAY_REQUIRED: "false"
+          AGENTOS_AUTH_REQUIRED: "false"
         run: python -m pytest -q tests/scale/test_actor_scale.py

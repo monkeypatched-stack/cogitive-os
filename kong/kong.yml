@@ -24,16 +24,30 @@ plugins:
         - X-Requested-With
         - X-Request-Id
         - X-Trace-Id
+        - X-User-ID
+        - Idempotency-Key
       exposed_headers:
         - X-Request-Id
         - X-Trace-Id
+        - X-Kong-Request-Id
       credentials: true
       max_age: 3600
       preflight_continue: false
+  - name: rate-limiting
+    config:
+      minute: 3000
+      policy: local
+      fault_tolerant: true
+      hide_client_headers: false
+  - name: correlation-id
+    config:
+      header_name: X-Request-Id
+      generator: uuid
+      echo_downstream: true
 
 services:
   - name: auth-service
-    url: http://auth-service:8000
+    url: http://auth:8010
     routes:
       - name: auth-api
         strip_path: false
@@ -53,7 +67,7 @@ services:
           - /integration-config
 
   - name: assets-service
-    url: http://assets-service:8000
+    url: http://assets:8011
     routes:
       - name: assets-api
         strip_path: false
@@ -72,7 +86,7 @@ services:
           - /api/v1/raw-material-groups
 
   - name: customers-service
-    url: http://customers-service:8000
+    url: http://customers:8012
     routes:
       - name: customers-api
         strip_path: false
@@ -84,7 +98,7 @@ services:
           - /api/v1/customer-payment-data
 
   - name: documents-service
-    url: http://documents-service:8000
+    url: http://documents:8029
     routes:
       - name: documents-api
         strip_path: false
@@ -97,7 +111,7 @@ services:
           - /api/v1/report-templates
 
   - name: events-service
-    url: http://events-service:8000
+    url: http://events:8013
     routes:
       - name: events-api
         strip_path: false
@@ -135,7 +149,7 @@ services:
           - /api/v1/warehouse-cycle-count-events
 
   - name: facilities-service
-    url: http://facilities-service:8000
+    url: http://facilities:8014
     routes:
       - name: facilities-api
         strip_path: false
@@ -147,7 +161,7 @@ services:
           - /api/v1/workstations
 
   - name: floor-layout-service
-    url: http://floor_layout-service:8000
+    url: http://floor-layout:8015
     routes:
       - name: floor-layout-api
         strip_path: false
@@ -160,7 +174,7 @@ services:
           - /api/v1/locations
 
   - name: inventory-service
-    url: http://inventory-service:8000
+    url: http://inventory:8016
     routes:
       - name: inventory-api
         strip_path: false
@@ -178,7 +192,7 @@ services:
           - /api/v1/warehouse
 
   - name: iot-service
-    url: http://iot-service:8000
+    url: http://iot:8017
     routes:
       - name: iot-api
         strip_path: false
@@ -190,7 +204,7 @@ services:
           - /api/v1/uwb-devices
 
   - name: orders-service
-    url: http://orders-service:8000
+    url: http://orders:8018
     routes:
       - name: orders-api
         strip_path: false
@@ -205,7 +219,7 @@ services:
           - /api/v1/sales-orders
 
   - name: pm-service
-    url: http://pm-service:8000
+    url: http://pm:8019
     routes:
       - name: pm-api
         strip_path: false
@@ -222,7 +236,7 @@ services:
           - /api/v1/kanban-boards
 
   - name: procurement-service
-    url: http://procurement-service:8000
+    url: http://procurement:8020
     routes:
       - name: procurement-api
         strip_path: false
@@ -235,7 +249,7 @@ services:
           - /api/v1/quality-control
 
   - name: replenishment-service
-    url: http://replenishment-service:8000
+    url: http://replenishment:8033
     routes:
       - name: replenishment-api
         strip_path: false
@@ -244,7 +258,7 @@ services:
           - /api/v1/replenishment
 
   - name: products-service
-    url: http://products-service:8000
+    url: http://products:8021
     routes:
       - name: products-api
         strip_path: false
@@ -256,7 +270,7 @@ services:
           - /api/v1/tag-groups
 
   - name: shipping-service
-    url: http://shipping-service:8000
+    url: http://shipping:8022
     routes:
       - name: shipping-api
         strip_path: false
@@ -275,7 +289,7 @@ services:
           - /api/v1/waybills
 
   - name: shifts-service
-    url: http://shifts-service:8000
+    url: http://shifts:8023
     routes:
       - name: shifts-api
         strip_path: false
@@ -286,7 +300,7 @@ services:
           - /api/v1/timesheets
 
   - name: supply-allocation-service
-    url: http://supply-allocation-service:8000
+    url: http://supply-allocation:8032
     routes:
       - name: supply-allocation-api
         strip_path: false
@@ -295,7 +309,7 @@ services:
           - /api/v1/supply-allocation
 
   - name: suppliers-service
-    url: http://suppliers-service:8000
+    url: http://suppliers:8024
     routes:
       - name: suppliers-api
         strip_path: false
@@ -312,7 +326,7 @@ services:
           - /api/v1/supplier-shipping
 
   - name: taxonomy-service
-    url: http://taxonomy-service:8000
+    url: http://taxonomy:8025
     routes:
       - name: taxonomy-api
         strip_path: false
@@ -323,7 +337,7 @@ services:
           - /api/v1/subclasses
 
   - name: warehouse-execution-service
-    url: http://warehouse-execution-service:8000
+    url: http://warehouse-execution:8034
     routes:
       - name: warehouse-execution-api
         strip_path: false
@@ -332,7 +346,7 @@ services:
           - /api/v1/warehouse-execution
 
   - name: process-definitions-service
-    url: http://process-definitions-service:8000
+    url: http://process-definition:8000
     routes:
       - name: process-definitions-api
         strip_path: false
@@ -349,7 +363,7 @@ services:
           - /api/v1/process-corrections
 
   - name: workorders-service
-    url: http://workorders-service:8000
+    url: http://workorders:8027
     routes:
       - name: workorders-api
         strip_path: false
@@ -369,7 +383,7 @@ services:
           - /api/v1/yield-reconciliation-records
 
   - name: changeover-service
-    url: http://changeover-service:8000
+    url: http://changeover:8028
     routes:
       - name: changeover-api
         strip_path: false
@@ -378,7 +392,7 @@ services:
           - /api/v1/changeovers
 
   - name: file-service
-    url: http://file-service:8000
+    url: http://file:8030
     routes:
       - name: file-api
         strip_path: false
@@ -391,7 +405,7 @@ services:
           - /presigned-url
 
   - name: module-control-service
-    url: http://module-control-service:8000
+    url: http://module-control:8032
     routes:
       - name: module-control-api
         strip_path: false
@@ -400,10 +414,72 @@ services:
           - /api/v1/module-control
 
   - name: agentos-service
-    url: http://agentos-service:8000
+    url: http://agentos:8031
     routes:
       - name: agentos-api
         strip_path: false
         preserve_host: true
         paths:
           - /api/v1/agentos
+          - /api/v1/codegen
+          - /api/v1/knowledge-graph
+          - /api/v1/actors
+      - name: agentos-health
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /health
+          - /live
+          - /ready
+      - name: agentos-metrics
+        strip_path: false
+        preserve_host: true
+        paths:
+          - /metrics
+
+  # LLM Gateway — central north-south boundary for model provider traffic.
+  # Clients call /api/v1/llm/<provider>/... ; Kong strips the prefix and
+  # forwards to the upstream. Inject provider API keys at the gateway in
+  # production (request-transformer or vault), not in client apps.
+  - name: llm-openrouter
+    url: https://openrouter.ai/api
+    routes:
+      - name: llm-openrouter-api
+        strip_path: true
+        preserve_host: false
+        paths:
+          - /api/v1/llm/openrouter
+    plugins:
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "HTTP-Referer:https://monkeybrain.local"
+              - "X-Title:MonkeyBrain LLM Gateway"
+
+  - name: llm-openai
+    url: https://api.openai.com
+    routes:
+      - name: llm-openai-api
+        strip_path: true
+        preserve_host: false
+        paths:
+          - /api/v1/llm/openai
+
+  - name: llm-anthropic
+    url: https://api.anthropic.com
+    routes:
+      - name: llm-anthropic-api
+        strip_path: true
+        preserve_host: false
+        paths:
+          - /api/v1/llm/anthropic
+
+  - name: llm-ollama
+    url: http://host.docker.internal:11434
+    routes:
+      - name: llm-ollama-api
+        strip_path: true
+        preserve_host: false
+        paths:
+          - /api/v1/llm/ollama

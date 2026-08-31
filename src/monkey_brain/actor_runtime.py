@@ -501,7 +501,7 @@ class ActorRuntime:
 # ── ASGI app (uvicorn src.monkey_brain.actor_runtime:app) ────────────────
 
 def _build_app() -> Any:
-    from fastapi import FastAPI
+    from fastapi import FastAPI, Request
 
     fastapi_app = FastAPI(title="CognitiveOS Actor Runtime", version=ACTOR_RUNTIME_VERSION)
     runtime_holder: dict[str, ActorRuntime] = {}
@@ -558,7 +558,7 @@ def _build_app() -> Any:
         return _runtime().artifact_info()
 
     @fastapi_app.post("/execute")
-    async def execute() -> Any:
+    async def execute(request: Request) -> Any:
         # Live Deployment Validation finding: the control-plane API's own
         # POST /actors/{id}/execute only ever searched its own process's
         # locally-loaded societies -- correct for the monolithic
@@ -574,7 +574,10 @@ def _build_app() -> Any:
         # (run_actor_tick) so a caller sees an identical response shape
         # regardless of which path served it.
         from fastapi import HTTPException
+        from src.monkey_brain.api.internal_auth import require_internal_service_token
         from src.monkey_brain.api.routes.actors import run_actor_tick
+
+        require_internal_service_token(request)
 
         runtime = _runtime()
         pr = runtime.planetary_runtime

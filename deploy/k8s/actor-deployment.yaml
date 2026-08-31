@@ -155,6 +155,11 @@ spec:
                 secretKeyRef:
                   name: agentos-secrets
                   key: neo4j-password
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: agentos-secrets
+                  key: internal-service-token
           resources:
             # Deliberately smaller than deployment.yaml's cloud footprint
             # (Section 14: different Actors may require radically

@@ -101,6 +101,33 @@ exclude = ["tests*", "scripts*", "deploy*", "docs*"]
 [tool.ruff]
 line-length = 120
 target-version = "py311"
+# CI and local lint focus on AgentOS core — not the full manufacturing
+# monorepo tree (domains/, benchmarks/, generated/, frontends), which
+# predates this gate and would fail with tens of thousands of findings.
+src = ["src", "tests", "scripts"]
+exclude = [
+  "benchmarks",
+  "domains",
+  "generated",
+  "living-world-explorer",
+  "packages",
+  "venv_test",
+  ".venv",
+  "node_modules",
+]
+
+[tool.ruff.lint]
+# Baseline gate: syntax/parse errors only (E9). Full style rules (~3k+
+# findings) are incremental tech debt — expand `select` as the codebase
+# is cleaned up.
+select = ["E9"]
+
+[tool.mypy]
+python_version = "3.11"
+explicit_package_bases = true
+mypy_path = "src"
+namespace_packages = true
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 # The project test suite lives in tests/. Without this, a bare `pytest` recurses the

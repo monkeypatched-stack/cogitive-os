@@ -224,6 +224,10 @@ else:
     logger.info("Rate limiting enabled: %s rps, %s burst",
                 os.getenv("RATE_LIMIT_RPS", "100"), os.getenv("RATE_LIMIT_BURST", "200"))
 
+from src.monkey_brain.api.gateway_boundary import ApiGatewayBoundaryMiddleware
+
+app.add_middleware(ApiGatewayBoundaryMiddleware)
+
 from src.monkey_brain.api.routes.predict import router as simulate_router
 from src.monkey_brain.api.routes.prompt import router as prompt_router
 from src.monkey_brain.api.routes.plan import router as plan_router

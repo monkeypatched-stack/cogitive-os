@@ -5,6 +5,8 @@ metadata:
   namespace: monkeybrain
   labels:
     app: agentos
+    component: cognitive-runtime
+    role: api-backend
 spec:
   selector:
     app: agentos

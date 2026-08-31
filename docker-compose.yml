@@ -364,8 +364,8 @@ services:
     build:
       context: .
       dockerfile: docker/services/process-definition/Dockerfile
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     environment:
       - MONGODB_URL=mongodb://mongodb:27017
       - DB_NAME=demo
@@ -474,6 +474,32 @@ services:
         condition: service_healthy
       opa:
         condition: service_started
+    restart: unless-stopped
+
+  # ── API Gateway (Kong) — single north-south HTTP boundary ───────────────
+  # External clients, cogctl, and UIs should use http://localhost:8000.
+  # Backend services remain cluster-internal; see kong/kong.yml for routes.
+  kong:
+    image: kong:3.6
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_LOG_LEVEL: info
+      KONG_HEADERS: "off"
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ./kong/kong.yml:/kong/kong.yml:ro
+    depends_on:
+      agentos:
+        condition: service_started
+      auth:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
 volumes:
