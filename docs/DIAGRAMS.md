@@ -1,32 +1,33 @@
-# CognitiveOS — Architecture & Sequence Diagrams
+# CognitiveOS — Architecture and Sequence Diagrams
 
 Visual reference for deployment topology, the cognitive loop, and key runtime flows.
-Diagrams use [Mermaid](https://mermaid.js.org/); they render on GitHub and in most Markdown viewers.
+Diagrams use [Mermaid](https://mermaid.js.org/). Syntax is kept compatible with
+**GitHub's Mermaid renderer** (quoted labels, no `&` node chains, ASCII punctuation).
 
-**Canonical sources (for detail beyond these pictures):**
+**Canonical sources:**
 
 | Topic | Document |
 |-------|----------|
-| Deployment audit & target model | [`DEPLOYMENT_ARCHITECTURE.md`](../DEPLOYMENT_ARCHITECTURE.md) |
+| Deployment audit and target model | [`DEPLOYMENT_ARCHITECTURE.md`](../DEPLOYMENT_ARCHITECTURE.md) |
 | Consolidated architecture | [`COGNITIVEOS_FINAL_ARCHITECTURE.md`](COGNITIVEOS_FINAL_ARCHITECTURE.md) |
-| Runtime layering & pipeline | [`architecture.md`](architecture.md) |
+| Runtime layering and pipeline | [`architecture.md`](architecture.md) |
 | Actor lifecycle | [`ACTOR_LIFECYCLE.md`](ACTOR_LIFECYCLE.md) |
 | Actor scheduler | [`ACTOR_SCHEDULER.md`](ACTOR_SCHEDULER.md) |
-| Actor artifact / boot | [`ACTOR_ARTIFACT.md`](ACTOR_ARTIFACT.md) |
+| Actor artifact and boot | [`ACTOR_ARTIFACT.md`](ACTOR_ARTIFACT.md) |
 | Horizontal scaling | [`HORIZONTAL_SCHEDULER_SCALING.md`](HORIZONTAL_SCHEDULER_SCALING.md) |
-| Interactive UI diagram | `living-world-explorer` → Architecture tab |
+| Interactive UI diagram | living-world-explorer, Architecture tab |
 
 ---
 
 ## Table of contents
 
 1. [Cognitive loop](#1-cognitive-loop-per-actor-tick)
-2. [API → Kernel → Persistence](#2-api--kernel--persistence)
-3. [World interaction & security](#3-world-interaction--security-boundary)
+2. [API to Kernel to Persistence](#2-api-to-kernel-to-persistence)
+3. [World interaction and security](#3-world-interaction-and-security-boundary)
 4. [Docker Compose (local)](#4-docker-compose-local)
 5. [Kubernetes](#5-kubernetes)
 6. [Current vs target deployment](#6-current-vs-target-deployment)
-7. [Control plane & actor artifact](#7-control-plane--actor-artifact)
+7. [Control plane and actor artifact](#7-control-plane-and-actor-artifact)
 8. [Horizontal scaling shape](#8-horizontal-scaling-shape)
 9. [Sequence: POST /prompt (grocery)](#9-sequence-post-prompt-grocery-purchase)
 10. [Sequence: UPI payment (two-phase)](#10-sequence-upi-payment-two-phase)
@@ -34,23 +35,20 @@ Diagrams use [Mermaid](https://mermaid.js.org/); they render on GitHub and in mo
 12. [Actor runtime startup](#12-actor-runtime-startup-state-machine)
 13. [Sequence: Lifecycle reconciliation](#13-sequence-lifecycle-reconciliation)
 14. [Sequence: Actor migration](#14-sequence-actor-migration)
-15. [Sequence: Node failure recovery](#15-sequence-node-failure--reschedule)
+15. [Sequence: Node failure recovery](#15-sequence-node-failure-reschedule)
 16. [Sequence: Rolling artifact upgrade](#16-sequence-rolling-artifact-upgrade)
 17. [Sequence: cogctl apply](#17-sequence-cogctl-apply)
 18. [Actor lifecycle states](#18-actor-lifecycle-states)
+19. [Geography vs Society](#geography-vs-society-structural-axes)
 
 ---
 
 ## 1. Cognitive loop (per-actor tick)
 
-The live per-tick path traced from `ComparisonIntegratedPolicy.configure()` in
-`kernel/pipeline/comparison/integration.py`. Same diagram as the living-world-explorer
-Architecture tab and the README.
+Stage order:
+`observe -> believe -> plan -> predict -> decide -> execute -> observe_outcome -> compare -> learn -> learn_transitions -> compile_phi -> commit`
 
-**Stage order:**
-`observe → believe → plan → predict → decide → execute → observe_outcome → compare → learn → learn_transitions → compile_phi → commit`
-
-Inside **execute**, per action: `TransitionGate → Negotiation (if required) → Commit`.
+Inside **execute**, per action: `TransitionGate -> Negotiation (if required) -> Commit`.
 
 ```mermaid
 flowchart TD
@@ -62,12 +60,12 @@ flowchart TD
     PR --> D[Decide]
 
     D -->|keep| E[Execute]
-    D -->|stale / invalid| RP[Replan]
+    D -->|stale or invalid| RP[Replan]
     RP --> P
 
     E --> TG[TransitionGate]
     TG -->|negotiation required| N[Negotiation]
-    TG -->|no negotiation required| C[World Commit]
+    TG -->|no negotiation| C[World Commit]
     N --> C
 
     C --> OO[Observe Outcome]
@@ -81,58 +79,66 @@ flowchart TD
     PR -.->|predicted outcome| CMP
     OO -.->|actual outcome| CMP
 
-    SEC[Security / Policy<br/>Identity · Authorization · Delegation · Consent<br/>Capability Access · Policy Decisions] -. governs .-> E
-    SEC -. governs .-> TG
-    SEC -. governs .-> C
+    SEC[Security and Policy] -.->|governs| E
+    SEC -.->|governs| TG
+    SEC -.->|governs| C
 ```
 
 ---
 
-## 2. API → Kernel → Persistence
+## 2. API to Kernel to Persistence
 
 ```mermaid
-graph TB
-    subgraph API["API layer — api/routes/*.py :8031"]
+flowchart TB
+    subgraph apiLayer["API layer port 8031"]
         PROMPT["POST /prompt"]
         ACTORS["/actors"]
         PAY["/payments"]
     end
 
-    subgraph Kernel["Kernel — monkey_brain/kernel/*"]
+    subgraph kernelLayer["Kernel"]
         PR["PlanetaryRuntime"]
         SR["SocietyRuntime"]
-        PIPE["pipeline/ — cognitive loop"]
-        EXEC["execute/ — ActionExecutor"]
-        CAP["domains/ — grocery, finance, …"]
+        PIPE["pipeline cognitive loop"]
+        EXEC["ActionExecutor"]
+        CAP["domains grocery finance"]
     end
 
-    subgraph Persist["Persistence"]
-        MONGO[("MongoDB — belief")]
-        REDIS[("Redis — registry, leases, runs")]
-        NEO[("Neo4j — KnowledgeGraph")]
+    subgraph persistLayer["Persistence"]
+        MONGO[("MongoDB belief")]
+        REDIS[("Redis registry leases")]
+        NEO[("Neo4j KnowledgeGraph")]
     end
 
-    PROMPT --> PR --> SR --> PIPE --> EXEC --> CAP
-    PR --> MONGO & REDIS & NEO
+    PROMPT --> PR
+    PR --> SR
+    SR --> PIPE
+    PIPE --> EXEC
+    EXEC --> CAP
+    PR --> MONGO
+    PR --> REDIS
+    PR --> NEO
     CAP --> NEO
 ```
 
 ---
 
-## 3. World interaction & security boundary
-
-Every consequential action passes through `ActionExecutor → TransitionGate → Capability`.
-The offline-safety gate (`kernel/pipeline/offline_safety.py`) may refuse a call when
-connectivity is insufficient; it never bypasses `TransitionGate`.
+## 3. World interaction and security boundary
 
 ```mermaid
-graph TB
+flowchart TB
     Actor["ACTOR"]
-    Actor --> Bus["SOCIETY BUS<br/>NATS + Redis inbox"]
-    Actor --> Cap["GOVERNED CAPABILITY"]
-    Bus --> Soc["SOCIETY"]
-    Cap --> API["WORLD API / KnowledgeGraph"]
-    API --> Reality["REALITY<br/>orders · payments · inventory"]
+    Bus["SOCIETY BUS NATS and Redis inbox"]
+    Cap["GOVERNED CAPABILITY"]
+    Soc["SOCIETY"]
+    WAPI["WORLD API and KnowledgeGraph"]
+    Reality["REALITY orders payments inventory"]
+
+    Actor --> Bus
+    Actor --> Cap
+    Bus --> Soc
+    Cap --> WAPI
+    WAPI --> Reality
 ```
 
 ---
@@ -140,65 +146,73 @@ graph TB
 ## 4. Docker Compose (local)
 
 ```mermaid
-graph TB
-    subgraph Clients
-        UI["living-world-explorer / cogctl / curl"]
+flowchart TB
+    subgraph clientsGrp["Clients"]
+        UI["explorer cogctl curl"]
     end
 
-    subgraph Gateway["North-south boundary :8000"]
-        KONG["Kong API Gateway<br/>kong/kong.yml"]
+    subgraph gatewayGrp["Gateway port 8000"]
+        KONG["Kong API Gateway"]
     end
 
-    subgraph ControlPlane["Society Control Plane :8031"]
-        AGENTOS["agentos<br/>FastAPI + PlanetaryRuntime<br/>CognitiveActors in-process"]
+    subgraph controlGrp["Society Control Plane port 8031"]
+        AGENTOS["agentos FastAPI PlanetaryRuntime"]
     end
 
-    subgraph DomainREST["Manufacturing domain REST (~24 services)<br/>separate from Actor runtime"]
-        AUTH["auth · orders · inventory · …"]
+    subgraph domainGrp["Manufacturing REST services"]
+        AUTH["auth orders inventory"]
     end
 
-    subgraph Infra["Shared infrastructure"]
+    subgraph infraGrp["Shared infrastructure"]
         MONGO[("MongoDB")]
         REDIS[("Redis")]
-        NEO[("Neo4j KG")]
+        NEO[("Neo4j")]
         NATS[("NATS")]
         OPA[("OPA")]
-        INFLUX[("InfluxDB")]
     end
 
-    subgraph Optional["docker-compose.actors.yml (optional)"]
-        A1["actor-a :8051"]
-        A2["actor-b :8052"]
+    subgraph actorsGrp["docker-compose.actors.yml optional"]
+        A1["actor-a port 8051"]
+        A2["actor-b port 8052"]
     end
 
     UI --> KONG
     KONG --> AGENTOS
     KONG --> AUTH
-    AGENTOS --> MONGO & REDIS & NEO & NATS & OPA
-    A1 & A2 --> MONGO & REDIS & NEO & NATS
-    A1 & A2 -.depends on.-> AGENTOS
+    AGENTOS --> MONGO
+    AGENTOS --> REDIS
+    AGENTOS --> NEO
+    AGENTOS --> NATS
+    AGENTOS --> OPA
+    A1 --> MONGO
+    A1 --> REDIS
+    A1 --> NEO
+    A1 --> NATS
+    A2 --> MONGO
+    A2 --> REDIS
+    A2 --> NEO
+    A2 --> NATS
+    A1 -.->|depends on| AGENTOS
+    A2 -.->|depends on| AGENTOS
 ```
 
 **Bring up:**
 
 ```bash
-docker compose up agentos          # control plane + infra
-docker compose up kong             # gateway on :8000
-docker compose -f docker-compose.yml -f docker-compose.actors.yml up -d   # per-actor containers
+docker compose up agentos
+docker compose up kong
+docker compose -f docker-compose.yml -f docker-compose.actors.yml up -d
 ```
 
 ---
 
 ## 5. Kubernetes
 
-Base stack: `kubectl apply -k deploy/k8s/`. Per-actor workloads are templates applied
-separately via `envsubst` (see `deploy/k8s/kustomization.yaml` header comment).
-
 ```mermaid
-graph TB
-    subgraph NS["namespace: monkeybrain"]
-        KONG["kong Deployment :8000"]
-        AGENTOS["agentos Deployment<br/>replicas: 1"]
+flowchart TB
+    subgraph nsGrp["namespace monkeybrain"]
+        KONG["kong port 8000"]
+        AGENTOS["agentos replicas 1"]
         REDIS[("redis")]
         MONGO[("mongodb")]
         NEO[("neo4j")]
@@ -206,14 +220,21 @@ graph TB
         OPA[("opa")]
     end
 
-    subgraph PerActor["Per-actor templates (envsubst, not in base kustomization)"]
-        POD["actor-deployment.yaml<br/>ACTOR_ID=alice"]
-        EDGE["edge-actor-deployment.yaml<br/>legacy EdgeActor prototype"]
+    subgraph templatesGrp["Per-actor templates envsubst"]
+        POD["actor-deployment.yaml"]
+        EDGE["edge-actor-deployment.yaml legacy"]
     end
 
-    EXT["Clients / UIs"] --> KONG --> AGENTOS
-    AGENTOS --> REDIS & MONGO & NEO & NATS & OPA
-    POD --> REDIS & MONGO & NATS
+    EXT["Clients"] --> KONG
+    KONG --> AGENTOS
+    AGENTOS --> REDIS
+    AGENTOS --> MONGO
+    AGENTOS --> NEO
+    AGENTOS --> NATS
+    AGENTOS --> OPA
+    POD --> REDIS
+    POD --> MONGO
+    POD --> NATS
 ```
 
 **Per-actor deploy:**
@@ -227,119 +248,153 @@ ACTOR_ID=alice ACTOR_NODE_CLASS=cloud \
 
 ## 6. Current vs target deployment
 
-### Current (monolithic cloud + optional edge pods)
-
-From [`DEPLOYMENT_ARCHITECTURE.md`](../DEPLOYMENT_ARCHITECTURE.md) §1. Red boxes in the
-original doc marked process-memory-only state; many of those gaps are now closed in code
-(registry, Redis world store, message inbox) but `replicas: 1` remains the default K8s posture.
+### Current (monolithic cloud plus optional edge pods)
 
 ```mermaid
-graph TB
-    subgraph CLOUD["Cloud Process — agentos, replicas: 1"]
-        API["FastAPI — api/main.py"]
+flowchart TB
+    subgraph cloudGrp["Cloud Process agentos replicas 1"]
+        API["FastAPI"]
         PR["PlanetaryRuntime"]
         SR["SocietyRuntime"]
-        ACTORS["_actors — in-process"]
-        A1["CognitiveActor: Alice"]
-        A2["CognitiveActor: Bob"]
-        API --> PR --> SR --> ACTORS
-        ACTORS -.-> A1 & A2
+        ACTORS["_actors in-process"]
+        A1["CognitiveActor Alice"]
+        A2["CognitiveActor Bob"]
+        API --> PR
+        PR --> SR
+        SR --> ACTORS
+        ACTORS -.-> A1
+        ACTORS -.-> A2
     end
 
-    subgraph EDGE["Edge Pod (optional)"]
+    subgraph edgeGrp["Edge Pod optional"]
         ES["edge_server.py"]
-        EA["EdgeActor — tabular RL prototype"]
+        EA["EdgeActor tabular RL prototype"]
         ES --> EA
     end
 
-    PR --> NATS[("NATS")]
-    PR --> MONGO[("MongoDB")]
-    PR --> NEO[("Neo4j")]
-    PR --> REDIS[("Redis")]
-    API --> OPA[("OPA")]
-    ES -- "POST /sync" --> API
+    NATS[("NATS")]
+    MONGO[("MongoDB")]
+    NEO[("Neo4j")]
+    REDIS[("Redis")]
+    OPA[("OPA")]
+
+    PR --> NATS
+    PR --> MONGO
+    PR --> NEO
+    PR --> REDIS
+    API --> OPA
+    ES -->|POST sync| API
 ```
 
-### Target (Actor ≈ Pod, shared control plane)
-
-From [`DEPLOYMENT_ARCHITECTURE.md`](../DEPLOYMENT_ARCHITECTURE.md) §2 and
-[`COGNITIVEOS_FINAL_ARCHITECTURE.md`](COGNITIVEOS_FINAL_ARCHITECTURE.md).
+### Target (Actor as Pod, shared control plane)
 
 ```mermaid
-graph TB
-    subgraph CP["CognitiveOS Control Plane"]
+flowchart TB
+    subgraph cpGrp["CognitiveOS Control Plane"]
         REG["Actor Registry"]
         SCHED["Actor Scheduler"]
         CTRL["Lifecycle Controller"]
-        GOV["Governance / TransitionGate"]
+        GOV["Governance TransitionGate"]
     end
 
-    subgraph SWI["Shared World Infrastructure"]
-        SW["KnowledgeGraph — Neo4j"]
-        PERSIST["ActorStateStore — Mongo"]
-        FABRIC["NATS + Redis inbox"]
+    subgraph swiGrp["Shared World Infrastructure"]
+        SW["KnowledgeGraph Neo4j"]
+        PERSIST["ActorStateStore Mongo"]
+        FABRIC["NATS and Redis inbox"]
     end
 
-    subgraph EN1["Execution Node — Cloud"]
-        ACTOR_A["Actor: Alice"]
-    end
-    subgraph EN2["Execution Node — Edge"]
-        ACTOR_B["Actor: Carol"]
+    subgraph en1Grp["Execution Node Cloud"]
+        ACTOR_A["Actor Alice"]
     end
 
-    CTRL -. reconciles .-> ACTOR_A & ACTOR_B
-    SCHED -. places .-> ACTOR_A & ACTOR_B
-    REG -. tracks .-> ACTOR_A & ACTOR_B
-    ACTOR_A & ACTOR_B --> FABRIC & SW & PERSIST
-    ACTOR_A & ACTOR_B -. governed .-> GOV
+    subgraph en2Grp["Execution Node Edge"]
+        ACTOR_B["Actor Carol"]
+    end
+
+    CTRL -.->|reconciles| ACTOR_A
+    CTRL -.->|reconciles| ACTOR_B
+    SCHED -.->|places| ACTOR_A
+    SCHED -.->|places| ACTOR_B
+    REG -.->|tracks| ACTOR_A
+    REG -.->|tracks| ACTOR_B
+    ACTOR_A --> FABRIC
+    ACTOR_B --> FABRIC
+    ACTOR_A --> SW
+    ACTOR_B --> SW
+    ACTOR_A --> PERSIST
+    ACTOR_B --> PERSIST
+    ACTOR_A -.->|governed| GOV
+    ACTOR_B -.->|governed| GOV
 ```
 
-**Core mapping:** Actor ≈ Pod — independently deployable, identity-bearing unit that a
-scheduler places and a controller reconciles. Identity must survive placement changes
-(`ACTOR IDENTITY ≠ ACTOR LOCATION`).
+**Core mapping:** Actor is analogous to Pod. Identity must survive placement changes
+(actor identity is not actor location).
 
 ---
 
-## 7. Control plane & actor artifact
+## 7. Control plane and actor artifact
 
 ```mermaid
-graph TB
-    subgraph Society["COGNITIVEOS SOCIETY"]
+flowchart TB
+    subgraph socGrp["COGNITIVEOS SOCIETY"]
         Reg["Registry"]
         Sched["Scheduler"]
         LC["Lifecycle Controller"]
     end
-    Society --> Bus["Society Bus<br/>NATS + Redis"]
-    Bus --> Spec["Actor Specification"]
-    Spec --> Place["placement"]
-    Place --> Cloud["CLOUD"]
-    Place --> Edge["EDGE"]
-    Place --> Device["DEVICE / ROBOT"]
-    Cloud --> RT1["Actor Runtime"]
-    Edge --> RT2["Actor Runtime"]
-    Device --> RT3["Actor Runtime"]
-    RT1 --> A["Actor A"]
-    RT2 --> B["Actor B"]
-    RT3 --> C["Actor C"]
+
+    Bus["Society Bus NATS and Redis"]
+    Spec["Actor Specification"]
+    Place["placement"]
+    Cloud["CLOUD"]
+    Edge["EDGE"]
+    Device["DEVICE or ROBOT"]
+    RT1["Actor Runtime"]
+    RT2["Actor Runtime"]
+    RT3["Actor Runtime"]
+    ActA["Actor A"]
+    ActB["Actor B"]
+    ActC["Actor C"]
+
+    Reg --> Bus
+    Sched --> Bus
+    LC --> Bus
+    Bus --> Spec
+    Spec --> Place
+    Place --> Cloud
+    Place --> Edge
+    Place --> Device
+    Cloud --> RT1
+    Edge --> RT2
+    Device --> RT3
+    RT1 --> ActA
+    RT2 --> ActB
+    RT3 --> ActC
 ```
 
-**One image, many placements** (`src/monkey_brain/actor_runtime.py` entrypoint, same
-`docker/services/agentos/Dockerfile` image, different `command:`):
+**One image, many placements:**
 
 ```mermaid
-graph LR
-    Art["ACTOR ARTIFACT<br/>monkeybrain/agentos image<br/>+ actor_runtime.py"]
-    Art --> D["Docker"]
-    Art --> K["Kubernetes"]
-    Art --> E["Edge"]
-    D & K & E --> RT["Runtime"]
-    RT --> Same["SAME ACTOR MODEL<br/>CognitiveActor"]
+flowchart LR
+    Art["ACTOR ARTIFACT agentos image"]
+    D["Docker"]
+    K["Kubernetes"]
+    E["Edge"]
+    RT["Runtime"]
+    Same["SAME ACTOR MODEL CognitiveActor"]
+
+    Art --> D
+    Art --> K
+    Art --> E
+    D --> RT
+    K --> RT
+    E --> RT
+    RT --> Same
 ```
 
-**Kubernetes placement** (K8s runs the process; CognitiveOS Scheduler decides *which* actor):
+**Kubernetes placement:**
 
 ```mermaid
-graph LR
+flowchart LR
     Spec["ActorSpecification"] --> Sched["CognitiveOS Scheduler"]
     Sched --> K8s["Kubernetes"]
     K8s --> Pod["Pod"]
@@ -351,29 +406,26 @@ graph LR
 
 ## 8. Horizontal scaling shape
 
-Control plane and service bus are off the hot path of ordinary cognition.
-From [`HORIZONTAL_SCHEDULER_SCALING.md`](HORIZONTAL_SCHEDULER_SCALING.md).
-
 ```mermaid
-graph TB
+flowchart TB
     SOC["SOCIETY"]
-    CP["CONTROL PLANE<br/>Scheduler · Lifecycle Controller · Registry"]
-    BUS["SERVICE BUS<br/>NATS + Redis-backed registries"]
+    CP["CONTROL PLANE Scheduler Lifecycle Registry"]
+    BUS["SERVICE BUS NATS and Redis"]
+    A["Actor A runtime Edge"]
+    B["Actor B runtime Cloud"]
+    N["Actor N runtime Robot"]
+
     SOC --> CP
     SOC --> BUS
     CP --> BUS
-    BUS --> A["Actor A runtime (Edge)"]
-    BUS --> B["Actor B runtime (Cloud)"]
-    BUS --> N["Actor N runtime (Robot)"]
+    BUS --> A
+    BUS --> B
+    BUS --> N
 ```
 
 ---
 
 ## 9. Sequence: POST /prompt (grocery purchase)
-
-Representative flow for `POST /api/v1/agentos/prompt` with `X-User-ID` set to an actor
-(e.g. Priya Sharma buying milk). See `api/routes/prompt.py` and
-`kernel/pipeline/comparison/integration.py`.
 
 ```mermaid
 sequenceDiagram
@@ -388,94 +440,83 @@ sequenceDiagram
     participant Redis as Redis
     participant Mongo as MongoDB
 
-    Client->>Kong: POST /prompt "buy 1 liter of milk"
-    Kong->>API: proxy + X-User-ID + Idempotency-Key
-    API->>PR: restore_actor_belief(actor_id)
-    API->>PR: execute_actor_request(actor_id, payload)
-    PR->>Redis: acquire_actor_lease(actor_id)
-    PR->>SR: tick_one_actor(actor_id)
-    SR->>Actor: tick()
+    Client->>Kong: POST /prompt buy milk
+    Kong->>API: proxy with X-User-ID
+    API->>PR: restore_actor_belief
+    API->>PR: execute_actor_request
+    PR->>Redis: acquire_actor_lease
+    PR->>SR: tick_one_actor
+    SR->>Actor: tick
 
-    Actor->>Loop: observe → believe → plan
-    Note over Loop: LLM planner (Ollama / dev_bridge)
-    Loop->>Loop: predict → decide
-    Note over Loop: TransitionModel gate<br/>may reject learned-negative plans
+    Actor->>Loop: observe believe plan
+    Note over Loop: LLM planner
+    Loop->>Loop: predict and decide
+    Note over Loop: TransitionModel gate
 
-    Loop->>Loop: execute plan steps
     Loop->>KG: ProductSelection
     Loop->>KG: OrderCreation
     Loop->>KG: PaymentConfirmation
     Loop->>KG: Payment
     Loop->>KG: OrderConfirmation
 
-    Loop->>Loop: compare → learn → commit
+    Loop->>Loop: compare learn commit
     Actor-->>SR: tick result
     SR-->>PR: actor result
-    PR->>Mongo: checkpoint_actor_belief(actor_id)
-    PR->>Redis: release_actor_lease(actor_id)
-    API-->>Client: PromptResponse (goal_achieved, world_changes)
+    PR->>Mongo: checkpoint_actor_belief
+    PR->>Redis: release_actor_lease
+    API-->>Client: PromptResponse
 ```
 
-**Local demo helper:** `scripts/run_clean_grocery_pass.py` (requires `MODEL_BACKEND=dev_bridge`,
-debit wallet, and cleared transition-model state for a reliable pass).
+**Local demo:** `scripts/run_clean_grocery_pass.py`
 
 ---
 
 ## 10. Sequence: UPI payment (two-phase)
 
-`PaymentCapability` with `account_type: upi_reserve_pay` reserves funds and pauses the tick;
-resume happens via webhook or `POST /payments/{id}/dev-complete`. See
-`kernel/domains/grocery.py` and `api/routes/payments.py`.
-
 ```mermaid
 sequenceDiagram
     participant Loop as Payment step
     participant KG as KnowledgeGraph
-    participant PSP as RazorpayUPIProvider
-    participant Redis as PendingPayment store
+    participant PSP as RazorpayUPI
+    participant Redis as PendingPayment
     participant Webhook as Webhook or dev-complete
 
-    Loop->>KG: PaymentConfirmation (balance / RBAC)
-    Loop->>PSP: reserve(amount, payer, order_id)
-    PSP-->>Loop: reservation_id, pending_authorization
-    Loop->>Redis: save PendingPayment(execution_id, reservation_id)
-    Loop-->>Loop: requires_payment_confirmation=true<br/>tick pauses
+    Loop->>KG: PaymentConfirmation
+    Loop->>PSP: reserve funds
+    PSP-->>Loop: reservation_id pending
+    Loop->>Redis: save PendingPayment
+    Loop-->>Loop: tick pauses awaiting approval
 
-    Note over Webhook: Real UPI approval or dev-complete
-    Webhook->>PSP: record_authorization + capture (or force_capture)
+    Note over Webhook: UPI approval or dev-complete
+    Webhook->>PSP: authorize and capture
     Webhook->>Redis: resolve pending payment
-    Webhook->>Loop: resume via meta.resume_execution_id
+    Webhook->>Loop: resume execution
 
-    Loop->>PSP: capture(reservation_id)
-    Loop->>KG: confirm_reservation + debit wallet + credit store
-    Loop-->>Loop: success → OrderConfirmation proceeds
+    Loop->>PSP: capture
+    Loop->>KG: debit wallet credit store
+    Loop-->>Loop: success
 ```
-
-**Synchronous path:** seed a `debit` wallet alongside UPI; `_find_wallet` prefers non-UPI
-accounts (`kernel/domains/finance.py`).
 
 ---
 
 ## 11. Sequence: Actor identity at boot
 
-From [`ACTOR_ARTIFACT.md`](ACTOR_ARTIFACT.md). The runtime never silently creates a new identity.
-
 ```mermaid
 sequenceDiagram
     participant Op as Operator
-    participant Bin as Actor Artifact (actor_runtime.py)
-    participant Reg as Actor Registry (Redis)
+    participant Bin as Actor Runtime
+    participant Reg as Actor Registry
 
-    Note over Op,Reg: actor_id already registered via Society API
-    Op->>Bin: ACTOR_ID=alice, run
-    Bin->>Reg: locate_actor("alice")
+    Note over Op,Reg: actor_id already registered
+    Op->>Bin: ACTOR_ID=alice run
+    Bin->>Reg: locate_actor alice
     alt found
         Reg-->>Bin: ActorRegistryEntry
-        Bin->>Bin: reconcile → restore belief → activate
-        Note over Bin: SAME Actor — no new identity
-    else not found, no ACTOR_BOOTSTRAP_IF_MISSING
+        Bin->>Bin: reconcile restore activate
+        Note over Bin: same actor_id
+    else not found
         Reg-->>Bin: None
-        Bin->>Bin: NOT_FOUND — refuse to start
+        Bin->>Bin: NOT_FOUND refuse start
     end
 ```
 
@@ -483,61 +524,55 @@ sequenceDiagram
 
 ## 12. Actor runtime startup (state machine)
 
-From [`ACTOR_ARTIFACT.md`](ACTOR_ARTIFACT.md).
-
 ```mermaid
-graph TD
-    A["process starts"] --> B["load config (ACTOR_ID, env)"]
-    B --> C["register_self_as_node()"]
-    C --> D{"actor_id in Registry?"}
-    D -- no, no bootstrap --> E["NOT_FOUND"]
-    D -- no, bootstrap=true --> F["register_actor (dev only)"]
-    D -- yes --> G["lifecycle.reconcile()"]
+flowchart TD
+    A[process starts] --> B[load config]
+    B --> C[register_self_as_node]
+    C --> D{actor_id in Registry}
+    D -->|no bootstrap| E[NOT_FOUND]
+    D -->|bootstrap dev| F[register_actor]
+    D -->|yes| G[lifecycle reconcile]
     F --> G
-    G --> H{"result"}
-    H -- unschedulable --> I["UNSCHEDULABLE"]
-    H -- scheduled elsewhere --> J["SCHEDULED_ELSEWHERE"]
-    H -- resident + ACTIVE --> K["READY"]
-    K --> L["start_auto_tick()"]
+    G --> H{result}
+    H -->|unschedulable| I[UNSCHEDULABLE]
+    H -->|elsewhere| J[SCHEDULED_ELSEWHERE]
+    H -->|resident ACTIVE| K[READY]
+    K --> L[start_auto_tick]
 ```
 
 | Endpoint | Meaning |
 |----------|---------|
 | `GET /live` | Process alive (liveness probe) |
-| `GET /ready` | 503 unless `state == READY` (readiness probe) |
-| `GET /status` | Full readiness + placement debug |
-| `GET /artifact` | actor_id, artifact_version, node_id, node_class |
+| `GET /ready` | 503 unless READY (readiness probe) |
+| `GET /status` | Full readiness and placement debug |
+| `GET /artifact` | actor_id, version, node_id, node_class |
 
 ---
 
 ## 13. Sequence: Lifecycle reconciliation
 
-From [`ACTOR_LIFECYCLE.md`](ACTOR_LIFECYCLE.md). Background loop via
-`PlanetaryRuntime.start_actor_lifecycle_reconciliation()` (default ~60s; event-driven queue
-also drains reconcile work — see horizontal scaling doc).
-
 ```mermaid
 sequenceDiagram
-    participant Loop as Reconciliation loop
-    participant Ctrl as ActorLifecycleController
-    participant Reg as Actor Registry (Redis)
-    participant Lease as Actor Lease (Redis)
+    participant Loop as Reconcile loop
+    participant Ctrl as LifecycleController
+    participant Reg as Actor Registry
+    participant Lease as Actor Lease
     participant Runtime as Actor Runtime
 
-    Loop->>Ctrl: reconcile_all()
-    loop each actor in registry
-        Ctrl->>Reg: get_actor_desired_state(actor_id)
-        Ctrl->>Reg: observe_actor(actor_id)
-        alt desired == observed
-            Ctrl-->>Loop: action=none
+    Loop->>Ctrl: reconcile_all
+    loop each actor
+        Ctrl->>Reg: get desired state
+        Ctrl->>Reg: observe actor
+        alt settled
+            Ctrl-->>Loop: action none
         else action needed
-            Ctrl->>Lease: acquire_actor_lease(actor_id)
-            alt lease denied
-                Ctrl-->>Loop: skipped_lease_held
-            else lease granted
-                Ctrl->>Runtime: start / resume / suspend / terminate / recover
-                Ctrl->>Reg: refresh registry status
-                Ctrl->>Lease: release_actor_lease(actor_id)
+            Ctrl->>Lease: acquire lease
+            alt denied
+                Ctrl-->>Loop: skipped lease held
+            else granted
+                Ctrl->>Runtime: start resume suspend recover
+                Ctrl->>Reg: refresh status
+                Ctrl->>Lease: release lease
             end
         end
     end
@@ -547,103 +582,87 @@ sequenceDiagram
 
 ## 14. Sequence: Actor migration
 
-Safe checkpoint-and-restart — never live migration. From [`ACTOR_SCHEDULER.md`](ACTOR_SCHEDULER.md)
-and [`COGNITIVEOS_FINAL_ARCHITECTURE.md`](COGNITIVEOS_FINAL_ARCHITECTURE.md) §10.
-
 ```mermaid
 sequenceDiagram
-    participant Op as cogctl / migrate_actor()
+    participant Op as Operator
     participant Sched as ActorScheduler
-    participant NodeA as Node A (current)
-    participant Reg as Registry (Redis)
-    participant NodeB as Node B (target)
+    participant NodeA as Node A current
+    participant Reg as Registry
+    participant NodeB as Node B target
 
-    Op->>Reg: set_actor_desired_node(actor_id, NodeB)
-    Sched->>Reg: reserve capacity on B / release on A
-    NodeA->>NodeA: checkpoint belief, status → SUSPENDED
+    Op->>Reg: set desired node B
+    Sched->>Reg: reserve capacity B
+    NodeA->>NodeA: checkpoint and SUSPEND
     Note over NodeA: desired_state stays RUNNING
-    NodeB->>Reg: reconcile() — SUSPENDED, desired_node=self
-    NodeB->>NodeB: restore belief, activate
-    NodeB->>Reg: node_id=B, status=ACTIVE
-    Note over NodeA,NodeB: SAME actor_id throughout
+    NodeB->>Reg: reconcile SUSPENDED on B
+    NodeB->>NodeB: restore belief activate
+    NodeB->>Reg: status ACTIVE on B
+    Note over NodeA,NodeB: same actor_id
 ```
 
 ---
 
-## 15. Sequence: Node failure → reschedule
-
-From [`ACTOR_SCHEDULER.md`](ACTOR_SCHEDULER.md). Recovery restarts cognition from last
-checkpoint; business actions are not replayed.
+## 15. Sequence: Node failure reschedule
 
 ```mermaid
 sequenceDiagram
-    participant NodeA as Node A (dies)
-    participant Reg as Shared Registry (Redis)
-    participant NodeB as Node B (survivor)
+    participant NodeA as Node A dies
+    participant Reg as Registry
+    participant NodeB as Node B survivor
 
-    Note over NodeA: crash — no deregister_node()
-    Note over Reg: record stale, no lease held
-    NodeB->>Reg: observe_actor → is_stale=true
-    NodeB->>Reg: _decide() → RECOVER
-    NodeB->>Reg: scheduler.schedule() → Node B
-    NodeB->>NodeB: restore belief, activate
-    Note over NodeB: SAME actor_id · ONE registry entry
+    Note over NodeA: crash no clean shutdown
+    Note over Reg: stale record no lease
+    NodeB->>Reg: observe is_stale
+    NodeB->>Reg: decide RECOVER
+    NodeB->>Reg: schedule on Node B
+    NodeB->>NodeB: restore belief activate
+    Note over NodeB: same actor_id one entry
 ```
 
 ---
 
 ## 16. Sequence: Rolling artifact upgrade
 
-From [`ACTOR_ARTIFACT.md`](ACTOR_ARTIFACT.md). `artifact_version` is metadata only;
-`actor_id` is unchanged.
-
 ```mermaid
 sequenceDiagram
-    participant V1 as Actor A v1.4
+    participant V1 as Actor v1.4
     participant Ctrl as Lifecycle Controller
-    participant V2 as Actor A v1.5
+    participant V2 as Actor v1.5
 
     Note over V1: RUNNING
-    V1->>Ctrl: checkpoint_actor_belief (SIGTERM)
-    V1->>Ctrl: deregister_node (graceful stop)
-    Note over V2: New pod: ACTOR_ID=alice, v1.5
-    V2->>Ctrl: lifecycle.reconcile() → RESUME
+    V1->>Ctrl: checkpoint on SIGTERM
+    V1->>Ctrl: deregister_node
+    Note over V2: new pod same ACTOR_ID
+    V2->>Ctrl: reconcile RESUME
     Ctrl->>V2: restore_actor_belief
-    Note over V2: READY — same actor_id, same state
+    Note over V2: READY same state
 ```
 
 ---
 
 ## 17. Sequence: cogctl apply
 
-From [`COGNITIVEOS_FINAL_ARCHITECTURE.md`](COGNITIVEOS_FINAL_ARCHITECTURE.md) §12.
-`cogctl` is a pure HTTP client (`src/monkey_brain/cogctl.py`); it never starts a process.
-
 ```mermaid
 sequenceDiagram
     participant Op as Operator
     participant Cog as cogctl
-    participant API as POST /actors/apply
+    participant API as actors apply API
     participant PR as PlanetaryRuntime
     participant Sched as ActorScheduler
-    participant RT as Actor Runtime (assigned node)
+    participant RT as Actor Runtime
 
-    Op->>Cog: cogctl apply -f actor.yaml
+    Op->>Cog: cogctl apply actor.yaml
     Cog->>API: ActorSpecification
-    API->>PR: register_actor() or update
-    API->>Sched: set placement requirements
-    API->>PR: enqueue reconcile event (Redis)
+    API->>PR: register or update
+    API->>Sched: set placement
+    API->>PR: enqueue reconcile
     API-->>Cog: accepted
-    Note over RT: Async: target node reconcile → READY → cognition
+    Note over RT: async reconcile to READY
 ```
 
 ---
 
 ## 18. Actor lifecycle states
-
-Target model from [`DEPLOYMENT_ARCHITECTURE.md`](../DEPLOYMENT_ARCHITECTURE.md) §6.
-Implemented states include `REGISTERED`, `ACTIVE`, `SUSPENDED`, `FAILED`, `TERMINATED`
-(via `ActorLifecycleController` — see [`ACTOR_LIFECYCLE.md`](ACTOR_LIFECYCLE.md)).
 
 ```mermaid
 stateDiagram-v2
@@ -666,29 +685,26 @@ stateDiagram-v2
 
 ## Geography vs Society (structural axes)
 
-From [`architecture.md`](architecture.md). Two independent hierarchies; an actor's tick is
-coordinated across both.
-
 ```mermaid
-graph LR
-    subgraph Geography["Geography — where"]
-        P[Planet] --> C[Country] --> City[City] --> S[Space]
+flowchart LR
+    subgraph geoGrp["Geography where"]
+        P[Planet] --> Co[Country] --> Ci[City] --> Sp[Space]
     end
 
-    subgraph Society["Society — who governs"]
+    subgraph socGrp2["Society who governs"]
         Soc[Society] --> T[Team] --> Act[Actor]
     end
 
-    S -. hosts .-> Soc
+    Sp -.->|hosts| Soc
 ```
 
 ---
 
-## OPA vs in-world governance (do not conflate)
+## OPA vs in-world governance
 
 | Layer | Mechanism | Question answered |
 |-------|-----------|-------------------|
-| Infrastructure authZ | OPA (`deploy/k8s/opa.yaml`) | Who can call which API route? |
-| In-world authority | `TransitionGate`, `domain_security.py` delegations (KG) | What is this actor allowed to do in the world? |
+| Infrastructure authZ | OPA | Who can call which API route? |
+| In-world authority | TransitionGate and KG delegations | What may this actor do in the world? |
 
-Kubernetes RBAC / network policy is not a substitute for in-world actor authority.
+Kubernetes RBAC is not a substitute for in-world actor authority.
