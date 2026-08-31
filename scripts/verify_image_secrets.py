@@ -64,7 +64,13 @@ EXCLUDED_DIR_PREFIXES = (
     "/etc/ssl/",
     "/etc/ssh/",
     "/.git/",
+    "/root/.cache/",
+    "/.cache/",
 )
+
+# CA bundles shipped by certifi/botocore — not private key material.
+ALLOWED_PEM_NAMES = frozenset({"cacert.pem"})
+ALLOWED_PEM_DIR_MARKERS = ("certifi", "botocore", "pip/_vendor/certifi")
 
 
 def should_exclude_path(path: str) -> bool:
@@ -73,6 +79,14 @@ def should_exclude_path(path: str) -> bool:
         if path.startswith(excluded):
             return True
     return False
+
+
+def is_allowed_pem_file(path: Path) -> bool:
+    """CA certificate bundles are not secret key material."""
+    if path.name in ALLOWED_PEM_NAMES:
+        return True
+    path_str = str(path)
+    return any(marker in path_str for marker in ALLOWED_PEM_DIR_MARKERS)
 
 
 def matches_pattern(filename: str, pattern: str) -> bool:
@@ -161,6 +175,8 @@ def scan_filesystem_for_secrets(root_path: Path) -> list[str]:
 
             # Check if filename matches the forbidden pattern
             if matches_pattern(fspath.name, pattern):
+                if pattern == "*.pem" and is_allowed_pem_file(fspath):
+                    continue
                 matches_found.append((pattern, str(rel_path)))
 
     return matches_found

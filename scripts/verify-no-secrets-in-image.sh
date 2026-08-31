@@ -132,6 +132,9 @@ for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
         ! -path "*/etc/ssl/*" \
         ! -path "*/etc/ssh/*" \
         ! -path "*/.git/*" \
+        ! -path "*/root/.cache/*" \
+        ! -path "*/.cache/*" \
+        ! -name "cacert.pem" \
         2>/dev/null || true)
 
     if [[ -n "$matches" ]]; then
