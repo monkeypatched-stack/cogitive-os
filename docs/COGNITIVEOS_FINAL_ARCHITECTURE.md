@@ -150,16 +150,15 @@ full-table sweep as a correctness backstop only.
 
 ```mermaid
 sequenceDiagram
-    participant Op as cogctl / Scheduler
-    participant NodeA as Node A (current)
+    participant Op as cogctl or Scheduler
+    participant NodeA as Node A current
     participant Reg as Registry
-    participant NodeB as Node B (target)
-    Op->>Reg: set_actor_desired_node(actor_id, NodeB)
-    NodeA->>NodeA: _decide() detects placement mismatch -> MIGRATE_AWAY
-    NodeA->>NodeA: checkpoint + suspend locally
-    NodeB->>Reg: reconcile() observes SUSPENDED, desired_node=self
-    NodeB->>NodeB: restore from same checkpoint, activate
-    Note over NodeA,NodeB: SAME actor_id throughout
+    participant NodeB as Node B target
+    Op->>Reg: set_actor_desired_node to B
+    Note over NodeA: checkpoint and suspend locally
+    NodeB->>Reg: reconcile SUSPENDED on B
+    Note over NodeB: restore from checkpoint activate
+    Note over NodeA,NodeB: same actor_id throughout
 ```
 
 Safe checkpoint-and-restart, never live migration (deliberate — see

@@ -193,16 +193,16 @@ flowchart TD
     PR -.->|predicted outcome| CMP
     OO -.->|actual outcome| CMP
 
-    SEC[Security / Policy<br/>Identity · Authorization · Delegation · Consent<br/>Capability Access · Policy Decisions] -. governs .-> E
-    SEC -. governs .-> TG
-    SEC -. governs .-> C
+    SEC[Security and Policy] -.->|governs| E
+    SEC -.->|governs| TG
+    SEC -.->|governs| C
 
-    classDef loop fill:#EEF2FF,stroke:#4338CA,stroke-width:1px,color:#1E293B
+    classDef stage fill:#EEF2FF,stroke:#4338CA,stroke-width:1px,color:#1E293B
     classDef gate fill:#FAFAFF,stroke:#8B5CF6,stroke-width:1px,color:#1E293B
     classDef compare fill:#ECFDF5,stroke:#047857,stroke-width:1px,color:#1E293B
     classDef security fill:#FDF4FF,stroke:#A21CAF,stroke-width:2px,color:#1E293B
 
-    class G,W,O,B,P,PR,D,RP,L,LT,NEXT loop
+    class G,W,O,B,P,PR,D,RP,L,LT,NEXT stage
     class E,TG,N,C gate
     class OO,CMP compare
     class SEC security

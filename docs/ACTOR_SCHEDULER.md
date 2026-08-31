@@ -177,21 +177,21 @@ Reconciling the two is exactly what `_decide()`'s migration branch does
 
 ```mermaid
 sequenceDiagram
-    participant Op as Operator / migrate_actor()
+    participant Op as Operator
     participant Sched as ActorScheduler
-    participant NodeA as Node A (current host)
-    participant Registry as Actor + Node Registry (Redis)
-    participant NodeB as Node B (target)
+    participant NodeA as Node A current
+    participant Registry as Actor Node Registry
+    participant NodeB as Node B target
 
-    Op->>Sched: migrate_actor(actor_id, target=B)
-    Sched->>Registry: set_actor_desired_node(actor_id, B)
-    Sched->>Registry: reserve capacity on B / release on A
-    Sched->>NodeA: suspend_actor_for_migration(actor_id)
-    NodeA->>NodeA: checkpoint belief, status -> SUSPENDED
-    Note over NodeA: desired_state stays RUNNING throughout —<br/>only location changed, never intent
-    NodeB->>Registry: reconcile() observes desired=RUNNING,<br/>status=SUSPENDED, desired_node=B (self)
-    NodeB->>NodeB: restore belief from same checkpoint, activate
-    NodeB->>Registry: refresh registry: node_id=B, status=ACTIVE
+    Op->>Sched: migrate_actor to B
+    Sched->>Registry: set desired node B
+    Sched->>Registry: reserve capacity on B
+    Sched->>NodeA: suspend for migration
+    Note over NodeA: checkpoint belief SUSPENDED
+    Note over NodeA: desired_state stays RUNNING
+    NodeB->>Registry: reconcile on B
+    Note over NodeB: restore belief and activate
+    NodeB->>Registry: status ACTIVE on B
 ```
 
 `ActorScheduler.migrate_actor()` computes (or accepts) a target node,
@@ -210,18 +210,18 @@ correct for a persistent, belief-owning actor.
 
 ```mermaid
 sequenceDiagram
-    participant NodeA as Node A (dies)
-    participant Registry as Shared Registry (Redis)
-    participant NodeB as Node B (survivor)
+    participant NodeA as Node A dies
+    participant Registry as Shared Registry
+    participant NodeB as Node B survivor
 
-    Note over NodeA: crashes without clean shutdown —<br/>no deregister_node() call happens
-    Note over Registry: actor's registry record ages past<br/>_ACTOR_STALE_SECONDS with no lease held
-    NodeB->>Registry: deregister_node("node-a") (infra/operator)
-    NodeB->>Registry: observe_actor(actor_id) -> is_stale=True
-    NodeB->>Registry: _decide() -> RECOVER (same actor_id)
-    NodeB->>Registry: scheduler.schedule() -> node-a gone, node-b selected
-    NodeB->>NodeB: restore belief from last checkpoint, activate
-    Note over NodeB: SAME actor_id. ONE registry entry.<br/>No consequential action (payment/order/etc) replayed —<br/>only cognition restarts, from its last committed belief.
+    Note over NodeA: crash no clean shutdown
+    Note over Registry: stale record no lease
+    NodeB->>Registry: deregister_node node-a
+    NodeB->>Registry: observe_actor is_stale
+    NodeB->>Registry: decide RECOVER
+    NodeB->>Registry: schedule on Node B
+    Note over NodeB: restore belief activate
+    Note over NodeB: same actor_id one entry
 ```
 
 This is the single most safety-critical property in this whole
