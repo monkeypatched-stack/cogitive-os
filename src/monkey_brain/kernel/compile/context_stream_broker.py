@@ -12,6 +12,8 @@ Replaces direct world mutations with published events.
 """
 
 from typing import Any
+
+from src.actor.event_driven_observer import ContextEvent, ContextStreamBroker, EventType
 from src.shared.actor_protocols import ContextStreamBrokerProtocol
 from src.monkey_brain.kernel.compile.solid_interfaces import ServiceInterface
 

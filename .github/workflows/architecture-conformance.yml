@@ -13,7 +13,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt pytest
       - name: Validate hard architecture invariants
         run: python scripts/check_architecture_conformance.py --strict
       - name: Run architecture regression tests

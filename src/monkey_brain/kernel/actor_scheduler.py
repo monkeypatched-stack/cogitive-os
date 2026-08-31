@@ -4,6 +4,8 @@ Manages independent cognitive loop execution for all actors.
 Society Runtime schedules, not orchestrates cognition.
 """
 
+from __future__ import annotations
+
 import asyncio
 from typing import Dict, Optional
 from dataclasses import dataclass
@@ -156,7 +158,7 @@ class ActorScheduler:
                 print(f"Scheduler error: {e}")
                 await asyncio.sleep(0.1)
 
-    async def _tick_actor(self, actor: AutonomousActor) -> None:
+    async def _tick_actor(self, actor: AutonomousActorProtocol) -> None:
         """Execute one cognitive cycle for actor"""
         actor_id = actor.id
         config = self._configs[actor_id]
@@ -189,7 +191,7 @@ class ActorScheduler:
                 )
                 self._last_tick[actor_id] = datetime.now() + timedelta(seconds=backoff_interval)
 
-    async def _run_cognitive_cycle(self, actor: AutonomousActor) -> None:
+    async def _run_cognitive_cycle(self, actor: AutonomousActorProtocol) -> None:
         """Execute one full cognitive cycle for actor
 
         This is the core of Phase 8-10: moving cycle execution to actor
