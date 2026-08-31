@@ -91,20 +91,19 @@ influences which actor gets instantiated.
 ```mermaid
 sequenceDiagram
     participant Op as Operator
-    participant Bin as Actor Artifact (this binary)
-    participant Reg as Actor Registry (Redis)
+    participant Bin as Actor Runtime binary
+    participant Reg as Actor Registry
 
-    Note over Op,Reg: actor_id "alice" already registered<br/>(via the normal cloud API/CLI registration path)
-    Op->>Bin: ACTOR_ID=alice, run
-    Bin->>Reg: locate_actor("alice")
+    Note over Op,Reg: actor_id alice already registered
+    Op->>Bin: ACTOR_ID=alice run
+    Bin->>Reg: locate_actor alice
     alt found
         Reg-->>Bin: ActorRegistryEntry
-        Bin->>Bin: instantiate (reconcile -> restore belief -> activate)
-        Note over Bin: SAME Actor "alice" -- no new identity created
-    else not found, ACTOR_BOOTSTRAP_IF_MISSING unset
+        Note over Bin: reconcile restore activate
+        Note over Bin: same actor_id unchanged
+    else not found
         Reg-->>Bin: None
-        Bin->>Bin: state = NOT_FOUND (refuses to start)
-        Note over Bin: The binary NEVER silently creates a new identity
+        Note over Bin: NOT_FOUND refuse start
     end
 ```
 
@@ -129,19 +128,19 @@ for any durable field — `status()`/`artifact_info()` are pure reads of
 ## Runtime model — startup / health / shutdown
 
 ```mermaid
-graph TD
-    A["process starts"] --> B["load configuration<br/>(env vars, optional --config file)"]
-    B --> C["establish node identity<br/>(register_self_as_node)"]
-    C --> D{"actor_id exists<br/>in Registry?"}
-    D -- no, no bootstrap --> E["NOT_FOUND (refuse to start)"]
-    D -- no, bootstrap=true --> F["register_actor (dev/test only)"]
-    D -- yes --> G["lifecycle.reconcile()<br/>(restore belief, restore lifecycle,<br/>consult Scheduler)"]
+flowchart TD
+    A[process starts] --> B[load configuration]
+    B --> C[register_self_as_node]
+    C --> D{actor_id in Registry}
+    D -->|no bootstrap| E[NOT_FOUND]
+    D -->|bootstrap dev| F[register_actor]
+    D -->|yes| G[lifecycle reconcile]
     F --> G
-    G --> H{"result"}
-    H -- unschedulable --> I["UNSCHEDULABLE (retry via backstop)"]
-    H -- scheduled elsewhere --> J["SCHEDULED_ELSEWHERE (retry via backstop)"]
-    H -- resident + ACTIVE --> K["READY"]
-    K --> L["start_auto_tick (begin cognition)"]
+    G --> H{result}
+    H -->|unschedulable| I[UNSCHEDULABLE]
+    H -->|elsewhere| J[SCHEDULED_ELSEWHERE]
+    H -->|resident ACTIVE| K[READY]
+    K --> L[start_auto_tick]
 ```
 
 Health/readiness distinguishes exactly the five states Section 21 of the
@@ -241,17 +240,17 @@ with a rolling-upgrade sequence:
 
 ```mermaid
 sequenceDiagram
-    participant V1 as Actor A v1 (artifact_version=1.4)
+    participant V1 as Actor v1.4
     participant Ctrl as Lifecycle Controller
-    participant V2 as Actor A v2 (artifact_version=1.5)
+    participant V2 as Actor v1.5
 
     Note over V1: RUNNING
-    V1->>Ctrl: checkpoint_actor_belief (on SIGTERM/shutdown)
-    V1->>Ctrl: deregister_node (graceful stop)
-    Note over V2: New pod boots with ACTOR_ID=alice,<br/>ACTOR_ARTIFACT_VERSION=1.5
-    V2->>Ctrl: lifecycle.reconcile() -> RESUME (same actor_id)
-    Ctrl->>V2: restore_actor_belief (same checkpoint)
-    Note over V2: READY -- SAME actor_id, SAME state, SAME authority
+    V1->>Ctrl: checkpoint on SIGTERM
+    V1->>Ctrl: deregister_node
+    Note over V2: new pod same ACTOR_ID v1.5
+    V2->>Ctrl: reconcile RESUME
+    Ctrl->>V2: restore_actor_belief
+    Note over V2: READY same actor_id and state
 ```
 
 `actor_id` is untouched throughout — `artifact_version` is the only

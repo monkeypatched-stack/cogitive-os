@@ -1,8 +1,15 @@
 # CognitiveOS — Architecture and Sequence Diagrams
 
 Visual reference for deployment topology, the cognitive loop, and key runtime flows.
-Diagrams use [Mermaid](https://mermaid.js.org/). Syntax is kept compatible with
-**GitHub's Mermaid renderer** (quoted labels, no `&` node chains, ASCII punctuation).
+Diagrams use [Mermaid](https://mermaid.js.org/). Syntax targets **GitHub's renderer**.
+
+**GitHub compatibility rules used in this file:**
+
+- Do not use participant id `Loop` (conflicts with the `loop` keyword; GitHub treats it case-insensitively).
+- Do not use `classDef loop` in flowcharts (same keyword conflict).
+- Avoid nested `loop` / `alt` blocks inside sequence diagrams.
+- Avoid self-messages (`X-->>X`) when the participant id could be parsed as a keyword.
+- Keep message text plain ASCII (no quotes, slashes, or parentheses in arrow labels).
 
 **Canonical sources:**
 
@@ -434,33 +441,33 @@ sequenceDiagram
     participant API as agentos API
     participant PR as PlanetaryRuntime
     participant SR as SocietyRuntime
-    participant Actor as CognitiveActor
-    participant Loop as Cognitive Pipeline
+    participant Cog as CognitiveActor
+    participant Pipe as Cognitive pipeline
     participant KG as Neo4j KG
     participant Redis as Redis
     participant Mongo as MongoDB
 
-    Client->>Kong: POST /prompt buy milk
+    Client->>Kong: POST prompt buy milk
     Kong->>API: proxy with X-User-ID
     API->>PR: restore_actor_belief
     API->>PR: execute_actor_request
     PR->>Redis: acquire_actor_lease
     PR->>SR: tick_one_actor
-    SR->>Actor: tick
+    SR->>Cog: tick
 
-    Actor->>Loop: observe believe plan
-    Note over Loop: LLM planner
-    Loop->>Loop: predict and decide
-    Note over Loop: TransitionModel gate
+    Cog->>Pipe: observe believe plan
+    Note over Pipe: LLM planner
+    Note over Pipe: predict and decide
+    Note over Pipe: TransitionModel gate
 
-    Loop->>KG: ProductSelection
-    Loop->>KG: OrderCreation
-    Loop->>KG: PaymentConfirmation
-    Loop->>KG: Payment
-    Loop->>KG: OrderConfirmation
+    Pipe->>KG: ProductSelection
+    Pipe->>KG: OrderCreation
+    Pipe->>KG: PaymentConfirmation
+    Pipe->>KG: Payment
+    Pipe->>KG: OrderConfirmation
 
-    Loop->>Loop: compare learn commit
-    Actor-->>SR: tick result
+    Note over Pipe: compare learn commit
+    Cog-->>SR: tick result
     SR-->>PR: actor result
     PR->>Mongo: checkpoint_actor_belief
     PR->>Redis: release_actor_lease
@@ -475,26 +482,25 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Loop as Payment step
+    participant Pay as Payment step
     participant KG as KnowledgeGraph
     participant PSP as RazorpayUPI
     participant Redis as PendingPayment
-    participant Webhook as Webhook or dev-complete
+    participant Hook as Payment webhook
 
-    Loop->>KG: PaymentConfirmation
-    Loop->>PSP: reserve funds
-    PSP-->>Loop: reservation_id pending
-    Loop->>Redis: save PendingPayment
-    Loop-->>Loop: tick pauses awaiting approval
+    Pay->>KG: PaymentConfirmation
+    Pay->>PSP: reserve funds
+    PSP-->>Pay: reservation_id pending
+    Pay->>Redis: save PendingPayment
+    Note over Pay: tick pauses awaiting approval
 
-    Note over Webhook: UPI approval or dev-complete
-    Webhook->>PSP: authorize and capture
-    Webhook->>Redis: resolve pending payment
-    Webhook->>Loop: resume execution
+    Hook->>PSP: authorize and capture
+    Hook->>Redis: resolve pending payment
+    Hook->>Pay: resume execution
 
-    Loop->>PSP: capture
-    Loop->>KG: debit wallet credit store
-    Loop-->>Loop: success
+    Pay->>PSP: capture
+    Pay->>KG: debit wallet and credit store
+    Note over Pay: payment success
 ```
 
 ---
@@ -512,11 +518,11 @@ sequenceDiagram
     Bin->>Reg: locate_actor alice
     alt found
         Reg-->>Bin: ActorRegistryEntry
-        Bin->>Bin: reconcile restore activate
+        Note over Bin: reconcile restore activate
         Note over Bin: same actor_id
     else not found
         Reg-->>Bin: None
-        Bin->>Bin: NOT_FOUND refuse start
+        Note over Bin: NOT_FOUND refuse start
     end
 ```
 
@@ -551,30 +557,28 @@ flowchart TD
 
 ## 13. Sequence: Lifecycle reconciliation
 
+One actor per sweep; repeat for each registry entry. Nested `loop`/`alt` blocks
+are omitted here because GitHub's Mermaid renderer does not handle them reliably.
+
 ```mermaid
 sequenceDiagram
-    participant Loop as Reconcile loop
+    participant Sweep as Background sweep
     participant Ctrl as LifecycleController
     participant Reg as Actor Registry
     participant Lease as Actor Lease
     participant Runtime as Actor Runtime
 
-    Loop->>Ctrl: reconcile_all
-    loop each actor
-        Ctrl->>Reg: get desired state
-        Ctrl->>Reg: observe actor
-        alt settled
-            Ctrl-->>Loop: action none
-        else action needed
-            Ctrl->>Lease: acquire lease
-            alt denied
-                Ctrl-->>Loop: skipped lease held
-            else granted
-                Ctrl->>Runtime: start resume suspend recover
-                Ctrl->>Reg: refresh status
-                Ctrl->>Lease: release lease
-            end
-        end
+    Sweep->>Ctrl: reconcile_all
+    Ctrl->>Reg: get desired state
+    Ctrl->>Reg: observe actor
+    alt desired matches observed
+        Ctrl-->>Sweep: no action
+    else action required
+        Ctrl->>Lease: acquire lease
+        Ctrl->>Runtime: start resume suspend recover
+        Ctrl->>Reg: refresh registry status
+        Ctrl->>Lease: release lease
+        Ctrl-->>Sweep: action complete
     end
 ```
 

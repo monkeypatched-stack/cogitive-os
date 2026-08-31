@@ -157,32 +157,28 @@ The analogy is architectural, not cosmetic: the controller owns Actor **lifecycl
 
 ```mermaid
 sequenceDiagram
-    participant Loop as Background reconciliation loop<br/>(every 60s, configurable)
+    participant Sweep as Background sweep
     participant Ctrl as ActorLifecycleController
-    participant Reg as Actor Registry (Redis)
-    participant Lease as Actor Lease (Redis)
+    participant Reg as Actor Registry
+    participant Lease as Actor Lease
     participant Runtime as Actor Runtime
 
-    Loop->>Ctrl: reconcile_all()
-    loop for each actor in registry
-        Ctrl->>Reg: get_actor_desired_state(actor_id)
-        Ctrl->>Reg: observe_actor(actor_id)
-        alt desired == observed (settled)
-            Ctrl-->>Loop: action="none" (no lease taken)
-        else action needed
-            Ctrl->>Lease: acquire_actor_lease(actor_id)
-            alt lease denied
-                Ctrl-->>Loop: action="skipped_lease_held"
-            else lease granted
-                Ctrl->>Reg: re-observe under lease
-                Ctrl->>Runtime: start / resume / suspend / terminate / recover
-                Ctrl->>Reg: refresh registry (new status)
-                Ctrl->>Lease: release_actor_lease(actor_id, token)
-                Ctrl-->>Loop: action taken, event published
-            end
-        end
+    Sweep->>Ctrl: reconcile_all
+    Ctrl->>Reg: get desired state
+    Ctrl->>Reg: observe actor
+    alt desired matches observed
+        Ctrl-->>Sweep: no action
+    else action required
+        Ctrl->>Lease: acquire lease
+        Ctrl->>Runtime: start resume suspend recover
+        Ctrl->>Reg: refresh registry status
+        Ctrl->>Lease: release lease
+        Ctrl-->>Sweep: action complete
     end
 ```
+
+Repeat the sweep for each actor in the registry. Nested `loop` / `alt` blocks
+are omitted because GitHub's Mermaid renderer does not handle them reliably.
 
 Background loop wiring: `PlanetaryRuntime.start_actor_lifecycle_reconciliation()` (default 60s, `ACTOR_LIFECYCLE_RECONCILE_INTERVAL` env var), started at boot in `kernel.py` alongside the existing auto-tick scheduler — a second, independent loop, since lifecycle reconciliation and cognition ticking answer different questions on different cadences.
 
