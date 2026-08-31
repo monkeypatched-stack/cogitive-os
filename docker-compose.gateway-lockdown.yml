@@ -1,0 +1,35 @@
+# Optional overlay: remove direct host port exposure for application services.
+# Use with the main compose file when validating the Kong-only external boundary:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.gateway-lockdown.yml up
+#
+# Kong remains published on :8000; all traffic enters through kong/kong.yml routes.
+
+version: "3.8"
+
+x-internal-only: &internal-only
+  ports: []
+
+services:
+  auth: *internal-only
+  events: *internal-only
+  assets: *internal-only
+  customers: *internal-only
+  facilities: *internal-only
+  floor-layout: *internal-only
+  inventory: *internal-only
+  iot: *internal-only
+  orders: *internal-only
+  pm: *internal-only
+  procurement: *internal-only
+  products: *internal-only
+  shipping: *internal-only
+  shifts: *internal-only
+  suppliers: *internal-only
+  taxonomy: *internal-only
+  workorders: *internal-only
+  changeover: *internal-only
+  documents: *internal-only
+  file: *internal-only
+  module-control: *internal-only
+  agentos: *internal-only
