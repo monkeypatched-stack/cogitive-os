@@ -55,6 +55,8 @@ _INTEGRATION_PATHS = (
     "e2e/test_soma_compile", "e2e/test_software_engineering", "e2e/test_e2e",
     "e2e/cognitive_loop", "load/test_load_and_soak", "security/test_api_fuzz",
     "benchmarks/",
+    "test_phase8_autonomous_actors.py",
+    "test_phase9_event_driven_observation.py",
 )
 
 

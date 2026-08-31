@@ -22,7 +22,7 @@ jobs:
           REFRESH_TOKEN_SECRET: ci-test-refresh-token-secret
           API_GATEWAY_REQUIRED: "false"
           AGENTOS_AUTH_REQUIRED: "false"
-        run: python -m pytest -q tests/test_kernel_runtime_registry_wave1.py tests/test_wave2_actor_architecture.py tests/test_wave3_planetary_world_convergence.py tests/test_cognitive_os.py tests/test_wave5_execution_architecture.py tests/test_wave6_architecture_certification.py
+        run: python -m pytest -q tests/test_kernel_runtime_registry_wave1.py tests/test_wave2_actor_architecture.py tests/test_wave3_planetary_world_convergence.py tests/test_wave5_execution_architecture.py tests/test_wave6_architecture_certification.py tests/unit/test_cognitive_kernel.py
       - name: Run Gate 3 world validation engine tests
         env:
           ACCESS_TOKEN_SECRET: ci-test-access-token-secret

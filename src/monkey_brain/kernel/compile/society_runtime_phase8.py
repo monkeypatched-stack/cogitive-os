@@ -15,10 +15,13 @@ Actors execute cognitive loops autonomously; Society Runtime manages:
 - Coordination between actors
 """
 
+from __future__ import annotations
+
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from datetime import datetime
 
+from src.actor.autonomous_actor import AutonomousActor
 from src.monkey_brain.kernel.compile.solid_interfaces import ServiceInterface
 from src.monkey_brain.kernel.compile.runtime_interface import RequestContext
 from src.monkey_brain.kernel.actor_scheduler import ActorScheduler, ActorTickConfig
