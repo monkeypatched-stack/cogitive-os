@@ -66,13 +66,40 @@ class ContextConstructionEngine:
             timeline_store = TimelineStore()
         self._timeline_store = timeline_store
         self._capability_bus = capability_bus
-        """MB-3060: an explicit bus override for available_capabilities()
-        below. None (the default) resolves the grocery vertical's own
-        bus lazily per build() call — the only vertical this codebase
-        has, same default every other single-vertical call site uses."""
+        from src.monkey_brain.kernel.knowledge.sittingface_retrieval import get_external_knowledge_retriever
+        self._external_knowledge_retriever = get_external_knowledge_retriever()
+
+    def set_external_knowledge_retriever(self, retriever: Any) -> None:
+        self._external_knowledge_retriever = retriever
 
     def build(self, actor_id: str, goal: Any, execution_id: str = "") -> PlanningContext:
         goal_text = f"{getattr(goal, 'name', '')} {getattr(goal, 'description', '')}".strip()
+        ext_report = self._external_knowledge_retriever.retrieve_sync(goal_text, cycle_id=execution_id)
+        return self._build_context(
+            actor_id, goal, execution_id=execution_id, goal_text=goal_text,
+            external_knowledge=ext_report.to_retrieved_items(),
+            external_metadata=ext_report.to_metadata(),
+        )
+
+    async def build_async(self, actor_id: str, goal: Any, execution_id: str = "") -> PlanningContext:
+        goal_text = f"{getattr(goal, 'name', '')} {getattr(goal, 'description', '')}".strip()
+        ext_report = await self._external_knowledge_retriever.retrieve(goal_text, cycle_id=execution_id)
+        return self._build_context(
+            actor_id, goal, execution_id=execution_id, goal_text=goal_text,
+            external_knowledge=ext_report.to_retrieved_items(),
+            external_metadata=ext_report.to_metadata(),
+        )
+
+    def _build_context(
+        self,
+        actor_id: str,
+        goal: Any,
+        *,
+        execution_id: str,
+        goal_text: str,
+        external_knowledge: tuple = (),
+        external_metadata: dict | None = None,
+    ) -> PlanningContext:
 
         retrieval_started = time.perf_counter()
         retrieval_latency: dict[str, float] = {}
@@ -159,6 +186,7 @@ class ContextConstructionEngine:
             relevant_conversations=conversations,
             relevant_executions=executions,
             relevant_knowledge=relevant_knowledge,
+            relevant_external_knowledge=external_knowledge,
             relevant_relationships=relevant_relationships,
             relevant_context_events=relevant_context_events,
             incoming_messages=incoming_messages,
@@ -177,6 +205,7 @@ class ContextConstructionEngine:
                 "retrieval_latency_ms": retrieval_latency,
                 "retrieval_total_latency_ms": round((time.perf_counter() - retrieval_started) * 1000, 3),
                 "affiliation_lookup_performed": self._planetary_runtime is not None,
+                **(external_metadata or {}),
             },
         )
 

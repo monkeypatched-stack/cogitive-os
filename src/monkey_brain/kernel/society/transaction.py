@@ -474,21 +474,13 @@ class TransactionCoordinator:
             return []
 
     def _somatic_context(self, objective: str, limit: int = 3) -> list[str]:
-        """Somatic/codegen chart matches for this objective -- distinct
-        from _grounding_context above (this queries the somatic-chart
-        compiler, not conversation/negotiation/organizational knowledge;
-        the two are complementary, not interchangeable, despite both
-        feeding the same message)."""
+        """Chart snippets via the shared SittingFace retriever (cycle-cached)."""
         try:
-            from src.monkey_brain.kernel.plan.intents.intent_registry import get_somatic_compiler
-            compiler = get_somatic_compiler()
-            if compiler is None:
-                return []
-            hits = compiler.search(objective) or []
-            return [
-                str(hit.get("name") or hit.get("source_path") or hit)
-                for hit in hits[:limit]
-            ]
+            from src.monkey_brain.kernel.knowledge.sittingface_retrieval import get_external_knowledge_retriever
+            report = get_external_knowledge_retriever().retrieve_sync(
+                objective, cycle_id=f"negotiation:{objective[:48]}", force=True,
+            )
+            return [item.content for item in report.items[:limit] if item.content]
         except Exception:
             logger.debug("_somatic_context: lookup failed (non-fatal)", exc_info=True)
             return []

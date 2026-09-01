@@ -87,14 +87,36 @@ class PromptCompilerAgent(BaseETASSAgent):
         else:
             spec = spec_data  # already an ETASSSpec
 
-        ir = self._compile(spec)
+        ir = await self._compile_async(spec)
         self._reward(True)
         return self._result(
             payload={"prompt_ir": ir, "compiled_prompt": ir.compiled_prompt},
             observations=[f"compiled {spec.workload} prompt for {spec.domain}/{spec.bounded_context}"],
         )
 
-    def _compile(self, spec) -> "StructuredPromptIR":
+    async def _compile_async(self, spec) -> "StructuredPromptIR":
+        external_block = ""
+        retrieval_meta: dict = {}
+        try:
+            from src.monkey_brain.kernel.knowledge.sittingface_retrieval import get_external_knowledge_retriever
+            report = await get_external_knowledge_retriever().retrieve(
+                spec.goal,
+                cycle_id=f"etass:{spec.workload}",
+                meta=getattr(spec, "metadata", None) or {},
+            )
+            external_block = report.format_for_prompt()
+            retrieval_meta = report.to_metadata()
+        except Exception as exc:
+            logger.debug("[prompt_compiler] external knowledge retrieval skipped: %s", exc)
+        return self._compile(spec, external_knowledge_block=external_block, retrieval_meta=retrieval_meta)
+
+    def _compile(
+        self,
+        spec,
+        *,
+        external_knowledge_block: str = "",
+        retrieval_meta: dict | None = None,
+    ) -> "StructuredPromptIR":
         from src.monkey_brain.kernel.execute.provider.prompt_ir import StructuredPromptIR, REASONING_PREAMBLES
 
         role = self._resolve_role(spec)
@@ -122,7 +144,12 @@ class PromptCompilerAgent(BaseETASSAgent):
             outputs_block=outputs_block,
             constitutions_block=constitutions_block,
             policies_block=policies_block,
+            external_knowledge_block=external_knowledge_block,
         )
+
+        meta = dict(retrieval_meta or {})
+        if external_knowledge_block:
+            meta["external_knowledge_injected"] = True
 
         return StructuredPromptIR(
             workload=spec.workload,
@@ -141,6 +168,7 @@ class PromptCompilerAgent(BaseETASSAgent):
             outputs_block=outputs_block,
             resolved_agents=resolved_agents,
             compiled_prompt=compiled,
+            metadata=meta,
         )
 
     # ------------------------------------------------------------------
@@ -238,6 +266,7 @@ class PromptCompilerAgent(BaseETASSAgent):
         outputs_block: str,
         constitutions_block: str,
         policies_block: str,
+        external_knowledge_block: str = "",
     ) -> str:
         sections = [
             f"# ETASS Workload: {spec.workload}",
@@ -266,5 +295,8 @@ class PromptCompilerAgent(BaseETASSAgent):
         for block in (constraints_block, constitutions_block, policies_block, evidence_block, success_criteria_block, outputs_block):
             if block:
                 sections += ["", block]
+
+        if external_knowledge_block:
+            sections += ["", external_knowledge_block]
 
         return "\n".join(sections)

@@ -2801,6 +2801,13 @@ return new_count
     def context_engine(self) -> Any:
         return self._context_engine
 
+    def attach_semantic_memory(self, semantic_memory: Any) -> None:
+        """Wire vector retrieval for SittingFace external knowledge."""
+        if self._context_engine is not None and hasattr(self._context_engine, "set_external_knowledge_retriever"):
+            from src.monkey_brain.kernel.knowledge.sittingface_retrieval import SittingFaceKnowledgeRetriever
+            retriever = SittingFaceKnowledgeRetriever(semantic_memory=semantic_memory)
+            self._context_engine.set_external_knowledge_retriever(retriever)
+
     @property
     def membership_registry(self) -> Any:
         return self._membership_registry

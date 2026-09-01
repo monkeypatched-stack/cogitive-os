@@ -22,6 +22,7 @@ Diagrams use [Mermaid](https://mermaid.js.org/). Syntax targets **GitHub's rende
 | Actor scheduler | [`ACTOR_SCHEDULER.md`](ACTOR_SCHEDULER.md) |
 | Actor artifact and boot | [`ACTOR_ARTIFACT.md`](ACTOR_ARTIFACT.md) |
 | Horizontal scaling | [`HORIZONTAL_SCHEDULER_SCALING.md`](HORIZONTAL_SCHEDULER_SCALING.md) |
+| SittingFace knowledge retrieval | [`SITTINGFACE_KNOWLEDGE_RETRIEVAL.md`](SITTINGFACE_KNOWLEDGE_RETRIEVAL.md) |
 | Interactive UI diagram | living-world-explorer, Architecture tab |
 
 ---
@@ -46,7 +47,8 @@ Diagrams use [Mermaid](https://mermaid.js.org/). Syntax targets **GitHub's rende
 16. [Sequence: Rolling artifact upgrade](#16-sequence-rolling-artifact-upgrade)
 17. [Sequence: cogctl apply](#17-sequence-cogctl-apply)
 18. [Actor lifecycle states](#18-actor-lifecycle-states)
-19. [Geography vs Society](#geography-vs-society-structural-axes)
+19. [SittingFace knowledge retrieval](#19-sittingface-knowledge-retrieval)
+20. [Geography vs Society](#geography-vs-society-structural-axes)
 
 ---
 
@@ -55,6 +57,10 @@ Diagrams use [Mermaid](https://mermaid.js.org/). Syntax targets **GitHub's rende
 Stage order:
 `observe -> believe -> plan -> predict -> decide -> execute -> observe_outcome -> compare -> learn -> learn_transitions -> compile_phi -> commit`
 
+Before **plan**, `ContextConstructionEngine` retrieves external knowledge from SittingFace
+(keyword chart search plus optional vector via SemanticMemory). Retrieved facts are injected
+into the LLM prompt — they inform reasoning but do not mutate authoritative world state.
+
 Inside **execute**, per action: `TransitionGate -> Negotiation (if required) -> Commit`.
 
 ```mermaid
@@ -62,13 +68,15 @@ flowchart TD
     G[Goal] --> W[World State]
     W --> O[Observe]
     O --> B[Believe]
-    B --> P[Plan]
+    B --> CCE[ContextConstructionEngine]
+    SF[SittingFace SomaticCompiler] -.->|keyword and vector| CCE
+    CCE --> P[Plan with external knowledge]
     P --> PR[Predict]
     PR --> D[Decide]
 
     D -->|keep| E[Execute]
     D -->|stale or invalid| RP[Replan]
-    RP --> P
+    RP --> CCE
 
     E --> TG[TransitionGate]
     TG -->|negotiation required| N[Negotiation]
@@ -95,42 +103,72 @@ flowchart TD
 
 ## 2. API to Kernel to Persistence
 
+SittingFace loads `somatic/charts/` at AgentOS boot (`init_sittingface`). The
+`SittingFaceKnowledgeRetriever` serves chart knowledge to planning and ETASS compile
+paths. Neo4j remains authoritative world state; SittingFace is external reference knowledge.
+
 ```mermaid
 flowchart TB
     subgraph apiLayer["API layer port 8031"]
         PROMPT["POST /prompt"]
         ACTORS["/actors"]
         PAY["/payments"]
+        SFAPI["/sittingface charts"]
+    end
+
+    subgraph sfLayer["SittingFace knowledge layer"]
+        SC["SomaticCompiler"]
+        RET["SittingFaceKnowledgeRetriever"]
+        CHARTS[("somatic/charts")]
+        KP[("somatic/knowledge_packs")]
+        SM["SemanticMemory optional ES"]
     end
 
     subgraph kernelLayer["Kernel"]
         PR["PlanetaryRuntime"]
         SR["SocietyRuntime"]
+        CCE["ContextConstructionEngine"]
         PIPE["pipeline cognitive loop"]
+        LLM["LLMPlanner"]
         EXEC["ActionExecutor"]
         CAP["domains grocery finance"]
+        PC["PromptCompilerAgent ETASS"]
     end
 
     subgraph persistLayer["Persistence"]
         MONGO[("MongoDB belief")]
         REDIS[("Redis registry leases")]
-        NEO[("Neo4j KnowledgeGraph")]
+        NEO[("Neo4j KnowledgeGraph world state")]
     end
 
     PROMPT --> PR
+    SFAPI --> SC
+    CHARTS --> SC
+    KP --> SC
+    SC --> RET
+    SM --> RET
     PR --> SR
     SR --> PIPE
+    PIPE --> CCE
+    RET --> CCE
+    CCE --> LLM
+    LLM --> PIPE
     PIPE --> EXEC
     EXEC --> CAP
+    PC --> RET
     PR --> MONGO
     PR --> REDIS
     PR --> NEO
     CAP --> NEO
+    SM -.->|indexes chart text| CHARTS
 ```
 
 ---
 
 ## 3. World interaction and security boundary
+
+SittingFace external knowledge informs LLM reasoning only. It does not write to
+the KnowledgeGraph or replace authoritative world state.
 
 ```mermaid
 flowchart TB
@@ -138,11 +176,18 @@ flowchart TB
     Bus["SOCIETY BUS NATS and Redis inbox"]
     Cap["GOVERNED CAPABILITY"]
     Soc["SOCIETY"]
+    CCE["ContextConstructionEngine"]
+    SF["SittingFace charts read-only"]
+    LLM["LLM prompt context"]
     WAPI["WORLD API and KnowledgeGraph"]
     Reality["REALITY orders payments inventory"]
 
     Actor --> Bus
     Actor --> Cap
+    Actor --> CCE
+    SF -.->|external knowledge| CCE
+    CCE --> LLM
+    LLM -.->|informs plan only| Actor
     Bus --> Soc
     Cap --> WAPI
     WAPI --> Reality
@@ -164,6 +209,12 @@ flowchart TB
 
     subgraph controlGrp["Society Control Plane port 8031"]
         AGENTOS["agentos FastAPI PlanetaryRuntime"]
+        SFBOOT["init_sittingface SomaticCompiler"]
+    end
+
+    subgraph chartsGrp["SittingFace charts read-only"]
+        SOMATIC[("somatic/charts")]
+        PACKS[("somatic/knowledge_packs")]
     end
 
     subgraph domainGrp["Manufacturing REST services"]
@@ -185,6 +236,9 @@ flowchart TB
 
     UI --> KONG
     KONG --> AGENTOS
+    SOMATIC --> SFBOOT
+    PACKS --> SFBOOT
+    SFBOOT --> AGENTOS
     KONG --> AUTH
     AGENTOS --> MONGO
     AGENTOS --> REDIS
@@ -220,11 +274,14 @@ flowchart TB
     subgraph nsGrp["namespace monkeybrain"]
         KONG["kong port 8000"]
         AGENTOS["agentos replicas 1"]
+        SF["SomaticCompiler at boot"]
+        CHARTS[("somatic charts ConfigMap or volume")]
         REDIS[("redis")]
         MONGO[("mongodb")]
         NEO[("neo4j")]
         NATS[("nats")]
         OPA[("opa")]
+        ES[("elasticsearch optional vector")]
     end
 
     subgraph templatesGrp["Per-actor templates envsubst"]
@@ -234,11 +291,14 @@ flowchart TB
 
     EXT["Clients"] --> KONG
     KONG --> AGENTOS
+    CHARTS --> SF
+    SF --> AGENTOS
     AGENTOS --> REDIS
     AGENTOS --> MONGO
     AGENTOS --> NEO
     AGENTOS --> NATS
     AGENTOS --> OPA
+    AGENTOS -.->|optional vector index| ES
     POD --> REDIS
     POD --> MONGO
     POD --> NATS
@@ -262,16 +322,24 @@ flowchart TB
     subgraph cloudGrp["Cloud Process agentos replicas 1"]
         API["FastAPI"]
         PR["PlanetaryRuntime"]
+        SF["SomaticCompiler and Retriever"]
         SR["SocietyRuntime"]
+        CCE["ContextConstructionEngine"]
         ACTORS["_actors in-process"]
         A1["CognitiveActor Alice"]
         A2["CognitiveActor Bob"]
         API --> PR
+        PR --> SF
         PR --> SR
+        SR --> CCE
+        SF --> CCE
         SR --> ACTORS
         ACTORS -.-> A1
         ACTORS -.-> A2
     end
+
+    CHARTS[("somatic/charts repo mount")]
+    CHARTS --> SF
 
     subgraph edgeGrp["Edge Pod optional"]
         ES["edge_server.py"]
@@ -305,7 +373,8 @@ flowchart TB
     end
 
     subgraph swiGrp["Shared World Infrastructure"]
-        SW["KnowledgeGraph Neo4j"]
+        SW["KnowledgeGraph Neo4j world state"]
+        SFREF["SittingFace charts external knowledge"]
         PERSIST["ActorStateStore Mongo"]
         FABRIC["NATS and Redis inbox"]
     end
@@ -328,6 +397,8 @@ flowchart TB
     ACTOR_B --> FABRIC
     ACTOR_A --> SW
     ACTOR_B --> SW
+    ACTOR_A -.->|read-only| SFREF
+    ACTOR_B -.->|read-only| SFREF
     ACTOR_A --> PERSIST
     ACTOR_B --> PERSIST
     ACTOR_A -.->|governed| GOV
@@ -347,6 +418,7 @@ flowchart TB
         Reg["Registry"]
         Sched["Scheduler"]
         LC["Lifecycle Controller"]
+        SF["SittingFace chart registry"]
     end
 
     Bus["Society Bus NATS and Redis"]
@@ -365,6 +437,9 @@ flowchart TB
     Reg --> Bus
     Sched --> Bus
     LC --> Bus
+    SF -.->|external knowledge| RT1
+    SF -.->|external knowledge| RT2
+    SF -.->|external knowledge| RT3
     Bus --> Spec
     Spec --> Place
     Place --> Cloud
@@ -380,15 +455,19 @@ flowchart TB
 
 **One image, many placements:**
 
+Charts (`somatic/charts`) mount on the control plane — not inside each actor image.
+
 ```mermaid
 flowchart LR
     Art["ACTOR ARTIFACT agentos image"]
+    Charts["somatic charts volume"]
     D["Docker"]
     K["Kubernetes"]
     E["Edge"]
     RT["Runtime"]
     Same["SAME ACTOR MODEL CognitiveActor"]
 
+    Charts -.->|read-only| RT
     Art --> D
     Art --> K
     Art --> E
@@ -405,8 +484,10 @@ flowchart LR
     Spec["ActorSpecification"] --> Sched["CognitiveOS Scheduler"]
     Sched --> K8s["Kubernetes"]
     K8s --> Pod["Pod"]
+    Charts["somatic charts ConfigMap"] -.->|boot| CP["AgentOS control plane"]
     Pod --> RT["Actor Runtime"]
     RT --> A["Actor"]
+    CP -.->|external knowledge| RT
 ```
 
 ---
@@ -417,6 +498,7 @@ flowchart LR
 flowchart TB
     SOC["SOCIETY"]
     CP["CONTROL PLANE Scheduler Lifecycle Registry"]
+    SF["SittingFace charts shared read-only"]
     BUS["SERVICE BUS NATS and Redis"]
     A["Actor A runtime Edge"]
     B["Actor B runtime Cloud"]
@@ -424,6 +506,9 @@ flowchart TB
 
     SOC --> CP
     SOC --> BUS
+    SF -.->|knowledge retrieval| A
+    SF -.->|knowledge retrieval| B
+    SF -.->|knowledge retrieval| N
     CP --> BUS
     BUS --> A
     BUS --> B
@@ -434,6 +519,9 @@ flowchart TB
 
 ## 9. Sequence: POST /prompt (grocery purchase)
 
+Knowledge-seeking questions also trigger SittingFace retrieval before planning.
+Transactional grocery goals skip external retrieval by policy.
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -442,6 +530,10 @@ sequenceDiagram
     participant PR as PlanetaryRuntime
     participant SR as SocietyRuntime
     participant Cog as CognitiveActor
+    participant CCE as ContextConstructionEngine
+    participant SF as SittingFace Retriever
+    participant SC as SomaticCompiler
+    participant LLM as LLMPlanner
     participant Pipe as Cognitive pipeline
     participant KG as Neo4j KG
     participant Redis as Redis
@@ -455,9 +547,15 @@ sequenceDiagram
     PR->>SR: tick_one_actor
     SR->>Cog: tick
 
-    Cog->>Pipe: observe believe plan
-    Note over Pipe: LLM planner
-    Note over Pipe: predict and decide
+    Cog->>CCE: build_async planning context
+    CCE->>SF: retrieve goal text
+    SF->>SC: keyword search charts
+    Note over SF: skip for short transactional goals
+    SF-->>CCE: external knowledge items
+    CCE->>LLM: plan with external knowledge section
+    LLM-->>Cog: plan steps
+
+    Cog->>Pipe: predict and decide
     Note over Pipe: TransitionModel gate
 
     Pipe->>KG: ProductSelection
@@ -479,6 +577,8 @@ sequenceDiagram
 ---
 
 ## 10. Sequence: UPI payment (two-phase)
+
+Payment execution uses KnowledgeGraph world state only — no SittingFace retrieval on this path.
 
 ```mermaid
 sequenceDiagram
@@ -507,6 +607,9 @@ sequenceDiagram
 
 ## 11. Sequence: Actor identity at boot
 
+AgentOS kernel boot loads SittingFace charts via `init_sittingface` before actors tick.
+Actor pods inherit the shared chart registry from the control plane — they do not own it.
+
 ```mermaid
 sequenceDiagram
     participant Op as Operator
@@ -530,6 +633,9 @@ sequenceDiagram
 
 ## 12. Actor runtime startup (state machine)
 
+Kernel boot phase SittingFace loads `somatic/charts` into `SomaticCompiler` before
+PlanetaryRuntime serves `/prompt` requests.
+
 ```mermaid
 flowchart TD
     A[process starts] --> B[load config]
@@ -546,6 +652,16 @@ flowchart TD
     K --> L[start_auto_tick]
 ```
 
+**AgentOS boot (separate from actor pod):**
+
+```mermaid
+flowchart LR
+    BOOT[Kernel boot] --> SF[init_sittingface]
+    SF --> SC[SomaticCompiler load charts]
+    SC --> REG[register ETASS agents]
+    REG --> PR[PlanetaryRuntime ready]
+```
+
 | Endpoint | Meaning |
 |----------|---------|
 | `GET /live` | Process alive (liveness probe) |
@@ -557,8 +673,8 @@ flowchart TD
 
 ## 13. Sequence: Lifecycle reconciliation
 
-One actor per sweep; repeat for each registry entry. Nested `loop`/`alt` blocks
-are omitted here because GitHub's Mermaid renderer does not handle them reliably.
+Lifecycle reconciliation does not reload SittingFace charts — chart registry is
+owned by AgentOS boot, not per-actor reconcile sweeps.
 
 ```mermaid
 sequenceDiagram
@@ -585,6 +701,9 @@ sequenceDiagram
 ---
 
 ## 14. Sequence: Actor migration
+
+Actor state migrates via Mongo belief checkpoints. SittingFace charts remain
+shared external knowledge on the control plane — not migrated with the actor.
 
 ```mermaid
 sequenceDiagram
@@ -626,6 +745,9 @@ sequenceDiagram
 ---
 
 ## 16. Sequence: Rolling artifact upgrade
+
+Rolling upgrades replace actor runtime images. SittingFace chart content updates
+require AgentOS redeploy or chart volume refresh — not the actor artifact alone.
 
 ```mermaid
 sequenceDiagram
@@ -687,6 +809,101 @@ stateDiagram-v2
 
 ---
 
+## 19. SittingFace knowledge retrieval
+
+End-to-end path from chart registry to LLM prompt. External knowledge is distinct
+from Neo4j world state and from actor belief checkpoints.
+
+```mermaid
+flowchart TB
+    subgraph sources["Knowledge sources"]
+        CHARTS[("somatic/charts")]
+        PACKS[("somatic/knowledge_packs")]
+        ES[("Elasticsearch optional")]
+    end
+
+    subgraph boot["AgentOS boot"]
+        INIT["init_sittingface"]
+        SC["SomaticCompiler"]
+        SM["SemanticMemory"]
+    end
+
+    subgraph retrieval["Retrieval layer"]
+        RET["SittingFaceKnowledgeRetriever"]
+        POL["retrieval policy"]
+        CACHE["per-cycle cache"]
+    end
+
+    subgraph paths["Consumption paths"]
+        CCE["ContextConstructionEngine build_async"]
+        PC["PromptCompilerAgent ETASS"]
+        HYB["HybridRouter RetrievalHandler"]
+    end
+
+    subgraph output["LLM input"]
+        CTX["PlanningContext relevant_external_knowledge"]
+        PROMPT["LLMPlanner External knowledge section"]
+        IR["StructuredPromptIR compiled_prompt"]
+    end
+
+    CHARTS --> INIT
+    PACKS --> INIT
+    INIT --> SC
+    SC --> RET
+    CHARTS --> SM
+    SM --> RET
+    ES -.-> SM
+    POL --> RET
+    CACHE --> RET
+    RET --> CCE
+    RET --> PC
+    RET --> HYB
+    CCE --> CTX
+    CTX --> PROMPT
+    PC --> IR
+```
+
+**Retrieval policy (deterministic):**
+
+| Condition | Retrieval |
+|-----------|-----------|
+| `meta.include_external_knowledge` | Always |
+| `meta.skip_external_knowledge` | Never |
+| Knowledge-seeking query patterns | Yes |
+| Short transactional goal e.g. buy milk | No |
+| Vector backend unavailable | Keyword fallback |
+
+**Sequence: knowledge question via POST /prompt**
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as agentos API
+    participant PR as PlanetaryRuntime
+    participant CCE as ContextConstructionEngine
+    participant RET as SittingFace Retriever
+    participant SC as SomaticCompiler
+    participant SM as SemanticMemory
+    participant LLM as LLMPlanner
+
+    Client->>API: POST prompt What is CAPA
+    API->>PR: execute_actor_request
+    PR->>CCE: build_async
+    CCE->>RET: retrieve query
+    RET->>SC: keyword search
+    RET->>SM: vector search optional
+    SM-->>RET: embedding hits or empty
+    SC-->>RET: chart snippets
+    RET-->>CCE: ExternalKnowledgeItem list
+    CCE->>LLM: plan with external knowledge
+    Note over LLM: retrieved facts in prompt text
+    LLM-->>API: plan and response
+```
+
+See [`SITTINGFACE_KNOWLEDGE_RETRIEVAL.md`](SITTINGFACE_KNOWLEDGE_RETRIEVAL.md) for implementation detail.
+
+---
+
 ## Geography vs Society (structural axes)
 
 ```mermaid
@@ -697,6 +914,10 @@ flowchart LR
 
     subgraph socGrp2["Society who governs"]
         Soc[Society] --> T[Team] --> Act[Actor]
+    end
+
+    subgraph knowGrp["SittingFace what reference"]
+        SF[Somatic charts] -.->|read-only| Act
     end
 
     Sp -.->|hosts| Soc
@@ -710,5 +931,7 @@ flowchart LR
 |-------|-----------|-------------------|
 | Infrastructure authZ | OPA | Who can call which API route? |
 | In-world authority | TransitionGate and KG delegations | What may this actor do in the world? |
+| External reference | SittingFace charts and knowledge packs | What documented facts inform the LLM prompt? |
 
 Kubernetes RBAC is not a substitute for in-world actor authority.
+SittingFace knowledge informs reasoning but does not mutate authoritative world state.

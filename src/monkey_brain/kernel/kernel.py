@@ -1486,6 +1486,12 @@ class Kernel:
 
         planetary = PlanetaryRuntime(Society(name="Default Society"))
 
+        cognitive = self.registry.get("cognitive")
+        if cognitive is not None:
+            sm = getattr(cognitive, "semantic_memory", None)
+            if sm is not None and hasattr(planetary, "attach_semantic_memory"):
+                planetary.attach_semantic_memory(sm)
+
         app.state.planetary_runtime = planetary
         self.registry.register("planetary", planetary)
         # api/routes/payments.py's auto-approve UPI simulator fires from a
