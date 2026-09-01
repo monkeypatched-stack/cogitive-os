@@ -665,6 +665,7 @@ class LLMPlanner:
         for label, retrieved_items in (
             ("Relevant experiences", getattr(context, "relevant_experiences", ())),
             ("Relevant knowledge", getattr(context, "relevant_knowledge", ())),
+            ("External knowledge (SittingFace)", getattr(context, "relevant_external_knowledge", ())),
             ("Relevant relationships", getattr(context, "relevant_relationships", ())),
             # Real-Time World Changes refactor (Context Stream spec):
             # incoming messages and negotiation updates are now their own
@@ -690,7 +691,8 @@ class LLMPlanner:
             lines.append("")
             lines.append(f"{label}:")
             for item in items:
-                lines.append(f"- {item.content} (confidence={item.confidence})")
+                source_note = f", source={item.source}" if getattr(item, "source", "") else ""
+                lines.append(f"- {item.content} (confidence={item.confidence}{source_note})")
 
         locations = getattr(context, "relevant_locations", ()) or ()
         objects = getattr(context, "relevant_objects", ()) or ()

@@ -347,9 +347,8 @@ class RequestCompiler:
             compiler = get_somatic_compiler()
             if compiler is not None and hasattr(compiler, "search"):
                 knowledge = compiler.search(question)
-                if knowledge and hasattr(knowledge, "get"):
-                    results = knowledge.get("results", [])
-                    if results:
+                results = knowledge if isinstance(knowledge, list) else []
+                if results:
                         from src.shared.config import GENERIC_FALLBACK_TRANSITIONS
                         transitions = [
                             (

@@ -217,6 +217,10 @@ class PlanningContext:
     relevant_conversations: tuple[RetrievedItem, ...] = ()
     relevant_executions: tuple[RetrievedItem, ...] = ()
     relevant_knowledge: tuple[RetrievedItem, ...] = ()
+    relevant_external_knowledge: tuple[RetrievedItem, ...] = ()
+    """SittingFace / external reference knowledge — NOT authoritative world state.
+    Populated by ContextConstructionEngine via SittingFaceKnowledgeRetriever.
+    Distinct from relevant_knowledge (knowledge graph entities)."""
     relevant_relationships: tuple[RetrievedItem, ...] = ()
     relevant_locations: tuple[str, ...] = ()
     relevant_objects: tuple[str, ...] = ()

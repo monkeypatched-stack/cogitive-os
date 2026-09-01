@@ -677,7 +677,7 @@ class   CognitiveRuntime:
                 # planning_context.relevant_context_events, ranked
                 # newest-first alongside the other retrieval sources.
                 _context_build_start = time.perf_counter()
-                planning_context = self._context_engine.build(
+                planning_context = await self._context_engine.build_async(
                     belief.actor_id, goal, execution_id=state.metrics.get("execution_id", ""),
                 )
                 context_build_latency_ms = (time.perf_counter() - _context_build_start) * 1000

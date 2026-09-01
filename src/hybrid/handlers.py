@@ -151,11 +151,13 @@ class ActionHandler(BaseHandler):
 
 
 class RetrievalHandler(BaseHandler):
-    """Handle pure information retrieval using knowledge base"""
+    """Handle pure information retrieval using SittingFace knowledge."""
 
     def __init__(self, knowledge_base: Optional[Any] = None):
         super().__init__("RetrievalHandler")
         self.kb = knowledge_base
+        from src.monkey_brain.kernel.knowledge.sittingface_retrieval import SittingFaceKnowledgeRetriever
+        self._retriever = SittingFaceKnowledgeRetriever()
 
     async def handle(self, question: str, context: Optional[Dict[str, Any]] = None) -> HandlerResponse:
         """Retrieve information from knowledge base"""
@@ -216,13 +218,18 @@ class RetrievalHandler(BaseHandler):
         return terms[:5]  # Limit to 5 terms
 
     async def _search_knowledge_base(self, terms: List[str]) -> List[Dict[str, Any]]:
-        """Search knowledge base"""
-        # Simulated KB search
-        # In real implementation, queries actual knowledge base
-        await asyncio.sleep(0.05)  # Simulate 50ms lookup
+        """Search SittingFace charts via the shared retriever."""
+        query = " ".join(terms)
+        report = await self._retriever.retrieve(query, force=True)
         return [
-            {"entity": term, "relevance": 0.8, "data": f"Information about {term}"}
-            for term in terms
+            {
+                "entity": item.source_chart or "chart",
+                "relevance": item.relevance_score,
+                "data": item.content,
+                "method": item.retrieval_method,
+                "source": item.source_path,
+            }
+            for item in report.items
         ]
 
     def _format_results(self, question: str, results: List[Dict[str, Any]]) -> str:
