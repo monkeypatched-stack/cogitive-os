@@ -629,6 +629,16 @@ class ActionExecutor:
                 self._publish_action_event(action, outcome, context)
                 event_publish_ms += (time.perf_counter() - publish_started) * 1000
 
+                # Vertical projector (grocery.project_action_result_to_context)
+                # and compile-time runtime_projections encode the SAME
+                # selected -> selected_product append. The live /prompt path
+                # wires both (CapabilityRuntime projector + compile_plan's
+                # execution_graph). Applying both doubled a one-item milk
+                # selection into two identical order line items.
+                # runtime_projections remain the recorded contract when no
+                # projector is injected (plan_compiler's non-executing
+                # metadata, executed here only as a fallback).
+                projector_applied = False
                 if (
                     outcome.success
                     and isinstance(context, dict)
@@ -636,13 +646,15 @@ class ActionExecutor:
                     and self._context_projector is not None
                 ):
                     self._context_projector(outcome.result, context)
+                    projector_applied = True
                 if node_id and execution_graph is not None:
                     if outcome.success:
                         execution_graph.mark_complete(node_id, outcome.result)
                     else:
                         execution_graph.mark_failed(node_id, outcome.error or "failed")
                 if (
-                    execution_graph is not None
+                    not projector_applied
+                    and execution_graph is not None
                     and node_id
                     and outcome.success
                     and isinstance(context, dict)

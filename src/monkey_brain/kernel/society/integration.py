@@ -618,6 +618,11 @@ class PlanetaryRuntime:
             from src.monkey_brain.kernel.pipeline.offline_safety import make_connectivity_check
             connectivity_check = make_connectivity_check(self)
 
+        # Grocery registers itself on import (vertical_router does not import
+        # verticals). Boot used to hit this before any grocery import, so
+        # resolve_vertical("grocery") failed with an empty registry.
+        from src.monkey_brain.kernel.domains import grocery as _grocery_vertical  # noqa: F401
+
         # Build the domain execution engine with the current context stream and safety checks.
         self._execution_engine = build_execution_engine(
             "grocery", context_stream=self.context_stream, connectivity_check=connectivity_check,

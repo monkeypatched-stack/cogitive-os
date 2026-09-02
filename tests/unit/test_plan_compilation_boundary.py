@@ -395,6 +395,7 @@ class TestInputOutputBinding:
         assert er.actions[0].success is True
         assert er.actions[1].success is True
         assert er.actions[1].result["order_id"] is not None
+        assert len(er.actions[1].result["items"]) == 1
         assert result_state.compiled_plan_graph is not None  # compile ran, didn't interfere
 
 
@@ -692,6 +693,36 @@ class TestRuntimeProjections:
             if e.rel == "projects_to" and e.src == "plan-rp:0" and e.dst == "plan-rp:1"
         ]
         assert len(projects_to) == 1
+
+    @pytest.mark.asyncio
+    async def test_projector_plus_compiled_graph_does_not_duplicate_cart(self):
+        """Live /prompt wires grocery's context projector AND compile_plan's
+        runtime_projections. Both append selected -> selected_product; a
+        single ProductSelection used to become two identical line items."""
+        from src.monkey_brain.kernel.domains.grocery import (
+            build_default_capability_bus, project_action_result_to_context,
+        )
+        from src.monkey_brain.kernel.knowledge_graph import EntityType, KnowledgeGraph
+
+        kg = KnowledgeGraph()
+        kg.add_entity("prod_milk", EntityType.ASSET, "Whole Milk (1L)", {"price": 3.49, "quantity": 20})
+
+        bus = build_default_capability_bus()
+        executor = ActionExecutor(capability_bus=bus, context_projector=project_action_result_to_context)
+        plan = _plan((
+            PlanStep(action="ProductSelection", description="select milk",
+                     parameters={"selection": [{"id": "prod_milk", "qty": 1}]}, confidence=0.9),
+            PlanStep(action="OrderCreation", description="create order", depends_on=(0,), confidence=0.9),
+        ), goal="buy 1L of milk")
+        state = _state(plan, actor_id="priya", execution_id="exec-one-item")
+        state.context = {"knowledge_graph": kg, "actor_id": "priya", "question": "Buy 1L of Milk."}
+        rt = CognitiveRuntime(execution_engine=executor)
+        result_state = await rt._execute_plan(state)
+
+        items = result_state.execution_result.actions[1].result["items"]
+        assert len(items) == 1
+        assert items[0]["qty"] == 1
+        assert items[0]["product"] == "Whole Milk (1L)"
 
 
 class TestGoalIdOnCompiledGraph:
