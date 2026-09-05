@@ -165,7 +165,7 @@ python3 -m pytest \
 | Area | Risk | Notes |
 |------|------|-------|
 | Multi-replica K8s soak | High | `replicas: 1` in deployment; no chaos tests under real split-brain |
-| Exactly-once external side effects | High | Capabilities are at-least-once; clients/capabilities need idempotent design |
+| At-least-once execution attempts require idempotent effects | High | Capabilities are at-least-once, never exactly-once; clients/capabilities need idempotent design |
 | `world.py` vs knowledge_graph dual authority | Medium | Commerce uses KG; SharedWorld is separate — production blocks direct CRUD only |
 | TransitionGate coverage | Medium | Order, Payment, SocialSourcing wired; not all grocery capabilities |
 | Full Mongo/KG write fencing | Medium | Fence on belief checkpoint only, not all writes |

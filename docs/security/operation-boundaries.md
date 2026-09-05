@@ -4,6 +4,12 @@ CognitiveOS splits **proposal** (LLM, planner, simulation, ranking) from
 **commitment** (trusted auth → MFA → permission → OPA → idempotency →
 durable audit intent → effect → durable audit result).
 
+Commitment and **execution attempt** are separate state machines —
+commitment is the logical acceptance of an operation; an execution
+attempt is one concrete try at causing its effect, and can be retried
+under the same commitment without re-authorizing. See
+[execution-attempt-state-machine.md](execution-attempt-state-machine.md).
+
 Unknown operations default to **security-critical**. Agents cannot declare a
 mutating name `READ_ONLY`.
 

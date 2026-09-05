@@ -161,6 +161,16 @@ class OperationLedger:
             return self._ops.get(operation_id)
 
     def transition(self, operation_id: str, state: SecurityOperationState, **details: Any) -> SecurityOperation:
+        # SecurityOperationState and execution_attempt.ExecutionAttemptState
+        # are both (str, Enum) — a same-named member (e.g. SUCCEEDED) of the
+        # WRONG enum compares equal by string value. isinstance checks the
+        # actual class, not the string, so a foreign enum can't silently
+        # pass as a commitment state here.
+        if not isinstance(state, SecurityOperationState):
+            raise TypeError(
+                f"expected security_operation.SecurityOperationState, got "
+                f"{type(state).__module__}.{type(state).__qualname__} ({state!r})",
+            )
         with self._lock:
             op = self._ops[operation_id]
             if op.state in (SecurityOperationState.SUCCEEDED,) and state != SecurityOperationState.SUCCEEDED:
