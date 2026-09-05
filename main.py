@@ -83,6 +83,12 @@ def _validate_required_env() -> None:
             "Set them in your shell or in a .env file before starting services."
         )
         raise SystemExit(1)
+    try:
+        from services.common.secrets import validate_hmac_secrets_from_env
+        validate_hmac_secrets_from_env()
+    except Exception as exc:
+        print(f"Error: {exc}")
+        raise SystemExit(1)
 
 
 def start_service(service: Service) -> subprocess.Popen:

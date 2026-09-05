@@ -33,6 +33,7 @@ from src.monkey_brain.kernel.codegen_runtime import CodeGenRuntime
 from src.monkey_brain.runtime.routers import get_mongo_client
 from src.monkey_brain.api.dependencies import require_permission
 from src.monkey_brain.api.helpers.run_helpers import get_codegen_runtime, get_process_manager
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.sdlc")
 
@@ -62,6 +63,7 @@ class SdlcApproveRequest(BaseModel):
 
 
 @router.post("/sdlc/run")
+@idempotent("sdlc.sdlc_run")
 async def sdlc_run(
     payload: SdlcRunRequest,
     mongo_client: Any = Depends(get_mongo_client),
@@ -145,6 +147,7 @@ async def sdlc_status(
 
 
 @router.post("/sdlc/{run_id}/approve")
+@idempotent("sdlc.sdlc_approve")
 async def sdlc_approve(
     run_id: str,
     payload: SdlcApproveRequest,

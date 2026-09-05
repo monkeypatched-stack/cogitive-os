@@ -529,6 +529,7 @@ async def execute_action(
 
 #TODO: doesnt really belong here, but this is the only route that needs to replay a run_id and it needs to be shared across all three runtimes (Cognitive/Simulation/Comparator) so it is here for now.
 @router.post("/replay/{run_id}")
+@idempotent("execute.replay_action")
 async def replay_action(
     run_id: str,
     request: Request,
@@ -712,6 +713,7 @@ def _sse_fatal(error: str) -> str:
 
 
 @router.post("/execute/stream")
+@idempotent("execute.execute_stream")
 async def execute_stream(
     payload: PlanResponse,
     mongo_client: Any = Depends(get_mongo_client),

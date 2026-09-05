@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 from src.introspection.lemon import get_lemon
 
 logger = logging.getLogger("agentos.workloads")
@@ -39,6 +40,7 @@ class ComposeRequest(BaseModel):
 
 
 @router.post("/workloads/compose", tags=["Workloads"])
+@idempotent("workloads.compose_workload")
 async def compose_workload(
     payload: ComposeRequest,
     user_id: str = Depends(require_permission("perm-execute-plan")),
@@ -121,6 +123,7 @@ async def list_templates(
 
 
 @router.post("/workloads/validate", tags=["Workloads"])
+@idempotent("workloads.validate_workload")
 async def validate_workload(
     payload: ComposeRequest,
     user_id: str = Depends(require_permission("perm-execute-plan")),

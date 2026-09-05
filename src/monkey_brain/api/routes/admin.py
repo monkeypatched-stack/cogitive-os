@@ -25,12 +25,14 @@ from src.monkey_brain.api.gateway_models import (
     LogsResponse, ConfigurationResponse, VersionResponse,
     BackupResponse, RestoreRequest, RestoreResponse,
 )
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.admin")
 router = APIRouter()
 
 
 @router.post("/boot", response_model=BootResponse, tags=["Admin"])
+@idempotent("admin.boot_runtime")
 async def boot_runtime(
     body: BootRequest,
     request: Request,
@@ -45,6 +47,7 @@ async def boot_runtime(
 
 @router.post("/shutdown", response_model=ShutdownResponse, tags=["Admin"])
 @audited("admin.shutdown")
+@idempotent("admin.shutdown_runtime")
 async def shutdown_runtime(
     request: Request,
     user_id: str = Depends(require_permission("perm-admin")),
@@ -53,6 +56,7 @@ async def shutdown_runtime(
 
 
 @router.post("/reload", response_model=ReloadResponse, tags=["Admin"])
+@idempotent("admin.reload_modules")
 async def reload_modules(
     request: Request,
     user_id: str = Depends(require_permission("perm-admin")),
@@ -96,6 +100,7 @@ async def get_tuning(
 
 
 @router.post("/tuning", tags=["Admin"])
+@idempotent("admin.update_tuning")
 async def update_tuning(
     request: Request,
     user_id: str = Depends(require_permission("perm-admin")),
@@ -134,6 +139,7 @@ def _get_planetary_runtime(request: Request) -> Any:
 
 @router.post("/backup", response_model=BackupResponse, tags=["Admin"])
 @audited("admin.backup")
+@idempotent("admin.backup_world")
 async def backup_world(
     request: Request,
     user_id: str = Depends(require_permission("perm-admin")),
@@ -148,6 +154,7 @@ async def backup_world(
 
 @router.post("/restore", response_model=RestoreResponse, tags=["Admin"])
 @audited("admin.restore")
+@idempotent("admin.restore_world")
 async def restore_world(
     body: RestoreRequest,
     request: Request,

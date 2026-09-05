@@ -26,6 +26,47 @@ def _classes(path: Path) -> list[str]:
     return [node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
 
 
+def _policy_audit_intent_precedes_effect() -> bool:
+    """Commitment module notes AUDIT_INTENT before MUTATION."""
+    text = (SRC / "kernel" / "security_boundary.py").read_text(errors="ignore")
+    intent = text.find('_note("AUDIT_INTENT")')
+    mutate = text.find('_note("MUTATION")')
+    return 0 <= intent < mutate
+
+
+def _policy_unknown_distinct_from_failed() -> bool:
+    text = (SRC / "kernel" / "security_operation.py").read_text(errors="ignore")
+    return 'FAILED = "failed"' in text and 'UNKNOWN = "unknown"' in text and "UnknownOutcomeError" in text
+
+
+def _mutating_routes_have_idempotent() -> bool:
+    routes = SRC / "api" / "routes"
+    if not routes.exists():
+        return False
+    for path in routes.glob("*.py"):
+        try:
+            tree = ast.parse(path.read_text(errors="ignore"))
+        except SyntaxError:
+            return False
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            mutating = False
+            idem = False
+            for d in node.decorator_list:
+                if (
+                    isinstance(d, ast.Call)
+                    and isinstance(d.func, ast.Attribute)
+                    and d.func.attr in ("post", "put", "patch", "delete")
+                ):
+                    mutating = True
+                if isinstance(d, ast.Call) and isinstance(d.func, ast.Name) and d.func.id == "idempotent":
+                    idem = True
+            if mutating and not idem:
+                return False
+    return True
+
+
 def _production_runtime_construction() -> list[str]:
     findings: list[str] = []
     allowed = {
@@ -399,6 +440,28 @@ def _positive_ownership_checks() -> dict:
             "score": round((passed / len(checks)) * 100, 1) if checks else 0.0}
 
 
+def _untrusted_security_authority_violations() -> list[str]:
+    """Catch trusted_auth.update(...) and similar merges from untrusted dicts."""
+    findings: list[str] = []
+    forbidden = (
+        "trusted_auth.update(",
+        "auth.update(",
+    )
+    skip = {"trusted_auth.py", "security_boundary.py"}
+    for path in SRC.rglob("*.py"):
+        if path.name in skip:
+            continue
+        text = path.read_text(errors="ignore")
+        for i, line in enumerate(text.splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
+            for needle in forbidden:
+                if needle in line:
+                    findings.append(f"{path.relative_to(ROOT)}:{i}:{stripped}")
+    return findings
+
+
 def collect() -> dict:
     kernel = SRC / "kernel" / "kernel.py"
     names = _classes(kernel)
@@ -435,6 +498,30 @@ def collect() -> dict:
     hard["boundary_capability_runtime_bypass"] = not boundary["ActionExecutor"]
     hard["boundary_society_no_direct_cognitive_os"] = not boundary["society_no_direct_cognitive_os"]
     hard["boundary_no_module_level_cognitive_imports"] = not boundary["no_module_level_cognitive_imports"]
+    hard["untrusted_security_authority_assignments"] = not _untrusted_security_authority_violations()
+    hard["governed_commitment_on_action_executor"] = "ensure_governed" in (
+        SRC / "kernel" / "pipeline" / "action_executor.py"
+    ).read_text(errors="ignore")
+    hard["governed_commitment_on_runtime"] = "ensure_governed" in (
+        SRC / "runtime" / "runtime.py"
+    ).read_text(errors="ignore")
+    hard["kg_mutations_require_commitment"] = "assert_state_mutation_allowed" in (
+        SRC / "kernel" / "knowledge_graph.py"
+    ).read_text(errors="ignore")
+    hard["shared_world_mutations_require_commitment"] = "_require_write" in (
+        SRC / "kernel" / "society" / "world.py"
+    ).read_text(errors="ignore")
+    hard["operation_classification_default_critical"] = (
+        "return OperationClass.SECURITY_CRITICAL" in (
+            SRC / "kernel" / "operation_classification.py"
+        ).read_text(errors="ignore")
+    )
+    hard["mutating_routes_idempotent"] = _mutating_routes_have_idempotent()
+    hard["security_operation_unknown_state"] = "RECONCILIATION_REQUIRED" in (
+        SRC / "kernel" / "security_operation.py"
+    ).read_text(errors="ignore")
+    hard["policy_audit_intent_precedes_effect"] = _policy_audit_intent_precedes_effect()
+    hard["policy_unknown_distinct_from_failed"] = _policy_unknown_distinct_from_failed()
 
     debt = {
         "direct_runtime_construction": _production_runtime_construction(),

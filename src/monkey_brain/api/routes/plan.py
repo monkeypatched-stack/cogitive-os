@@ -148,7 +148,8 @@ async def plan_execution(
             logger.warning("run=%r [plan] governance denied: %s", run_id, gov_result.get("reason"))
             return JSONResponse(status_code=403, content={"error": "governance_denied", "detail": gov_result.get("reason")})
     except ImportError:
-        logger.warning("Governance module not available — skipping governance check")
+        logger.error("Governance module not available — denying plan")
+        return JSONResponse(status_code=500, content={"error": "governance_error", "detail": "Governance unavailable"})
     except Exception as exc:
         logger.error("Governance check failed — denying plan: %s", exc)
         return JSONResponse(status_code=500, content={"error": "governance_error", "detail": "Governance check failed"})
@@ -637,6 +638,7 @@ async def plan_execution(
 
 
 @router.post("/acquire")
+@idempotent("plan.acquire_knowledge_route")
 async def acquire_knowledge_route(
     payload: PlanRequest,
     user_id: str = Depends(require_permission("perm-execute-plan")),

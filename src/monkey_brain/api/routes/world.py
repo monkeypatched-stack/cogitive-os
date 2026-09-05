@@ -41,6 +41,7 @@ from src.monkey_brain.api.gateway_models import (
     WorldResourceCreateRequest, WorldResourceUpdateRequest,
     WorldLocationCreateRequest, WorldLocationUpdateRequest,
 )
+from src.monkey_brain.api.idempotency import idempotent
 from src.shared.api_protocols import (
     WorldProtocol, BeliefStateProtocol, SerializableProtocol,
     PlanetaryRuntimeProtocol,
@@ -58,10 +59,15 @@ def _require_direct_world_mutation_allowed() -> None:
         raise HTTPException(
             status_code=403,
             detail=(
-                "Direct SharedWorld API mutations are disabled in production mode. "
+                "Direct SharedWorld API mutations are disabled. "
                 "Use commerce/orders/fulfillment routes or actor capabilities instead."
             ),
         )
+
+
+async def _commit_world(action: str, resource: str, effect):
+    from src.monkey_brain.kernel.security_boundary import ensure_governed
+    return await ensure_governed(action, resource, effect, skip_authz=True)
 
 
 def _get_planetary_runtime(request: Request) -> Any:
@@ -155,6 +161,7 @@ async def get_world_entities(
 
 
 @router.post("/world/entities", tags=["World"])
+@idempotent("world.create_world_entity")
 async def create_world_entity(
     body: WorldEntityCreateRequest,
     request: Request,
@@ -185,9 +192,13 @@ async def create_world_entity(
         provenance=body.provenance or "api:world/entities",
         owner_society_id=body.owner_society_id,
     )
-    pr.add_world_entity(entity)
+    async def _mutate():
+        pr.add_world_entity(entity)
+        return entity.to_dict()
+
+    out = await _commit_world("world.entity.create", body.name, _mutate)
     _obs.finish_span("ok")
-    return entity.to_dict()
+    return out
 
 
 @router.get("/world/entities/{entity_id}", tags=["World"])
@@ -206,6 +217,7 @@ async def get_world_entity(
 
 
 @router.put("/world/entities/{entity_id}", tags=["World"])
+@idempotent("world.update_world_entity")
 async def update_world_entity(
     entity_id: str,
     body: WorldEntityUpdateRequest,
@@ -216,8 +228,11 @@ async def update_world_entity(
     pr = _get_planetary_runtime(request)
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
-    entity = pr.update_world_entity(
-        entity_id, state=body.state or None, owner_society_id=body.owner_society_id, **body.attributes,
+    entity = await _commit_world(
+        "world.entity.update", entity_id,
+        lambda: pr.update_world_entity(
+            entity_id, state=body.state or None, owner_society_id=body.owner_society_id, **body.attributes,
+        ),
     )
     if entity is None:
         raise HTTPException(status_code=404, detail=f"Entity {entity_id} not found")
@@ -225,6 +240,7 @@ async def update_world_entity(
 
 
 @router.delete("/world/entities/{entity_id}", tags=["World"])
+@idempotent("world.delete_world_entity")
 async def delete_world_entity(
     entity_id: str,
     request: Request,
@@ -234,7 +250,7 @@ async def delete_world_entity(
     pr = _get_planetary_runtime(request)
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
-    removed = pr.remove_world_entity(entity_id)
+    removed = await _commit_world("world.entity.delete", entity_id, lambda: pr.remove_world_entity(entity_id))
     if not removed:
         raise HTTPException(status_code=404, detail=f"Entity {entity_id} not found")
     return {"status": "deleted", "entity_id": entity_id}
@@ -256,6 +272,7 @@ async def get_world_relationships(
 
 
 @router.post("/world/relationships", tags=["World"])
+@idempotent("world.create_world_relationship")
 async def create_world_relationship(
     body: WorldRelationshipCreateRequest,
     request: Request,
@@ -274,11 +291,12 @@ async def create_world_relationship(
         attributes=body.attributes,
         confidence=body.confidence,
     )
-    pr.add_world_relationship(rel)
+    await _commit_world("world.relationship.create", rel.relationship_id if hasattr(rel, "relationship_id") else "rel", lambda: pr.add_world_relationship(rel) or True)
     return rel.to_dict()
 
 
 @router.delete("/world/relationships/{relationship_id}", tags=["World"])
+@idempotent("world.delete_world_relationship")
 async def delete_world_relationship(
     relationship_id: str,
     request: Request,
@@ -288,7 +306,10 @@ async def delete_world_relationship(
     pr = _get_planetary_runtime(request)
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
-    removed = pr.remove_world_relationship(relationship_id)
+    removed = await _commit_world(
+        "world.relationship.delete", relationship_id,
+        lambda: pr.remove_world_relationship(relationship_id),
+    )
     if not removed:
         raise HTTPException(status_code=404, detail=f"Relationship {relationship_id} not found")
     return {"status": "deleted", "relationship_id": relationship_id}
@@ -311,6 +332,7 @@ async def get_world_events(
 
 
 @router.post("/world/events", tags=["World"])
+@idempotent("world.create_world_event")
 async def create_world_event(
     body: WorldEventCreateRequest,
     request: Request,
@@ -330,11 +352,16 @@ async def create_world_event(
         confidence=body.confidence,
         source_actor_id=body.source_actor_id,
     )
-    pr.record_world_event(event)
+    await _commit_world(
+        "world.event.create",
+        getattr(event, "event_id", "event"),
+        lambda: pr.record_world_event(event) or True,
+    )
     return event.to_dict()
 
 
 @router.delete("/world/events/{event_id}", tags=["World"])
+@idempotent("world.delete_world_event")
 async def delete_world_event(
     event_id: str,
     request: Request,
@@ -344,7 +371,7 @@ async def delete_world_event(
     pr = _get_planetary_runtime(request)
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
-    removed = pr.remove_world_event(event_id)
+    removed = await _commit_world("world.event.delete", event_id, lambda: pr.remove_world_event(event_id))
     if not removed:
         raise HTTPException(status_code=404, detail=f"Event {event_id} not found")
     return {"status": "deleted", "event_id": event_id}
@@ -366,6 +393,7 @@ async def get_world_resources(
 
 
 @router.post("/world/resources", tags=["World"])
+@idempotent("world.create_world_resource")
 async def create_world_resource(
     body: WorldResourceCreateRequest,
     request: Request,
@@ -384,7 +412,7 @@ async def create_world_resource(
         location_id=body.location_id,
         owner_id=body.owner_id,
     )
-    pr.add_world_resource(resource)
+    await _commit_world("world.resource.create", getattr(resource, "resource_id", "resource"), lambda: pr.add_world_resource(resource) or True)
     return resource.to_dict()
 
 
@@ -404,6 +432,7 @@ async def get_world_resource(
 
 
 @router.put("/world/resources/{resource_id}", tags=["World"])
+@idempotent("world.update_world_resource")
 async def update_world_resource(
     resource_id: str,
     body: WorldResourceUpdateRequest,
@@ -423,6 +452,7 @@ async def update_world_resource(
 
 
 @router.delete("/world/resources/{resource_id}", tags=["World"])
+@idempotent("world.delete_world_resource")
 async def delete_world_resource(
     resource_id: str,
     request: Request,
@@ -432,7 +462,10 @@ async def delete_world_resource(
     pr = _get_planetary_runtime(request)
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
-    removed = pr.remove_world_resource(resource_id)
+    removed = await _commit_world(
+        "world.resource.delete", resource_id,
+        lambda: pr.remove_world_resource(resource_id),
+    )
     if not removed:
         raise HTTPException(status_code=404, detail=f"Resource {resource_id} not found")
     return {"status": "deleted", "resource_id": resource_id}
@@ -453,6 +486,7 @@ async def get_world_locations(
 
 
 @router.post("/world/locations", tags=["World"])
+@idempotent("world.create_world_location")
 async def create_world_location(
     body: WorldLocationCreateRequest,
     request: Request,
@@ -470,7 +504,7 @@ async def create_world_location(
         longitude=body.longitude,
         attributes=body.attributes,
     )
-    pr.add_world_location(location)
+    await _commit_world("world.location.create", getattr(location, "location_id", "location"), lambda: pr.add_world_location(location) or True)
     return location.to_dict()
 
 
@@ -490,6 +524,7 @@ async def get_world_location(
 
 
 @router.put("/world/locations/{location_id}", tags=["World"])
+@idempotent("world.update_world_location")
 async def update_world_location(
     location_id: str,
     body: WorldLocationUpdateRequest,
@@ -501,13 +536,17 @@ async def update_world_location(
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
     updates = {k: v for k, v in body.dict().items() if v is not None}
-    location = pr.update_world_location(location_id, **updates) if isinstance(pr, PlanetaryRuntimeProtocol) else None
+    location = await _commit_world(
+        "world.location.update", location_id,
+        lambda: pr.update_world_location(location_id, **updates) if isinstance(pr, PlanetaryRuntimeProtocol) else None,
+    )
     if location is None:
         raise HTTPException(status_code=404, detail=f"Location {location_id} not found")
     return location.to_dict()
 
 
 @router.delete("/world/locations/{location_id}", tags=["World"])
+@idempotent("world.delete_world_location")
 async def delete_world_location(
     location_id: str,
     request: Request,
@@ -517,7 +556,10 @@ async def delete_world_location(
     pr = _get_planetary_runtime(request)
     if pr is None:
         raise HTTPException(status_code=503, detail="PlanetaryRuntime not available")
-    removed = pr.remove_world_location(location_id) if isinstance(pr, PlanetaryRuntimeProtocol) else False
+    removed = await _commit_world(
+        "world.location.delete", location_id,
+        lambda: pr.remove_world_location(location_id) if isinstance(pr, PlanetaryRuntimeProtocol) else False,
+    )
     if not removed:
         raise HTTPException(status_code=404, detail=f"Location {location_id} not found")
     return {"status": "deleted", "location_id": location_id}
@@ -526,6 +568,7 @@ async def delete_world_location(
 # ── Query ───────────────────────────────────────────────────────────────
 
 @router.post("/world/query", response_model=WorldQueryResponse, tags=["World"])
+@idempotent("world.query_world")
 async def query_world(
     body: WorldQueryRequest,
     request: Request,

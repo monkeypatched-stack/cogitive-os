@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.agents_api")
 
@@ -93,6 +94,7 @@ async def get_agent(request: Request, agent_type: str, user_id: str = Depends(re
 
 
 @router.post("/agents/{agent_type}/execute", tags=["Agents"])
+@idempotent("agents.execute_agent")
 async def execute_agent(
     request: Request,
     agent_type: str,
@@ -148,6 +150,7 @@ async def execute_agent(
 
 
 @router.post("/agents/discover", tags=["Agents"])
+@idempotent("agents.discover_agents")
 async def discover_agents(
     request: Request,
     capability: str | None = Query(None),
@@ -183,6 +186,7 @@ async def discover_agents(
 
 
 @router.post("/execute-direct", tags=["Agents"])
+@idempotent("agents.execute_direct")
 async def execute_direct(
     request: Request,
     user_id: str = Depends(require_permission("perm-execute-action")),

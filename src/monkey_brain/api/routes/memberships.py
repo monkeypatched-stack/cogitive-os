@@ -38,6 +38,7 @@ from src.monkey_brain.api.gateway_models import (
     RoleAssignRequest, TrustUpdateRequest, TrustResponse, ReputationResponse,
     DelegationCreateRequest, DelegationResponse,
 )
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.memberships")
 router = APIRouter()
@@ -96,6 +97,7 @@ def _find_membership_or_404(pr: Any, membership_id: str) -> Any:
 # ── Core CRUD ─────────────────────────────────────────────────────────────
 
 @router.post("/memberships", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.create_membership")
 async def create_membership(
     body: MembershipCreateRequest,
     request: Request,
@@ -157,6 +159,7 @@ async def list_memberships(
 
 
 @router.patch("/memberships/{membership_id}", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.update_membership")
 async def update_membership(
     membership_id: str,
     body: MembershipUpdateRequest,
@@ -174,6 +177,7 @@ async def update_membership(
 
 
 @router.delete("/memberships/{membership_id}", tags=["Memberships"])
+@idempotent("memberships.delete_membership")
 async def delete_membership(
     membership_id: str,
     request: Request,
@@ -285,6 +289,7 @@ async def list_roles(
 
 
 @router.post("/memberships/{membership_id}/roles", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.assign_role")
 async def assign_role(
     membership_id: str,
     body: RoleAssignRequest,
@@ -298,6 +303,7 @@ async def assign_role(
 
 
 @router.delete("/memberships/{membership_id}/roles/{role}", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.remove_role")
 async def remove_role(
     membership_id: str,
     role: str,
@@ -384,6 +390,7 @@ async def get_trust(
 
 
 @router.patch("/memberships/{membership_id}/trust", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.update_trust")
 async def update_trust(
     membership_id: str,
     body: TrustUpdateRequest,
@@ -417,6 +424,7 @@ async def get_reputation(
 # ── Delegation ────────────────────────────────────────────────────────────
 
 @router.post("/memberships/{membership_id}/delegations", response_model=DelegationResponse, tags=["Memberships"])
+@idempotent("memberships.create_delegation")
 async def create_delegation(
     membership_id: str,
     body: DelegationCreateRequest,
@@ -444,6 +452,7 @@ async def list_delegations(
 
 
 @router.delete("/delegations/{delegation_id}", tags=["Memberships"])
+@idempotent("memberships.revoke_delegation")
 async def revoke_delegation(
     delegation_id: str,
     request: Request,
@@ -471,6 +480,7 @@ async def _set_status(request: Request, membership_id: str, status: str) -> Memb
 
 
 @router.post("/memberships/{membership_id}/activate", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.activate_membership")
 async def activate_membership(
     membership_id: str, request: Request,
     user_id: str = Depends(require_permission("perm-manage-memberships")),
@@ -479,6 +489,7 @@ async def activate_membership(
 
 
 @router.post("/memberships/{membership_id}/suspend", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.suspend_membership")
 async def suspend_membership(
     membership_id: str, request: Request,
     user_id: str = Depends(require_permission("perm-manage-memberships")),
@@ -487,6 +498,7 @@ async def suspend_membership(
 
 
 @router.post("/memberships/{membership_id}/resume", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.resume_membership")
 async def resume_membership(
     membership_id: str, request: Request,
     user_id: str = Depends(require_permission("perm-manage-memberships")),
@@ -495,6 +507,7 @@ async def resume_membership(
 
 
 @router.post("/memberships/{membership_id}/terminate", response_model=MembershipResponse, tags=["Memberships"])
+@idempotent("memberships.terminate_membership")
 async def terminate_membership(
     membership_id: str, request: Request,
     user_id: str = Depends(require_permission("perm-manage-memberships")),

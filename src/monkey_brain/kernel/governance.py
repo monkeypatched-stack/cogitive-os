@@ -127,10 +127,18 @@ class GovernanceEngine:
         allows through explicit rules (see the .rego file), so a
         misconfigured-but-reachable OPA fails closed, not silently open.
 
-        When OPA_REQUIRED or COGNITIVEOS_PRODUCTION_MODE is set, an unset
-        OPA_URL is a hard deny (production gate).
+        When OPA_URL is unset or OPA is unreachable, governed actions deny
+        unless COGNITIVEOS_ALLOW_INSECURE_DEV_MODE is set. default_allow is
+        False: unknown ≠ allow.
         """
-        from src.monkey_brain.kernel.production_gates import require_opa
+        from src.monkey_brain.kernel.production_gates import insecure_dev_mode, require_opa
+        from src.monkey_brain.kernel.trusted_auth import get_trusted_auth, strip_untrusted_security_signals
+
+        trusted = get_trusted_auth().to_opa_auth()
+        ctx = strip_untrusted_security_signals(dict(context or {}))
+        ctx["trusted_auth"] = trusted
+        ctx["auth"] = trusted
+
         if require_opa() and not self.is_configured():
             decision = {
                 "allowed": False,
@@ -145,25 +153,45 @@ class GovernanceEngine:
         try:
             from services.common.opa import evaluate_full
         except Exception as exc:
-            logger.warning("Governance: OPA client unavailable, allowing: %s", exc)
-            return {"allowed": True, "reason": "opa_client_unavailable", "violations": []}
+            if insecure_dev_mode() and not require_opa():
+                logger.warning("Governance: OPA client unavailable, allowing (insecure-dev): %s", exc)
+                return {"allowed": True, "reason": "opa_client_unavailable", "violations": []}
+            logger.error("Governance: OPA client unavailable, denying: %s", exc)
+            return {
+                "allowed": False,
+                "reason": "opa_client_unavailable",
+                "violations": [{"rule": "opa_unavailable", "type": "fail_closed"}],
+            }
 
-        input_data = {"runtime_id": runtime_id, "action": action, "context": context or {}}
-        # Package root ("agentos/governance"), not "agentos/governance/allow" —
-        # OPA then returns the whole document ({"allow": ..., "deny_reason": ...})
-        # instead of just the allow rule's bare boolean, so evaluate_full's
-        # dict branch can surface the policy's own structured deny_reason.
-        result = await evaluate_full("agentos/governance", input_data, default_allow=True)
+        input_data = {"runtime_id": runtime_id, "action": action, "context": ctx, "auth": trusted}
+        try:
+            result = await evaluate_full("agentos/governance", input_data, default_allow=False)
+        except Exception as exc:
+            if insecure_dev_mode() and not require_opa():
+                logger.warning("Governance: OPA evaluation failed, allowing (insecure-dev): %s", exc)
+                return {"allowed": True, "reason": "opa_evaluation_failed", "violations": []}
+            logger.error("Governance: OPA evaluation failed, denying: %s", exc)
+            return {
+                "allowed": False,
+                "reason": "opa_unavailable",
+                "violations": [{"rule": "opa_unavailable", "type": "fail_closed"}],
+            }
 
-        allowed = bool(result.get("allowed", True))
+        allowed = bool(result.get("allowed", False))
         if result.get("source") == "skip":
-            global _UNCONFIGURED_WARNED
-            if not _UNCONFIGURED_WARNED:
-                _UNCONFIGURED_WARNED = True
-                logger.warning(
-                    "Governance is NOT configured — OPA_URL is unset, so policy checks are "
-                    "skipped (allow). Set OPA_URL to enforce opa/policies/agentos_governance.rego.")
-            reason = "governance_not_configured"
+            if require_opa() or not insecure_dev_mode():
+                allowed = False
+                reason = "opa_required_but_not_configured"
+            else:
+                global _UNCONFIGURED_WARNED
+                if not _UNCONFIGURED_WARNED:
+                    _UNCONFIGURED_WARNED = True
+                    logger.warning(
+                        "Governance is NOT configured — OPA_URL is unset; allowing only because "
+                        "COGNITIVEOS_ALLOW_INSECURE_DEV_MODE is set."
+                    )
+                reason = "governance_not_configured"
+                allowed = True
         else:
             reason = "" if allowed else (result.get("reason") or "denied by policy")
 

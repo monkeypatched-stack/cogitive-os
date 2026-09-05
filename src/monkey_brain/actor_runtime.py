@@ -576,6 +576,8 @@ def _build_app() -> Any:
         from fastapi import HTTPException
         from src.monkey_brain.api.internal_auth import require_internal_service_token
         from src.monkey_brain.api.routes.actors import run_actor_tick
+        from src.monkey_brain.kernel.security_boundary import ensure_governed
+        from src.monkey_brain.kernel.trusted_auth import bind_trusted_auth, evidence_for_service
 
         require_internal_service_token(request)
 
@@ -587,7 +589,12 @@ def _build_app() -> Any:
         state = pr._society_runtime.get_actor(actor_id)
         if state is None:
             raise HTTPException(status_code=404, detail=f"Actor {actor_id} not resident on this Pod")
-        return await run_actor_tick(actor_id, pr, state)
+        bind_trusted_auth(evidence_for_service(f"actor-runtime:{actor_id}"))
+        return await ensure_governed(
+            "actor.tick",
+            actor_id,
+            lambda: run_actor_tick(actor_id, pr, state),
+        )
 
     return fastapi_app
 

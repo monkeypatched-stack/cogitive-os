@@ -28,9 +28,10 @@ serviceDefaults:
       memory: 512Mi
 
 ztaa:
-  # ZTAA env vars injected into auth + agentos services.
-  # Sensitive values (ACCESS_TOKEN_SECRET, KEYCLOAK_CLIENT_SECRET) must be
-  # supplied via a Kubernetes Secret — see templates/ztaa-secret.yaml.
+  # ACCESS_TOKEN_SECRET must be passed at install:
+  #   helm install ... --set ztaa.accessTokenSecret=$(openssl rand -hex 32)
+  # The chart fails to render if this is empty or REPLACE_ME.
+  accessTokenSecret: ""
   mtlsEnabled: "false"
   mtlsCaCertPath: ""
   opaUrl: ""

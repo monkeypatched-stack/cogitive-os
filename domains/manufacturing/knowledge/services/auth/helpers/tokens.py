@@ -35,12 +35,15 @@ def _permission_claim(permission: Any) -> str | None:
 
 
 def create_access_token(user_id: str, email: str, role: str, permissions: list | None = None,
-                        tenant: str | None = None) -> str:
+                        tenant: str | None = None, *, mfa_status: str = "unknown") -> str:
     serialized = sorted({
         claim
         for permission in (permissions or [])
         if (claim := _permission_claim(permission))
     })
+    _mfa = (mfa_status or "unknown").strip().lower()
+    if _mfa not in {"satisfied", "not_satisfied", "unknown", "not_required"}:
+        _mfa = "unknown"
     claims: dict[str, Any] = {
         "sub": user_id, "email": email, "role": role, "permissions": serialized,
         # jti (Security audit P1-5): without a per-token id, a "revoked"
@@ -48,6 +51,8 @@ def create_access_token(user_id: str, email: str, role: str, permissions: list |
         # before its natural expiry — see services.auth.helpers.revocation,
         # the same jti-blocklist mechanism agent tokens already use.
         "jti": uuid.uuid4().hex,
+        # MFA evidence is minted only by this helper (trusted auth infra), never by agents.
+        "mfa_status": _mfa,
     }
     # Tenant is a first-class claim: it is what get_current_user puts into context and what
     # every downstream query is filtered by. Without it there is no tenant isolation.

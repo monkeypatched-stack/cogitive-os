@@ -73,10 +73,7 @@ async def _record(
     action: str, outcome: str, user_id: str, request: Any, started: float, *, error: str = "",
 ) -> None:
     try:
-        import secrets
-        from datetime import datetime, timezone
-
-        from src.introspection.audit import record
+        from src.monkey_brain.kernel.audit import AuditPersistenceError, get_audit_log
 
         try:
             from services.common.trace_context import get_trace_id
@@ -93,16 +90,17 @@ async def _record(
             for key, value in request.path_params.items():
                 metadata[f"path_param.{key}"] = value
 
-        await record({
-            "event_id": f"action-audit-{secrets.token_hex(6)}",
-            "event_type": "audit.action",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "trace_id": trace_id,
-            "action": action,
-            "outcome": outcome,
-            "subject": user_id or "",
-            "principal_type": "human",
-            "metadata": metadata,
-        })
+        get_audit_log().record(
+            runtime_id=user_id or "unknown",
+            event_type="execute",
+            action=action,
+            actor=user_id or "",
+            outcome=outcome,
+            details=metadata,
+            correlation_id=trace_id,
+        )
+    except AuditPersistenceError:
+        raise
     except Exception:
-        logger.debug("_record: suppressed exception", exc_info=True)
+        logger.exception("audit decorator failed to record action=%s", action)
+        raise

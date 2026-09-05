@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.qa")
 
@@ -20,6 +21,7 @@ class QARequest(BaseModel):
 
 
 @router.post("/qa", tags=["Q&A"])
+@idempotent("qa.quick_answer")
 async def quick_answer(
     payload: QARequest,
     request: Request,

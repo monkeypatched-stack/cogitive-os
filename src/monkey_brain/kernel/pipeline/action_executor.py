@@ -128,6 +128,26 @@ class ActionExecutor:
         if not actions:
             return ExecutionResult(goal_achieved=True)
 
+        from src.monkey_brain.kernel.security_boundary import ensure_governed
+
+        async def _run() -> ExecutionResult:
+            return await self._execute_actions(actions, context, execution_graph=execution_graph)
+
+        return await ensure_governed(
+            "action_executor.execute",
+            "actions",
+            _run,
+        )
+
+    async def _execute_actions(
+        self,
+        actions: tuple[Action, ...],
+        context: Any = None,
+        *,
+        execution_graph: Any = None,
+    ) -> ExecutionResult:
+        """Inner loop — only reached from execute() after the commitment gate."""
+
         if self._pre_execute_hook is not None and isinstance(context, dict):
             try:
                 self._pre_execute_hook(context)
@@ -949,19 +969,20 @@ class ActionExecutor:
                 ))
 
             if self._capability_bus is None:
-                # No capability bus — simulate success. CognitiveOS
-                # Constitution: "capabilities are the boundary between
-                # cognition and reality" / "every consequential transition
-                # is observable and auditable" — this branch is exactly
-                # where that boundary degrades to a no-op, so it must never
-                # be silent. Previously logger.debug (invisible in
-                # production) and no telemetry/audit trail at all; a
-                # capability with real state-mutating intent could report
-                # success here and nothing downstream could tell the
-                # difference from a genuine commit. "governed": False is
-                # the explicit marker _publish_action_event below keys off
-                # to still surface this as an auditable event, distinct
-                # from a real business outcome.
+                from src.monkey_brain.kernel.operation_classification import is_security_critical
+                from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+                if is_security_critical(action.capability) and not insecure_dev_mode():
+                    logger.error(
+                        "[executor] No capability bus — refusing ungoverned simulation of %s",
+                        action.capability,
+                    )
+                    return _done(ActionOutcome(
+                        action_id=action.action_id,
+                        success=False,
+                        error="ungoverned capability simulation forbidden",
+                        result={"simulated": True, "governed": False, "capability": action.capability},
+                        latency_ms=0.0,
+                    ))
                 logger.warning(
                     "[executor] No capability bus wired — simulating %s with NO governance "
                     "(no TransitionGate check, no real state mutation)", action.capability,

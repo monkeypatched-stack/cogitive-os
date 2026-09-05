@@ -78,6 +78,14 @@ class CapabilityBus:
         """Execute `name` via whichever tier actually owns it. Never
         raises — a not-found name is a real, honest `found=False` result,
         not an exception disguising a routing gap."""
+        from src.monkey_brain.kernel.security_boundary import ensure_governed
+
+        async def _run() -> CapabilityBusResult:
+            return await self._execute_resolved(name, state)
+
+        return await ensure_governed(f"capability.{name}", name, _run)
+
+    async def _execute_resolved(self, name: str, state: dict[str, Any]) -> CapabilityBusResult:
         t0 = time.monotonic()
 
         capability = self._runtime.get_capability(name) if self._runtime else None

@@ -26,6 +26,7 @@ from src.monkey_brain.api.gateway_models import (
     SimulateRequest, SimulateStepRequest, SimulateScenarioRequest,
     SimulateResponseGateway, SimulateStatusResponse,
 )
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.simulate")
 router = APIRouter()
@@ -42,6 +43,7 @@ def _get_simulation_runtime(request: Request) -> Any:
 
 
 @router.post("/simulate/run", response_model=SimulateResponseGateway, tags=["Simulate"])
+@idempotent("simulation_gateway.simulate")
 async def simulate(
     body: SimulateRequest,
     request: Request,
@@ -82,6 +84,7 @@ async def simulate(
 
 
 @router.post("/simulate/step", response_model=SimulateResponseGateway, tags=["Simulate"])
+@idempotent("simulation_gateway.simulate_step")
 async def simulate_step(
     body: SimulateStepRequest,
     request: Request,
@@ -97,6 +100,7 @@ async def simulate_step(
 
 
 @router.post("/simulate/scenario", response_model=SimulateResponseGateway, tags=["Simulate"])
+@idempotent("simulation_gateway.simulate_scenario")
 async def simulate_scenario(
     body: SimulateScenarioRequest,
     request: Request,

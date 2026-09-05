@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 from src.monkey_brain.kernel.models.prompt import PromptRequest
 from src.monkey_brain.kernel.pipeline.approval_store import (
     load_pending_approval, resolve_pending_approval,
@@ -53,6 +54,7 @@ async def get_pending_approval(
 
 
 @router.post("/executions/{execution_id}/approve", tags=["Approval"])
+@idempotent("approval.approve_pending_execution")
 async def approve_pending_execution(
     execution_id: str,
     body: ApprovalDecisionRequest,

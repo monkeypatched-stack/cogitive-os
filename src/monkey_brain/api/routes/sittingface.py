@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 import logging
 logger = logging.getLogger("agentos.sittingface")
@@ -97,6 +98,7 @@ async def list_somatic_capabilities(
 
 
 @router.post("/somatic/recompile", tags=["SittingFace"])
+@idempotent("sittingface.recompile_somatic")
 async def recompile_somatic(
     request: Request,
     user_id: str = Depends(require_permission("perm-manage-somatic")),

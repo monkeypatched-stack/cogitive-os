@@ -16,6 +16,7 @@ from fastapi import APIRouter, Query, Depends
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import ValidationError
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 
 logger = logging.getLogger("monkey_brain.api.routes.codegen")
@@ -23,6 +24,7 @@ logger = logging.getLogger("monkey_brain.api.routes.codegen")
 router = APIRouter()
 
 @router.post("/microservice", summary="Generate microservice from spec", response_model=None)
+@idempotent("codegen.generate_microservice")
 async def generate_microservice(
     body: dict[str, Any],
     fmt: str = Query(default="json", enum=["json", "zip"], description="Response format"),
@@ -93,6 +95,7 @@ async def get_schema(user_id: str = Depends(require_permission("perm-view-codege
 
 
 @router.post("/microservice/validate", summary="Validate spec without generating")
+@idempotent("codegen.validate_spec")
 async def validate_spec(body: dict[str, Any], user_id: str = Depends(require_permission("perm-execute-codegen"))) -> JSONResponse:
     """Validate a MicroserviceSpec and return errors without generating code."""
     from src.monkey_brain.codegen import MicroserviceSpec

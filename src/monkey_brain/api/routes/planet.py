@@ -19,6 +19,7 @@ from src.monkey_brain.api.gateway_models import (
     PlanetResponse, PlanetStatusResponse, PlanetStatisticsResponse,
     ActorResponse, SocietyResponse, GeoLocationLinkRequest, GeoFromAddressRequest,
 )
+from src.monkey_brain.api.idempotency import idempotent
 
 router = APIRouter()
 
@@ -135,6 +136,7 @@ async def get_planet_statistics(
 
 
 @router.post("/planet/federations", tags=["Planet"])
+@idempotent("planet.create_federation")
 async def create_federation(
     request: Request,
     user_id: str = Depends(require_permission("perm-manage-planet")),
@@ -168,6 +170,7 @@ async def create_federation(
 # route above.
 
 @router.post("/planet/countries", tags=["Planet"])
+@idempotent("planet.create_country")
 async def create_country(
     request: Request,
     user_id: str = Depends(require_permission("perm-manage-planet")),
@@ -201,6 +204,7 @@ async def list_countries(
 
 
 @router.post("/planet/cities", tags=["Planet"])
+@idempotent("planet.create_city")
 async def create_city(
     request: Request,
     user_id: str = Depends(require_permission("perm-manage-planet")),
@@ -239,6 +243,7 @@ async def list_cities(
 
 
 @router.post("/planet/cities/{city_id}/societies", tags=["Planet"])
+@idempotent("planet.assign_society_to_city")
 async def assign_society_to_city(
     city_id: str,
     request: Request,
@@ -262,6 +267,7 @@ async def assign_society_to_city(
 
 
 @router.post("/planet/cities/{city_id}/tick", tags=["Planet"])
+@idempotent("planet.tick_city")
 async def tick_city(
     city_id: str,
     request: Request,
@@ -285,6 +291,7 @@ async def tick_city(
 
 
 @router.post("/planet/countries/{country_id}/tick", tags=["Planet"])
+@idempotent("planet.tick_country")
 async def tick_country(
     country_id: str,
     request: Request,
@@ -315,6 +322,7 @@ async def tick_country(
 # tier — see /planet/geo/{entity_id}/host — they are never contained.
 
 @router.post("/planet/geo", tags=["Planet"])
+@idempotent("planet.create_geographic_entity")
 async def create_geographic_entity(
     request: Request,
     user_id: str = Depends(require_permission("perm-manage-planet")),
@@ -428,6 +436,7 @@ async def get_space_contents(
 
 
 @router.patch("/planet/geo/{entity_id}/location", tags=["Planet"])
+@idempotent("planet.link_geo_entity_location")
 async def link_geo_entity_location(
     entity_id: str,
     body: GeoLocationLinkRequest,
@@ -455,6 +464,7 @@ async def link_geo_entity_location(
 
 
 @router.post("/planet/geo/from-address", tags=["Planet"])
+@idempotent("planet.create_geo_from_address")
 async def create_geo_from_address(
     body: GeoFromAddressRequest,
     request: Request,
@@ -482,6 +492,7 @@ async def create_geo_from_address(
 
 
 @router.delete("/planet/geo/{entity_id}", tags=["Planet"])
+@idempotent("planet.delete_geographic_entity")
 async def delete_geographic_entity(
     entity_id: str,
     request: Request,
@@ -509,6 +520,7 @@ async def delete_geographic_entity(
 
 
 @router.post("/planet/geo/{entity_id}/host", tags=["Planet"])
+@idempotent("planet.host_society_at_entity")
 async def host_society_at_entity(
     entity_id: str,
     request: Request,
@@ -532,6 +544,7 @@ async def host_society_at_entity(
 
 
 @router.delete("/planet/geo/{entity_id}/host/{society_id}", tags=["Planet"])
+@idempotent("planet.unhost_society_at_entity")
 async def unhost_society_at_entity(
     entity_id: str,
     society_id: str,
@@ -551,6 +564,7 @@ async def unhost_society_at_entity(
 
 
 @router.post("/planet/geo/reconcile-default", tags=["Planet"])
+@idempotent("planet.reconcile_default_geography")
 async def reconcile_default_geography(
     request: Request,
     canonical_root_name: str = "Earth",
@@ -569,6 +583,7 @@ async def reconcile_default_geography(
 
 
 @router.post("/planet/geo/ensure-default-space", tags=["Planet"])
+@idempotent("planet.ensure_default_bootstrap_space")
 async def ensure_default_bootstrap_space(
     request: Request,
     canonical_root_name: str = "Earth",
@@ -591,6 +606,7 @@ async def ensure_default_bootstrap_space(
 
 
 @router.post("/planet/geo/{entity_id}/tick", tags=["Planet"])
+@idempotent("planet.tick_geographic_entity")
 async def tick_geographic_entity(
     entity_id: str,
     request: Request,
@@ -626,6 +642,7 @@ async def tick_geographic_entity(
 
 
 @router.post("/planet/interactions", tags=["Planet"])
+@idempotent("planet.create_interaction")
 async def create_interaction(
     request: Request,
     user_id: str = Depends(require_permission("perm-execute-planet")),
@@ -669,6 +686,7 @@ async def create_interaction(
 
 
 @router.post("/planet/tick", tags=["Planet"])
+@idempotent("planet.planet_tick")
 async def planet_tick(
     request: Request,
     user_id: str = Depends(require_permission("perm-execute-planet")),
@@ -690,6 +708,7 @@ async def planet_tick(
 
 
 @router.post("/planet/refresh", tags=["Planet"])
+@idempotent("planet.planet_refresh")
 async def planet_refresh(
     request: Request,
     user_id: str = Depends(require_permission("perm-execute-planet")),
@@ -711,6 +730,7 @@ async def planet_refresh(
 
 
 @router.delete("/planet/events", tags=["Planet"])
+@idempotent("planet.clear_context_events")
 async def clear_context_events(
     request: Request,
     user_id: str = Depends(require_permission("perm-execute-planet")),
@@ -745,6 +765,7 @@ async def clear_context_events(
 
 
 @router.delete("/planet/memory", tags=["Planet"])
+@idempotent("planet.clear_memory")
 async def clear_memory(
     request: Request,
     user_id: str = Depends(require_permission("perm-execute-planet")),
@@ -806,6 +827,7 @@ async def clear_memory(
 
 
 @router.delete("/planet/executions", tags=["Planet"])
+@idempotent("planet.clear_executions")
 async def clear_executions(
     request: Request,
     user_id: str = Depends(require_permission("perm-execute-planet")),
@@ -835,6 +857,7 @@ async def clear_executions(
 
 
 @router.post("/planet/perturbations", tags=["Planet"])
+@idempotent("planet.report_world_perturbation")
 async def report_world_perturbation(
     request: Request,
     user_id: str = Depends(require_permission("perm-manage-planet")),

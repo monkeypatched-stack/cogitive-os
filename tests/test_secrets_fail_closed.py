@@ -257,17 +257,20 @@ class TestEndToEndSecretsFlow:
 class TestSecretValidationRules:
     """Test validation rules for different secret types."""
 
+    def test_rejects_known_hmac_placeholder(self):
+        from services.common.secrets import reject_insecure_hmac_secret
+        with pytest.raises(ValueError):
+            reject_insecure_hmac_secret("REPLACE_ME")
+
     def test_access_token_secret_minimum_length(self):
         """Test ACCESS_TOKEN_SECRET must be at least 32 characters."""
         from services.common.secrets import _validate_secret_length
 
-        # Valid: 32+ characters
-        valid = _validate_secret_length("a" * 32)
+        valid = _validate_secret_length("a" * 32, min_bytes=32)
         assert len(valid) >= 32
 
-        # Invalid: less than 32
         with pytest.raises(ValueError):
-            _validate_secret_length("short-secret")
+            _validate_secret_length("short-secret", min_bytes=32)
 
     def test_keycloak_secret_must_not_be_empty(self):
         """Test KC_CLIENT_SECRET must not be empty."""

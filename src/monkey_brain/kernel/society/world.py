@@ -421,6 +421,7 @@ class SharedWorld:
     # ── Entity operations ────────────────────────────────────────────────
 
     def add_entity(self, entity: WorldEntity) -> None:
+        self._require_write("shared_world.add_entity")
         self._entities[entity.entity_id] = entity
         self._bump_version()
 
@@ -431,6 +432,7 @@ class SharedWorld:
         self, entity_id: str, state: dict[str, Any] | None = None,
         owner_society_id: str | None = None, **attributes: Any,
     ) -> WorldEntity | None:
+        self._require_write("shared_world.update_entity")
         old = self._entities.get(entity_id)
         if old is None:
             return None
@@ -449,6 +451,7 @@ class SharedWorld:
         return updated
 
     def remove_entity(self, entity_id: str) -> bool:
+        self._require_write("shared_world.remove_entity")
         if entity_id in self._entities:
             del self._entities[entity_id]
             self._bump_version()
@@ -464,10 +467,12 @@ class SharedWorld:
     # ── Relationship operations ──────────────────────────────────────────
 
     def add_relationship(self, relationship: WorldRelationship) -> None:
+        self._require_write("shared_world.add_relationship")
         self._relationships[relationship.relationship_id] = relationship
         self._bump_version()
 
     def remove_relationship(self, relationship_id: str) -> bool:
+        self._require_write("shared_world.remove_relationship")
         if relationship_id in self._relationships:
             del self._relationships[relationship_id]
             self._bump_version()
@@ -486,12 +491,14 @@ class SharedWorld:
     # ── Event operations ─────────────────────────────────────────────────
 
     def record_event(self, event: WorldEvent) -> None:
+        self._require_write("shared_world.record_event")
         self._events.append(event)
         if len(self._events) > self._max_events:
             self._events = self._events[-self._max_events:]
         self._bump_version()
 
     def remove_event(self, event_id: str) -> bool:
+        self._require_write("shared_world.remove_event")
         for i, e in enumerate(self._events):
             if e.event_id == event_id:
                 self._events.pop(i)
@@ -524,6 +531,7 @@ class SharedWorld:
     # ── Resource operations ──────────────────────────────────────────────
 
     def add_resource(self, resource: WorldResource) -> None:
+        self._require_write("shared_world.add_resource")
         self._resources[resource.resource_id] = resource
         self._bump_version()
 
@@ -531,6 +539,7 @@ class SharedWorld:
         return self._resources.get(resource_id)
 
     def update_resource(self, resource_id: str, **kwargs: Any) -> WorldResource | None:
+        self._require_write("shared_world.update_resource")
         old = self._resources.get(resource_id)
         if old is None:
             return None
@@ -550,6 +559,7 @@ class SharedWorld:
         return updated
 
     def remove_resource(self, resource_id: str) -> bool:
+        self._require_write("shared_world.remove_resource")
         if resource_id in self._resources:
             del self._resources[resource_id]
             self._bump_version()
@@ -562,6 +572,7 @@ class SharedWorld:
     # ── Capability operations ────────────────────────────────────────────
 
     def add_capability(self, capability: WorldCapability) -> None:
+        self._require_write("shared_world.add_capability")
         self._capabilities[capability.capability_id] = capability
         self._bump_version()
 
@@ -591,6 +602,7 @@ class SharedWorld:
     # ── Location operations ──────────────────────────────────────────────
 
     def add_location(self, location: WorldLocation) -> None:
+        self._require_write("shared_world.add_location")
         self._locations[location.location_id] = location
         self._bump_version()
 
@@ -598,6 +610,7 @@ class SharedWorld:
         return self._locations.get(location_id)
 
     def update_location(self, location_id: str, **kwargs: Any) -> WorldLocation | None:
+        self._require_write("shared_world.update_location")
         old = self._locations.get(location_id)
         if old is None:
             return None
@@ -615,6 +628,7 @@ class SharedWorld:
         return updated
 
     def remove_location(self, location_id: str) -> bool:
+        self._require_write("shared_world.remove_location")
         if location_id in self._locations:
             del self._locations[location_id]
             self._bump_version()
@@ -627,6 +641,7 @@ class SharedWorld:
     # ── Policy operations ────────────────────────────────────────────────
 
     def add_policy(self, policy: WorldPolicy) -> None:
+        self._require_write("shared_world.add_policy")
         self._policies[policy.policy_id] = policy
         self._bump_version()
 
@@ -706,6 +721,7 @@ class SharedWorld:
 
         Called before each planetary cycle to ensure prediction ≠ execution.
         """
+        self._require_write("shared_world.perturb")
         import random
         perturbations: list[dict[str, Any]] = []
 
@@ -750,3 +766,7 @@ class SharedWorld:
     def _bump_version(self) -> None:
         self._version += 1
         self._version_history.append(self.snapshot())
+
+    def _require_write(self, operation: str) -> None:
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed(operation)

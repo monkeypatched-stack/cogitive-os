@@ -23,6 +23,7 @@ from src.monkey_brain.api.gateway_models import (
     LearningEventResponse, LearningEventsResponse,
     ActorTransitionEntry, ActorTransitionsResponse,
 )
+from src.monkey_brain.api.idempotency import idempotent
 from src.monkey_brain.kernel.society.learning import SharedExperience, LearningType
 
 logger = logging.getLogger("agentos.gateway.learn")
@@ -40,6 +41,7 @@ def _get_planetary_runtime(request: Request) -> Any:
 
 
 @router.post("/learn/experience", response_model=LearnResponse, tags=["Learning"])
+@idempotent("learning_gateway.share_experience")
 async def share_experience(
     body: LearnRequest,
     request: Request,
@@ -108,6 +110,7 @@ async def share_experience(
 
 
 @router.post("/learn/update", response_model=LearnResponse, tags=["Learning"])
+@idempotent("learning_gateway.learn_update")
 async def learn_update(
     body: LearnUpdateRequest,
     request: Request,
@@ -117,6 +120,7 @@ async def learn_update(
 
 
 @router.post("/learn/train", response_model=LearnResponse, tags=["Learning"])
+@idempotent("learning_gateway.learn_train")
 async def learn_train(
     body: LearnTrainRequest,
     request: Request,

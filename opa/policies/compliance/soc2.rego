@@ -2,31 +2,41 @@ package compliance.soc2
 
 import future.keywords.if
 
-default allow = true
+# Deny by default. Unknown/missing identity or MFA is not authorization.
+# Agent-supplied compliance signals never grant allow.
 
-deny if {
-    input.signals.has_user_access == true
-    not input.signals.mfa_enforced
+default allow := false
+
+auth := object.get(input, "auth", {})
+
+principal_ok if {
+    auth.authenticated == true
+    auth.token_valid == true
+    is_string(auth.principal)
+    count(auth.principal) > 0
 }
 
-deny if {
-    input.signals.has_user_access == true
-    not input.signals.access_provisioning_formal
+mfa_ok if {
+    auth.mfa_required == false
 }
 
-deny if {
-    input.signals.has_operations == true
-    not input.signals.incident_response_plan
+mfa_ok if {
+    auth.mfa_required == true
+    auth.mfa_status == "satisfied"
 }
 
-deny if {
-    input.signals.has_systems == true
-    not input.signals.change_management_process
+mfa_ok if {
+    auth.principal_type == "service"
+    auth.authenticated == true
 }
 
-deny if {
-    input.signals.has_availability_commitment == true
-    not input.signals.recovery_objectives_defined
+action_ok if {
+    is_string(input.action)
+    count(input.action) > 0
 }
 
-allow if { not deny }
+allow if {
+    principal_ok
+    mfa_ok
+    action_ok
+}

@@ -34,7 +34,8 @@ _SVC_ARG_SUBCMDS = {
     "serve", "client", "chart-from-client", "compile-agent", "create-agent",
 }
 
-# SOC2/GDPR attributes injected during comply self-heal
+# SOC2/GDPR attributes injected during comply self-heal.
+# Security properties (MFA, authentication) must NEVER be self-attested here.
 _COMPLY_HEAL_ATTRIBUTES = {
     "gdpr": {
         "privacy_by_design": True,
@@ -51,7 +52,6 @@ _COMPLY_HEAL_ATTRIBUTES = {
         "backup_tested": True,
         "change_management_process": True,
         "security_policy_documented": True,
-        "mfa_enforced": True,
         "risk_ownership_defined": True,
         "access_provisioning_formal": True,
     },
@@ -434,7 +434,7 @@ class ExecutorAgent(BaseETASSAgent):
                         f"--attributes '{{\"security_policy_documented\":true,\"risk_ownership_defined\":true,"
                         f"\"monitoring_alerting_enabled\":true,\"incident_response_plan\":true,"
                         f"\"backup_tested\":true,\"change_management_process\":true,"
-                        f"\"change_log_maintained\":true,\"mfa_enforced\":true,"
+                        f"\"change_log_maintained\":true,"
                         f"\"access_provisioning_formal\":true}}'"
                     )
                 return f"monkeypatched make comply {std} --signals '{{\"has_operations\":true}}' --attributes '{{\"region\":\"EU\"}}'"
@@ -459,7 +459,6 @@ class ExecutorAgent(BaseETASSAgent):
                     )
                     # Merge required SOC2 attributes into existing --attributes block.
                     _soc2_required = {
-                        "mfa_enforced": True,
                         "risk_ownership_defined": True,
                         "access_provisioning_formal": True,
                         "security_policy_documented": True,

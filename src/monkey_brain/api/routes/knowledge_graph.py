@@ -18,6 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from src.monkey_brain.api.dependencies import require_self_or_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.api.knowledge_graph")
 
@@ -93,6 +94,7 @@ async def get_knowledge_graph(
 
 
 @router.post("/{person_id}/entities")
+@idempotent("knowledge_graph.add_entity")
 async def add_entity(
     person_id: str, request: Request, body: EntityRequest,
     user_id: str = Depends(require_self_or_permission("perm-manage-actors", id_param="person_id")),
@@ -136,6 +138,7 @@ async def list_entities(
 
 
 @router.post("/{person_id}/relationships")
+@idempotent("knowledge_graph.add_relationship")
 async def add_relationship(
     person_id: str, request: Request, body: RelationshipRequest,
     user_id: str = Depends(require_self_or_permission("perm-manage-actors", id_param="person_id")),
@@ -176,6 +179,7 @@ async def list_relationships(
 
 
 @router.post("/{person_id}/snapshot")
+@idempotent("knowledge_graph.create_snapshot")
 async def create_snapshot(
     person_id: str, request: Request,
     user_id: str = Depends(require_self_or_permission("perm-manage-actors", id_param="person_id")),

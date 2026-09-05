@@ -1764,8 +1764,11 @@ async def _issue_login_tokens(db, response: Response, user: dict) -> TokenRespon
     # get_role_by_name() — the fallback that exists for exactly this case —
     # never ran, and the wrong role's permissions were resolved into the token.
     access = await _get_permissions(db, user.get("role_id") or user["role"])
-    access_token = create_access_token(user["user_id"], user["email"], user["role"], access,
-                                       tenant=user_tenant(user))
+    access_token = create_access_token(
+        user["user_id"], user["email"], user["role"], access,
+        tenant=user_tenant(user),
+        mfa_status="satisfied" if user.get("mfa_enabled") else "not_satisfied",
+    )
     refresh_token = create_refresh_token(user["user_id"])
     await save_refresh_token(refresh_token)
     response.set_cookie(value=refresh_token, **COOKIE_OPTIONS)
@@ -1976,8 +1979,11 @@ async def refresh(
     # See _issue_login_tokens for why role_id, not role, must be passed here.
     access = await _get_permissions(db, user.get("role_id") or user["role"])
 
-    access_token = create_access_token(user["user_id"], user["email"], user["role"], access,
-                                       tenant=user_tenant(user))
+    access_token = create_access_token(
+        user["user_id"], user["email"], user["role"], access,
+        tenant=user_tenant(user),
+        mfa_status="satisfied",
+    )
     refresh_token = create_refresh_token(user["user_id"])
     await save_refresh_token(refresh_token)
     response.set_cookie(value=refresh_token, **COOKIE_OPTIONS)

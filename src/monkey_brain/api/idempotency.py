@@ -53,11 +53,12 @@ RESERVATION_TIMEOUT_SECONDS = float(os.getenv("IDEMPOTENCY_RESERVATION_TIMEOUT_S
 
 _IN_PROGRESS = "in_progress"
 _COMPLETED = "completed"
+_ABANDONED = "abandoned"
 
 
 @dataclass(frozen=True)
 class IdempotencyRecord:
-    state: str  # _IN_PROGRESS | _COMPLETED
+    state: str  # _IN_PROGRESS | _COMPLETED | _ABANDONED
     request_hash: str
     response_body: dict[str, Any] | None = None
     reserved_at: float = 0.0
@@ -130,6 +131,9 @@ class _InMemoryIdempotencyBackend:
         self._records: OrderedDict[str, IdempotencyRecord] = OrderedDict()
         self._lock = threading.Lock()
 
+    def ping(self) -> None:
+        return None
+
     def _evict_locked(self) -> None:
         while len(self._records) > DEFAULT_CAPACITY:
             self._records.popitem(last=False)
@@ -138,11 +142,19 @@ class _InMemoryIdempotencyBackend:
         with self._lock:
             existing = self._records.get(key)
             if existing is not None:
-                if existing.state == _IN_PROGRESS and (time.time() - existing.reserved_at) < RESERVATION_TIMEOUT_SECONDS:
-                    return False, existing
                 if existing.state == _COMPLETED:
                     return False, existing
-                # Expired in-progress claim (previous attempt crashed) — fall through and re-reserve.
+                if existing.state == _ABANDONED:
+                    return False, existing
+                if existing.state == _IN_PROGRESS:
+                    if (time.time() - existing.reserved_at) < RESERVATION_TIMEOUT_SECONDS:
+                        return False, existing
+                    abandoned = IdempotencyRecord(
+                        state=_ABANDONED, request_hash=existing.request_hash,
+                        reserved_at=existing.reserved_at,
+                    )
+                    self._records[key] = abandoned
+                    return False, abandoned
             self._records[key] = IdempotencyRecord(state=_IN_PROGRESS, request_hash=request_hash, reserved_at=time.time())
             self._records.move_to_end(key)
             self._evict_locked()
@@ -205,27 +217,51 @@ class _RedisIdempotencyBackend:
             self._client = self._connect()
         return self._client
 
-    def _dump(self, state: str, request_hash: str, response_body: dict[str, Any] | None) -> str:
+    def _dump(self, state: str, request_hash: str, response_body: dict[str, Any] | None, reserved_at: float | None = None) -> str:
         return json.dumps(
-            {"state": state, "request_hash": request_hash, "response_body": response_body}, default=str,
+            {
+                "state": state,
+                "request_hash": request_hash,
+                "response_body": response_body,
+                "reserved_at": reserved_at if reserved_at is not None else time.time(),
+            },
+            default=str,
         )
 
     def _load(self, raw: str | None) -> IdempotencyRecord | None:
         if not raw:
             return None
         d = json.loads(raw)
-        return IdempotencyRecord(state=d["state"], request_hash=d["request_hash"], response_body=d.get("response_body"))
+        return IdempotencyRecord(
+            state=d["state"],
+            request_hash=d["request_hash"],
+            response_body=d.get("response_body"),
+            reserved_at=float(d.get("reserved_at") or 0.0),
+        )
 
     def reserve(self, key: str, request_hash: str) -> tuple[bool, IdempotencyRecord | None]:
         redis_key = self.PREFIX + key
         try:
+            now = time.time()
             ok = self._r.set(
-                redis_key, self._dump(_IN_PROGRESS, request_hash, None),
-                nx=True, ex=int(RESERVATION_TIMEOUT_SECONDS),
+                redis_key, self._dump(_IN_PROGRESS, request_hash, None, now),
+                nx=True, ex=DEFAULT_TTL_SECONDS,
             )
             if ok:
                 return True, None
             existing = self._load(self._r.get(redis_key))
+            if existing is not None and existing.state == _IN_PROGRESS:
+                if (time.time() - existing.reserved_at) >= RESERVATION_TIMEOUT_SECONDS:
+                    abandoned = IdempotencyRecord(
+                        state=_ABANDONED, request_hash=existing.request_hash,
+                        reserved_at=existing.reserved_at,
+                    )
+                    self._r.set(
+                        redis_key,
+                        self._dump(_ABANDONED, existing.request_hash, None, existing.reserved_at),
+                        ex=DEFAULT_TTL_SECONDS,
+                    )
+                    return False, abandoned
             return False, existing
         except Exception as exc:
             from src.monkey_brain.kernel.production_gates import idempotency_fail_closed
@@ -236,8 +272,6 @@ class _RedisIdempotencyBackend:
                 )
                 return False, None
             logger.warning("key=%r Idempotency(redis).reserve failed — allowing execution: %s", key, exc)
-            # Fail OPEN on infra errors: a broken Redis must not permanently
-            # block real orders/payments from ever executing.
             return True, None
 
     def complete(self, key: str, request_hash: str, response_body: dict[str, Any]) -> None:
@@ -260,23 +294,33 @@ def _redact(url: str) -> str:
     return url
 
 
+class _UnavailableIdempotencyBackend:
+    """Fail-closed stand-in when Redis (the shared gate) cannot be used."""
+
+    unavailable = True
+
+    def reserve(self, key: str, request_hash: str) -> tuple[bool, IdempotencyRecord | None]:
+        return False, None
+
+    def complete(self, key: str, request_hash: str, response_body: dict[str, Any]) -> None:
+        return None
+
+    def release(self, key: str) -> None:
+        return None
+
+
 def _make_backend() -> Any:
+    from src.monkey_brain.kernel.production_gates import idempotency_fail_closed, insecure_dev_mode
+
     choice = os.getenv("IDEMPOTENCY_STORE_BACKEND", "auto").strip().lower()
-    # REDIS_URL is the explicit override; PlanetaryRuntime's own Redis
-    # connection (kernel/society/integration.py::_init_persistence) uses
-    # REDIS_HOST/REDIS_PORT instead — without this fallback, an
-    # environment configured the way this whole system already connects
-    # to Redis (host/port, no REDIS_URL) silently gets an in-memory-only
-    # IdempotencyStore: exactly the multi-worker failure mode ADR-009
-    # warned about (a retry landing on a different worker double-executes
-    # anyway), just silent instead of loud. Found live during Gate 6's
-    # persistence check — mirrors the fix TimelineStore's _make_backend()
-    # already has; RunStore had the identical gap, fixed alongside this.
     url = os.getenv("REDIS_URL", "").strip()
     if not url:
         url = f"redis://{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}/0"
 
     if choice == "memory":
+        if idempotency_fail_closed() and not insecure_dev_mode():
+            logger.error("IdempotencyStore: memory backend forbidden when fail-closed")
+            return _UnavailableIdempotencyBackend()
         logger.info("IdempotencyStore: process-local memory backend (IDEMPOTENCY_STORE_BACKEND=memory)")
         return _InMemoryIdempotencyBackend()
 
@@ -285,17 +329,17 @@ def _make_backend() -> Any:
         if backend.available():
             logger.info("IdempotencyStore: SHARED Redis backend at %s — multi-worker safe", _redact(url))
             return backend
-        if choice == "redis":
+        if idempotency_fail_closed():
             logger.error(
-                "IdempotencyStore: IDEMPOTENCY_STORE_BACKEND=redis but Redis at %s is unreachable — "
-                "falling back to process-local memory; concurrent duplicate requests across workers "
-                "will NOT be caught",
+                "IdempotencyStore: Redis at %s unreachable — refusing execution (fail-closed)",
                 _redact(url),
             )
-        else:
-            logger.info("IdempotencyStore: REDIS_URL set but unreachable — using process-local memory backend")
+            return _UnavailableIdempotencyBackend()
+        logger.info("IdempotencyStore: Redis unreachable — using process-local memory (insecure-dev)")
         return _InMemoryIdempotencyBackend()
 
+    if idempotency_fail_closed() and not insecure_dev_mode():
+        return _UnavailableIdempotencyBackend()
     return _InMemoryIdempotencyBackend()
 
 
@@ -315,6 +359,9 @@ class IdempotencyStore:
                     instance._backend = _make_backend()
                     cls._instance = instance
         return cls._instance
+
+    def is_available(self) -> bool:
+        return not getattr(self._backend, "unavailable", False)
 
     def reserve(self, key: str, request_hash: str) -> tuple[bool, IdempotencyRecord | None]:
         """True + None if this key is newly claimed by the caller (go
@@ -348,13 +395,9 @@ def idempotent(resource: str):
         async def create_order(body: OrderCreateRequest, request: Request, user_id=Depends(...)):
             ...
 
-    Opt-in — a request with no Idempotency-Key header executes normally,
-    every time, exactly as before this module existed. A request WITH the
-    header is deduplicated: the same key returns the first attempt's
-    response without re-executing; the same key with a different request
-    body is rejected (409) as a client bug, not silently either replayed
-    or re-executed; concurrent identical requests both racing to be first
-    get one execution and one 409, never two executions.
+    Opt-in in insecure-dev — a request with no Idempotency-Key header
+    executes normally. Outside insecure-dev the header is required and
+    the request is fail-closed (400) without it.
 
     Must be the INNERMOST decorator (directly above `async def`, below
     @router.*) — decorators apply bottom-up, so @router.post(...) needs
@@ -383,6 +426,17 @@ def idempotent(resource: str):
 
             key = request.headers.get(IDEMPOTENCY_KEY_HEADER)
             if not key:
+                key = (
+                    request.headers.get("X-Razorpay-Event-Id")
+                    or request.headers.get("X-Razorpay-Signature")
+                )
+            if not key:
+                from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+                if not insecure_dev_mode():
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Idempotency-Key header required for this mutating operation",
+                    )
                 return await fn(*args, **kwargs)
 
             user_id = kwargs.get("user_id", "")
@@ -409,6 +463,15 @@ def idempotent(resource: str):
                             status_code=503,
                             detail="Idempotency store unavailable — request refused (fail-closed)",
                         )
+                if existing is not None and existing.state == _ABANDONED:
+                    _obs.counter("idempotency.requests.total", result="abandoned")
+                    raise HTTPException(
+                        status_code=409,
+                        detail=(
+                            f"Idempotency-Key {key!r} reservation expired after a crash; "
+                            "reconciliation required — do not retry the effect"
+                        ),
+                    )
                 if existing is not None and existing.state == _COMPLETED:
                     if existing.request_hash != request_hash:
                         record_decision_event(
@@ -440,7 +503,21 @@ def idempotent(resource: str):
             _obs.counter("idempotency.requests.total", result="new")
             try:
                 result = await fn(*args, **kwargs)
-            except BaseException:
+            except BaseException as exc:
+                from src.monkey_brain.kernel.security_operation import UnknownOutcomeError
+                if isinstance(exc, UnknownOutcomeError):
+                    store.complete(
+                        scoped_key, request_hash,
+                        {
+                            "outcome": "unknown",
+                            "reconciliation_required": True,
+                            "operation_id": getattr(exc, "operation_id", ""),
+                        },
+                    )
+                    raise HTTPException(
+                        status_code=409,
+                        detail="operation outcome unknown; reconciliation required; do not retry",
+                    ) from exc
                 store.release(scoped_key)
                 raise
             cacheable, payload = _to_cacheable(result)

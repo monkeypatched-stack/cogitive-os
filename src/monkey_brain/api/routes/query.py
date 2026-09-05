@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 
 from src.hybrid import HybridRouter
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 from src.introspection.lemon import get_lemon
 
 logger = logging.getLogger("agentos.query")
@@ -54,6 +55,7 @@ def _get_hybrid_router(request: Request) -> HybridRouter:
 
 
 @router.post("/query", response_model=QueryResponse)
+@idempotent("query.process_query")
 async def process_query(
     payload: QueryRequest,
     request: Request,
@@ -78,8 +80,8 @@ async def process_query(
         logger.warning("run=%r [query] input validation failed: %s", run_id, e)
         return JSONResponse(status_code=400, content={"error": "invalid_input", "detail": str(e)})
     except ImportError:
-        # Security module not available, use question as-is
-        question = payload.question
+        logger.error("Security sanitizer unavailable — denying query")
+        return JSONResponse(status_code=500, content={"error": "security_unavailable", "detail": "Input sanitizer unavailable"})
 
     # Governance check
     try:
@@ -93,7 +95,11 @@ async def process_query(
                 content={"error": "governance_denied", "detail": gov_result.get("reason")}
             )
     except ImportError:
-        logger.debug("Governance module not available — skipping governance check")
+        logger.error("Governance module not available — denying query")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "governance_error", "detail": "Governance unavailable"}
+        )
     except Exception as exc:
         logger.error("run=%r [query] governance check failed: %s", run_id, exc)
         return JSONResponse(

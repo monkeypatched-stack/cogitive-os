@@ -524,6 +524,8 @@ class Kernel:
         from pathlib import Path
         from src.monkey_brain.api.bootstrap import load_dotenv
         load_dotenv(Path(__file__).parents[3] / ".env")
+        from services.common.secrets import validate_hmac_secrets_from_env
+        validate_hmac_secrets_from_env()
         self._health["config"] = ComponentHealth(name="config", state=HealthState.HEALTHY)
 
 
@@ -1701,8 +1703,14 @@ class Kernel:
         execute = getattr(runtime, "execute", None)
         if not callable(execute):
             raise TypeError(f"runtime {runtime_id!r} has no execute method")
-        result = execute(request, **kwargs)
-        return await result if inspect.isawaitable(result) else result
+
+        from src.monkey_brain.kernel.security_boundary import ensure_governed
+
+        async def _run() -> Any:
+            result = execute(request, **kwargs)
+            return await result if inspect.isawaitable(result) else result
+
+        return await ensure_governed(f"kernel.execute.{runtime_id}", runtime_id, _run)
 
     def _print_boot_summary(self) -> None:
         """Print the boot summary exactly once."""

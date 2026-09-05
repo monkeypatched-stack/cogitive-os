@@ -23,11 +23,10 @@ def internal_only_enabled() -> bool:
     if raw in ("0", "false", "no"):
         return False
     try:
-        from src.monkey_brain.kernel.production_gates import production_mode_enabled
-
-        return production_mode_enabled()
+        from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+        return not insecure_dev_mode()
     except ImportError:
-        return False
+        return True
 
 
 def internal_service_token() -> str:

@@ -35,7 +35,7 @@ ROUTES_DIR = ROOT / "src" / "monkey_brain" / "api" / "routes"
 
 _GUARD_NAMES = {
     "require_permission", "get_current_user", "require_self_or_permission",
-    "require_opa", "require_admin",
+    "require_opa", "require_admin", "require_razorpay_webhook_auth",
 }
 
 # Routes verified by hand to be genuinely pre-auth or infra, not a gap:
@@ -73,6 +73,8 @@ def _decorator_is_route(node: ast.expr) -> bool:
 def _call_names_in(node: ast.AST) -> set[str]:
     names = set()
     for n in ast.walk(node):
+        if isinstance(n, ast.Name):
+            names.add(n.id)
         if isinstance(n, ast.Call):
             target = n.func
             if isinstance(target, ast.Name):

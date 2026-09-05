@@ -802,21 +802,6 @@ class PlanetaryRuntime:
                 RedisIndexReconstructor,
             )
             self._redis_reconstructor = RedisIndexReconstructor(self)
-
-            try:
-                consistency = self._redis_reconstructor.verify_consistency()
-                if consistency.has_fixable_issues():
-                    logger.info(
-                        "Detected Redis index inconsistency, rebuilding from MongoDB: %s",
-                        consistency.issues,
-                    )
-                    repair_result = self._redis_reconstructor.repair_from_consistency_check(
-                        consistency
-                    )
-                    if repair_result.success:
-                        logger.info("Redis index repair complete: %s", repair_result.summary())
-            except Exception as exc:
-                logger.warning("Redis index consistency check failed: %s", exc)
             
             from src.monkey_brain.kernel.society.actor_state_rehydrator import (
                 ActorStateRehydrator,
@@ -847,6 +832,12 @@ class PlanetaryRuntime:
                     logger.warning("Actor state rehydration failed: %d errors", len(rehydration_result.errors))
             except Exception as exc:
                 logger.warning("Actor state rehydration failed: %s", exc)
+
+            try:
+                rebuild = self.rebuild_redis_index_from_mongodb()
+                logger.info("Redis actor index rebuilt from MongoDB: %s", rebuild.summary())
+            except Exception as exc:
+                logger.warning("Redis index rebuild from MongoDB failed: %s", exc)
             
         except Exception as exc:
             logger.warning("Redis not available: %s", exc)
@@ -1217,6 +1208,60 @@ class PlanetaryRuntime:
             runtime_version=actor_data.get("runtime_version", ""),
         )
 
+    def _list_registry_from_mongodb(self) -> tuple["ActorRegistryEntry", ...] | None:
+        recon = getattr(self, "_redis_reconstructor", None)
+        if recon is None:
+            try:
+                from src.monkey_brain.kernel.society.redis_index_reconstruction import (
+                    RedisIndexReconstructor,
+                )
+                recon = RedisIndexReconstructor(self)
+            except Exception:
+                return None
+        store = self._get_actor_state_store()
+        if not store:
+            return None
+        try:
+            docs = recon._scan_mongodb_actors(store)
+        except Exception:
+            return None
+        entries: list[ActorRegistryEntry] = []
+        for actor_id, doc in docs.items():
+            raw = recon._construct_registry_entry_from_mongodb(actor_id, doc)
+            if raw:
+                entries.append(self._registry_entry_from_dict(raw))
+        return tuple(entries)
+
+    def _locate_actor_from_mongodb(self, actor_id: str) -> "ActorRegistryEntry | None":
+        rows = self._list_registry_from_mongodb()
+        if not rows:
+            return None
+        for entry in rows:
+            if entry.actor_id == actor_id:
+                return entry
+        return None
+
+    def _cache_registry_entry(self, entry: "ActorRegistryEntry") -> None:
+        if not self._redis:
+            return
+        try:
+            payload = {
+                "identity": {
+                    "actor_id": entry.actor_id,
+                    "actor_type": entry.actor_type,
+                    "name": entry.name,
+                },
+                "society_id": entry.society_id,
+                "status": entry.status,
+                "node_id": entry.node_id,
+                "updated_at": entry.updated_at,
+                "artifact_version": entry.artifact_version,
+                "runtime_version": entry.runtime_version,
+            }
+            self._redis.hset(self._ACTORS_HASH_KEY, entry.actor_id, json.dumps(payload))
+        except Exception as exc:
+            logger.debug("cache registry entry failed: %s", exc)
+
     def locate_actor(self, actor_id: str) -> ActorRegistryEntry | None:
         """Actor Registry lookup: does `actor_id` exist anywhere this
         PlanetaryRuntime's Redis knows about, which society is it home to,
@@ -1238,11 +1283,27 @@ class PlanetaryRuntime:
         single-process/dev/test setup with no Redis still gets a real
         answer, not an unconditional None.
         """
-        if self._redis:
+        rows = self._list_registry_from_mongodb()
+        if rows:
+            for entry in rows:
+                if entry.actor_id == actor_id:
+                    self._cache_registry_entry(entry)
+                    return entry
+        elif rows is None and self._redis:
             try:
                 raw = self._redis.hget(self._ACTORS_HASH_KEY, actor_id)
                 if raw:
                     return self._registry_entry_from_dict(json.loads(raw))
+            except Exception as exc:
+                logger.debug("locate_actor(%r): Redis lookup failed: %s", actor_id, exc)
+        elif rows is not None and self._redis:
+            try:
+                raw = self._redis.hget(self._ACTORS_HASH_KEY, actor_id)
+                if raw:
+                    logger.warning(
+                        "locate_actor(%r): Redis entry ignored; Mongo is the registry of record",
+                        actor_id,
+                    )
             except Exception as exc:
                 logger.debug("locate_actor(%r): Redis lookup failed: %s", actor_id, exc)
         sr = self._home_society_runtime(actor_id)
@@ -1271,13 +1332,28 @@ class PlanetaryRuntime:
         fields (society_id/status/node_id/updated_at/identity), never
         reconstructs belief_state or affiliations. Falls back to this
         process's own in-memory actor set when Redis is unavailable."""
-        if self._redis:
+        rows = self._list_registry_from_mongodb()
+        if rows:
+            for entry in rows:
+                self._cache_registry_entry(entry)
+            return rows
+        if rows is None and self._redis:
             try:
                 hash_data = self._redis.hgetall(self._ACTORS_HASH_KEY)
-                return tuple(
-                    self._registry_entry_from_dict(json.loads(raw))
-                    for raw in hash_data.values()
-                )
+                if hash_data:
+                    return tuple(
+                        self._registry_entry_from_dict(json.loads(raw))
+                        for raw in hash_data.values()
+                    )
+            except Exception as exc:
+                logger.debug("list_registry(): Redis scan failed: %s", exc)
+        elif rows is not None and self._redis:
+            try:
+                hash_data = self._redis.hgetall(self._ACTORS_HASH_KEY)
+                if hash_data:
+                    logger.warning(
+                        "list_registry(): ignoring Redis index with no Mongo documents"
+                    )
             except Exception as exc:
                 logger.debug("list_registry(): Redis scan failed: %s", exc)
         entries: list[ActorRegistryEntry] = []
