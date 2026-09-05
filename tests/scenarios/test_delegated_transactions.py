@@ -234,8 +234,10 @@ def test_delegate006_alternative_selection_prefers_goal_overlap_and_excludes_cor
 
     # Renamed this session: _find_actor_by_name -> _find_actor_by_id_or_name
     # (grocery.py), matching AskActorCapability's already-correct pattern of
-    # trying actor_id before falling back to a name match.
-    _sr, original_state = DelegateTaskCapability._find_actor_by_id_or_name(pr, "Bob Delegate6")
+    # trying actor_id before falling back to a name match. Returns a 3-tuple
+    # (sr, state, ambiguity_error) -- matches real production usage at this
+    # method's own call site (grocery.py's DelegateTaskCapability.handle()).
+    _sr, original_state, _ambiguity_error = DelegateTaskCapability._find_actor_by_id_or_name(pr, "Bob Delegate6")
 
     _sr, found = DelegateTaskCapability._find_alternative_delegate(
         pr, original_state, {original.actor_id}, alice.actor_id,

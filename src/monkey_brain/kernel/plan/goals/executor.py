@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any, Tuple
 
 from src.monkey_brain.kernel.plan.goals.goal import Goal, GoalType
@@ -120,14 +119,12 @@ class GoalExecutor:
         the point of execution, keyed on the caller identity, the goal's action
         (CREATE/UPDATE/DELETE/QUERY), and the target resource.
 
-        Inert unless AGENTOS_OPA_ENFORCE is enabled, so existing deployments are
-        unaffected. When enabled it is fail-closed: if the OPA client cannot be
-        imported, the evaluation errors, or the policy does not explicitly
-        allow, execution is refused. Returns an error string to deny, or None
-        to permit.
+        Inert only when COGNITIVEOS_ALLOW_INSECURE_DEV_MODE is set (and
+        AGENTOS_OPA_ENFORCE is not forced on). Default: fail-closed OPA.
         """
-        enforce = os.getenv("AGENTOS_OPA_ENFORCE", "false").strip().lower() in ("true", "1", "yes", "on")
-        if not enforce:
+        from src.monkey_brain.kernel.production_gates import opa_enforce_execution
+        from src.monkey_brain.kernel.security_boundary import build_opa_input
+        if not opa_enforce_execution():
             return None
         try:
             from services.common.opa import evaluate
@@ -139,10 +136,9 @@ class GoalExecutor:
             return "authorization unavailable and enforcement is enabled"
 
         action = getattr(goal.goal_type, "value", str(goal.goal_type))
-        input_data = {
-            "principal": {"sub": context.user_id},
-            "action": action,
-            "resource": goal.name,
+        input_data = build_opa_input(action=action, resource=goal.name)
+        input_data["principal"] = {
+            "sub": input_data["auth"].get("principal") or getattr(context, "user_id", ""),
         }
         try:
             # default_allow=False: with enforcement on, an unconfigured or
@@ -175,6 +171,12 @@ class GoalExecutor:
         run_id = kwargs.get("run_id", "")
         mode = kwargs.get("mode")
         plan_steps = kwargs.get("plan_steps") or []
+        from types import SimpleNamespace
+        authz_error = await self._authorize(
+            goal, SimpleNamespace(user_id=kwargs.get("user_id", ""), run_id=run_id),
+        )
+        if authz_error:
+            return (f"Error executing goal {goal.name}: {authz_error}", [], [], False)
         return await self._run_goal(goal, mongo_client, question, mode=mode, run_id=run_id, plan_steps=plan_steps)
 
     async def _run_goal(
@@ -245,8 +247,53 @@ class GoalExecutor:
                 )
 
                 from src.monkey_brain.runtime.runtime import Runtime
+                from src.monkey_brain.kernel.security_boundary import (
+                    SecurityBoundaryDenied,
+                    run_governed_mutation,
+                )
+                from src.monkey_brain.kernel.audit import AuditPersistenceError
                 runtime = Runtime()
-                exec_result = await runtime.execute(planned_workload, state)
+                mutating = goal.goal_type in _MUTATING_GOAL_TYPES
+
+                async def _mutate():
+                    return await runtime.execute(planned_workload, state)
+
+                try:
+                    if mutating:
+                        exec_result = await run_governed_mutation(
+                            action=getattr(goal.goal_type, "value", str(goal.goal_type)),
+                            resource=goal.name,
+                            mutate=_mutate,
+                            extra={"run_id": run_id, "question": question[:200]},
+                            skip_authz=True,
+                        )
+                    else:
+                        exec_result = await _mutate()
+                except SecurityBoundaryDenied as exc:
+                    logger.error("run=%r governed mutation denied: %s", run_id, exc, extra=log_extra)
+                    return (f"Error executing goal {goal.name}: {exc}", [], [], False)
+                except AuditPersistenceError as exc:
+                    logger.error("run=%r audit persistence error: %s", run_id, exc, extra=log_extra)
+                    return (f"Error executing goal {goal.name}: audit failure", [], [], False)
+                except Exception as hitl_exc:
+                    # Check if this is a HumanApprovalRequired exception (HITL flow)
+                    if hitl_exc.__class__.__name__ == "HumanApprovalRequired":
+                        logger.info(
+                            "run=%r operation requires human approval (approval_id=%s)",
+                            run_id,
+                            getattr(hitl_exc, "approval_id", "unknown"),
+                            extra=log_extra,
+                        )
+                        # Return special marker that caller can use to poll for approval
+                        approval_id = getattr(hitl_exc, "approval_id", "")
+                        operation_id = getattr(hitl_exc, "operation_id", "")
+                        return (
+                            f"Operation {operation_id} is awaiting human approval. "
+                            f"Use approval_id={approval_id} to track status.",
+                            [], [], False,
+                        )
+                    # Not a HITL exception, re-raise
+                    raise
 
                 result = (
                     exec_result.final_state.get("answer", f"{goal.name} executed successfully"),

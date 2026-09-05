@@ -229,12 +229,14 @@ async def get_stability_status(user_id: str = Depends(require_permission("perm-v
 
 
 @router.post("/prompt/reset")
+@idempotent("prompt.reset_workload")
 async def reset_workload(user_id: str = Depends(require_permission("perm-reset-workload"))) -> dict[str, Any]:
     reset_cooldown()
     return {"status": "reset"}
 
 
 @router.post("/prompt/cicd")
+@idempotent("prompt.cicd_prompt")
 async def cicd_prompt(
     request: Request,
     payload: PromptRequest,

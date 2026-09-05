@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from src.monkey_brain.api.dependencies import require_permission, _audit_auth_failure
+from src.monkey_brain.api.idempotency import idempotent
 from src.monkey_brain.kernel.models.prompt import PromptRequest
 from src.monkey_brain.kernel.pipeline.negotiation_store import (
     load_pending_negotiation, resolve_pending_negotiation,
@@ -52,6 +53,7 @@ async def get_pending_negotiation(
 
 
 @router.post("/executions/{execution_id}/negotiate", tags=["Negotiation"])
+@idempotent("negotiation.negotiate_pending_execution")
 async def negotiate_pending_execution(
     execution_id: str,
     body: NegotiationDecisionRequest,

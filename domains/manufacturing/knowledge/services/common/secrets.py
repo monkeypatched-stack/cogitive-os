@@ -164,12 +164,87 @@ def _validate_secret_not_empty(value: str) -> str:
     return value.strip()
 
 
+# Exact (case-insensitive) values that must never be used as HMAC/JWT secrets.
+# Includes historical compose/CI/Helm placeholders so a forgotten override cannot boot.
+KNOWN_INSECURE_HMAC_SECRETS = frozenset({
+    "replace_me",
+    "changeme",
+    "change-me",
+    "change_me",
+    "password",
+    "secret",
+    "dev-access-token-secret",
+    "dev-refresh-token-secret",
+    "dev-access-secret",
+    "test-access-token-secret",
+    "test-refresh-token-secret",
+    "test-access-secret",
+    "ci-test-access-token-secret",
+    "ci-test-refresh-token-secret",
+    "my-shared-secret",
+    "access-secret-123",
+    "refresh-secret-456",
+    "change-me-internal-service-token",
+})
+
+
+def reject_insecure_hmac_secret(value: str, *, name: str = "HMAC secret") -> str:
+    """Fail closed: reject empty, short, or well-known placeholder HMAC secrets.
+
+    Never logs `value`. Does not generate a replacement secret.
+    """
+    _validate_secret_not_empty(value)
+    stripped = value.strip()
+    if stripped.lower() in KNOWN_INSECURE_HMAC_SECRETS:
+        raise ValueError(
+            f"{name} is a known insecure placeholder/default and cannot be used. "
+            "Supply a unique secret via the environment or a secrets manager "
+            "(e.g. openssl rand -hex 32)."
+        )
+    if len(stripped) < 32:
+        raise ValueError(
+            f"{name} must be at least 32 characters "
+            f"(received {len(stripped)} chars). "
+            "Use a randomly generated secret (e.g., 'openssl rand -hex 32')."
+        )
+    return stripped
+
+
+def validate_hmac_secrets_from_env() -> None:
+    """Boot-time check: ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be set and non-placeholder."""
+    missing: list[str] = []
+    invalid: list[str] = []
+    for env_name in ("ACCESS_TOKEN_SECRET", "REFRESH_TOKEN_SECRET"):
+        raw = os.environ.get(env_name)
+        if not raw or not str(raw).strip():
+            missing.append(env_name)
+            continue
+        try:
+            reject_insecure_hmac_secret(str(raw), name=env_name)
+        except ValueError:
+            invalid.append(env_name)
+    if missing or invalid:
+        parts: list[str] = []
+        if missing:
+            parts.append("missing: " + ", ".join(missing))
+        if invalid:
+            parts.append("insecure placeholder/default: " + ", ".join(invalid))
+        raise RuntimeError(
+            "HMAC/JWT secrets failed validation (" + "; ".join(parts) + "). "
+            "Set unique non-placeholder values before starting the process."
+        )
+
+
 def _validate_secret_length(value: str, min_bytes: int = 16) -> str:
-    """Fail closed: reject weak secrets (too short)."""
+    """Fail closed: reject weak secrets (too short) and known HMAC placeholders."""
+    if min_bytes >= 32:
+        return reject_insecure_hmac_secret(value)
     _validate_secret_not_empty(value)
     value = value.strip()
-    # Rough check: if secret is printable ASCII, use string length
-    # If it's encoded (base64, hex), still use string length
+    if value.lower() in KNOWN_INSECURE_HMAC_SECRETS:
+        raise ValueError(
+            "Secret is a known insecure placeholder/default and cannot be used."
+        )
     if len(value) < min_bytes:
         raise ValueError(
             f"Secret must be at least {min_bytes} characters "

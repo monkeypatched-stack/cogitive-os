@@ -76,11 +76,28 @@ def _seed_catalog(*, second_milk_option: bool = False, second_store: bool = Fals
         store_b = onboard_merchant(kg, "merchant_b", "Whole Foods", delivery_fee=2.99)["store_id"]
         milk_store_b_id = list_product(kg, store_b, "merchant_b", "Whole Milk", price=4.29, quantity=5, store_name="Whole Foods")["product_id"]
 
+    kg.add_entity("wallet_world_test", EntityType.ACCOUNT, "World Test Wallet", {
+        "account_type": "debit", "balance": 200.0, "owner": ACTOR_ID,
+    })
+    kg.add_entity("proc_stripe", EntityType.ORGANIZATION, "Stripe", {"type": "payment_processor", "priority": 0})
+
     return kg, store_a, milk_id, pizza_id, milk_alt_id, store_b, milk_store_b_id
 
 
 def _base_context(kg):
     return {"knowledge_graph": kg, "actor_id": ACTOR_ID, "question": "Buy milk and pizza."}
+
+
+def _pay_and_confirm(start_index: int, depends_on):
+    """Canonical checkout tail: PaymentConfirmation → Payment → OrderConfirmation."""
+    return (
+        Action(action_id=f"a{start_index}", capability="PaymentConfirmation",
+               step_index=start_index, depends_on=depends_on),
+        Action(action_id=f"a{start_index + 1}", capability="Payment",
+               step_index=start_index + 1, depends_on=(start_index,)),
+        Action(action_id=f"a{start_index + 2}", capability="OrderConfirmation",
+               step_index=start_index + 2, depends_on=(start_index + 1,)),
+    )
 
 
 def _selection_action(action_id: str, step_index: int, product_id: str, depends_on=()):
@@ -114,14 +131,14 @@ async def test_world001_unavailable_milk_triggers_replan_to_alternative():
         _selection_action("a0", 0, milk_id),
         _selection_action("a1", 1, pizza_id, depends_on=(0,)),
         Action(action_id="a2", capability="OrderCreation", step_index=2, depends_on=(0, 1)),
-        Action(action_id="a3", capability="OrderConfirmation", step_index=3, depends_on=(2,)),
+        *_pay_and_confirm(3, (2,)),
     )
 
     result = await executor.execute(actions, context)
 
     # The mutation genuinely changed the world.
     assert kg.get_entity(milk_id).attributes["quantity"] == 0
-    confirm_outcome = result.actions[3]
+    confirm_outcome = result.actions[5]
     assert confirm_outcome.success, f"OrderConfirmation should replan, not fail: {confirm_outcome.error}"
     confirmed_ids = {p["id"] for p in confirm_outcome.result["product"]}
     # Stale milk id must NOT be in the final confirmed cart...
@@ -154,13 +171,13 @@ async def test_world002_price_change_reprices_same_item_not_a_stockout():
         _selection_action("a0", 0, milk_id),
         _selection_action("a1", 1, pizza_id, depends_on=(0,)),
         Action(action_id="a2", capability="OrderCreation", step_index=2, depends_on=(0, 1)),
-        Action(action_id="a3", capability="OrderConfirmation", step_index=3, depends_on=(2,)),
+        *_pay_and_confirm(3, (2,)),
     )
 
     result = await executor.execute(actions, context)
 
     assert kg.get_entity(milk_id).attributes["price"] == 5.99
-    confirm_outcome = result.actions[3]
+    confirm_outcome = result.actions[5]
     assert confirm_outcome.success
     confirmed = {p["id"]: p for p in confirm_outcome.result["product"]}
     # Same item id (repriced in place), not swapped for a different product.
@@ -194,13 +211,13 @@ async def test_world003_store_closed_excludes_it_and_replans_to_another_store():
     actions = (
         _selection_action("a0", 0, milk_id),
         Action(action_id="a1", capability="OrderCreation", step_index=1, depends_on=(0,)),
-        Action(action_id="a2", capability="OrderConfirmation", step_index=2, depends_on=(1,)),
+        *_pay_and_confirm(2, (1,)),
     )
 
     result = await executor.execute(actions, context)
 
     assert kg.get_entity(store_a).attributes["is_open"] is False
-    confirm_outcome = result.actions[2]
+    confirm_outcome = result.actions[4]
     assert confirm_outcome.success, f"expected a replan to the other store, got: {confirm_outcome.error}"
     confirmed_ids = {p["id"] for p in confirm_outcome.result["product"]}
     assert milk_id not in confirmed_ids
@@ -230,15 +247,19 @@ async def test_world004_last_available_removed_with_no_alternative_fails_closed(
     actions = (
         _selection_action("a0", 0, milk_id),
         Action(action_id="a1", capability="OrderCreation", step_index=1, depends_on=(0,)),
-        Action(action_id="a2", capability="OrderConfirmation", step_index=2, depends_on=(1,)),
+        *_pay_and_confirm(2, (1,)),
     )
 
     result = await executor.execute(actions, context)
 
     assert kg.get_entity(milk_id).attributes["quantity"] == 0
-    confirm_outcome = result.actions[2]
-    assert not confirm_outcome.success
-    assert "no alternative available" in confirm_outcome.error
+    failed = [o for o in result.actions if not o.success]
+    assert failed, "checkout must fail closed when the only option is gone"
+    assert any(
+        "no alternative" in (o.error or "") or "backorder" in (o.error or "").lower()
+        or "blocked" in (o.error or "").lower()
+        for o in failed
+    )
 
 
 @pytest.mark.asyncio
@@ -264,12 +285,12 @@ async def test_world005_stale_item_replanned_without_repeating_or_dropping_the_o
         _selection_action("a0", 0, milk_id),
         _selection_action("a1", 1, pizza_id, depends_on=(0,)),
         Action(action_id="a2", capability="OrderCreation", step_index=2, depends_on=(0, 1)),
-        Action(action_id="a3", capability="OrderConfirmation", step_index=3, depends_on=(2,)),
+        *_pay_and_confirm(3, (2,)),
     )
 
     result = await executor.execute(actions, context)
 
-    confirm_outcome = result.actions[3]
+    confirm_outcome = result.actions[5]
     assert confirm_outcome.success
     confirmed = confirm_outcome.result["product"]
     confirmed_ids = [p["id"] for p in confirmed]
@@ -403,6 +424,10 @@ async def test_world008_warehouse_fire_mid_tick_self_heals_within_order_creation
 
     store_b = onboard_merchant(kg, "merchant_b", "Whole Foods", delivery_fee=2.99)["store_id"]
     milk_alt_id = list_product(kg, store_b, "merchant_b", "Whole Milk", price=4.29, quantity=5, store_name="Whole Foods")["product_id"]
+    kg.add_entity("wallet_world_test", EntityType.ACCOUNT, "World Test Wallet", {
+        "account_type": "debit", "balance": 200.0, "owner": ACTOR_ID,
+    })
+    kg.add_entity("proc_stripe", EntityType.ORGANIZATION, "Stripe", {"type": "payment_processor", "priority": 0})
 
     context = _base_context(kg)
     executor = build_execution_engine("grocery")
@@ -420,7 +445,7 @@ async def test_world008_warehouse_fire_mid_tick_self_heals_within_order_creation
     actions = (
         _selection_action("a0", 0, milk_id),
         Action(action_id="a1", capability="OrderCreation", step_index=1, depends_on=(0,)),
-        Action(action_id="a2", capability="OrderConfirmation", step_index=2, depends_on=(1,)),
+        *_pay_and_confirm(2, (1,)),
     )
 
     result = await executor.execute(actions, context)
@@ -437,6 +462,6 @@ async def test_world008_warehouse_fire_mid_tick_self_heals_within_order_creation
 
     # OrderConfirmation must find nothing further stale -- the fire was
     # already handled a full stage earlier.
-    confirm_outcome = result.actions[2]
+    confirm_outcome = result.actions[4]
     assert confirm_outcome.success
     assert not confirm_outcome.result.get("replanned")

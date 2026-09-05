@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.process_api")
 router = APIRouter()
@@ -96,6 +97,7 @@ async def get_process_state(
 
 
 @router.post("/processes/{run_id}/checkpoint", response_model=CheckpointResponse)
+@idempotent("process.checkpoint_process")
 async def checkpoint_process(
     run_id: str,
     request: Request,
@@ -117,6 +119,7 @@ async def checkpoint_process(
 
 
 @router.post("/processes/restore/{checkpoint_id}", response_model=RestoreResponse)
+@idempotent("process.restore_process")
 async def restore_process(
     checkpoint_id: str,
     request: Request,
@@ -139,6 +142,7 @@ async def restore_process(
 
 
 @router.post("/processes/{run_id}/suspend", response_model=ActionResult)
+@idempotent("process.suspend_process")
 async def suspend_process(
     run_id: str,
     request: Request,
@@ -157,6 +161,7 @@ async def suspend_process(
 
 
 @router.post("/processes/{run_id}/resume", response_model=ActionResult)
+@idempotent("process.resume_process")
 async def resume_process(
     run_id: str,
     request: Request,
@@ -175,6 +180,7 @@ async def resume_process(
 
 
 @router.post("/processes/{run_id}/terminate", response_model=ActionResult)
+@idempotent("process.terminate_process")
 async def terminate_process(
     run_id: str,
     request: Request,

@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.fleet")
 router = APIRouter()
@@ -123,6 +124,7 @@ class FleetHealthResponse(BaseModel):
 # ── Endpoints ─────────────────────────────────────────────────────────────
 
 @router.post("/fleet/register", response_model=RuntimeInfoResponse)
+@idempotent("fleet.register_runtime")
 async def register_runtime(
     body: RegisterRequest,
     user_id: str = Depends(require_permission("perm-manage-agents")),
@@ -139,6 +141,7 @@ async def register_runtime(
 
 
 @router.post("/fleet/{runtime_id}/heartbeat")
+@idempotent("fleet.heartbeat")
 async def heartbeat(
     runtime_id: str,
     user_id: str = Depends(require_permission("perm-view-agents")),
@@ -177,6 +180,7 @@ async def fleet_health(
 
 
 @router.delete("/fleet/{runtime_id}")
+@idempotent("fleet.remove_runtime")
 async def remove_runtime(
     runtime_id: str,
     user_id: str = Depends(require_permission("perm-manage-agents")),

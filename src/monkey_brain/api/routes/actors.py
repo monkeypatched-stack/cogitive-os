@@ -59,6 +59,7 @@ from src.monkey_brain.api.gateway_models import (
     ActorMoveRequest, TeamCreateRequest, TeamMemberAddRequest,
     serialize_beliefs,
 )
+from src.monkey_brain.api.idempotency import idempotent
 from src.monkey_brain.kernel.society.domain import (
     ActorProfile, ActorIdentity, ActorType, ActorCapability,
     ActorAddress,
@@ -653,6 +654,7 @@ async def list_actor_registry(request: Request,
 
 
 @router.post("/actors", response_model=ActorResponse, tags=["Actors"])
+@idempotent("actors.create_actor")
 async def create_actor(
     body: ActorCreateRequest,
     request: Request,
@@ -902,6 +904,7 @@ class ActorLifecycleRequest(BaseModel):
 
 
 @router.post("/actors/{actor_id}/lifecycle", tags=["Actors"])
+@idempotent("actors.set_actor_lifecycle")
 async def set_actor_lifecycle(
     actor_id: str, body: ActorLifecycleRequest, request: Request,
     user_id: str = Depends(require_permission("perm-manage-actors")),
@@ -1016,6 +1019,7 @@ class ActorMigrateRequest(BaseModel):
 
 
 @router.post("/actors/{actor_id}/migrate", tags=["Scheduler"])
+@idempotent("actors.migrate_actor")
 async def migrate_actor(
     actor_id: str, body: ActorMigrateRequest, request: Request,
     user_id: str = Depends(require_permission("perm-manage-actors")),
@@ -1177,6 +1181,7 @@ async def get_actor_timeline(
 
 
 @router.post("/actors/{actor_id}/move", tags=["Actors"])
+@idempotent("actors.move_actor")
 async def move_actor(
     actor_id: str,
     body: ActorMoveRequest,
@@ -1909,6 +1914,7 @@ def _format_execution_chat_context(context: dict[str, Any]) -> str:
 
 
 @router.post("/actors/{actor_id}/executions/{execution_id}/chat", response_model=ExecutionChatResponse, tags=["Actors"])
+@idempotent("actors.execution_chat")
 async def execution_chat(
     actor_id: str, execution_id: str, body: ExecutionChatRequest, request: Request,
     user_id: str = Depends(require_permission("perm-view-actors")),
@@ -2195,6 +2201,7 @@ async def get_actor_membership_timeline(
 
 
 @router.post("/actors/{actor_id}/delegations", tags=["Actors"])
+@idempotent("actors.create_delegation")
 async def create_delegation(
     actor_id: str,
     body: dict[str, Any],
@@ -2234,6 +2241,7 @@ async def create_delegation(
 
 
 @router.delete("/actors/{actor_id}/delegations/{delegate_id}", tags=["Actors"])
+@idempotent("actors.revoke_delegation_route")
 async def revoke_delegation_route(
     actor_id: str, delegate_id: str,
     user_id: str = Depends(require_self_or_permission("perm-manage-actors")),
@@ -2255,6 +2263,7 @@ async def revoke_delegation_route(
 
 @router.delete("/actors/{actor_id}", tags=["Actors"])
 @audited("actors.delete")
+@idempotent("actors.delete_actor")
 async def delete_actor(
     actor_id: str,
     request: Request,
@@ -2282,6 +2291,7 @@ async def delete_actor(
 
 
 @router.patch("/actors/{actor_id}", response_model=ActorResponse, tags=["Actors"])
+@idempotent("actors.update_actor")
 async def update_actor(
     actor_id: str,
     body: ActorUpdateRequest,
@@ -2418,6 +2428,7 @@ async def get_actor_goals(
 
 
 @router.post("/actors/{actor_id}/goals", response_model=ActorGoalsResponse, tags=["Actors"])
+@idempotent("actors.add_actor_goal")
 async def add_actor_goal(
     actor_id: str,
     body: ActorAddGoalRequest,
@@ -2607,6 +2618,7 @@ async def get_actor_affiliation_chain(
 
 
 @router.post("/actors/{actor_id}/affiliations", tags=["Actors"])
+@idempotent("actors.create_actor_affiliation")
 async def create_actor_affiliation(
     actor_id: str,
     body: ActorAffiliationCreateRequest,
@@ -2641,6 +2653,7 @@ async def create_actor_affiliation(
 
 
 @router.patch("/actors/{actor_id}/affiliations/{affiliation_id}", tags=["Actors"])
+@idempotent("actors.update_actor_affiliation")
 async def update_actor_affiliation(
     actor_id: str,
     affiliation_id: str,
@@ -2666,6 +2679,7 @@ async def update_actor_affiliation(
 
 
 @router.delete("/actors/{actor_id}/affiliations/{affiliation_id}", tags=["Actors"])
+@idempotent("actors.delete_actor_affiliation")
 async def delete_actor_affiliation(
     actor_id: str,
     affiliation_id: str,
@@ -2683,6 +2697,7 @@ async def delete_actor_affiliation(
 
 
 @router.post("/actors/{actor_id}/ask", response_model=AskActorResponse, tags=["Actors"])
+@idempotent("actors.ask_actor")
 async def ask_actor(
     actor_id: str,
     body: AskActorRequest,
@@ -2783,6 +2798,7 @@ async def ask_actor(
 
 
 @router.post("/actors/{actor_id}/chat", response_model=ActorChatResponse, tags=["Actors"])
+@idempotent("actors.actor_chat")
 async def actor_chat(
     actor_id: str,
     body: ActorChatRequest,
@@ -2862,6 +2878,7 @@ async def actor_chat(
 
 
 @router.post("/actors/{actor_id}/web-search-chat", response_model=WebSearchChatResponse, tags=["Actors"])
+@idempotent("actors.web_search_chat")
 async def web_search_chat(
     actor_id: str,
     body: WebSearchChatRequest,
@@ -2927,6 +2944,7 @@ async def web_search_chat(
 
 
 @router.post("/actors/{actor_id}/goal-draft", response_model=GoalDraftResponse, tags=["Actors"])
+@idempotent("actors.draft_actor_goal")
 async def draft_actor_goal(
     actor_id: str,
     body: GoalDraftRequest,
@@ -2989,6 +3007,7 @@ async def draft_actor_goal(
 
 
 @router.post("/actors/{actor_id}/transactions", response_model=TransactionResponse, tags=["Actors"])
+@idempotent("actors.execute_transaction")
 async def execute_transaction(
     actor_id: str,
     body: TransactionRequest,
@@ -3080,6 +3099,7 @@ async def get_actor_status(
 
 
 @router.post("/actors/{actor_id}/tick", response_model=ActorTickResponse, tags=["Actors"])
+@idempotent("actors.tick_actor")
 async def tick_actor(
     actor_id: str,
     body: ActorTickRequest,
@@ -3150,6 +3170,7 @@ async def tick_actor(
 
 
 @router.post("/actors/{actor_id}/observe", tags=["Actors"])
+@idempotent("actors.observe_actor")
 async def observe_actor(
     actor_id: str,
     request: Request,
@@ -3212,6 +3233,7 @@ async def observe_actor(
 
 
 @router.post("/actors/{actor_id}/plan", tags=["Actors"])
+@idempotent("actors.plan_actor")
 async def plan_actor(
     actor_id: str,
     request: Request,
@@ -3254,6 +3276,7 @@ async def plan_actor(
 @router.post(
     "/actors/{actor_id}/experiences", response_model=ExperienceRecordResponse, tags=["Actors"],
 )
+@idempotent("actors.record_actor_experience")
 async def record_actor_experience(
     actor_id: str,
     body: ExperienceRecordRequest,
@@ -3409,6 +3432,7 @@ async def _proxy_execute_to_actor_pod(actor_id: str, pr: Any) -> dict[str, Any] 
 
 
 @router.post("/actors/{actor_id}/execute", tags=["Actors"])
+@idempotent("actors.execute_actor")
 async def execute_actor(
     actor_id: str,
     request: Request,
@@ -3467,6 +3491,7 @@ async def get_actor_relationships(
 
 
 @router.post("/actors/{actor_id}/relationships", tags=["Actors"])
+@idempotent("actors.create_actor_relationship")
 async def create_actor_relationship(
     actor_id: str,
     body: ActorRelationshipCreateRequest,
@@ -3523,6 +3548,7 @@ async def create_actor_relationship(
 
 
 @router.delete("/actors/relationships/{source_id}/{target_id}", tags=["Actors"])
+@idempotent("actors.delete_actor_relationship")
 async def delete_actor_relationship(
     source_id: str,
     target_id: str,
@@ -3577,6 +3603,7 @@ async def get_actor_addresses(
 
 
 @router.post("/actors/{actor_id}/addresses", tags=["Actors"])
+@idempotent("actors.create_actor_address")
 async def create_actor_address(
     actor_id: str,
     body: ActorAddressCreateRequest,
@@ -3638,6 +3665,7 @@ async def create_actor_address(
 
 
 @router.delete("/actors/{actor_id}/addresses/{address_id}", tags=["Actors"])
+@idempotent("actors.delete_actor_address")
 async def delete_actor_address(
     actor_id: str,
     address_id: str,
@@ -3666,6 +3694,7 @@ async def delete_actor_address(
 # containment object owned by SocietyRuntime — no tick()/cycle() of its own.
 
 @router.post("/actors/teams", tags=["Actors"])
+@idempotent("actors.create_team")
 async def create_team(
     body: TeamCreateRequest,
     request: Request,
@@ -3686,6 +3715,7 @@ async def create_team(
 
 
 @router.post("/actors/teams/{team_id}/members", tags=["Actors"])
+@idempotent("actors.add_team_member")
 async def add_team_member(
     team_id: str,
     body: TeamMemberAddRequest,
@@ -3712,6 +3742,7 @@ async def add_team_member(
 
 
 @router.post("/actors/teams/{team_id}/tick", tags=["Actors"])
+@idempotent("actors.tick_team")
 async def tick_team(
     team_id: str,
     request: Request,
@@ -3739,6 +3770,7 @@ async def tick_team(
 # ── cogctl / declarative control (Final Architectural Convergence, Phase 6) ─
 
 @router.post("/actors/apply", tags=["Actors"])
+@idempotent("actors.apply_actor_specification")
 async def apply_actor_specification(
     body: dict[str, Any],
     request: Request,
@@ -3836,6 +3868,7 @@ async def apply_actor_specification(
 
 
 @router.post("/actors/{actor_id}/restart", tags=["Actors"])
+@idempotent("actors.restart_actor")
 async def restart_actor(
     actor_id: str, request: Request,
     user_id: str = Depends(require_permission("perm-manage-actors")),

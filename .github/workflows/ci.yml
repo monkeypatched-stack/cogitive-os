@@ -19,15 +19,6 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-latest
-    # continue-on-error, not a real gate yet: this codebase has never been
-    # type-checked (no mypy/pyright config anywhere before this workflow),
-    # so a hard-fail gate on day one would fail on pre-existing code, not
-    # anything this change introduced. This job exists to make the real
-    # error count visible in every PR/push from now on — once someone has
-    # looked at that number and it's driven down (or annotated away) to
-    # something intentional, remove continue-on-error to make it a real
-    # gate rather than inventing a threshold now with no baseline.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,8 +26,14 @@ jobs:
           python-version: "3.11"
       - name: Install mypy
         run: pip install mypy
-      - name: mypy (report-only)
-        run: mypy src/monkey_brain --config-file pyproject.toml || true
+      - name: mypy (security-critical modules, blocking)
+        run: >
+          mypy --config-file pyproject.toml --follow-imports=silent
+          src/monkey_brain/kernel/production_gates.py
+          src/monkey_brain/kernel/trusted_auth.py
+          src/monkey_brain/kernel/audit.py
+          src/monkey_brain/kernel/governance.py
+          domains/manufacturing/knowledge/services/common/secrets.py
 
   test:
     runs-on: ubuntu-latest
@@ -51,10 +48,9 @@ jobs:
           pip install pytest-cov pytest-timeout pytest-asyncio
       - name: Run test suite with coverage
         env:
-          ACCESS_TOKEN_SECRET: ci-test-access-token-secret
-          REFRESH_TOKEN_SECRET: ci-test-refresh-token-secret
+          ACCESS_TOKEN_SECRET: unit-test-hmac-key-not-a-placeholder!!
+          REFRESH_TOKEN_SECRET: unit-test-hmac-key-not-a-placeholder!!
           API_GATEWAY_REQUIRED: "false"
-          AGENTOS_AUTH_REQUIRED: "false"
         # Curated regression bundle (~3 min): architecture waves, production
         # gates, gateway boundary, idempotency, world validator, and fast
         # scale tiers. Full suite (4000+ tests) is local/optional; scenarios
@@ -84,6 +80,29 @@ jobs:
         with:
           name: coverage-xml
           path: coverage.xml
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-timeout
+      - name: Security control tests (blocking)
+        env:
+          ACCESS_TOKEN_SECRET: unit-test-hmac-key-not-a-placeholder!!
+          REFRESH_TOKEN_SECRET: unit-test-hmac-key-not-a-placeholder!!
+        run: >
+          python -m pytest -q
+          tests/security/test_soc2_control_remediation.py
+          tests/security/test_opa_fail_closed.py
+          tests/unit/test_production_gates.py
+          tests/test_secrets_fail_closed.py
+          --timeout=120
 
   actor-artifact-build:
     # Actor Artifact model (docs/ACTOR_ARTIFACT.md): verifies the shared

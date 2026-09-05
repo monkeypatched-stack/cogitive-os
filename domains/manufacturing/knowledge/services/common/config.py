@@ -53,7 +53,8 @@ class Settings(BaseSettings):
                 f"  2. Secret manager (Vault, AWS Secrets Manager)\n"
                 f"  3. For local dev only: .env or services/auth/.env file"
             )
-        return value
+        from services.common.secrets import reject_insecure_hmac_secret
+        return reject_insecure_hmac_secret(value, name=info.field_name)
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7

@@ -25,7 +25,7 @@ async def evaluate_full(
     policy_path: str,
     input_data: dict[str, Any],
     *,
-    default_allow: bool = True,
+    default_allow: bool = False,
     opa_url: str = "",
     timeout: float = 0.0,
     fail_closed_on_error: bool = True,
@@ -55,7 +55,17 @@ async def evaluate_full(
     tmo  = timeout or _OPA_TIMEOUT
 
     if not url:
-        return {"allowed": default_allow, "obligations": [], "source": "skip"}
+        allow = default_allow
+        try:
+            from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+            if not insecure_dev_mode():
+                allow = False
+        except Exception:
+            requested = os.getenv("COGNITIVEOS_ALLOW_INSECURE_DEV_MODE", "").strip().lower()
+            production = os.getenv("COGNITIVEOS_PRODUCTION_MODE", "").strip().lower()
+            if requested not in ("true", "1", "yes", "on") or production in ("true", "1", "yes", "on"):
+                allow = False
+        return {"allowed": allow, "obligations": [], "source": "skip"}
 
     error_fallback = default_allow if not fail_closed_on_error else False
     endpoint = f"{url}/v1/data/{policy_path.lstrip('/')}"
@@ -63,21 +73,51 @@ async def evaluate_full(
         async with httpx.AsyncClient(timeout=tmo) as client:
             r = await client.post(endpoint, json={"input": input_data})
             if r.status_code == 200:
-                result = r.json().get("result", default_allow)
+                body = r.json()
+                if not isinstance(body, dict) or "result" not in body:
+                    return {
+                        "allowed": False,
+                        "obligations": [],
+                        "source": "opa",
+                        "reason": "malformed_opa_response",
+                    }
+                result = body["result"]
                 if isinstance(result, bool):
                     return {"allowed": result, "obligations": [], "source": "opa"}
                 if isinstance(result, dict):
-                    return {
-                        "allowed": bool(result.get("allow", default_allow)),
+                    if "allow" not in result and "allowed" not in result:
+                        return {
+                            "allowed": False,
+                            "obligations": [],
+                            "source": "opa",
+                            "reason": "malformed_opa_response",
+                        }
+                    out = {
+                        "allowed": bool(result.get("allow", result.get("allowed"))),
                         "obligations": result.get("obligations", []),
                         "reason": result.get("deny_reason", ""),
                         "source": "opa",
                     }
-            else:
-                logger.warning(
-                    "OPA %d for %s — configured-but-unavailable, defaulting allow=%s",
-                    r.status_code, policy_path, error_fallback,
-                )
+                    # Runtime Approval Gate: pass through the policy's own
+                    # approval-mode/risk fields when the Rego document
+                    # provides them (e.g. opa/policies/agentos_governance.rego).
+                    # Absent when a policy doesn't define them -- callers
+                    # (GovernanceEngine.evaluate) already default sensibly
+                    # in that case, so this is purely additive.
+                    for key in ("approval_mode", "risk_level", "policy_rule", "requires_hitl"):
+                        if key in result:
+                            out[key] = result[key]
+                    return out
+                return {
+                    "allowed": False,
+                    "obligations": [],
+                    "source": "opa",
+                    "reason": "malformed_opa_response",
+                }
+            logger.warning(
+                "OPA %d for %s — configured-but-unavailable, defaulting allow=%s",
+                r.status_code, policy_path, error_fallback,
+            )
     except Exception as exc:
         logger.warning(
             "OPA unreachable (%s), configured-but-unavailable, allow=%s: %s",
@@ -91,7 +131,7 @@ async def evaluate(
     policy_path: str,
     input_data: dict[str, Any],
     *,
-    default_allow: bool = True,
+    default_allow: bool = False,
     opa_url: str = "",
     timeout: float = 0.0,
     fail_closed_on_error: bool = True,

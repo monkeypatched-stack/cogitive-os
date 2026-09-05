@@ -43,6 +43,10 @@ class ReservationStatus(str, Enum):
     RELEASED = "released"
     FAILED = "failed"
     EXPIRED = "expired"
+    UNKNOWN = "unknown"
+    """Request was submitted (or may have been) but CognitiveOS cannot
+    confirm the PSP outcome — typically a timeout after the HTTP call
+    left this process. Distinct from FAILED. Must not be retried blindly."""
 
 
 @dataclass(frozen=True)

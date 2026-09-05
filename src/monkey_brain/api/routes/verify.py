@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from src.monkey_brain.api.dependencies import require_permission
 from src.monkey_brain.api.gateway_models import VerifyReportResponse
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.verify")
 router = APIRouter()
@@ -38,6 +39,7 @@ async def _run_verification(request: Request) -> dict[str, Any]:
 
 
 @router.post("/verify/world", tags=["Verify"], response_model=VerifyReportResponse)
+@idempotent("verify.verify_world_canonical")
 async def verify_world_canonical(
     request: Request,
     user_id: str = Depends(require_permission("perm-view-world")),
@@ -46,6 +48,7 @@ async def verify_world_canonical(
 
 
 @router.post("/verify", tags=["Verify"], response_model=VerifyReportResponse)
+@idempotent("verify.verify_world")
 async def verify_world(
     request: Request,
     user_id: str = Depends(require_permission("perm-view-world")),

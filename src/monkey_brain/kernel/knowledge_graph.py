@@ -570,6 +570,8 @@ class KnowledgeGraph:
 
     def add_entity(self, entity_id: str, entity_type: EntityType = EntityType.OTHER,
                    name: str = "", attributes: dict | None = None, **kwargs) -> Entity:
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed("knowledge_graph.add_entity")
         """Add an entity to the graph. Calling this again with an
         entity_id that already exists overwrites it (some callers rely on
         this, e.g. a deterministic marker entity_id meant to hold only
@@ -615,6 +617,8 @@ class KnowledgeGraph:
 
     def update_entity(self, entity_id: str, **kwargs) -> Entity | None:
         """Update an entity."""
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed("knowledge_graph.update_entity")
         entity = self._entities.get(entity_id)
         if entity:
             old_type, old_name = entity.entity_type, entity.name
@@ -648,6 +652,8 @@ class KnowledgeGraph:
         preempted mid-call — so this dict mutation cannot interleave with
         another task's.
         """
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed("knowledge_graph.compare_and_swap")
         entity = self._entities.get(entity_id)
         if entity is None:
             return False, None
@@ -677,6 +683,8 @@ class KnowledgeGraph:
 
     def remove_entity(self, entity_id: str) -> bool:
         """Remove an entity and its relationships."""
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed("knowledge_graph.remove_entity")
         if entity_id not in self._entities:
             return False
 
@@ -745,6 +753,8 @@ class KnowledgeGraph:
                          start_date: str = "", end_date: str = "",
                          confidence: float = 1.0) -> Relationship:
         """Add a relationship between two entities."""
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed("knowledge_graph.add_relationship")
         import uuid
         rel = Relationship(
             relationship_id=str(uuid.uuid4()),
@@ -774,6 +784,8 @@ class KnowledgeGraph:
 
     def remove_relationship(self, relationship_id: str) -> bool:
         """Remove a relationship."""
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed("knowledge_graph.remove_relationship")
         rel = self._relationships.pop(relationship_id, None)
         if rel is None:
             return False

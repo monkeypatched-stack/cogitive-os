@@ -12,6 +12,7 @@ from typing import Any
 from src.monkey_brain.kernel.execute.keystore import SecureKeystore
 from src.monkey_brain.api.audit_decorator import audited
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 router = APIRouter(tags=["Keys"])
 
@@ -58,6 +59,7 @@ class KeyResponse(BaseModel):
 
 @router.post("/keys", response_model=KeyResponse)
 @audited("keys.add")
+@idempotent("keys.add_key")
 async def add_key(body: AddKeyRequest, user_id: str = Depends(require_permission("perm-manage-keys"))):
     """Add a new API key (user-scoped, encrypted)."""
     keystore = get_keystore()
@@ -92,6 +94,7 @@ async def get_key(key_id: str, user_id: str = Depends(require_permission("perm-v
 
 @router.delete("/keys/{key_id}")
 @audited("keys.delete")
+@idempotent("keys.delete_key")
 async def delete_key(key_id: str, user_id: str = Depends(require_permission("perm-manage-keys"))):
     """Remove a key (user-scoped)."""
     keystore = get_keystore()

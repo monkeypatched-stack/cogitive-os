@@ -16,6 +16,7 @@ from src.monkey_brain.api.dependencies import require_permission
 from src.monkey_brain.api.gateway_models import (
     ProviderResponse, CapabilityResponse, AgentResponse, ModelResponse,
 )
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.discovery")
 router = APIRouter()
@@ -35,6 +36,7 @@ async def get_providers(
 
 
 @router.post("/providers/{name}/health", tags=["Discovery"])
+@idempotent("discovery.check_provider_health")
 async def check_provider_health(
     name: str,
     request: Request,

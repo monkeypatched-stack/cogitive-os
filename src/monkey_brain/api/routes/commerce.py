@@ -272,6 +272,7 @@ async def get_wallet(
 
 
 @router.post("/wallets/{wallet_id}/topup", tags=["Commerce"])
+@idempotent("commerce.topup_wallet")
 async def topup_wallet(
     wallet_id: str,
     body: dict[str, Any],
@@ -353,6 +354,7 @@ async def get_actor_wallet(
 
 
 @router.delete("/actors/{actor_id}/orders", tags=["Commerce"])
+@idempotent("commerce.delete_actor_orders")
 async def delete_actor_orders(
     actor_id: str,
     request: Request,

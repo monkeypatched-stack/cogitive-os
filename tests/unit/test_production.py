@@ -269,6 +269,7 @@ class TestGovernance:
         # unprovisioned fail-closed control is an outage, not security — so an engine with
         # OPA_URL unset (the real "not configured" signal now) skips the check (and logs it).
         monkeypatch.delenv("OPA_URL", raising=False)
+        monkeypatch.setenv("COGNITIVEOS_ALLOW_INSECURE_DEV_MODE", "true")
         from src.monkey_brain.kernel.governance import GovernanceEngine
         engine = GovernanceEngine()
         result = await engine.evaluate("unknown-runtime", "anything")

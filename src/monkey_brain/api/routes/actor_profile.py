@@ -76,6 +76,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from src.monkey_brain.api.dependencies import require_self_or_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.api.actor_profile")
 
@@ -161,6 +162,7 @@ async def get_profile(actor_id: str):
 
 
 @router.put("/{actor_id}/profile")
+@idempotent("actor_profile.update_profile")
 async def update_profile(actor_id: str, request: ProfileUpdateRequest):
     """Update actor profile — a real, partial update against persisted
     state: loads whatever profile already exists (or starts a fresh one),
@@ -201,6 +203,7 @@ async def get_account(actor_id: str, user_id: str = Depends(require_self_or_perm
 
 
 @router.put("/{actor_id}/account")
+@idempotent("actor_profile.update_account")
 async def update_account(
     actor_id: str, request: AccountUpdateRequest,
     user_id: str = Depends(require_self_or_permission("perm-manage-actors")),
@@ -242,6 +245,7 @@ async def update_account(
 
 
 @router.post("/{actor_id}/login", response_model=LoginResponse)
+@idempotent("actor_profile.login")
 async def login(actor_id: str, request: LoginRequest):
     """Login and get a real, signed access token.
 
@@ -300,6 +304,7 @@ async def login(actor_id: str, request: LoginRequest):
 
 
 @router.post("/{actor_id}/logout")
+@idempotent("actor_profile.logout")
 async def logout(actor_id: str):
     """Logout — invalidates every active session for this actor."""
     from src.monkey_brain.kernel.login_store import get_login_store
@@ -326,6 +331,7 @@ async def list_sessions(actor_id: str, user_id: str = Depends(require_self_or_pe
 
 
 @router.post("/{actor_id}/otp/request", response_model=OTPRequestResponse)
+@idempotent("actor_profile.request_otp")
 async def request_otp(actor_id: str, body: OTPRequestRequest):
     """Generate a real, time-limited OTP (kernel/login_info.py::
     LoginInfo.generate_otp()) — see module docstring for why the code
@@ -362,6 +368,7 @@ async def request_otp(actor_id: str, body: OTPRequestRequest):
 
 
 @router.post("/{actor_id}/otp/verify", response_model=LoginResponse)
+@idempotent("actor_profile.verify_otp")
 async def verify_otp(actor_id: str, body: OTPVerifyRequest):
     """Verify an OTP code (constant-time, max 3 attempts, 5-minute
     expiry — all real, in kernel/login_info.py::OTPInfo.verify()) and,

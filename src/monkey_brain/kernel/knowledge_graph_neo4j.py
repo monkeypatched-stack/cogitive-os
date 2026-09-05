@@ -516,6 +516,8 @@ class Neo4jBackedKnowledgeGraph(KnowledgeGraph):
         """
         if not self._available:
             return False, None
+        from src.monkey_brain.kernel.security_boundary import assert_state_mutation_allowed
+        assert_state_mutation_allowed("knowledge_graph.compare_and_swap")
         entity = self._entities.get(entity_id)
         if entity is None:
             return False, None

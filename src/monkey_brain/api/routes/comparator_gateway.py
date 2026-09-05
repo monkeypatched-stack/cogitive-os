@@ -25,6 +25,7 @@ from src.monkey_brain.api.gateway_models import (
     CompareRequest, CompareEpistemicLossRequest,
     CompareResponseGateway, CompareHistoryResponse,
 )
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.compare")
 router = APIRouter()
@@ -41,6 +42,7 @@ def _get_comparator_runtime(request: Request) -> Any:
 
 
 @router.post("/compare/run", response_model=CompareResponseGateway, tags=["Compare"])
+@idempotent("comparator_gateway.compare")
 async def compare(
     body: CompareRequest,
     request: Request,
@@ -64,6 +66,7 @@ async def compare(
 
 
 @router.post("/compare/epistemic-loss", response_model=CompareResponseGateway, tags=["Compare"])
+@idempotent("comparator_gateway.compare_epistemic_loss")
 async def compare_epistemic_loss(
     body: CompareEpistemicLossRequest,
     request: Request,

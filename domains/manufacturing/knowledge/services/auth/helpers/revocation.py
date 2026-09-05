@@ -11,7 +11,6 @@ request rather than creating a hard dependency on Redis availability.
 
 import logging
 
-import redis.asyncio as aioredis
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from services.common.config import settings
@@ -19,23 +18,20 @@ from services.auth.helpers.agent_tokens import AGENT_ACCESS_TOKEN_MINUTES
 
 logger = logging.getLogger(__name__)
 
-_redis: aioredis.Redis | None = None
+_memory_jti: set[str] = set()
+_redis = None
 
 
-def _get_redis() -> aioredis.Redis:
+def _get_redis():
     """Lazy singleton — constructed on first real use, not at import time.
 
-    Security audit P1-5: this module is now imported by
-    services.common.auth (the primary human-token auth chokepoint), which
-    is itself imported by ~157 routers, many exercised under test
-    fixtures that monkeypatch `settings` AFTER import. Building the
-    client eagerly at module load meant `settings.REDIS_URL` could be a
-    test double (e.g. a MagicMock) at construction time, raising before
-    any test even ran. Real behavior is unchanged — still exactly one
-    client, still `settings.REDIS_URL` at the time it's actually needed.
+    redis.asyncio is imported here so a missing redis package becomes a
+    runtime revocation-check failure (fail-closed in production) rather
+    than an import-time crash of every auth route.
     """
     global _redis
     if _redis is None:
+        import redis.asyncio as aioredis
         _redis = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
     return _redis
 
@@ -54,19 +50,38 @@ async def block_jti(jti: str) -> None:
     """Add an access token's jti to the blocklist."""
     try:
         await _get_redis().setex(f"agent:jti:{jti}", _ACCESS_TTL, "revoked")
+        _memory_jti.add(jti)
     except Exception as exc:
-        logger.warning("Redis unavailable, jti %s not blocked: %s", jti, exc)
+        _memory_jti.add(jti)
+        try:
+            from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+            if insecure_dev_mode():
+                logger.warning("Redis unavailable, jti %s blocked in-process only: %s", jti, exc)
+                return
+        except Exception:
+            pass
+        logger.error("Redis unavailable, cannot durably block jti %s: %s", jti, exc)
+        raise
 
 
 async def is_jti_revoked(jti: str | None) -> bool:
     """Return True if this jti has been explicitly revoked."""
     if not jti:
         return False
+    if jti in _memory_jti:
+        return True
     try:
         return await _get_redis().exists(f"agent:jti:{jti}") == 1
     except Exception as exc:
-        logger.warning("Redis unavailable, jti revocation check skipped: %s", exc)
-        return False
+        try:
+            from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+            if insecure_dev_mode():
+                logger.warning("Redis unavailable, jti revocation check skipped: %s", exc)
+                return False
+        except Exception:
+            pass
+        logger.error("Redis unavailable, jti revocation check failing closed: %s", exc)
+        raise
 
 
 # ---------------------------------------------------------------------------

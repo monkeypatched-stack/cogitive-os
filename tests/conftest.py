@@ -12,9 +12,12 @@ import pytest
 # Auth service Settings (domains/manufacturing/.../config.py) requires these
 # secrets at import time. CI has no .env — provide deterministic test values
 # before any test module imports services.auth or api.main.
-os.environ.setdefault("ACCESS_TOKEN_SECRET", "test-access-token-secret")
-os.environ.setdefault("REFRESH_TOKEN_SECRET", "test-refresh-token-secret")
+os.environ.setdefault("ACCESS_TOKEN_SECRET", "unit-test-hmac-key-not-a-placeholder!!")
+os.environ.setdefault("REFRESH_TOKEN_SECRET", "unit-test-hmac-key-not-a-placeholder!!")
 os.environ.setdefault("API_GATEWAY_REQUIRED", "false")
+# Unit tests that do not boot Redis/OPA use the explicit local-dev bypass.
+# Production and tests/security/test_soc2_control_remediation.py unset this.
+os.environ.setdefault("COGNITIVEOS_ALLOW_INSECURE_DEV_MODE", "true")
 
 # PlanetaryRuntime.build_execution_engine() resolves the "grocery" vertical at
 # init — register it once for the whole test session.

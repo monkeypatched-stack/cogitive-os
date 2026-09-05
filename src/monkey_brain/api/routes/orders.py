@@ -76,6 +76,11 @@ def _result(d: dict[str, Any]) -> dict[str, Any]:
     return d
 
 
+async def _commit_order(action: str, resource: str, effect):
+    from src.monkey_brain.kernel.security_boundary import ensure_governed
+    return await ensure_governed(action, resource, effect, skip_authz=True)
+
+
 @router.post("/orders", tags=["Orders"], response_model=OrderResponse)
 @idempotent("orders.create")
 async def create_order(
@@ -86,11 +91,15 @@ async def create_order(
     from src.monkey_brain.kernel.domains.grocery import OrderCreationCapability
 
     await authorize_acting_for(request, user_id, body.actor_id)
-    result = OrderCreationCapability().handle({"context": {
-        "knowledge_graph": _kg(request), "actor_id": body.actor_id, "selected_product": body.items,
-        "question": body.question,
-        "resume_order_id": body.resume_order_id,
-    }})
+
+    def _mutate():
+        return OrderCreationCapability().handle({"context": {
+            "knowledge_graph": _kg(request), "actor_id": body.actor_id, "selected_product": body.items,
+            "question": body.question,
+            "resume_order_id": body.resume_order_id,
+        }})
+
+    result = await _commit_order("orders.create", body.actor_id, _mutate)
     return _result(result)
 
 
@@ -136,7 +145,11 @@ async def pay_for_order(
     confirmation = PaymentConfirmationCapability().handle({"context": context})
     if not confirmation.get("success"):
         raise HTTPException(status_code=400, detail=confirmation.get("error", "payment not confirmed"))
-    payment = PaymentCapability().handle({"context": context})
+
+    def _mutate():
+        return PaymentCapability().handle({"context": context})
+
+    payment = await _commit_order("orders.payment", order_id, _mutate)
     return _result(payment)
 
 
@@ -152,7 +165,10 @@ async def cancel_order_route(
     from src.monkey_brain.kernel.domains.grocery import cancel_order
 
     await authorize_acting_for(request, user_id, body.actor_id)
-    return _result(cancel_order(_kg(request), order_id, actor_id=body.actor_id))
+    return _result(await _commit_order(
+        "orders.cancel", order_id,
+        lambda: cancel_order(_kg(request), order_id, actor_id=body.actor_id),
+    ))
 
 
 @router.post("/orders/{order_id}/confirm-receipt", tags=["Orders"])
@@ -167,7 +183,10 @@ async def confirm_receipt_route(
     from src.monkey_brain.kernel.society.context_stream import ContextEvent, ContextEventType
 
     await authorize_acting_for(request, user_id, body.actor_id)
-    result = _result(confirm_receipt(_kg(request), order_id, actor_id=body.actor_id))
+    result = _result(await _commit_order(
+        "orders.confirm_receipt", order_id,
+        lambda: confirm_receipt(_kg(request), order_id, actor_id=body.actor_id),
+    ))
 
     # True Multi-Actor Coordination: this is the real point an order's
     # items become eligible for a loyalty award or a review
@@ -219,7 +238,10 @@ async def request_return(
     from src.monkey_brain.kernel.domains.grocery import return_order
 
     await authorize_acting_for(request, user_id, body.actor_id)
-    return _result(return_order(_kg(request), order_id, actor_id=body.actor_id, reason=body.reason))
+    return _result(await _commit_order(
+        "orders.return_request", order_id,
+        lambda: return_order(_kg(request), order_id, actor_id=body.actor_id, reason=body.reason),
+    ))
 
 
 @router.post("/orders/{order_id}/return/approve", tags=["Orders"])
@@ -233,7 +255,10 @@ async def approve_return_route(
 ) -> dict[str, Any]:
     from src.monkey_brain.kernel.domains.grocery import approve_return
 
-    return _result(approve_return(_kg(request), order_id, approved_by=body.approved_by))
+    return _result(await _commit_order(
+        "orders.return_approve", order_id,
+        lambda: approve_return(_kg(request), order_id, approved_by=body.approved_by),
+    ))
 
 
 @router.post("/orders/{order_id}/refund", tags=["Orders"])
@@ -247,7 +272,10 @@ async def refund_order_route(
 ) -> dict[str, Any]:
     from src.monkey_brain.kernel.domains.grocery import refund_order
 
-    return _result(refund_order(
-        _kg(request), order_id, amount=body.amount,
-        reason=body.reason, refunded_by=body.refunded_by,
+    return _result(await _commit_order(
+        "orders.refund", order_id,
+        lambda: refund_order(
+            _kg(request), order_id, amount=body.amount,
+            reason=body.reason, refunded_by=body.refunded_by,
+        ),
     ))

@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from src.monkey_brain.api.dependencies import require_permission
 from src.monkey_brain.api.helpers.run_helpers import get_cognitive_runtime
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.knowledge")
 router = APIRouter()
@@ -69,6 +70,7 @@ class KnowledgeImportResult(BaseModel):
 
 
 @router.post("/knowledge/export", response_model=KnowledgeExport)
+@idempotent("knowledge.export_knowledge")
 async def export_knowledge(
     user_id: str = Depends(require_permission("perm-view-agents")),
     runtime: Any = Depends(get_cognitive_runtime),
@@ -129,6 +131,7 @@ async def export_knowledge(
 
 
 @router.post("/knowledge/import", response_model=KnowledgeImportResult)
+@idempotent("knowledge.import_knowledge")
 async def import_knowledge(
     body: KnowledgeImportRequest,
     user_id: str = Depends(require_permission("perm-manage-agents")),

@@ -371,6 +371,7 @@ class TestOutputPropagation:
         # the projector from step 0's "selected" key), not a fabricated
         # empty order -- confirmed by a real order_id and matching totals.
         assert er.actions[1].result["order_id"] is not None
+        assert len(er.actions[1].result["items"]) == 1
         assert er.actions[1].result["items"][0]["qty"] == 2
         assert er.success_count == 2 and er.failure_count == 0
         assert er.goal_achieved is True

@@ -48,17 +48,22 @@ async def sanitize_and_check_governance(
 
     try:
         from src.monkey_brain.kernel.governance import get_governance_engine
+        from src.monkey_brain.kernel.trusted_auth import get_trusted_auth, strip_untrusted_security_signals
         gov = get_governance_engine()
-        context = {"question": question[:200]}
+        trusted = get_trusted_auth().to_opa_auth()
+        context = {"question": question[:200], "trusted_auth": trusted, "auth": trusted}
         if extra_context:
-            context.update(extra_context)
+            context.update(strip_untrusted_security_signals(extra_context))
+            context["trusted_auth"] = trusted
+            context["auth"] = trusted
         gov_result = await gov.evaluate(user_id, action, context)
         if not gov_result.get("allowed"):
             raise RequestRejected(403, "governance_denied", gov_result.get("reason") or "")
     except RequestRejected:
         raise
     except ImportError:
-        logger.warning("Governance module not available — skipping governance check")
+        logger.error("Governance module not available — denying")
+        raise RequestRejected(500, "governance_error", "Governance unavailable")
     except Exception as exc:
         logger.error("Governance check failed for action=%r — denying: %s", action, exc)
         raise RequestRejected(500, "governance_error", "Governance check failed")
@@ -67,56 +72,62 @@ async def sanitize_and_check_governance(
 
 
 def record_request_audit(user_id: str, event_type: str, action: str, details: dict) -> None:
-    """Shared audit-record logic — see sanitize_and_check_governance."""
-    try:
-        from src.monkey_brain.kernel.audit import get_audit_log
-        get_audit_log().record(
-            runtime_id=user_id, event_type=event_type, action=action,
-            actor=user_id, details=details,
-        )
-    except Exception as exc:
-        logger.warning("audit record (%s) failed: %s", action, exc)
+    """Shared audit-record logic — fail-closed for security-critical event types."""
+    from src.monkey_brain.kernel.audit import get_audit_log
+    get_audit_log().record(
+        runtime_id=user_id, event_type=event_type, action=action,
+        actor=user_id, details=details,
+    )
 
 
 def auth_required() -> bool:
     """Whether authn/authz is enforced. Secure by default.
 
-    Enforcement is ON unless AGENTOS_AUTH_REQUIRED is explicitly set to a false
-    value. A deployment that forgets to set it gets a locked door, not an open
-    one — the previous default ("false") meant any decodable token granted every
-    permission, and an X-User-ID header alone authenticated.
+    AGENTOS_AUTH_REQUIRED=false is honored only under
+    COGNITIVEOS_ALLOW_INSECURE_DEV_MODE. Production and any other
+    deployment ignore the disable flag and keep the door locked.
     """
     global _AUTH_DISABLED_WARNED
-    required = os.getenv("AGENTOS_AUTH_REQUIRED", "true").strip().lower() not in (
+    explicit_off = os.getenv("AGENTOS_AUTH_REQUIRED", "true").strip().lower() in (
         "false", "0", "no", "off",
     )
-    if not required and not _AUTH_DISABLED_WARNED:
+    if not explicit_off:
+        return True
+    from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+    if not insecure_dev_mode():
+        logger.error(
+            "AGENTOS_AUTH_REQUIRED=false ignored without "
+            "COGNITIVEOS_ALLOW_INSECURE_DEV_MODE — authentication remains required",
+        )
+        return True
+    if not _AUTH_DISABLED_WARNED:
         _AUTH_DISABLED_WARNED = True
         logger.warning(
             "AGENTOS_AUTH_REQUIRED is disabled — permission checks are bypassed. "
             "Never run this way outside local development.",
         )
-    return required
+    return False
 
 
 async def get_current_user(
     x_user_id: str | None = Header(default=None, alias="X-User-ID"),
     authorization: str | None = Header(default=None),
 ) -> str:
-    """Validate caller identity via X-User-ID header or Bearer token.
+    """Validate caller identity via Bearer token, then optional insecure-dev X-User-ID.
 
-    Returns the authenticated user ID. Raises 401 if neither is provided.
+    X-User-ID never authenticates when auth_required() is true.
     """
-    if x_user_id:
-        return x_user_id
-
     if authorization and authorization.startswith("Bearer "):
         token = authorization[7:]
         api_key_valid = os.getenv("AGENTOS_API_KEY", "")
         if api_key_valid and token == api_key_valid:
-            return os.getenv("AGENTOS_API_USER", "api-service")
+            from src.monkey_brain.kernel.trusted_auth import bind_trusted_auth, evidence_for_service
+            svc_user = os.getenv("AGENTOS_API_USER", "api-service")
+            bind_trusted_auth(evidence_for_service(svc_user))
+            return svc_user
         try:
             from services.common.agent_auth import get_current_principal
+            from src.monkey_brain.kernel.trusted_auth import bind_trusted_auth, evidence_from_jwt
 
             class _FakeCreds:
                 credentials = token
@@ -124,9 +135,17 @@ async def get_current_user(
 
             principal = await get_current_principal(_FakeCreds())
             if principal:
+                bind_trusted_auth(evidence_from_jwt(principal))
                 return principal.get("user_id", principal.get("sub", "authenticated"))
         except Exception as e:
-            logger.debug("JWT validation failed, falling through: %s", e)
+            logger.debug("JWT validation failed: %s", e)
+            if auth_required():
+                raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    if x_user_id:
+        if auth_required():
+            raise HTTPException(status_code=401, detail="Bearer token required")
+        return x_user_id
 
     if auth_required():
         raise HTTPException(status_code=401, detail="Missing X-User-ID header or Bearer token")
@@ -283,22 +302,25 @@ def require_permission(permission: str):
 
             api_key = os.getenv("AGENTOS_API_KEY", "")
             if api_key and token == api_key:
-                return os.getenv("AGENTOS_API_USER", "api-service")
+                from src.monkey_brain.kernel.trusted_auth import bind_trusted_auth, evidence_for_service
+                svc_user = os.getenv("AGENTOS_API_USER", "api-service")
+                bind_trusted_auth(evidence_for_service(svc_user))
+                return svc_user
 
             try:
                 from services.auth.helpers.tokens import decode_access_token
                 payload = decode_access_token(token)
-                # Doot audit P1-5 fix: this is the low-level decode every
-                # src/monkey_brain/api/ route's auth ultimately goes
-                # through (via require_permission/require_self_or_
-                # permission), separate from services/common/auth.py's
-                # get_current_user — the human-token revocation fix there
-                # doesn't cover this call site at all unless checked here
-                # too. Same jti blocklist agent tokens already use
-                # (services/auth/helpers/revocation.py); a revoked token
-                # is never valid, in or out of dev mode.
-                from services.auth.helpers.revocation import is_jti_revoked
-                if await is_jti_revoked(payload.get("jti")):
+                from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+                try:
+                    from services.auth.helpers.revocation import is_jti_revoked
+                    revoked = await is_jti_revoked(payload.get("jti"))
+                except Exception as exc:
+                    if not insecure_dev_mode():
+                        await _audit_auth_failure(permission, "deny", "revocation_unavailable")
+                        raise HTTPException(status_code=503, detail="Revocation check unavailable") from exc
+                    logger.warning("revocation check skipped (insecure-dev): %s", exc)
+                    revoked = False
+                if revoked:
                     await _audit_auth_failure(permission, "deny", "token_revoked", subject=payload.get("sub", ""))
                     raise HTTPException(status_code=401, detail="Token has been revoked")
                 granted = {
@@ -321,6 +343,17 @@ def require_permission(permission: str):
                 # only ever what the verified token itself carries.
                 request.state.jwt_attributes = payload.get("attributes") or {}
                 user = payload.get("sub", "authenticated")
+                from src.monkey_brain.kernel.trusted_auth import (
+                    bind_trusted_auth,
+                    evidence_from_jwt,
+                    mfa_allows_operation,
+                )
+                evidence = evidence_from_jwt(payload)
+                bind_trusted_auth(evidence)
+                request.state.trusted_auth = evidence
+                if not mfa_allows_operation(evidence):
+                    await _audit_auth_failure(permission, "deny", "mfa_required", subject=user)
+                    raise HTTPException(status_code=403, detail="MFA evidence required")
                 if permission in granted or not auth_on:
                     return user
                 if permission in _effective_delegated_permissions(request, user):
@@ -434,17 +467,25 @@ def require_self_or_permission(permission: str, id_param: str = "actor_id"):
 
             api_key = os.getenv("AGENTOS_API_KEY", "")
             if api_key and token == api_key:
-                return os.getenv("AGENTOS_API_USER", "api-service")
+                from src.monkey_brain.kernel.trusted_auth import bind_trusted_auth, evidence_for_service
+                svc_user = os.getenv("AGENTOS_API_USER", "api-service")
+                bind_trusted_auth(evidence_for_service(svc_user))
+                return svc_user
 
             try:
                 from services.auth.helpers.tokens import decode_access_token
                 payload = decode_access_token(token)
-                # Doot audit P1-5 fix: see require_permission's identical
-                # check above for why this call site needs its own —
-                # revocation must block even a "caller IS this actor"
-                # self-match, not just the permission fallback.
-                from services.auth.helpers.revocation import is_jti_revoked
-                if await is_jti_revoked(payload.get("jti")):
+                from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+                try:
+                    from services.auth.helpers.revocation import is_jti_revoked
+                    revoked = await is_jti_revoked(payload.get("jti"))
+                except Exception as exc:
+                    if not insecure_dev_mode():
+                        await _audit_auth_failure(permission, "deny", "revocation_unavailable")
+                        raise HTTPException(status_code=503, detail="Revocation check unavailable") from exc
+                    logger.warning("revocation check skipped (insecure-dev): %s", exc)
+                    revoked = False
+                if revoked:
                     await _audit_auth_failure(permission, "deny", "token_revoked", subject=payload.get("sub", ""))
                     raise HTTPException(status_code=401, detail="Token has been revoked")
                 granted = {

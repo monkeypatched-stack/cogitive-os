@@ -76,10 +76,16 @@ def test_allows_when_policy_permits(monkeypatch):
         assert policy_path == "agentos/execute/allow"
         assert input_data["action"] == "create"
         assert input_data["resource"] == "create_widget"
+        assert input_data["auth"]["principal"] == "user-1"
         assert input_data["principal"]["sub"] == "user-1"
         assert default_allow is False  # fail-closed under enforcement
         return True
 
+    from src.monkey_brain.kernel.trusted_auth import TrustedAuthEvidence, bind_trusted_auth
+    bind_trusted_auth(TrustedAuthEvidence(
+        authenticated=True, token_valid=True, principal_id="user-1",
+        principal_type="human", mfa_status="satisfied",
+    ))
     _install_fake_opa(monkeypatch, _fake_evaluate)
     monkeypatch.setenv("AGENTOS_OPA_ENFORCE", "true")
     assert _authorize(_goal(), _ctx()) is None

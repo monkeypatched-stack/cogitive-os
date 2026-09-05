@@ -53,15 +53,34 @@ class BaseComplianceAgent(BaseDDDAgent):
     RULES: list[tuple[str, str | None, str, str, str, str]] = []
 
     def perceive(self, context: dict[str, Any]) -> dict[str, Any]:
-        signals: dict[str, Any] = {}
-        signals.update(context.get("data_signals", {}))
-        signals.update(context.get("system_attributes", {}))
+        try:
+            from src.monkey_brain.kernel.trusted_auth import (
+                get_trusted_auth,
+                strip_untrusted_security_signals,
+            )
+            signals = strip_untrusted_security_signals({
+                **context.get("data_signals", {}),
+                **context.get("system_attributes", {}),
+            })
+            evidence = get_trusted_auth()
+            signals["mfa_enforced"] = evidence.mfa_satisfied()
+            principal = evidence.to_opa_auth()
+        except Exception:
+            signals = {
+                k: v for k, v in {
+                    **context.get("data_signals", {}),
+                    **context.get("system_attributes", {}),
+                }.items()
+                if k not in ("mfa_enforced", "mfa_status", "authenticated", "token_valid")
+            }
+            signals["mfa_enforced"] = False
+            principal = {"authenticated": False, "mfa_status": "unknown"}
         return {
             "layer": self.ddd_layer,
             "standard": self.standard,
             "action": context.get("action", ""),
             "resource": context.get("resource", ""),
-            "principal": context.get("principal", {}),
+            "principal": principal,
             "signals": signals,
             "context": context,
         }
@@ -95,8 +114,9 @@ class BaseComplianceAgent(BaseDDDAgent):
                     "action": perception.get("action"),
                     "resource": perception.get("resource"),
                     "principal": perception.get("principal", {}),
+                    "auth": perception.get("principal", {}),
                 },
-                default_allow=True,
+                default_allow=False,
             )
             if not result.get("allowed", True):
                 return [{

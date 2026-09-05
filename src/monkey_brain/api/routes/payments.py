@@ -32,6 +32,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
 from src.monkey_brain.api.dependencies import require_permission
+from src.monkey_brain.api.idempotency import idempotent
 from src.monkey_brain.kernel.domains.razorpay_upi_provider import get_default_provider
 from src.monkey_brain.kernel.pipeline.payment_store import (
     load_pending_payment_by_reservation, resolve_pending_payment,
@@ -58,6 +59,19 @@ def set_default_planetary_runtime(pr: Any) -> None:
 
 def get_default_planetary_runtime() -> Any:
     return _default_planetary_runtime
+
+
+async def require_razorpay_webhook_auth(
+    request: Request,
+    x_razorpay_signature: str = Header(default="", alias="X-Razorpay-Signature"),
+) -> bytes:
+    """Trust boundary for Razorpay: HMAC over the raw body, not a user JWT."""
+    raw_body = await request.body()
+    provider = get_default_provider()
+    if not provider.verify_webhook(raw_body, x_razorpay_signature):
+        logger.warning("razorpay_webhook: signature verification failed — rejecting")
+        raise HTTPException(status_code=401, detail="invalid webhook signature")
+    return raw_body
 
 
 def _get_planetary_runtime(request: Request) -> Any:
@@ -131,9 +145,10 @@ async def resolve_and_resume_payment(
 
 
 @router.post("/payments/webhooks/razorpay", tags=["Payments"])
+@idempotent("payments.razorpay_webhook")
 async def razorpay_webhook(
     request: Request,
-    x_razorpay_signature: str = Header(default="", alias="X-Razorpay-Signature"),
+    raw_body: bytes = Depends(require_razorpay_webhook_auth),
 ) -> dict[str, Any]:
     """Confirms a real UPI authorization/capture/failure and, when it
     resolves an execution this backend actually has paused
@@ -148,13 +163,12 @@ async def razorpay_webhook(
     doesn't correspond to anything we're waiting on" is a legitimate,
     non-error outcome here, not a fault.
     """
-    raw_body = await request.body()
-    provider = get_default_provider()
-    if not provider.verify_webhook(raw_body, x_razorpay_signature):
-        logger.warning("razorpay_webhook: signature verification failed — rejecting")
-        raise HTTPException(status_code=401, detail="invalid webhook signature")
+    import json
+    from src.monkey_brain.kernel.security_boundary import ensure_governed
+    from src.monkey_brain.kernel.trusted_auth import bind_trusted_auth, evidence_for_service
 
-    body = await request.json()
+    bind_trusted_auth(evidence_for_service("razorpay-webhook"))
+    body = json.loads(raw_body.decode("utf-8") or "{}")
     event = body.get("event", "")
     payment_entity = (
         body.get("payload", {}).get("payment", {}).get("entity", {})
@@ -167,29 +181,24 @@ async def razorpay_webhook(
 
     pr = _get_planetary_runtime(request)
     failure_reason = payment_entity.get("error_description", "payment failed")
-    return await resolve_and_resume_payment(order_id, payment_id, amount, event, pr, failure_reason)
+    return await ensure_governed(
+        "payments.webhook",
+        order_id or "razorpay",
+        lambda: resolve_and_resume_payment(order_id, payment_id, amount, event, pr, failure_reason),
+        skip_authz=True,
+    )
 
 
 @router.post("/payments/{reservation_id}/simulate-capture", tags=["Payments"])
+@idempotent("payments.simulate_capture")
 async def simulate_capture(
     reservation_id: str,
     user_id: str = Depends(require_permission("perm-manage-actors")),
 ) -> dict[str, Any]:
-    """Dev/demo-only: marks a reservation captured LOCALLY (razorpay_upi_
-    provider.py::RazorpayUPIProvider.force_capture) instead of calling
-    Razorpay's real capture API — for finishing a demo purchase whose
-    payment_id was never a real one to begin with (no live UPI payer
-    exists here), which a real capture() call will always, correctly,
-    reject. Requires record_authorization() to have already run (a real
-    or simulated payment.authorized webhook) — this does not fabricate an
-    authorization, only skips the network call for a capture that would
-    otherwise be structurally impossible to complete for real. The
-    resumed execution's own Payment step still calls capture() normally
-    on resume — it just hits the existing idempotent-replay path instead
-    of a real network request, since force_capture already set
-    authorized.captured. Caller still has to trigger the actual resume
-    (POST /prompt with meta.resume_execution_id) separately — this route
-    only prepares the provider-side state that resume needs."""
+    """Dev/demo-only: marks a reservation captured LOCALLY."""
+    from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+    if not insecure_dev_mode():
+        raise HTTPException(status_code=403, detail="simulate-capture is insecure-dev only")
     provider = get_default_provider()
     result = provider.force_capture(reservation_id)
     return {
@@ -200,37 +209,17 @@ async def simulate_capture(
 
 
 @router.post("/payments/{reservation_id}/dev-complete", tags=["Payments"])
+@idempotent("payments.dev_complete_payment")
 async def dev_complete_payment(
     reservation_id: str,
     request: Request,
     user_id: str = Depends(require_permission("perm-manage-actors")),
 ) -> dict[str, Any]:
     """Dev/demo-only: the one-call version of the real payment.authorized
-    webhook + simulate-capture + resume sequence, for finishing a demo UPI
-    purchase end-to-end with no live payer and no real webhook signature.
-
-    Real gap this closes: schedule_auto_approval() (razorpay_upi_
-    provider.py) — the only existing "auto-approve" mechanism — is honest
-    about NOT being able to make a real capture() succeed: it calls
-    resolve_and_resume_payment() with a fabricated payment_id, which
-    resumes the paused execution straight into a REAL Razorpay capture()
-    call using that fake id, which Razorpay correctly, always rejects (no
-    real UPI payer ever authorized it). simulate_capture (above) exists
-    for exactly this, but only does HALF the job on purpose (its own
-    docstring: "Caller still has to trigger the actual resume... this
-    route only prepares the provider-side state") — record_authorization()
-    still has to run FIRST, which (short of a real, signed webhook) only
-    schedule_auto_approval's fabricated-id path can currently trigger, and
-    that path resumes immediately, before force_capture ever gets a
-    chance to run. This route does the three real steps in the ORDER that
-    actually avoids a real network capture attempt: record a real
-    authorization for a fabricated payment_id (same convention
-    schedule_auto_approval already uses) -> force_capture BEFORE anything
-    resumes (so the resumed execution's own Payment step hits capture()'s
-    existing idempotent-replay path, not a real network call) -> resolve
-    + resume via the exact same resolve_and_resume_payment() a genuine
-    webhook uses.
-    """
+    webhook + simulate-capture + resume sequence."""
+    from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+    if not insecure_dev_mode():
+        raise HTTPException(status_code=403, detail="dev-complete is insecure-dev only")
     provider = get_default_provider()
     pending = load_pending_payment_by_reservation(reservation_id)
     if pending is None:

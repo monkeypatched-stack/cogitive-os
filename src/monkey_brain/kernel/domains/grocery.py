@@ -5680,6 +5680,63 @@ async def subscribe_actor_inbox(pr: Any, actor_id: str, actor_role: str) -> bool
 
     async def _on_message(msg: Any) -> None:
         import json
+        # Runtime Approval Gate: this NATS callback runs in its own task,
+        # not the asking actor's request context -- nothing previously
+        # bound a principal here, so any governed capability this handler
+        # goes on to execute (AnswerQuestionCapability, a delegated task's
+        # own capability steps) picked up whatever TrustedAuthEvidence
+        # happened to be ambient (the asker's, if the asyncio context was
+        # inherited, or unauthenticated_evidence() otherwise) instead of
+        # the RESPONDING actor's own identity. Same pattern as
+        # actor_runtime.py's per-Pod POST /execute entrypoint: the actor
+        # answering here authenticates as itself, never by inheriting (or
+        # merely trusting) whichever actor's message triggered this reply.
+        #
+        # SPIFFE/SPIRE workload identity layer: prefer a REAL, verified
+        # workload identity over the plain service-name evidence above.
+        # NO_UNAUTHENTICATED_AGENT_COMMUNICATION: when SPIFFE identity is
+        # required (production, or an explicit opt-in) and no real SVID is
+        # available, this communication is refused outright here -- the
+        # Communication Boundary itself -- rather than silently degrading
+        # to a self-asserted service name. This is the narrowest point
+        # every inbound actor-to-actor message (AskActor question,
+        # DelegateTask, broadcast) actually passes through, so it is the
+        # correct place to enforce this, not a downstream capability.
+        from src.monkey_brain.kernel.trusted_auth import (
+            bind_trusted_auth, evidence_for_service, evidence_from_spiffe, unauthenticated_evidence,
+        )
+        from src.monkey_brain.kernel.workload_identity import get_workload_identity_provider
+        from src.monkey_brain.kernel.production_gates import production_mode_enabled
+
+        def _spiffe_required_for_agent_communication() -> bool:
+            import os as _os
+            explicit = _os.getenv("COGNITIVEOS_REQUIRE_SPIFFE_AGENT_IDENTITY", "").strip().lower() in (
+                "true", "1", "yes", "on",
+            )
+            return explicit or production_mode_enabled()
+
+        identity = await get_workload_identity_provider().get_current_identity()
+        if identity is not None:
+            bind_trusted_auth(evidence_from_spiffe(identity))
+        elif _spiffe_required_for_agent_communication():
+            bind_trusted_auth(unauthenticated_evidence())
+            logger.warning(
+                "subscribe_actor_inbox: refusing message for actor %s -- "
+                "no verified SPIFFE workload identity and SPIFFE is required "
+                "(production mode or COGNITIVEOS_REQUIRE_SPIFFE_AGENT_IDENTITY)",
+                actor_id,
+            )
+            if msg.reply:
+                try:
+                    await msg.respond(json.dumps({
+                        "success": False,
+                        "error": "unauthenticated agent communication refused: no verified workload identity",
+                    }).encode())
+                except Exception:
+                    logger.debug("subscribe_actor_inbox: refusal reply failed for actor %s", actor_id, exc_info=True)
+            return
+        else:
+            bind_trusted_auth(evidence_for_service(f"actor-runtime:{actor_id}"))
         try:
             payload = json.loads(msg.data.decode())
         except Exception:
@@ -7220,7 +7277,24 @@ class OrderCreationCapability:
                     request_optimization = context.get("optimization", "cost")
 
                 substituted = False
-                fresh_catalog = open_products(kg, item_phrase=p.get("name", ""))
+                # Human approval / pause-resume: this self-healing
+                # substitution runs BEFORE OrderConfirmationCapability's own
+                # approval-gated substitution ever gets a chance to see the
+                # item was stale -- this loop silently resolved it first,
+                # every time, regardless of the SAME
+                # approval_required_for_substitution/"ask me before buying
+                # a substitute" contract OrderConfirmation already honors
+                # (test_human_approval.py's own real, live-only finding).
+                # When approval is required, skip the auto-substitute
+                # attempt here (falling through to backorder below) and
+                # leave `products[idx]` referencing the ORIGINAL item --
+                # OrderConfirmation's independent freshness re-check then
+                # discovers the same staleness itself and pauses for a real
+                # human decision, exactly as it already does when nothing
+                # upstream silently resolved it.
+                approval_required_here = bool(context.get("approval_required_for_substitution")) or \
+                    wants_approval_before_substitution(context.get("question", ""))
+                fresh_catalog = [] if approval_required_here else open_products(kg, item_phrase=p.get("name", ""))
                 remaining = [e for e in fresh_catalog if e.entity_id != pid]
                 candidates, _note = eligible_candidates(p.get("name", ""), remaining, lactose_free, rejected_keywords)
                 if candidates:

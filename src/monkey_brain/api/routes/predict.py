@@ -47,6 +47,7 @@ from src.monkey_brain.api.helpers.simulate_helpers import (
     store_bellman_transition,
 )
 from src.monkey_brain.api.common.db import get_db
+from src.monkey_brain.api.idempotency import idempotent
 from src.cortex.world_model_simulation import simulate, get_transition_values
 
 logger = logging.getLogger(__name__)
@@ -112,6 +113,7 @@ def _reject_ir_http(e: IntentIRRejected) -> None:
 # is that the LLMReasoningSolver internally reuses GraphGeneratorAgent — but that is the
 # solver's own business, not shared execution machinery.
 @router.post("/simulate", response_model=SimulateResponse)
+@idempotent("predict.run_simulation")
 async def run_simulation(
     payload:      PlanResponse,
     mongo_client=Depends(get_mongo_client),
@@ -275,6 +277,7 @@ async def run_simulation(
 
 
 @router.post("/compare", response_model=CompareResponseGateway)
+@idempotent("predict.compare_sim_vs_query")
 async def compare_sim_vs_query(
     payload:      PlanResponse,
     mongo_client=Depends(get_mongo_client),
@@ -450,6 +453,7 @@ async def _compare_pipeline(ir, payload, sim_runtime, cog_runtime, runtime, mong
 
 
 @router.post("/learn")
+@idempotent("predict.learn")
 async def learn(
     # These drive a nested `for batch: for epoch:` loop with NO await inside it, so the
     # whole thing runs to completion on the event loop. Unbounded, one request with
@@ -478,7 +482,8 @@ async def learn(
     except HTTPException:
         raise
     except ImportError:
-        logger.warning("Governance module not available — skipping governance check")
+        logger.error("Governance module not available — denying learn")
+        raise HTTPException(status_code=500, detail="Governance unavailable")
     except Exception as exc:
         logger.error("Governance check failed — denying learn: %s", exc)
         raise HTTPException(status_code=500, detail="Governance check failed")
@@ -790,6 +795,7 @@ async def list_transition_values(
 
 
 @router.post("/test-bellman-cycle", response_model=BellmanCycleResponse)
+@idempotent("predict.test_bellman_cycle")
 async def test_bellman_cycle(
     question:     str = "How many machines are in the system?",
     mongo_client=Depends(get_mongo_client),

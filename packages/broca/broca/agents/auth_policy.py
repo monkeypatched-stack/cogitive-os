@@ -235,7 +235,7 @@ class AuthPolicyAgent(BaseETASSAgent):
                     "resource": resource,
                     "dynamic": dynamic_ctx or {},
                 },
-                default_allow=True,
+                default_allow=False,
             )
             return result
         except ImportError:

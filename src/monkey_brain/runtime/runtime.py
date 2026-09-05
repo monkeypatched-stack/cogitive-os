@@ -119,6 +119,23 @@ class Runtime:
         state: ExecutionStateProtocol | None = None,
     ) -> ExecutionResult:
         """Execute a capability workload with validation."""
+        from src.monkey_brain.kernel.security_boundary import ensure_governed
+
+        async def _run() -> ExecutionResult:
+            return await self._execute_workload(workload, state)
+
+        return await ensure_governed(
+            "runtime.execute",
+            getattr(workload, "workload_id", "workload"),
+            _run,
+        )
+
+    async def _execute_workload(
+        self,
+        workload: WorkloadProtocol,
+        state: ExecutionStateProtocol | None = None,
+    ) -> ExecutionResult:
+        """Inner workload loop — entered via execute() after the commitment gate."""
         from src.monkey_brain.runtime.graph_validator import ExecutionGraphValidator
 
         start_time = time.monotonic()

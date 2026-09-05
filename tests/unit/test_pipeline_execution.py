@@ -167,10 +167,17 @@ class TestActionExecutor:
     @pytest.mark.asyncio
     async def test_execute_multiple_actions(self):
         executor = ActionExecutor(capability_bus=None)
+        # step_index must be distinct (as the real plan_compiler.py always
+        # sets it, step_index=i per compiled step) -- the executor's
+        # scheduling loop tracks "already scheduled" by step_index, and
+        # Action.step_index defaults to the shared sentinel -1 for every
+        # action that doesn't set one, which previously made it treat a2
+        # and a3 as "the same already-scheduled step" as a1 and stop after
+        # just one action.
         actions = (
-            Action(action_id="a1", capability="step1"),
-            Action(action_id="a2", capability="step2"),
-            Action(action_id="a3", capability="step3"),
+            Action(action_id="a1", capability="step1", step_index=0),
+            Action(action_id="a2", capability="step2", step_index=1),
+            Action(action_id="a3", capability="step3", step_index=2),
         )
         result = await executor.execute(actions)
         assert result.success_count == 3
@@ -225,7 +232,7 @@ class TestExecutionIntegration:
             # complete() was synchronous too, fixed in tests/conftest.py
             # this same pass), so _execute_plan's own empty-plan
             # early-return meant this method was never actually reached.
-            async def execute(self, actions, context=None):
+            async def execute(self, actions, context=None, *, execution_graph=None):
                 return ExecutionResult(
                     actions=tuple(
                         ActionOutcome(action_id=a.action_id, success=True, result={"mock": True})

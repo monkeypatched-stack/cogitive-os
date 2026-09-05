@@ -16,6 +16,88 @@ from uuid import uuid4
 
 logger = logging.getLogger("agentos.audit")
 
+SECURITY_CRITICAL_EVENT_TYPES = frozenset({
+    "execute", "governance", "security", "auth", "world_mutation",
+    "plan", "authorization", "policy", "login", "token", "delegation",
+})
+
+
+class AuditPersistenceError(RuntimeError):
+    """Raised when a security-critical audit record cannot be durably stored."""
+
+
+class MemoryDurableAuditStore:
+    """Process-local append-only store used when Mongo is unavailable in insecure-dev.
+
+    Not Redis. Survives AuditLog reconstruction in the same process; tests can
+    share the backing dict across 'restarts'.
+    """
+
+    def __init__(self, backing: dict[str, dict[str, Any]] | None = None) -> None:
+        self._docs: dict[str, dict[str, Any]] = backing if backing is not None else {}
+        self._lock = threading.Lock()
+
+    def append(self, tenant_id: str, event_type: str, payload: dict[str, Any]) -> None:
+        entry_id = str(payload.get("entry_id") or uuid4())
+        doc = {**payload, "tenant_id": tenant_id, "_immutable": True}
+        with self._lock:
+            if entry_id in self._docs:
+                raise AuditPersistenceError("audit records are append-only; refuse overwrite")
+            self._docs[entry_id] = doc
+
+    def find(self, runtime_id: str | None = None, event_type: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
+        with self._lock:
+            rows = list(self._docs.values())
+        if runtime_id:
+            rows = [r for r in rows if r.get("runtime_id") == runtime_id]
+        if event_type:
+            rows = [
+                r for r in rows
+                if r.get("event_type") in (event_type, f"audit.{event_type}")
+            ]
+        return rows[-limit:]
+
+
+class MongoAuditStore:
+    """Append-only Mongo collection — the production source of truth for audit."""
+
+    def __init__(self, collection: Any = None) -> None:
+        self._collection = collection
+
+    def _col(self) -> Any:
+        if self._collection is not None:
+            return self._collection
+        from src.monkey_brain.persistence.db_pool import get_db_pool
+        import os
+        pool = get_db_pool()
+        name = os.getenv("AUDIT_COLLECTION", "audit_records")
+        return pool.get_collection(name)
+
+    def ping(self) -> None:
+        col = self._col()
+        col.database.client.admin.command("ping")
+
+    def append(self, tenant_id: str, event_type: str, payload: dict[str, Any]) -> None:
+        entry_id = str(payload.get("entry_id") or uuid4())
+        col = self._col()
+        if col.find_one({"entry_id": entry_id}):
+            raise AuditPersistenceError("audit records are append-only; refuse overwrite")
+        col.insert_one({
+            **payload,
+            "tenant_id": tenant_id,
+            "_immutable": True,
+        })
+
+    def find(self, runtime_id: str | None = None, event_type: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
+        query: dict[str, Any] = {}
+        if runtime_id:
+            query["runtime_id"] = runtime_id
+        if event_type:
+            query["event_type"] = {"$in": [event_type, f"audit.{event_type}"]}
+        cursor = self._col().find(query).sort("timestamp", 1).limit(limit)
+        return list(cursor)
+
+
 
 @dataclass
 class AuditEntry:
@@ -58,6 +140,11 @@ class AuditEntry:
             "prev_hash": self.prev_hash, "entry_hash": self.entry_hash,
         }
 
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "AuditEntry":
+        known = {k: v for k, v in d.items() if k in cls.__dataclass_fields__}
+        return cls(**known)
+
 
 class AuditLog:
     """Append-only, tamper-evident audit log.
@@ -74,7 +161,7 @@ class AuditLog:
         self._last_hash: str = ""
         self._lock = threading.Lock()
         self._max = max_entries
-        self._store = None  # AppendOnlyLog for durability (optional)
+        self._store: Any = None  # AppendOnlyLog for durability (optional)
 
     def set_store(self, store: Any) -> None:
         """Attach an AppendOnlyLog for durable persistence."""
@@ -83,17 +170,30 @@ class AuditLog:
     def record(self, runtime_id: str, event_type: str, action: str,
                actor: str = "", target: str = "", outcome: str = "success",
                details: dict[str, Any] | None = None, proposal_id: str = "",
-               signature: str = "", world_revision: int = 0) -> AuditEntry:
-        """Append an audit entry.  Returns the entry with computed hash."""
+               signature: str = "", world_revision: int = 0,
+               *, critical: bool | None = None,
+               principal: str = "",
+               correlation_id: str = "",
+               policy_decision: str = "") -> AuditEntry:
+        """Append an audit entry. Security-critical types fail closed on persist error."""
+        is_critical = event_type in SECURITY_CRITICAL_EVENT_TYPES if critical is None else critical
+        details = dict(details or {})
+        if principal:
+            details.setdefault("principal", principal)
+        if correlation_id:
+            details.setdefault("correlation_id", correlation_id)
+        if policy_decision:
+            details.setdefault("policy_decision", policy_decision)
+
         with self._lock:
             if len(self._entries) >= self._max:
-                logger.warning("Audit log full — oldest entries will be rotated")
+                logger.warning("Audit log in-memory cache full — rotating cache only; durable store is source of truth")
                 self._entries = self._entries[-self._max // 2:]
 
             entry = AuditEntry(
                 runtime_id=runtime_id, event_type=event_type, action=action,
                 actor=actor, target=target, outcome=outcome,
-                details=details or {}, proposal_id=proposal_id,
+                details=details, proposal_id=proposal_id,
                 signature=signature, world_revision=world_revision,
                 prev_hash=self._last_hash,
             )
@@ -101,18 +201,41 @@ class AuditLog:
             self._last_hash = entry.entry_hash
             self._entries.append(entry)
 
-            # Persist to durable store if available
-            if self._store is not None:
-                try:
-                    self._store.append(
-                        tenant_id=runtime_id or "audit",
-                        event_type=f"audit.{event_type}",
-                        payload=entry.to_dict(),
-                    )
-                except Exception:
-                    logger.debug("record: suppressed exception", exc_info=True)  # Best-effort persistence
+        try:
+            store = self._ensure_store(required=is_critical)
+            store.append(
+                tenant_id=runtime_id or "audit",
+                event_type=f"audit.{event_type}",
+                payload=entry.to_dict(),
+            )
+        except AuditPersistenceError:
+            raise
+        except Exception as exc:
+            if is_critical:
+                raise AuditPersistenceError(
+                    f"failed to durably persist security-critical audit event {event_type}/{action}"
+                ) from exc
+            logger.error("audit persist failed for non-critical event_type=%s: %s", event_type, exc)
 
-            return entry
+        return entry
+
+    def _ensure_store(self, *, required: bool) -> Any:
+        if self._store is not None:
+            return self._store
+        try:
+            mongo = MongoAuditStore()
+            mongo.ping()
+            self._store = mongo
+            return mongo
+        except Exception as exc:
+            from src.monkey_brain.kernel.production_gates import insecure_dev_mode
+            if required and not insecure_dev_mode():
+                raise AuditPersistenceError(
+                    "durable audit store (MongoDB) is unavailable"
+                ) from exc
+            logger.warning("Mongo audit store unavailable (%s); using process-local durable cache", exc)
+            self._store = MemoryDurableAuditStore()
+            return self._store
 
     def verify_chain(self) -> tuple[bool, int]:
         """Verify the hash chain integrity.  Returns (valid, broken_at_index)."""
@@ -174,13 +297,58 @@ class AuditLog:
 
     def query(self, runtime_id: str | None = None, event_type: str | None = None,
               limit: int = 100) -> list[AuditEntry]:
-        """Query audit entries with optional filters."""
+        """Query audit entries with optional filters. Durable store is source of truth."""
+        if self._store is not None and hasattr(self._store, "find"):
+            try:
+                rows = self._store.find(runtime_id=runtime_id, event_type=event_type, limit=limit)
+                loaded: list[AuditEntry] = []
+                for row in rows:
+                    payload = row.get("payload") if isinstance(row.get("payload"), dict) else row
+                    try:
+                        loaded.append(AuditEntry.from_dict(payload))
+                    except Exception:
+                        continue
+                if loaded:
+                    return loaded[-limit:]
+            except Exception as exc:
+                logger.error("durable audit query failed, falling back to cache: %s", exc)
         result = self._entries
         if runtime_id:
             result = [e for e in result if e.runtime_id == runtime_id]
         if event_type:
             result = [e for e in result if e.event_type == event_type]
         return result[-limit:]
+
+    def record_policy_decision(self, runtime_id: str, action: str, decision: dict[str, Any]) -> AuditEntry:
+        """Record a governance policy decision to the durable audit log.
+        
+        Policy decisions are security-critical and fail closed on persist error.
+        
+        Args:
+            runtime_id: Runtime/principal ID making the request
+            action: Action being evaluated (e.g., "agent.propose_operation")
+            decision: Policy decision dict with keys: allowed, reason, approval_mode, 
+                     risk_level, policy_rule, violations, etc.
+        
+        Returns:
+            The AuditEntry that was recorded
+        """
+        return self.record(
+            runtime_id=runtime_id,
+            event_type="policy_decision",
+            action=action,
+            outcome="allow" if decision.get("allowed") else "deny",
+            details={
+                "approval_mode": decision.get("approval_mode", "AUTO_APPROVE"),
+                "approval_source": decision.get("approval_source", "POLICY_AUTOMATIC"),
+                "risk_level": decision.get("risk_level", "LOW"),
+                "policy_rule": decision.get("policy_rule", ""),
+                "requires_hitl": decision.get("requires_hitl", False),
+                "violations": decision.get("violations", []),
+                "reason": decision.get("reason", ""),
+            },
+            critical=True,  # Policy decisions are security-critical
+        )
 
     def count(self) -> int:
         return len(self._entries)

@@ -31,6 +31,7 @@ from src.monkey_brain.api.gateway_models import (
     ActorPermissionGrantRequest, ActorPermissionResponse, ActorPermissionsResponse,
     SocietyMembersResponse, SocietyCommunicationLogResponse,
 )
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.societies")
 router = APIRouter()
@@ -118,6 +119,7 @@ async def list_societies(
 
 
 @router.post("/societies", response_model=SocietyResponse, tags=["Societies"])
+@idempotent("societies.create_society")
 async def create_society(
     body: SocietyCreateRequest,
     request: Request,
@@ -180,6 +182,7 @@ async def search_societies(
 
 
 @router.post("/societies/activate", response_model=SocietyActivationResponse, tags=["Societies"])
+@idempotent("societies.activate_societies_for_goal")
 async def activate_societies_for_goal(
     body: SocietyActivationRequest,
     request: Request,
@@ -235,6 +238,7 @@ async def get_society(
 
 
 @router.delete("/societies/{society_id}", tags=["Societies"])
+@idempotent("societies.delete_society")
 async def delete_society(
     society_id: str,
     request: Request,
@@ -284,6 +288,7 @@ async def delete_society(
 
 
 @router.patch("/societies/{society_id}", response_model=SocietyResponse, tags=["Societies"])
+@idempotent("societies.update_society")
 async def update_society(
     society_id: str,
     body: SocietyUpdateRequest,
@@ -562,6 +567,7 @@ async def get_society_resources(
 
 
 @router.post("/societies/{society_id}/tick", tags=["Societies"])
+@idempotent("societies.tick_society")
 async def tick_society(
     society_id: str,
     request: Request,
@@ -591,6 +597,7 @@ async def tick_society(
 # ── Society Activation/Deactivation ────────────────────────────────────────
 
 @router.post("/societies/{society_id}/activate", tags=["Societies"])
+@idempotent("societies.activate_society")
 async def activate_society(
     society_id: str,
     request: Request,
@@ -607,6 +614,7 @@ async def activate_society(
 
 
 @router.post("/societies/{society_id}/deactivate", tags=["Societies"])
+@idempotent("societies.deactivate_society")
 async def deactivate_society(
     society_id: str,
     request: Request,
@@ -641,6 +649,7 @@ async def get_society_goals(
 
 
 @router.post("/societies/{society_id}/goals", response_model=SharedGoalsResponse, tags=["Societies"])
+@idempotent("societies.add_society_goal")
 async def add_society_goal(
     society_id: str,
     body: SharedGoalRequest,
@@ -660,6 +669,7 @@ async def add_society_goal(
 
 
 @router.delete("/societies/{society_id}/goals/{goal_index}", tags=["Societies"])
+@idempotent("societies.remove_society_goal")
 async def remove_society_goal(
     society_id: str,
     goal_index: int,
@@ -701,6 +711,7 @@ async def get_society_policies(
 
 
 @router.post("/societies/{society_id}/policies", response_model=PoliciesResponse, tags=["Societies"])
+@idempotent("societies.add_society_policy")
 async def add_society_policy(
     society_id: str,
     body: PolicyRequest,
@@ -748,6 +759,7 @@ async def get_society_governance_policies(
 
 
 @router.post("/societies/{society_id}/governance-policies", response_model=GovernancePolicyResponse, tags=["Societies"])
+@idempotent("societies.add_society_governance_policy")
 async def add_society_governance_policy(
     society_id: str,
     body: GovernancePolicyCreateRequest,
@@ -792,6 +804,7 @@ async def add_society_governance_policy(
 
 
 @router.delete("/societies/{society_id}/governance-policies/{policy_id}", tags=["Societies"])
+@idempotent("societies.remove_society_governance_policy")
 async def remove_society_governance_policy(
     society_id: str,
     policy_id: str,
@@ -838,6 +851,7 @@ async def get_actor_permissions(
 
 
 @router.post("/societies/{society_id}/permissions", response_model=ActorPermissionResponse, tags=["Societies"])
+@idempotent("societies.grant_actor_permission")
 async def grant_actor_permission(
     society_id: str,
     body: ActorPermissionGrantRequest,
@@ -861,6 +875,7 @@ async def grant_actor_permission(
 
 
 @router.delete("/societies/{society_id}/permissions", tags=["Societies"])
+@idempotent("societies.revoke_actor_permission")
 async def revoke_actor_permission(
     society_id: str,
     actor_id: str,
@@ -883,6 +898,7 @@ async def revoke_actor_permission(
 
 
 @router.delete("/societies/{society_id}/policies/{policy_index}", tags=["Societies"])
+@idempotent("societies.remove_society_policy")
 async def remove_society_policy(
     society_id: str,
     policy_index: int,

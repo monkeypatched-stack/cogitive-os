@@ -130,7 +130,7 @@ cogctl get actors   # COGCTL_API_URL=http://<kong>/api/v1/agentos
 | Area | Risk | Status |
 |------|------|--------|
 | Multi-replica K8s soak & chaos | High | `replicas: 1` in manifests; no split-brain chaos suite in CI |
-| Exactly-once external side effects | High | Capabilities at-least-once; callers must be idempotent |
+| At-least-once execution attempts require idempotent effects | High | Capabilities at-least-once, never exactly-once; callers must be idempotent |
 | ADR-020 auth/payment P0s | High | Wallet CAS races, checkpoint-resume traps — see `docs/adr/020-production-hardening-audit.md` |
 | `world.py` vs knowledge_graph dual authority | Medium | Production blocks SharedWorld CRUD only |
 | TransitionGate coverage | Medium | Not all grocery capabilities wired |

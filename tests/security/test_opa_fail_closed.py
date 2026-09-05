@@ -100,9 +100,15 @@ class TestOpaFailClosed:
         assert result["source"] == "fallback"
 
     @pytest.mark.asyncio
+    async def test_opa_url_unset_fails_closed_by_default(self, monkeypatch):
+        import cerebellum.capabilities.security.opa_client as m
+        monkeypatch.setattr(m, "_OPA_URL", "")
+        result = await m.evaluate_full("agentos/allow", {})
+        assert result["allowed"] is False
+        assert result["source"] == "skip"
+
+    @pytest.mark.asyncio
     async def test_opa_url_unset_stays_fail_open_explicit_dev_mode(self, monkeypatch):
-        """The one case that legitimately stays fail-open: no policy
-        layer configured at all, not a runtime failure of one."""
         import cerebellum.capabilities.security.opa_client as m
         monkeypatch.setattr(m, "_OPA_URL", "")
         result = await m.evaluate_full("agentos/allow", {}, default_allow=True)

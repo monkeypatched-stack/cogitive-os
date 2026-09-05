@@ -30,6 +30,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from src.monkey_brain.api.dependencies import require_self_or_permission
+from src.monkey_brain.api.idempotency import idempotent
 
 logger = logging.getLogger("agentos.gateway.edge")
 router = APIRouter()
@@ -49,6 +50,7 @@ class EdgeSyncRequest(BaseModel):
 
 
 @router.post("/edge/{actor_id}/sync", tags=["Edge"])
+@idempotent("edge.edge_sync")
 async def edge_sync(
     actor_id: str,
     body: EdgeSyncRequest,

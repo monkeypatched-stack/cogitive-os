@@ -177,16 +177,16 @@ class RazorpayUPIProvider(PaymentProvider):
                         "amount": amount_paise,
                         "currency": self._currency,
                         "receipt": receipt,
-                        # payment_capture=0: authorize-only (manual
-                        # capture) — this IS the "reserve" half of
-                        # reserve-then-capture; without it Razorpay
-                        # auto-captures the instant the payer approves,
-                        # collapsing the two phases this whole interface
-                        # exists to keep separate.
                         "payment_capture": 0,
                         "notes": {"payer_ref": payer_ref, "idempotency_key": idempotency_key},
                     },
                 )
+        except httpx.TimeoutException as exc:
+            logger.warning("RazorpayUPIProvider.reserve: timeout after possible submission: %s", exc)
+            return ReservationResult(False, "", ReservationStatus.UNKNOWN, amount, f"order creation outcome unknown: {exc}")
+        except httpx.ConnectError as exc:
+            logger.warning("RazorpayUPIProvider.reserve: request failed: %s", exc)
+            return ReservationResult(False, "", ReservationStatus.FAILED, amount, f"order creation request failed: {exc}")
         except Exception as exc:
             logger.warning("RazorpayUPIProvider.reserve: request failed: %s", exc)
             return ReservationResult(False, "", ReservationStatus.FAILED, amount, f"order creation request failed: {exc}")
@@ -266,6 +266,9 @@ class RazorpayUPIProvider(PaymentProvider):
                     auth=self._auth(),
                     json={"amount": amount_paise, "currency": self._currency},
                 )
+        except httpx.TimeoutException as exc:
+            logger.warning("RazorpayUPIProvider.capture: timeout after possible submission: %s", exc)
+            return CaptureResult(False, reservation_id, ReservationStatus.UNKNOWN, 0.0, f"capture outcome unknown: {exc}")
         except Exception as exc:
             logger.warning("RazorpayUPIProvider.capture: request failed: %s", exc)
             return CaptureResult(False, reservation_id, ReservationStatus.FAILED, 0.0, f"capture request failed: {exc}")
