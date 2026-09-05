@@ -25,6 +25,7 @@ logger = logging.getLogger("agentos.security_operation")
 
 class SecurityOperationState(str, Enum):
     AUTHORIZED = "authorized"
+    AWAITING_APPROVAL = "awaiting_approval"  # Queued for human approval
     AUDIT_INTENT_RECORDED = "audit_intent_recorded"
     EXECUTING = "executing"
     SUCCEEDED = "succeeded"

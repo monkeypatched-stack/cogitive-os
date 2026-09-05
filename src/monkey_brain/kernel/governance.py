@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 import time
+from src.monkey_brain.kernel.audit import get_audit_log
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -103,6 +104,27 @@ class GovernanceEngine:
     def register_charter(self, charter: RuntimeCharter) -> None:
         self._charters[charter.runtime_id] = charter
 
+    def _record_and_return_decision(self, runtime_id: str, action: str, decision: dict[str, Any]) -> dict[str, Any]:
+        """Helper: record policy decision to audit log and in-memory decisions, then return.
+        
+        This ensures all policy decisions are persisted durably, even early-return error paths.
+        """
+        self._decisions.append({
+            "runtime_id": runtime_id, "action": action, **decision,
+            "timestamp": time.time(),
+        })
+        if len(self._decisions) > self._max_decisions:
+            self._decisions = self._decisions[-self._max_decisions:]
+        
+        # Persist to durable audit log (Task 2: enforce gap fix)
+        try:
+            get_audit_log().record_policy_decision(runtime_id, action, decision)
+        except Exception as exc:
+            # Log but don't fail — audit persistence failure shouldn't block policy evaluation
+            logger.error("Failed to persist policy decision to audit log: %s", exc)
+        
+        return decision
+    
     def get_charter(self, runtime_id: str) -> RuntimeCharter | None:
         return self._charters.get(runtime_id)
 
@@ -117,8 +139,19 @@ class GovernanceEngine:
         """Evaluate whether an action is permitted, via OPA's real
         opa/policies/agentos_governance.rego policy (package agentos.governance).
 
-        Returns {"allowed": bool, "reason": str, "violations": list}
-        (same shape every existing caller already reads).
+        Returns:
+            {
+                "allowed": bool,
+                "reason": str,
+                "violations": list,
+                "approval_mode": str,  # AUTO_APPROVE | HUMAN_APPROVAL_REQUIRED | DENY
+                "approval_source": str,  # POLICY_AUTOMATIC | HUMAN
+                "risk_level": str,  # LOW | MEDIUM | HIGH | CRITICAL
+                "policy_rule": str,  # OPA rule that matched
+                "requires_hitl": bool,  # Whether human-in-the-loop is required
+            }
+
+        All fields are present in response; new fields reflect OPA output or sensible defaults.
 
         default_allow=True: when OPA_URL is unset or OPA is unreachable,
         this behaves exactly like the old "not configured" case — allow,
@@ -144,24 +177,41 @@ class GovernanceEngine:
                 "allowed": False,
                 "reason": "opa_required_but_not_configured",
                 "violations": [{"rule": "opa_required_but_not_configured", "type": "production_gate"}],
+                "approval_mode": "DENY",
+                "approval_source": "POLICY_AUTOMATIC",
+                "risk_level": "CRITICAL",
+                "policy_rule": "opa_required_but_not_configured",
+                "requires_hitl": False,
             }
-            self._decisions.append({
-                "runtime_id": runtime_id, "action": action, **decision,
-                "timestamp": time.time(),
-            })
-            return decision
+            return self._record_and_return_decision(runtime_id, action, decision)
         try:
             from services.common.opa import evaluate_full
         except Exception as exc:
             if insecure_dev_mode() and not require_opa():
                 logger.warning("Governance: OPA client unavailable, allowing (insecure-dev): %s", exc)
-                return {"allowed": True, "reason": "opa_client_unavailable", "violations": []}
+                decision = {
+                    "allowed": True,
+                    "reason": "opa_client_unavailable",
+                    "violations": [],
+                    "approval_mode": "AUTO_APPROVE",
+                    "approval_source": "POLICY_AUTOMATIC",
+                    "risk_level": "LOW",
+                    "policy_rule": "default_allow_insecure_dev",
+                    "requires_hitl": False,
+                }
+                return self._record_and_return_decision(runtime_id, action, decision)
             logger.error("Governance: OPA client unavailable, denying: %s", exc)
-            return {
+            decision = {
                 "allowed": False,
                 "reason": "opa_client_unavailable",
                 "violations": [{"rule": "opa_unavailable", "type": "fail_closed"}],
+                "approval_mode": "DENY",
+                "approval_source": "POLICY_AUTOMATIC",
+                "risk_level": "CRITICAL",
+                "policy_rule": "opa_unavailable",
+                "requires_hitl": False,
             }
+            return self._record_and_return_decision(runtime_id, action, decision)
 
         input_data = {"runtime_id": runtime_id, "action": action, "context": ctx, "auth": trusted}
         try:
@@ -169,19 +219,38 @@ class GovernanceEngine:
         except Exception as exc:
             if insecure_dev_mode() and not require_opa():
                 logger.warning("Governance: OPA evaluation failed, allowing (insecure-dev): %s", exc)
-                return {"allowed": True, "reason": "opa_evaluation_failed", "violations": []}
+                decision = {
+                    "allowed": True,
+                    "reason": "opa_evaluation_failed",
+                    "violations": [],
+                    "approval_mode": "AUTO_APPROVE",
+                    "approval_source": "POLICY_AUTOMATIC",
+                    "risk_level": "LOW",
+                    "policy_rule": "default_allow_insecure_dev",
+                    "requires_hitl": False,
+                }
+                return self._record_and_return_decision(runtime_id, action, decision)
             logger.error("Governance: OPA evaluation failed, denying: %s", exc)
-            return {
+            decision = {
                 "allowed": False,
                 "reason": "opa_unavailable",
                 "violations": [{"rule": "opa_unavailable", "type": "fail_closed"}],
+                "approval_mode": "DENY",
+                "approval_source": "POLICY_AUTOMATIC",
+                "risk_level": "CRITICAL",
+                "policy_rule": "opa_unavailable",
+                "requires_hitl": False,
             }
+            return self._record_and_return_decision(runtime_id, action, decision)
 
         allowed = bool(result.get("allowed", False))
         if result.get("source") == "skip":
             if require_opa() or not insecure_dev_mode():
                 allowed = False
                 reason = "opa_required_but_not_configured"
+                approval_mode = "DENY"
+                risk_level = "CRITICAL"
+                policy_rule = "opa_required_but_not_configured"
             else:
                 global _UNCONFIGURED_WARNED
                 if not _UNCONFIGURED_WARNED:
@@ -192,14 +261,30 @@ class GovernanceEngine:
                     )
                 reason = "governance_not_configured"
                 allowed = True
+                approval_mode = "AUTO_APPROVE"
+                risk_level = "LOW"
+                policy_rule = "default_allow_insecure_dev"
         else:
             reason = "" if allowed else (result.get("reason") or "denied by policy")
+            # Extract approval decision from OPA result
+            approval_mode = result.get("approval_mode", "AUTO_APPROVE" if allowed else "DENY")
+            risk_level = result.get("risk_level", "LOW" if allowed else "HIGH")
+            policy_rule = result.get("policy_rule", reason or "policy_evaluation")
 
-        decision = {"allowed": allowed, "reason": reason, "violations": [] if allowed else [{"rule": reason, "type": "opa"}]}
-        self._decisions.append({"runtime_id": runtime_id, "action": action, **decision, "timestamp": time.time()})
-        if len(self._decisions) > self._max_decisions:
-            self._decisions = self._decisions[-self._max_decisions:]
-        return decision
+        requires_hitl = approval_mode == "HUMAN_APPROVAL_REQUIRED"
+        approval_source = "POLICY_AUTOMATIC"  # OPA-determined approvals are always policy-automatic
+
+        decision = {
+            "allowed": allowed,
+            "reason": reason,
+            "violations": [] if allowed else [{"rule": policy_rule, "type": "opa"}],
+            "approval_mode": approval_mode,
+            "approval_source": approval_source,
+            "risk_level": risk_level,
+            "policy_rule": policy_rule,
+            "requires_hitl": requires_hitl,
+        }
+        return self._record_and_return_decision(runtime_id, action, decision)
 
     def audit_decisions(self, runtime_id: str | None = None, limit: int = 100) -> list[dict]:
         """Return recent governance decisions, optionally filtered by runtime."""

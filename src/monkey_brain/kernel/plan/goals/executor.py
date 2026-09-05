@@ -269,9 +269,31 @@ class GoalExecutor:
                         )
                     else:
                         exec_result = await _mutate()
-                except (SecurityBoundaryDenied, AuditPersistenceError) as exc:
+                except SecurityBoundaryDenied as exc:
                     logger.error("run=%r governed mutation denied: %s", run_id, exc, extra=log_extra)
                     return (f"Error executing goal {goal.name}: {exc}", [], [], False)
+                except AuditPersistenceError as exc:
+                    logger.error("run=%r audit persistence error: %s", run_id, exc, extra=log_extra)
+                    return (f"Error executing goal {goal.name}: audit failure", [], [], False)
+                except Exception as hitl_exc:
+                    # Check if this is a HumanApprovalRequired exception (HITL flow)
+                    if hitl_exc.__class__.__name__ == "HumanApprovalRequired":
+                        logger.info(
+                            "run=%r operation requires human approval (approval_id=%s)",
+                            run_id,
+                            getattr(hitl_exc, "approval_id", "unknown"),
+                            extra=log_extra,
+                        )
+                        # Return special marker that caller can use to poll for approval
+                        approval_id = getattr(hitl_exc, "approval_id", "")
+                        operation_id = getattr(hitl_exc, "operation_id", "")
+                        return (
+                            f"Operation {operation_id} is awaiting human approval. "
+                            f"Use approval_id={approval_id} to track status.",
+                            [], [], False,
+                        )
+                    # Not a HITL exception, re-raise
+                    raise
 
                 result = (
                     exec_result.final_state.get("answer", f"{goal.name} executed successfully"),

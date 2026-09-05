@@ -319,6 +319,37 @@ class AuditLog:
             result = [e for e in result if e.event_type == event_type]
         return result[-limit:]
 
+    def record_policy_decision(self, runtime_id: str, action: str, decision: dict[str, Any]) -> AuditEntry:
+        """Record a governance policy decision to the durable audit log.
+        
+        Policy decisions are security-critical and fail closed on persist error.
+        
+        Args:
+            runtime_id: Runtime/principal ID making the request
+            action: Action being evaluated (e.g., "agent.propose_operation")
+            decision: Policy decision dict with keys: allowed, reason, approval_mode, 
+                     risk_level, policy_rule, violations, etc.
+        
+        Returns:
+            The AuditEntry that was recorded
+        """
+        return self.record(
+            runtime_id=runtime_id,
+            event_type="policy_decision",
+            action=action,
+            outcome="allow" if decision.get("allowed") else "deny",
+            details={
+                "approval_mode": decision.get("approval_mode", "AUTO_APPROVE"),
+                "approval_source": decision.get("approval_source", "POLICY_AUTOMATIC"),
+                "risk_level": decision.get("risk_level", "LOW"),
+                "policy_rule": decision.get("policy_rule", ""),
+                "requires_hitl": decision.get("requires_hitl", False),
+                "violations": decision.get("violations", []),
+                "reason": decision.get("reason", ""),
+            },
+            critical=True,  # Policy decisions are security-critical
+        )
+
     def count(self) -> int:
         return len(self._entries)
 

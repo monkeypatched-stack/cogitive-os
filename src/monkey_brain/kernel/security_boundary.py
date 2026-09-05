@@ -84,6 +84,19 @@ class SecurityBoundaryDenied(Exception):
         super().__init__(reason)
 
 
+class HumanApprovalRequired(Exception):
+    """Raised when an operation requires human approval before execution.
+    
+    The operation is NOT failed — it is queued for HITL (human-in-the-loop).
+    The caller should use the approval_id to poll for approval status.
+    """
+
+    def __init__(self, operation_id: str, approval_id: str) -> None:
+        self.operation_id = operation_id
+        self.approval_id = approval_id
+        super().__init__(f"Operation {operation_id} requires human approval (approval_id={approval_id})")
+
+
 def pipeline_stages() -> list[str]:
     current = _pipeline.get()
     if current:
@@ -445,6 +458,26 @@ async def _execute_attempt_pipeline(
         evidence=evidence, action=action, resource=resource, operation_id=op_id,
         attempt=attempt, event="submitted",
     )
+    
+    # NEW: Approval validation gate — check that operation is approved before mutation
+    from src.monkey_brain.kernel.approval import validate_approval_for_execution
+    approval_mode = policy.get("approval_mode", "AUTO_APPROVE")
+    is_approved, approval_reason = validate_approval_for_execution(op_id, approval_mode, action, resource)
+    if not is_approved:
+        logger.warning(
+            "Operation %s blocked at approval gate: %s (approval_mode=%s)",
+            op_id,
+            approval_reason,
+            approval_mode,
+        )
+        transition_attempt(attempt.execution_attempt_id, ExecutionAttemptState.FAILED)
+        ledger.transition(op_id, SecurityOperationState.FAILED)
+        raise SecurityBoundaryDenied(
+            f"operation blocked at approval gate: {approval_reason}",
+            stage="APPROVAL_VALIDATION",
+        )
+    _note("APPROVAL_VALIDATED")
+    
     try:
         result = mutate()
         if hasattr(result, "__await__"):
@@ -585,6 +618,12 @@ async def run_governed_mutation(
     external effect honors a stable idempotency key end to end; it is not
     itself trusted as retry authorization — retry_execution_attempt()
     requires its own explicit idempotent_effect argument.
+    
+    APPROVAL GATE (NEW):
+    After authorization, creates an ApprovalArtifact reflecting the policy decision.
+    AUTO_APPROVE operations proceed directly to mutation.
+    HUMAN_APPROVAL_REQUIRED operations are blocked here (ValidationError raised).
+    DENY operations are blocked here (ValidationError raised).
     """
     from src.monkey_brain.kernel.security_operation import (
         DuplicateSecurityOperation,
@@ -593,6 +632,10 @@ async def run_governed_mutation(
         classify_transaction,
         get_operation_ledger,
         new_operation_id,
+    )
+    from src.monkey_brain.kernel.approval import (
+        create_approval_artifact_from_policy,
+        get_approval_store,
     )
 
     if commitment_active():
@@ -615,6 +658,90 @@ async def run_governed_mutation(
             if require_opa() or not insecure_dev_mode():
                 policy = await _authorize(action, resource, extra)
             _note("AUTHZ")
+        
+        # NEW: Generate approval artifact from policy decision
+        approval_artifact = create_approval_artifact_from_policy(
+            operation_id=op_id,
+            action=action,
+            resource=resource,
+            policy_decision=policy,
+            requesting_principal=evidence.principal_id,
+            operation_class="mutation",
+        )
+        
+        # CRITICAL: Prevent self-approval at artifact creation time
+        # If the approving_principal is set (non-empty) and equals requesting_principal, reject
+        from src.monkey_brain.kernel.approval import prevent_self_approval
+        is_not_self_approval, self_approval_reason = prevent_self_approval(
+            approval_artifact.requesting_principal,
+            approval_artifact.approving_principal,
+        )
+        if not is_not_self_approval:
+            logger.warning(
+                "Operation %s rejected at authorization stage: %s",
+                op_id,
+                self_approval_reason,
+            )
+            raise SecurityBoundaryDenied(
+                self_approval_reason,
+                stage="AUTHORIZATION",
+            )
+        
+        # Store approval artifact
+        store = get_approval_store()
+        if hasattr(store, 'create'):
+            # Support both sync (ApprovalArtifactStore) and async (MongoApprovalArtifactStore)
+            result = store.create(approval_artifact)
+            if hasattr(result, "__await__"):
+                approval_artifact = await result  # type: ignore
+        
+        _note("APPROVAL_ARTIFACT_CREATED")
+        
+        # Check approval mode: handle based on approval decision
+        if approval_artifact.approval_mode.value == "DENY":
+            logger.warning(
+                "Operation %s DENIED by policy",
+                op_id,
+            )
+            raise SecurityBoundaryDenied(
+                "operation denied by policy",
+                stage="APPROVAL",
+            )
+        elif approval_artifact.approval_mode.value == "HUMAN_APPROVAL_REQUIRED":
+            # Don't block here — operation is queued for human approval
+            # Return special marker so caller can know to wait for HITL
+            logger.info(
+                "Operation %s queued for human approval (approval_id=%s)",
+                op_id,
+                approval_artifact.approval_id,
+            )
+            _note("APPROVAL_PENDING_HUMAN")
+            # Store the operation in ledger as AWAITING_APPROVAL
+            # The caller will get back the approval_id to poll
+            try:
+                ledger.create(SecurityOperation(
+                    operation_id=op_id,
+                    action=action,
+                    resource=resource,
+                    state=SecurityOperationState.AWAITING_APPROVAL,
+                    transaction_class=tx_class,
+                    principal_id=evidence.principal_id,
+                    mfa_status=evidence.mfa_status,
+                    policy_decision=f"human_approval_required:{approval_artifact.approval_id}",
+                    idempotency_key=str((extra or {}).get("idempotency_key") or op_id),
+                ))
+            except DuplicateSecurityOperation as exc:
+                raise SecurityBoundaryDenied(
+                    f"duplicate operation {exc.operation_id}",
+                    stage="IDEMPOTENCY",
+                ) from exc
+            # Raise exception with approval_id embedded so caller can retrieve it
+            raise HumanApprovalRequired(
+                operation_id=op_id,
+                approval_id=approval_artifact.approval_id,
+            )
+        # else: AUTO_APPROVE — continue to execution
+        
         try:
             ledger.create(SecurityOperation(
                 operation_id=op_id,
@@ -874,3 +1001,20 @@ async def ensure_governed(
     return await run_governed_mutation(
         action=action, resource=resource, mutate=effect, extra=extra, skip_authz=skip_authz,
     )
+
+
+
+def reset_governed_pipeline_for_tests() -> None:
+    """Reset the governance pipeline for testing.
+    
+    This clears the context variables used for pipeline tracking.
+    Only for use in tests.
+    """
+    global _LAST_PIPELINE
+    _LAST_PIPELINE.clear()
+    try:
+        _pipeline.set(None)
+        _commitment.set(False)
+        _privileged_infra.set(False)
+    except:
+        pass
