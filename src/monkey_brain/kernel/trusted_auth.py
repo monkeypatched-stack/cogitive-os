@@ -37,6 +37,25 @@ UNTRUSTED_SECURITY_SIGNAL_KEYS = frozenset({
     "opa_allow",
     "audit_authority",
     "execution_authority",
+    # SPIFFE/SPIRE workload identity layer: an agent claiming its own
+    # spiffe_id/trust_domain/verified flag in message content must never
+    # be treated as if mTLS/the Workload API actually attested it -- see
+    # kernel/workload_identity.py's module docstring and
+    # evidence_from_spiffe() below, the only sanctioned construction path.
+    "spiffe_id",
+    "spiffe_verified",
+    "sender_spiffe_id",
+    "recipient_spiffe_id",
+    # Portable Delegation: an agent's own claim about what authority it
+    # was delegated (or that it holds delegation at all) must never reach
+    # OPA as if trusted -- only build_opa_input's `verified_delegation`
+    # keyword (populated exclusively from a chain that has already passed
+    # kernel/delegation.py::verify_delegation_chain) may set the
+    # `delegation` input key. See kernel/delegation.py::
+    # to_opa_delegation_context, the only sanctioned constructor for it.
+    "delegation",
+    "delegation_id",
+    "delegation_chain",
 })
 
 _current: ContextVar["TrustedAuthEvidence | None"] = ContextVar("trusted_auth", default=None)
@@ -51,6 +70,19 @@ class TrustedAuthEvidence:
     mfa_status: str
     session_id: str = ""
     permissions: tuple[str, ...] = ()
+    spiffe_id: str = ""
+    """The verified SPIFFE URI (spiffe://<trust-domain>/agent/<id>) this
+    evidence is bound to, when the principal authenticated via a real
+    workload identity (kernel/workload_identity.py). "" when this evidence
+    came from a non-SPIFFE source (human JWT, X-User-ID dev bypass,
+    internal-service-token) -- absence here is not itself a security
+    problem, most existing evidence legitimately has none."""
+    spiffe_verified: bool = False
+    """True only when spiffe_id came from a real X.509-SVID (WorkloadIdentity.
+    is_cryptographically_verified), never from the guarded local-dev
+    SPIFFE_ID env override. A caller that specifically needs cryptographic
+    proof (not just "some spiffe_id string is present") must check this,
+    not merely `bool(spiffe_id)`."""
 
     def mfa_satisfied(self) -> bool:
         return self.mfa_status == MFA_SATISFIED
@@ -70,6 +102,8 @@ class TrustedAuthEvidence:
             "mfa_satisfied": status == MFA_SATISFIED,
             "session_id": self.session_id,
             "agent_attested_mfa": False,
+            "spiffe_id": self.spiffe_id,
+            "spiffe_verified": self.spiffe_verified,
         }
 
 
@@ -113,6 +147,33 @@ def evidence_for_service(principal_id: str) -> TrustedAuthEvidence:
         principal_id=principal_id,
         principal_type="service",
         mfa_status=MFA_NOT_REQUIRED,
+    )
+
+
+def evidence_from_spiffe(identity: "Any") -> TrustedAuthEvidence:
+    """The ONLY sanctioned way to bind a SPIFFE workload identity into
+    trusted evidence. `identity` must be a kernel.workload_identity.
+    WorkloadIdentity -- constructed exclusively from WorkloadIdentityProvider.
+    get_current_identity(), never from request JSON, a message's claimed
+    sender, an agent_id string, or LLM output (see that module's own
+    docstring). principal_id is the full SPIFFE URI itself, not a
+    human-friendly name parsed out of it -- callers that want the short
+    agent-id component can use WorkloadIdentity.path_segment().
+
+    Deliberately typed as Any here (not WorkloadIdentity) to avoid a
+    circular import (workload_identity.py has no need to import
+    trusted_auth.py back) -- duck-types on spiffe_id/is_cryptographically_
+    verified, both real fields/properties whatever WorkloadIdentity's
+    module defines.
+    """
+    return TrustedAuthEvidence(
+        authenticated=True,
+        token_valid=True,
+        principal_id=identity.spiffe_id,
+        principal_type="service",
+        mfa_status=MFA_NOT_REQUIRED,
+        spiffe_id=identity.spiffe_id,
+        spiffe_verified=bool(getattr(identity, "is_cryptographically_verified", False)),
     )
 
 

@@ -98,3 +98,25 @@ data:
   # change. See docs/KUBERNETES_PROVISIONER_ENABLEMENT.md and
   # src/monkey_brain/kernel/society/kubernetes_provisioner.py for details.
   KUBERNETES_PROVISIONING_ENABLED: "false"
+  # SPIFFE/SPIRE workload identity (kernel/workload_identity.py). This
+  # trust domain MUST match deploy/k8s/spire-server.yaml's ConfigMap
+  # (one value, not duplicated/hard-coded per subsystem) and MUST differ
+  # from any local-dev trust domain (docker-compose.spire.yml) -- see
+  # docs/SPIFFE_SPIRE_IDENTITY.md.
+  SPIFFE_TRUST_DOMAIN: "cognitiveos.production"
+  # Empty here deliberately: this ConfigMap alone does not turn on real
+  # SPIFFE identity for agentos/actor pods -- that also requires the
+  # spire-agent socket volume mount + SPIFFE_ENDPOINT_SOCKET env var this
+  # repo does NOT add automatically to deployment.yaml/actor-deployment.yaml
+  # (see deploy/k8s/spire-agent.yaml's trailing comment for why, and the
+  # exact diff to apply when you're ready to enable it).
+  SPIFFE_ENDPOINT_SOCKET: ""
+  # Fail loudly instead of silently degrading to self-asserted agent
+  # identity once SPIRE is actually deployed and wired -- see
+  # kernel/domains/grocery.py's Communication Boundary and
+  # actor_runtime.py's /execute for the enforcement points. Non-negotiable
+  # rule 12 already enforces this unconditionally under
+  # COGNITIVEOS_PRODUCTION_MODE=true (set above) regardless of this value;
+  # it exists so an operator can also verify the refusal path before
+  # relying on production mode alone.
+  COGNITIVEOS_REQUIRE_SPIFFE_AGENT_IDENTITY: "false"

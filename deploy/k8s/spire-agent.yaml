@@ -1,0 +1,139 @@
+# SPIRE Agent — Kubernetes DaemonSet (one per node, standard SPIRE
+# architecture). Exposes the Workload API over a hostPath Unix socket that
+# every Pod on that node mounts read-only -- this is how
+# kernel/workload_identity.py::WorkloadIdentityProvider actually fetches a
+# real X.509-SVID in production, with zero certificate files ever touching
+# a ConfigMap, Secret, or the container image (Non-negotiable rule 3).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spire-agent
+  namespace: monkeybrain
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spire-agent-cluster-role
+rules:
+  # k8s workload attestor: to bind a calling Pod's UID (from the Workload
+  # API's kernel-reported PID -> cgroup -> Pod UID lookup) to its real
+  # namespace/service-account/labels, the agent must be able to read Pod
+  # objects on its own node -- the standard, supported k8s WorkloadAttestor
+  # mechanism (Phase 4), not a custom attestation protocol.
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: spire-agent-cluster-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: spire-agent
+    namespace: monkeybrain
+roleRef:
+  kind: ClusterRole
+  name: spire-agent-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spire-agent-config
+  namespace: monkeybrain
+data:
+  agent.conf: |
+    agent {
+      data_dir = "/run/spire"
+      log_level = "INFO"
+      server_address = "spire-server"
+      server_port = "8081"
+      trust_domain = "cognitiveos.production"
+      socket_path = "/run/spire/sockets/agent.sock"
+    }
+    plugins {
+      NodeAttestor "k8s_psat" {
+        plugin_data {
+          cluster = "cognitiveos"
+        }
+      }
+      KeyManager "memory" {
+        plugin_data {}
+      }
+      # k8s: matches a calling workload against selectors like
+      # k8s:ns:monkeybrain, k8s:sa:cognitiveos-actor-provisioner, or
+      # k8s:pod-label:actor-id:<value> -- the LAST one is what lets each
+      # rendered actor-deployment.yaml Deployment get its OWN SPIFFE
+      # identity from its EXISTING actor-id pod label, with zero changes
+      # to that Deployment template (Phase 4: narrowest selector, no two
+      # actors share an identity, reusing what already exists rather than
+      # requiring a new ServiceAccount per actor).
+      WorkloadAttestor "k8s" {
+        plugin_data {
+          skip_kubelet_verification = true
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: spire-agent
+  namespace: monkeybrain
+  labels:
+    app: spire-agent
+    component: workload-identity
+spec:
+  selector:
+    matchLabels:
+      app: spire-agent
+  template:
+    metadata:
+      labels:
+        app: spire-agent
+    spec:
+      serviceAccountName: spire-agent
+      hostPID: true
+      containers:
+        - name: spire-agent
+          image: ghcr.io/spiffe/spire-agent:1.9.6
+          imagePullPolicy: IfNotPresent
+          args: ["-config", "/run/spire/config/agent.conf"]
+          volumeMounts:
+            - name: spire-config
+              mountPath: /run/spire/config
+              readOnly: true
+            - name: spire-agent-socket
+              mountPath: /run/spire/sockets
+            - name: spire-token
+              mountPath: /var/run/secrets/tokens
+          env:
+            - name: PATH
+              value: "/opt/spire/bin:/bin"
+      volumes:
+        - name: spire-config
+          configMap:
+            name: spire-agent-config
+        - name: spire-agent-socket
+          hostPath:
+            path: /run/spire/sockets
+            type: DirectoryOrCreate
+        - name: spire-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: spire-agent
+                  expirationSeconds: 7200
+                  audience: spire-server
+---
+# Reference only -- deployment.yaml/actor-deployment.yaml add this volume
+# (hostPath /run/spire/sockets, read-only) and
+# SPIFFE_ENDPOINT_SOCKET=/run/spire/sockets/agent.sock to actually consume
+# the Workload API. Not applied here automatically: those are
+# production-tuned, already-carefully-reviewed manifests this change does
+# not silently alter -- see docs/SPIFFE_SPIRE_IDENTITY.md's "Enabling
+# SPIFFE on an existing Deployment" section for the exact diff to apply.

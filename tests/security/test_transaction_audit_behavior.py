@@ -182,8 +182,17 @@ class TestOrdering:
 
         await run_governed_mutation(action="orders.create", resource="o", mutate=mutate)
         stages = pipeline_stages()
+        # Runtime Approval Gate added APPROVAL_ARTIFACT_CREATED (right
+        # after AUTHZ, before IDEMPOTENCY -- the policy decision becomes an
+        # ApprovalArtifact before anything idempotency/audit/mutation-side
+        # happens) and APPROVAL_VALIDATED (right after AUDIT_INTENT, before
+        # MUTATION -- the artifact is re-checked immediately before the
+        # effect runs). The AUTH -> AUTHZ -> IDEMPOTENCY -> AUDIT_INTENT ->
+        # MUTATION -> AUDIT_RESULT skeleton this test guards is unchanged;
+        # only these two approval-lifecycle stages were inserted into it.
         assert stages == [
-            "AUTH", "AUTHZ", "IDEMPOTENCY", "AUDIT_INTENT", "MUTATION", "AUDIT_RESULT",
+            "AUTH", "AUTHZ", "APPROVAL_ARTIFACT_CREATED", "IDEMPOTENCY",
+            "AUDIT_INTENT", "APPROVAL_VALIDATED", "MUTATION", "AUDIT_RESULT",
         ]
         assert recorder == ["EFFECT"]
         assert stages.index("AUDIT_INTENT") < stages.index("MUTATION")

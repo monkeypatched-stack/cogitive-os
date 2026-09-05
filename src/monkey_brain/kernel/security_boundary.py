@@ -147,27 +147,64 @@ def _note(stage: str) -> None:
         current.append(stage)
 
 
-def build_opa_input(*, action: str, resource: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
-    """OPA input from kernel evidence only. Agent extra cannot set auth."""
+def build_opa_input(
+    *, action: str, resource: str, extra: dict[str, Any] | None = None,
+    recipient_spiffe_id: str = "",
+    verified_delegation: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """OPA input from kernel evidence only. Agent extra cannot set auth.
+
+    recipient_spiffe_id: the VERIFIED recipient workload's SPIFFE ID, when
+    this action is agent-to-agent communication and the caller has already
+    resolved the recipient's own real identity (e.g. from the target
+    actor's registered SPIFFE ID, never from agent-supplied message
+    content -- strip_untrusted_security_signals already drops a
+    "recipient_spiffe_id" key an agent tried to inject via `extra`, see
+    trusted_auth.py's UNTRUSTED_SECURITY_SIGNAL_KEYS, so only THIS explicit
+    keyword argument can ever populate it). Empty for non-communication
+    operations and for callers that haven't been wired to resolve a
+    recipient identity yet -- absence means "not a recipient-scoped
+    decision," not "recipient unknown/denied."
+
+    verified_delegation (Portable Delegation, Section 21): the SAME
+    pattern as recipient_spiffe_id, one level higher-stakes -- only
+    kernel/delegation.py::to_opa_delegation_context's output, built from a
+    chain that already passed verify_delegation_chain, may populate this.
+    `extra`/`context.delegation*` keys an agent tries to inject are
+    already stripped by strip_untrusted_security_signals above. None (the
+    default) means "this request carries no delegated authority claim,"
+    not "delegation is present but empty/trusted."
+    """
     evidence = get_trusted_auth()
     trusted = evidence.to_opa_auth()
     ctx = strip_untrusted_security_signals(extra or {})
     ctx["trusted_auth"] = trusted
     ctx["auth"] = trusted
+    if recipient_spiffe_id:
+        ctx["recipient_spiffe_id"] = recipient_spiffe_id
+    if verified_delegation:
+        ctx["delegation"] = verified_delegation
     return {
         "auth": trusted,
         "action": action,
         "resource": resource,
         "context": ctx,
         "runtime_id": evidence.principal_id or "unknown",
+        "recipient_spiffe_id": recipient_spiffe_id,
+        "delegation": verified_delegation or {},
     }
 
 
-async def _authorize(action: str, resource: str, extra: dict[str, Any] | None) -> dict[str, Any]:
+async def _authorize(
+    action: str, resource: str, extra: dict[str, Any] | None,
+    *, verified_delegation: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     from src.monkey_brain.kernel.governance import get_governance_engine
 
     gov = get_governance_engine()
-    opa_input = build_opa_input(action=action, resource=resource, extra=extra)
+    opa_input = build_opa_input(
+        action=action, resource=resource, extra=extra, verified_delegation=verified_delegation,
+    )
     result = await gov.evaluate(opa_input["runtime_id"], action, opa_input["context"])
     if not result.get("allowed"):
         raise SecurityBoundaryDenied(result.get("reason") or "denied by policy", stage="AUTHZ")
@@ -598,6 +635,8 @@ async def run_governed_mutation(
     skip_authz: bool = False,
     operation_id: str | None = None,
     idempotent_effect: bool = False,
+    force_authorize: bool = False,
+    verified_delegation: dict[str, Any] | None = None,
 ) -> T:
     """Execute a security-sensitive mutation only after the full pipeline.
 
@@ -618,7 +657,25 @@ async def run_governed_mutation(
     external effect honors a stable idempotency key end to end; it is not
     itself trusted as retry authorization — retry_execution_attempt()
     requires its own explicit idempotent_effect argument.
-    
+
+    force_authorize (Live Capability Governance Closure): when nested
+    inside an already-active commitment, the default behavior below is a
+    pure passthrough to `mutate()` — no AUTH/AUTHZ/approval decision at
+    all — because that nesting normally means "this is internal plumbing
+    of a mutation already fully authorized at the outer layer." Some
+    callers (ActionExecutor's own per-capability call, nested inside its
+    own per-batch ensure_governed("action_executor.execute", ...)) are
+    NOT internal plumbing of the outer decision — each is an independent,
+    differently-scoped operation (a specific capability) that the outer
+    call's generic "actions" resource never actually evaluated. Passing
+    force_authorize=True makes such a nested call still run the real
+    AUTH/AUTHZ/approval-artifact/DENY/HITL gate for itself (a new,
+    additional SecurityOperation record, distinctly identified by its own
+    operation_id) before calling `mutate`. It deliberately does NOT
+    re-enter _execute_attempt_pipeline — idempotency reservation and the
+    audit-intent/audit-result durability pair remain owned exactly once,
+    by whichever call originally established the active commitment.
+
     APPROVAL GATE (NEW):
     After authorization, creates an ApprovalArtifact reflecting the policy decision.
     AUTO_APPROVE operations proceed directly to mutation.
@@ -638,27 +695,22 @@ async def run_governed_mutation(
         get_approval_store,
     )
 
-    if commitment_active():
-        result = mutate()
-        if hasattr(result, "__await__"):
-            return await result  # type: ignore[misc]
-        return result  # type: ignore[return-value]
-    token = _pipeline.set([])
-    committed = _commitment.set(True)
-    op_id = operation_id or new_operation_id()
-    tx_class = classify_transaction(action)
-    ledger = get_operation_ledger()
-    evidence = get_trusted_auth()
-    try:
+    async def _authorize_and_gate(
+        *, op_id: str, tx_class: Any, ledger: Any, evidence: Any,
+    ) -> dict[str, Any]:
+        """AUTH -> AUTHZ -> approval-artifact -> DENY/HITL gate, shared by
+        the top-level (non-nested) commitment path and by force_authorize
+        nested callers. Returns the policy dict on AUTO_APPROVE; raises
+        SecurityBoundaryDenied / HumanApprovalRequired otherwise."""
         _assert_auth()
         policy = {"allowed": True, "reason": "skipped"}
         if skip_authz:
             _note("AUTHZ")
         else:
             if require_opa() or not insecure_dev_mode():
-                policy = await _authorize(action, resource, extra)
+                policy = await _authorize(action, resource, extra, verified_delegation=verified_delegation)
             _note("AUTHZ")
-        
+
         # NEW: Generate approval artifact from policy decision
         approval_artifact = create_approval_artifact_from_policy(
             operation_id=op_id,
@@ -668,7 +720,7 @@ async def run_governed_mutation(
             requesting_principal=evidence.principal_id,
             operation_class="mutation",
         )
-        
+
         # CRITICAL: Prevent self-approval at artifact creation time
         # If the approving_principal is set (non-empty) and equals requesting_principal, reject
         from src.monkey_brain.kernel.approval import prevent_self_approval
@@ -686,17 +738,17 @@ async def run_governed_mutation(
                 self_approval_reason,
                 stage="AUTHORIZATION",
             )
-        
+
         # Store approval artifact
         store = get_approval_store()
         if hasattr(store, 'create'):
             # Support both sync (ApprovalArtifactStore) and async (MongoApprovalArtifactStore)
             result = store.create(approval_artifact)
             if hasattr(result, "__await__"):
-                approval_artifact = await result  # type: ignore
-        
+                await result  # type: ignore
+
         _note("APPROVAL_ARTIFACT_CREATED")
-        
+
         # Check approval mode: handle based on approval decision
         if approval_artifact.approval_mode.value == "DENY":
             logger.warning(
@@ -741,7 +793,7 @@ async def run_governed_mutation(
                 approval_id=approval_artifact.approval_id,
             )
         # else: AUTO_APPROVE — continue to execution
-        
+
         try:
             ledger.create(SecurityOperation(
                 operation_id=op_id,
@@ -759,6 +811,45 @@ async def run_governed_mutation(
                 f"duplicate operation {exc.operation_id}",
                 stage="IDEMPOTENCY",
             ) from exc
+        if verified_delegation:
+            # Portable Delegation, Section 23: a governed operation
+            # actually ran using delegated (not the caller's own root)
+            # authority -- distinct from delegation_verified (the
+            # decision) because a verified delegation whose OWN operation
+            # was then DENIED by OPA/approval never reaches this line.
+            from src.monkey_brain.kernel.delegation import _audit_delegation_event
+            _audit_delegation_event(
+                "delegation_exercised",
+                delegation_id=str(verified_delegation.get("delegation_id", "")),
+                issuer=str(verified_delegation.get("issuer", "")),
+                delegate=str(verified_delegation.get("delegate", "")),
+                details={"action": action, "resource": resource, "operation_id": op_id},
+            )
+        return policy
+
+    if commitment_active():
+        if not force_authorize:
+            result = mutate()
+            if hasattr(result, "__await__"):
+                return await result  # type: ignore[misc]
+            return result  # type: ignore[return-value]
+        op_id = operation_id or new_operation_id()
+        tx_class = classify_transaction(action)
+        ledger = get_operation_ledger()
+        evidence = get_trusted_auth()
+        await _authorize_and_gate(op_id=op_id, tx_class=tx_class, ledger=ledger, evidence=evidence)
+        result = mutate()
+        if hasattr(result, "__await__"):
+            return await result  # type: ignore[misc]
+        return result  # type: ignore[return-value]
+    token = _pipeline.set([])
+    committed = _commitment.set(True)
+    op_id = operation_id or new_operation_id()
+    tx_class = classify_transaction(action)
+    ledger = get_operation_ledger()
+    evidence = get_trusted_auth()
+    try:
+        policy = await _authorize_and_gate(op_id=op_id, tx_class=tx_class, ledger=ledger, evidence=evidence)
         return await _execute_attempt_pipeline(
             action=action, resource=resource, op_id=op_id, mutate=mutate,
             policy=policy, ledger=ledger, evidence=evidence,
@@ -969,13 +1060,44 @@ async def ensure_governed(
     *,
     extra: dict[str, Any] | None = None,
     skip_authz: bool = False,
+    operation_id: str | None = None,
+    force_authorize: bool = False,
+    verified_delegation: dict[str, Any] | None = None,
 ) -> T:
     """Single commitment API for security-critical effects.
 
     READ_ONLY / PROPOSAL_ONLY run immediately.
-    Nested calls inside an active commitment are not re-gated.
+    Nested calls inside an active commitment are not re-gated, UNLESS
+    force_authorize=True (see below).
     Insecure-dev may skip the outer gate (existing unit-test posture).
     Unknown/mutating operations use run_governed_mutation.
+
+    operation_id: a caller-supplied, STABLE per-request identifier (e.g.
+    Action.correlation_id / execution_id, or an ExecutionGraph node id) --
+    threaded straight through to run_governed_mutation's own operation_id
+    parameter, which already deduplicates via the SecurityOperation ledger
+    and the Idempotency-Key store. Omitting it (None, the previous and
+    still-default behavior) falls back to run_governed_mutation's own
+    new_operation_id() -- a FRESH uuid4() on every call, which cannot
+    recognize a retry of the same logical operation as a duplicate. Pass
+    a real one whenever the caller has one; do not fabricate one here.
+
+    force_authorize (Live Capability Governance Closure): "nested calls
+    inside an active commitment are not re-gated" is correct when the
+    nested call is internal plumbing of the SAME already-decided
+    operation. It is wrong when the nested call is itself a distinct,
+    independently-scoped operation that merely happens to execute while
+    some unrelated coarser-grained commitment is active -- e.g.
+    ActionExecutor wraps a whole action batch in
+    ensure_governed("action_executor.execute", "actions", ...), which
+    authorizes nothing about any SPECIFIC capability in that batch, and
+    without this flag every per-capability ensure_governed call nested
+    inside it would silently no-op straight to effect() with no AUTH,
+    AUTHZ, or approval record at all. Pass force_authorize=True to make
+    THIS call still run its own real decision regardless of nesting; see
+    run_governed_mutation's docstring for exactly what that does and does
+    not re-run (idempotency reservation and audit-result stay owned by
+    the outer commitment either way).
     """
     from src.monkey_brain.kernel.operation_classification import (
         OperationClass,
@@ -988,18 +1110,29 @@ async def ensure_governed(
         if hasattr(result, "__await__"):
             return await result  # type: ignore[misc]
         return result  # type: ignore[return-value]
-    if commitment_active():
+    if commitment_active() and not force_authorize:
         result = effect()
         if hasattr(result, "__await__"):
             return await result  # type: ignore[misc]
         return result  # type: ignore[return-value]
-    if insecure_dev_mode():
-        result = effect()
-        if hasattr(result, "__await__"):
-            return await result  # type: ignore[misc]
-        return result  # type: ignore[return-value]
+    # Runtime Approval Gate: this used to short-circuit straight to
+    # effect() whenever insecure_dev_mode() was set, skipping AUTH, the
+    # approval-artifact/audit trail, and the AUTO_APPROVE/
+    # HUMAN_APPROVAL_REQUIRED/DENY decision entirely -- for EVERY
+    # SECURITY_CRITICAL/PRIVILEGED_INFRA operation, not just the
+    # individually-documented relaxations production_gates.py's
+    # insecure_dev_mode() actually grants (OPA/Redis/MFA/idempotency).
+    # run_governed_mutation() already honors each of those relaxations
+    # itself (its own _assert_auth/_authorize calls check
+    # insecure_dev_mode()/require_opa() individually) -- routing through
+    # it here means insecure-dev still gets the same auto-approve-with-
+    # audit outcome for a policy-permitted operation, instead of no
+    # governance record at all, while genuinely relaxed controls stay
+    # exactly as relaxed as they already were.
     return await run_governed_mutation(
         action=action, resource=resource, mutate=effect, extra=extra, skip_authz=skip_authz,
+        operation_id=operation_id, force_authorize=force_authorize,
+        verified_delegation=verified_delegation,
     )
 
 

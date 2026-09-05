@@ -83,7 +83,16 @@ class CapabilityBus:
         async def _run() -> CapabilityBusResult:
             return await self._execute_resolved(name, state)
 
-        return await ensure_governed(f"capability.{name}", name, _run)
+        # Idempotency/nonce fix: a caller that already has a stable id for
+        # this exact dispatch (not a fresh one per attempt) can pass it via
+        # state["operation_id"] so a retry of the SAME call is recognized
+        # as a duplicate by run_governed_mutation's SecurityOperation
+        # ledger/idempotency store, instead of every attempt minting its
+        # own new_operation_id() uuid4() and never matching. None (the
+        # default when a caller has no such id) preserves prior behavior
+        # exactly.
+        operation_id = state.get("operation_id") if isinstance(state, dict) else None
+        return await ensure_governed(f"capability.{name}", name, _run, operation_id=operation_id)
 
     async def _execute_resolved(self, name: str, state: dict[str, Any]) -> CapabilityBusResult:
         t0 = time.monotonic()

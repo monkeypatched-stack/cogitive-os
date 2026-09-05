@@ -37,7 +37,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
 logger = logging.getLogger("agentos.approval")
@@ -62,6 +62,263 @@ class ApprovalStatus(str, Enum):
     REVOKED = "REVOKED"
     EXPIRED = "EXPIRED"
     SUPERSEDED = "SUPERSEDED"
+
+
+class ApprovalDecisionError(ValueError):
+    """Raised when an ApprovalDecision is constructed with an invalid or
+    untrustworthy field. Mirrors governance/approval_artifact.py's
+    ApprovalArtifactError -- same repository convention, different module
+    (that one is the DEVELOPMENT-PROCESS artifact; see ApprovalDecision's
+    own docstring for why the two are never conflated)."""
+
+
+@dataclass(frozen=True)
+class ApprovalDecision:
+    """The Approval Decision Contract: the single, canonical answer trusted
+    governance gives to "what authorization path does this authenticated
+    operation require?" -- AUTO_APPROVE, HUMAN_APPROVAL_REQUIRED, or DENY.
+
+    Sits between policy evaluation and the runtime execution gate:
+
+        authenticated request -> authorization -> OPA/governance policy
+            -> ApprovalDecision -> ApprovalArtifact/HITL handoff
+            -> runtime execution gate -> execution
+
+    ApprovalDecision vs ApprovalArtifact (these are NOT interchangeable):
+        ApprovalDecision  -- what approval path is required?      (this class)
+        ApprovalArtifact  -- what specific authorization was       (above)
+                             actually GRANTED?
+    A HUMAN_APPROVAL_REQUIRED decision is a REQUEST for human review, never
+    itself a grant -- only the authorized human-approval endpoint
+    (api/routes/approval.py's /runtime-approvals/{id}/approve) may produce
+    an ApprovalArtifact whose approval_source is HUMAN. Nothing on this
+    class can transition a decision into an approval; there is
+    deliberately no "approve()"/"grant()" method here.
+
+    ApprovalDecision vs execution permission (these are NOT the same
+    either): mode == AUTO_APPROVE means policy permits automatic approval
+    -- it is not itself permission to execute. The runtime execution gate
+    (kernel/security_boundary.py::run_governed_mutation) still requires
+    authentication, scope validity, current state, durable audit, and
+    idempotency to ALL independently hold. This class intentionally has no
+    `execution_permitted` field -- that value can only be computed at the
+    execution gate, by combining this decision with those other controls,
+    never read directly off the decision alone.
+
+    Immutable: frozen dataclass -- any attempted field assignment raises
+    dataclasses.FrozenInstanceError. A changed decision is always a NEW
+    ApprovalDecision from a NEW policy evaluation; there is no in-place
+    transition (DENY never becomes AUTO_APPROVE by mutation, nor the
+    reverse).
+
+    This type is additive -- see kernel/governance.py::GovernanceEngine.
+    evaluate() and kernel/security_boundary.py::_authorize(), both of
+    which continue to return their existing plain-dict shape unchanged.
+    from_policy_result() below is an ADAPTER around that existing dict,
+    not a replacement for it, and nothing in security_boundary.py,
+    capability_bus.py, action_executor.py, or the agent-to-agent
+    capabilities (grocery.py) constructs or consumes this class yet --
+    per this task's explicit scope, wiring it into any of those requires
+    separate, later authorization.
+    """
+
+    mode: ApprovalMode
+    operation_id: str
+    """Stable per-request correlation identity. Reuses the SAME field
+    name/semantics as SecurityOperation.operation_id (kernel/
+    security_operation.py) and ApprovalArtifact.operation_id/
+    correlation_id (this module) -- deliberately not a new identifier
+    scheme (Section 19: "where an existing request ID/correlation ID
+    exists, reuse it"). MUST be supplied by the caller from the actual
+    originating request's own stable id; see this class's KNOWN
+    LIMITATION note below about kernel/security_boundary.py's own
+    ensure_governed()/run_governed_mutation() NOT currently threading one
+    in from capability dispatch (new_operation_id() mints a fresh UUID
+    per call there instead) -- a real, separate discovery finding, not
+    something this contract's definition can silently fix by itself."""
+    principal: str
+    """The AUTHENTICATED principal (kernel/trusted_auth.py::
+    TrustedAuthEvidence.principal_id) that is bound to this decision.
+    Never an agent-self-reported id, never read from agent/LLM-controlled
+    request content -- see TRUST BOUNDARY table in this module's tests."""
+    operation: str
+    """The capability/action being evaluated (e.g. "capability.Payment"),
+    matching the `action` argument GovernanceEngine.evaluate()/
+    ensure_governed() already take."""
+    scope: str
+    """The resource/scope this decision covers (matches the existing
+    `resource` argument). A decision for one scope never implies
+    authorization for a different scope or a materially different
+    operation -- see `covers()` below."""
+    policy_rule: str
+    """Which named policy rule produced this decision (e.g.
+    "high_risk_action", "runtime_blocked", "default_allow") -- matches
+    GovernanceEngine.evaluate()'s own "policy_rule" field."""
+    reason: str
+    """Deterministic, human-readable reason -- never fabricated when
+    absent (empty string, not a guessed explanation)."""
+    risk_level: str
+    """LOW | MEDIUM | HIGH | CRITICAL -- matches GovernanceEngine.evaluate()."""
+    policy_decision: str = ""
+    """The full raw policy result, stringified -- same convention as
+    ApprovalArtifact.policy_decision/SecurityOperation.policy_decision
+    (both already plain strings, not structured dicts, in this codebase)."""
+    policy_revision: str = ""
+    """OPA bundle/policy version, when available. KNOWN LIMITATION:
+    neither OPA client implementation in this repo (packages/cerebellum/
+    .../opa_client.py, or its inline mirror in services/common/opa.py)
+    currently queries or exposes a bundle/policy revision from OPA's
+    Status/Bundle API -- there is nothing real to put here yet. Left ""
+    rather than a fabricated version string (Section 8: "if policy
+    provenance cannot safely be captured, document the limitation
+    instead of fabricating it")."""
+    decided_at: float = field(default_factory=time.time)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.mode, ApprovalMode):
+            raise ApprovalDecisionError(f"mode must be an ApprovalMode, got {type(self.mode)!r}")
+        missing = [
+            name for name, value in (
+                ("operation_id", self.operation_id),
+                ("principal", self.principal),
+                ("operation", self.operation),
+            )
+            if not value or not str(value).strip()
+        ]
+        if missing:
+            raise ApprovalDecisionError(f"missing required field(s): {', '.join(missing)}")
+
+    def covers(self, *, operation_id: str, principal: str, operation: str, scope: str = "") -> bool:
+        """Whether this decision may be relied on for the given request.
+
+        All four must match -- request binding (Section 19), principal
+        binding (Section 18), and scope binding (Section 17) combined into
+        one check: same operation_id AND same principal AND same
+        operation AND (if a scope is given) the same scope. A decision for
+        request A never covers request B; a decision scoped to principal A
+        never covers principal B; a decision for operation/scope X never
+        covers a materially different operation/scope Y.
+
+        Pure function over this decision's own fields -- not consumed by
+        any runtime call site yet (Section 28: no wiring in this task).
+        """
+        return (
+            self.operation_id == operation_id
+            and self.principal == principal
+            and self.operation == operation
+            and (not scope or self.scope == scope)
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "mode": self.mode.value,
+            "operation_id": self.operation_id,
+            "principal": self.principal,
+            "operation": self.operation,
+            "scope": self.scope,
+            "policy_rule": self.policy_rule,
+            "reason": self.reason,
+            "risk_level": self.risk_level,
+            "policy_decision": self.policy_decision,
+            "policy_revision": self.policy_revision,
+            "decided_at": self.decided_at,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ApprovalDecision":
+        try:
+            return cls(
+                mode=ApprovalMode(data["mode"]),
+                operation_id=data["operation_id"],
+                principal=data["principal"],
+                operation=data["operation"],
+                scope=data.get("scope", ""),
+                policy_rule=data.get("policy_rule", ""),
+                reason=data.get("reason", ""),
+                risk_level=data.get("risk_level", ""),
+                policy_decision=data.get("policy_decision", ""),
+                policy_revision=data.get("policy_revision", ""),
+                decided_at=data.get("decided_at", time.time()),
+            )
+        except KeyError as exc:
+            raise ApprovalDecisionError(f"decision missing required field: {exc}") from exc
+        except ValueError as exc:
+            raise ApprovalDecisionError(f"decision schema invalid: {exc}") from exc
+
+    @classmethod
+    def from_policy_result(
+        cls,
+        *,
+        operation_id: str,
+        principal: str,
+        operation: str,
+        scope: str,
+        result: dict[str, Any],
+    ) -> "ApprovalDecision":
+        """Construct the canonical decision from whatever GovernanceEngine.
+        evaluate()/_authorize() already return -- an ADAPTER around the
+        existing dict shape (Section 27: prefer adapters over a parallel
+        approval system), not a replacement for it. GovernanceEngine.
+        evaluate() itself is untouched by this.
+
+        TRUST BOUNDARY: operation_id/principal/operation/scope are always
+        taken from the explicit keyword arguments a trusted caller
+        supplies -- NEVER read out of `result`, even if an agent-poisoned
+        `extra`/context dict caused similarly-named keys to end up inside
+        it (kernel/trusted_auth.py::strip_untrusted_security_signals
+        already strips known-dangerous keys before `result` is built, but
+        this method does not additionally trust `result` for identity
+        fields regardless, as defense in depth).
+        """
+        allowed = bool(result.get("allowed", False))
+        mode = ApprovalMode(result.get("approval_mode", "AUTO_APPROVE" if allowed else "DENY"))
+        return cls(
+            mode=mode,
+            operation_id=operation_id,
+            principal=principal,
+            operation=operation,
+            scope=scope,
+            policy_rule=result.get("policy_rule", "") or ("default_allow" if allowed else "denied"),
+            reason=result.get("reason", ""),
+            risk_level=result.get("risk_level", "LOW" if allowed else "HIGH"),
+            policy_decision=str(result),
+            policy_revision=result.get("policy_revision", ""),
+        )
+
+    @classmethod
+    def deny(
+        cls,
+        *,
+        operation_id: str,
+        principal: str,
+        operation: str,
+        scope: str = "",
+        reason: str = "",
+        policy_rule: str = "fail_closed",
+    ) -> "ApprovalDecision":
+        """Explicit fail-closed constructor for the failure-semantics
+        matrix (Section 14): missing/invalid authentication, OPA
+        unavailable, policy error, and invalid scope all resolve to a
+        DENY decision built here -- never to AUTO_APPROVE, and never by
+        silently defaulting `mode` in a general-purpose constructor.
+        `principal` may be "unknown" for a genuinely unauthenticated
+        request -- an empty ApprovalDecision.principal is still rejected
+        by __post_init__, so callers must pass an explicit placeholder
+        rather than have one fabricated here.
+        """
+        if not principal or not principal.strip():
+            raise ApprovalDecisionError("deny() requires an explicit principal (e.g. 'unknown'), not empty")
+        return cls(
+            mode=ApprovalMode.DENY,
+            operation_id=operation_id,
+            principal=principal,
+            operation=operation,
+            scope=scope,
+            policy_rule=policy_rule,
+            reason=reason,
+            risk_level="CRITICAL",
+            policy_decision=reason,
+        )
 
 
 @dataclass(frozen=True)
@@ -619,58 +876,6 @@ def get_mongo_approval_store() -> MongoApprovalArtifactStore | None:
     except Exception:
         pass
     return None
-
-
-def reset_approval_store() -> None:
-    """Reset the global approval store (for testing)."""
-    global _approval_store, _mongo_approval_store
-    _approval_store = None
-    _mongo_approval_store = None
-
-
-def validate_approval_for_execution(
-    operation_id: str,
-    approval_mode: str,
-) -> tuple[bool, str]:
-    """Validate that an operation is approved for execution.
-    
-    This gate is called just before MUTATION in _execute_attempt_pipeline.
-    
-    Rules:
-    - AUTO_APPROVE: always permitted (no artifact check needed)
-    - HUMAN_APPROVAL_REQUIRED: must have an active, approved artifact
-    - DENY: never permitted
-    
-    Args:
-        operation_id: The operation being executed
-        approval_mode: From the policy decision (AUTO_APPROVE | HUMAN_APPROVAL_REQUIRED | DENY)
-    
-    Returns:
-        (is_valid, reason_if_invalid)
-    """
-    if approval_mode == "AUTO_APPROVE":
-        return True, ""
-    
-    if approval_mode == "DENY":
-        return False, "operation denied by policy"
-    
-    if approval_mode == "HUMAN_APPROVAL_REQUIRED":
-        # Must have an active, approved artifact
-        store = get_approval_store()
-        artifacts = store.get_for_operation(operation_id)
-        
-        if not artifacts:
-            return False, "no approval found for operation"
-        
-        # Find an active, approved artifact (approval_source == HUMAN means it's been approved)
-        for artifact in artifacts:
-            if artifact.is_valid() and artifact.approval_source == ApprovalSource.HUMAN:
-                return True, ""
-        
-        # No valid human approval found
-        return False, "operation awaiting human approval"
-    
-    return False, f"unknown approval mode: {approval_mode}"
 
 
 def create_approval_artifact_from_policy(

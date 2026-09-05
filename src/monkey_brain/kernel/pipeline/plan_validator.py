@@ -103,8 +103,8 @@ class PlanValidator:
 
         if not valid:
             logger.warning(
-                "[validator] Plan rejected: %d violations, score=%.2f",
-                len(violations), score,
+                "[validator] Plan rejected: %d violations (%s), score=%.2f",
+                len(violations), ", ".join(violations), score,
             )
 
         return ValidationResult(

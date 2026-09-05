@@ -1,0 +1,79 @@
+# SPIFFE/SPIRE local development overlay — layered on top of
+# docker-compose.yml, never merged into it (same convention
+# docker-compose.actors.yml already establishes for Actor containers).
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.spire.yml up -d
+#
+# This is LOCAL DEVELOPMENT ONLY. It uses the official upstream SPIRE
+# images unmodified (no custom CA, no custom certificate issuance/
+# rotation logic anywhere in this repo -- see docs/SPIFFE_SPIRE_IDENTITY.md
+# Section 3 for why) and a dev-only trust domain
+# (SPIFFE_TRUST_DOMAIN=cognitiveos-dev.local, set in .env.example) that
+# must NEVER equal a real production trust domain -- a dev-issued SVID
+# then cannot even parse as belonging to production, let alone verify
+# against its bundle, closing the "dev cert accidentally accepted in
+# production" failure mode Phase 5 warns about.
+#
+# `agentos` (docker-compose.yml) and every Actor container
+# (docker-compose.actors.yml) mount the SAME spire-agent-socket volume at
+# SPIFFE_ENDPOINT_SOCKET so kernel/workload_identity.py's
+# WorkloadIdentityProvider (via the existing cerebellum spire_client) can
+# fetch a real X.509-SVID over the Workload API -- no code change needed
+# to consume this, only the env var + volume mount below.
+
+services:
+  spire-server:
+    image: ghcr.io/spiffe/spire-server:1.9.6
+    container_name: spire-server
+    command: ["-config", "/run/spire/config/server.conf"]
+    volumes:
+      - ./deploy/spire/server.conf:/run/spire/config/server.conf:ro
+      - spire-server-data:/run/spire/data
+      - spire-registration-socket:/tmp/spire-server/private
+    healthcheck:
+      test: ["CMD", "/opt/spire/bin/spire-server", "healthcheck", "-socketPath", "/tmp/spire-server/private/api.sock"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  spire-agent:
+    image: ghcr.io/spiffe/spire-agent:1.9.6
+    container_name: spire-agent
+    depends_on:
+      spire-server:
+        condition: service_healthy
+    command: ["-config", "/run/spire/config/agent.conf"]
+    volumes:
+      - ./deploy/spire/agent.conf:/run/spire/config/agent.conf:ro
+      - spire-registration-socket:/tmp/spire-server/private:ro
+      - spire-agent-socket:/tmp/spire-agent/public
+    # NOTE (local dev only): docker_attestor selects workloads by
+    # container label -- the same "narrowest selector, no shared
+    # identity across workloads" principle Phase 4 requires for
+    # Kubernetes, applied to Compose. Requires the Docker socket to
+    # observe container labels; a production Kubernetes deployment uses
+    # k8s_psat/k8s workload attestation instead (deploy/k8s/spire-agent.yaml)
+    # and never needs this mount.
+    volumes_from: []
+    environment:
+      - SPIRE_AGENT_DOCKER_SOCKET=/var/run/docker.sock
+
+  agentos:
+    environment:
+      SPIFFE_ENDPOINT_SOCKET: "/tmp/spire-agent/public/api.sock"
+      SPIFFE_TRUST_DOMAIN: "${SPIFFE_TRUST_DOMAIN:-cognitiveos-dev.local}"
+    volumes:
+      - spire-agent-socket:/tmp/spire-agent/public:ro
+    depends_on:
+      spire-agent:
+        condition: service_started
+    labels:
+      # docker_attestor selector this workload's SPIRE registration entry
+      # matches on -- see deploy/spire/register-entries.sh.
+      - "spiffe-workload=agentos"
+
+volumes:
+  spire-server-data:
+  spire-registration-socket:
+  spire-agent-socket:

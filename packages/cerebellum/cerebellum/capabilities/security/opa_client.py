@@ -92,12 +92,22 @@ async def evaluate_full(
                             "source": "opa",
                             "reason": "malformed_opa_response",
                         }
-                    return {
+                    out = {
                         "allowed": bool(result.get("allow", result.get("allowed"))),
                         "obligations": result.get("obligations", []),
                         "reason": result.get("deny_reason", ""),
                         "source": "opa",
                     }
+                    # Runtime Approval Gate: pass through the policy's own
+                    # approval-mode/risk fields when the Rego document
+                    # provides them (e.g. opa/policies/agentos_governance.rego).
+                    # Absent when a policy doesn't define them -- callers
+                    # (GovernanceEngine.evaluate) already default sensibly
+                    # in that case, so this is purely additive.
+                    for key in ("approval_mode", "risk_level", "policy_rule", "requires_hitl"):
+                        if key in result:
+                            out[key] = result[key]
+                    return out
                 return {
                     "allowed": False,
                     "obligations": [],

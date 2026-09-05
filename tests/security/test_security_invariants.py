@@ -434,8 +434,30 @@ class TestInvariant8IdempotencyFailClosed:
         claimed, existing = backend.reserve("k", "h")
         assert claimed is False
         assert existing is None
+        # Resetting _instance to None and calling get_idempotency_store()
+        # here previously constructed a BRAND NEW store with its own real
+        # backend (_make_backend()) -- in any dev environment with a real
+        # local Redis actually reachable (this repo's own tests/conftest.py
+        # ::_flush_shared_redis fixture assumes exactly that), that fresh
+        # store reports available=True, which is the opposite of what this
+        # test means to verify.
+        #
+        # Reusing the SAME already-broken `backend` object doesn't work
+        # either: IdempotencyStore.is_available() reads a static
+        # `unavailable` attribute (idempotency.py:364), which
+        # _RedisIdempotencyBackend never sets at all -- not even after a
+        # failed reserve() call above -- it only has an available() method
+        # that does a fresh ping. The real fail-closed signal is
+        # _UnavailableIdempotencyBackend (unavailable=True), which is
+        # exactly what _make_backend() selects when Redis is unreachable
+        # at construction time (idempotency.py's own _make_backend()).
+        # Verify that real mechanism directly rather than depend on
+        # whether Redis happens to be reachable in this environment.
+        from src.monkey_brain.api.idempotency import _UnavailableIdempotencyBackend
         IdempotencyStore._instance = None
-        store = get_idempotency_store()
+        store = IdempotencyStore.__new__(IdempotencyStore)
+        store._backend = _UnavailableIdempotencyBackend()
+        IdempotencyStore._instance = store
         assert store.is_available() is False
         claimed, existing = store.reserve("k", "h")
         assert claimed is False

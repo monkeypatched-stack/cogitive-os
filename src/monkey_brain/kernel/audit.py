@@ -18,7 +18,7 @@ logger = logging.getLogger("agentos.audit")
 
 SECURITY_CRITICAL_EVENT_TYPES = frozenset({
     "execute", "governance", "security", "auth", "world_mutation",
-    "plan", "authorization", "policy", "login", "token",
+    "plan", "authorization", "policy", "login", "token", "delegation",
 })
 
 

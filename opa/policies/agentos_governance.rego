@@ -72,10 +72,65 @@ charter_denies if {
 	input.action in charter.denied_actions
 }
 
+# SPIFFE/SPIRE workload identity layer: recipient binding (Phase 12) --
+# the authenticated sender's own SPIFFE ID (input.context.auth.spiffe_id,
+# populated only from a verified WorkloadIdentity -- kernel/trusted_auth.py::
+# evidence_from_spiffe -- never from agent-supplied message content) may
+# be restricted to a specific, data-driven set of recipients it's allowed
+# to address. Absent data (the default, same as denied_runtimes/
+# denied_actions above) means every sender may address any recipient --
+# byte-for-byte today's behavior. Only evaluated when the caller actually
+# supplies recipient_spiffe_id (kernel/security_boundary.py::
+# build_opa_input's optional keyword) -- a non-communication operation
+# with no recipient concept is never affected.
+#
+# Data:
+#   data.agentos.governance.allowed_recipients[sender_spiffe_id] —
+#       [recipient_spiffe_id, ...] the ONLY recipients that sender may address
+
+recipient_mismatch if {
+	input.context.recipient_spiffe_id != ""
+	sender := input.context.auth.spiffe_id
+	sender != ""
+	allowed := data.agentos.governance.allowed_recipients[sender]
+	not input.context.recipient_spiffe_id in allowed
+}
+
+# ─── Portable Delegation ────────────────────────────────────────────────
+# input.context.delegation is populated ONLY by build_opa_input's
+# verified_delegation parameter (kernel/security_boundary.py) -- itself
+# populated ONLY from a chain that already passed kernel/delegation.py::
+# verify_delegation_chain (proof, attenuation, expiry, revocation, audience
+# all already checked before OPA ever sees this). OPA's own job here is
+# narrower and different: given a delegation that is ALREADY known-valid,
+# does the SPECIFIC capability/action being requested right now actually
+# fall within what that delegation named? A valid-but-irrelevant
+# delegation (e.g. valid for "grocery.purchase" presented for a
+# "bank.transfer" request) must still deny.
+#
+# Absent input.context.delegation means "this request is not claiming
+# delegated authority" -- every existing caller today -- and none of the
+# rules below ever fire, so behavior is unchanged from before this rule
+# existed.
+
+delegation_present if {
+	input.context.delegation
+	input.context.delegation.delegation_id != ""
+}
+
+delegation_capability_mismatch if {
+	delegation_present
+	requested := object.get(input.context, "capability", "")
+	requested != ""
+	not requested in input.context.delegation.capabilities
+}
+
 allow if {
 	not runtime_blocked
 	not action_blocked
 	not charter_denies
+	not recipient_mismatch
+	not delegation_capability_mismatch
 }
 
 # Structured deny reason for audit logs / the API's {"reason": ...} field.
@@ -95,4 +150,129 @@ deny_reason := sprintf("charter denies action %q", [input.action]) if {
 	not runtime_blocked
 	not action_blocked
 	charter_denies
+}
+
+deny_reason := sprintf("sender %q is not permitted to address recipient %q", [
+	input.context.auth.spiffe_id, input.context.recipient_spiffe_id,
+]) if {
+	not allow
+	not runtime_blocked
+	not action_blocked
+	not charter_denies
+	recipient_mismatch
+}
+
+deny_reason := sprintf("delegation %q does not grant capability %q", [
+	input.context.delegation.delegation_id, object.get(input.context, "capability", ""),
+]) if {
+	not allow
+	not runtime_blocked
+	not action_blocked
+	not charter_denies
+	not recipient_mismatch
+	delegation_capability_mismatch
+}
+
+# ─── Runtime Approval Gate ────────────────────────────────────────────────
+# Exposes the AUTO_APPROVE / HUMAN_APPROVAL_REQUIRED / DENY distinction
+# GovernanceEngine.evaluate() (kernel/governance.py) already threads through
+# to ApprovalArtifact creation. Same data-driven shape as denied_runtimes/
+# denied_actions/charters above -- provisionable via
+# PUT /v1/data/agentos/governance/{high_risk_actions,charters/<id>/high_risk_actions}
+# with no code deploy. Absent data means "nothing configured as high-risk,"
+# which preserves today's exact behavior: every allowed action resolves to
+# AUTO_APPROVE, every denied action resolves to DENY. This does not change
+# what allow/runtime_blocked/action_blocked/charter_denies decide -- it only
+# names, for an already-allowed action, whether it may proceed automatically
+# or must escalate to a human.
+#
+# Data:
+#   data.agentos.governance.high_risk_actions       — [action, ...] global
+#   data.agentos.governance.charters[id].high_risk_actions — per-runtime
+
+high_risk_action if {
+	input.action in data.agentos.governance.high_risk_actions
+}
+
+high_risk_action if {
+	input.action in charter.high_risk_actions
+}
+
+approval_mode := "DENY" if {
+	not allow
+}
+
+approval_mode := "HUMAN_APPROVAL_REQUIRED" if {
+	allow
+	high_risk_action
+}
+
+approval_mode := "AUTO_APPROVE" if {
+	allow
+	not high_risk_action
+}
+
+risk_level := "HIGH" if {
+	not allow
+}
+
+risk_level := "MEDIUM" if {
+	allow
+	high_risk_action
+}
+
+risk_level := "LOW" if {
+	allow
+	not high_risk_action
+}
+
+# Which named rule produced the decision above -- approval provenance
+# (Section 7: "under what policy") without inventing a second reason field.
+policy_rule := "runtime_blocked" if {
+	not allow
+	runtime_blocked
+}
+
+policy_rule := "action_blocked" if {
+	not allow
+	not runtime_blocked
+	action_blocked
+}
+
+policy_rule := "charter_denies" if {
+	not allow
+	not runtime_blocked
+	not action_blocked
+	charter_denies
+}
+
+policy_rule := "recipient_mismatch" if {
+	not allow
+	not runtime_blocked
+	not action_blocked
+	not charter_denies
+	recipient_mismatch
+}
+
+policy_rule := "delegation_capability_mismatch" if {
+	not allow
+	not runtime_blocked
+	not action_blocked
+	not charter_denies
+	not recipient_mismatch
+	delegation_capability_mismatch
+}
+
+policy_rule := "high_risk_action" if {
+	allow
+	high_risk_action
+}
+
+policy_rule := "default_allow" if {
+	allow
+	not high_risk_action
+}
+
+requires_hitl if {
+	approval_mode == "HUMAN_APPROVAL_REQUIRED"
 }

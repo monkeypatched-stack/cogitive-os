@@ -1107,70 +1107,81 @@ class PlanetaryRuntime:
                 loaded = 0
                 skipped = 0
                 for actor_data in actors:
-                    profile = ActorProfile.from_dict(actor_data)
-                    sid = actor_data.get("society_id", "")
-                    target_sr = self._societies.get(sid) or self._society_runtime
-                    
-                    # Check if actor already exists (by name + society)
-                    existing = None
-                    for state in target_sr.all_actors():
-                        if (state.profile.identity.name == profile.identity.name and
-                            state.profile.identity.actor_type == profile.identity.actor_type):
-                            existing = state
-                            break
-                    
-                    if existing is not None:
-                        # Actor already exists, skip registration
-                        skipped += 1
+                    try:
+                        profile = ActorProfile.from_dict(actor_data)
+                        sid = actor_data.get("society_id", "")
+                        target_sr = self._societies.get(sid) or self._society_runtime
+
+                        # Check if actor already exists (by name + society)
+                        existing = None
+                        for state in target_sr.all_actors():
+                            if (state.profile.identity.name == profile.identity.name and
+                                state.profile.identity.actor_type == profile.identity.actor_type):
+                                existing = state
+                                break
+
+                        if existing is not None:
+                            # Actor already exists, skip registration
+                            skipped += 1
+                            continue
+
+                        # Register through SocietyRuntime; implementation actor
+                        # construction is hidden behind ActorRuntime.
+                        target_sr.register_actor(profile)
+                        loaded += 1
+                        # Multi-Actor Execution Handoff: this loop bypasses
+                        # PlanetaryRuntime.register_actor() (the method above
+                        # that would otherwise wire this) entirely — every
+                        # persisted actor needs its real NATS inbox
+                        # re-subscribed after every restart, same as a
+                        # brand-new registration.
+                        self._subscribe_actor_inbox(profile.identity.actor_id, profile)
+
+                        if "belief_state" in actor_data and actor_data["belief_state"]:
+                            from src.monkey_brain.kernel.society.belief import BeliefState
+                            state = target_sr.get_actor(profile.identity.actor_id)
+                            if state:
+                                state.belief_state = BeliefState.from_dict(actor_data["belief_state"])
+
+                        # Actor Registry: restore the persisted lifecycle
+                        # status too (register_actor() above always creates a
+                        # fresh REGISTERED state) -- without this, an actor
+                        # that was ACTIVE before a restart silently reverts to
+                        # REGISTERED on reload, and nothing re-activates it.
+                        # Unknown/legacy records (no "status" key, from before
+                        # this field existed) are left at the fresh default
+                        # rather than guessed.
+                        persisted_status = actor_data.get("status")
+                        if persisted_status:
+                            from src.monkey_brain.kernel.society.domain import ActorStatus
+                            state = target_sr.get_actor(profile.identity.actor_id)
+                            if state:
+                                try:
+                                    state.status = ActorStatus(persisted_status)
+                                except ValueError:
+                                    logger.debug("Unknown persisted actor status %r for %s", persisted_status, profile.identity.actor_id)
+
+                        restored_state = target_sr.get_actor(profile.identity.actor_id)
+                        restored_runtime = restored_state.actor_runtime if restored_state else None
+                        restored_affiliations = getattr(restored_runtime, "affiliations", None)
+                        if actor_data.get("affiliations") and restored_affiliations is not None:
+                            from src.monkey_brain.kernel.affiliations.manager import AffiliationManager
+                            restored = AffiliationManager.from_dict(actor_data["affiliations"])
+                            for aff in restored.all():
+                                restored_affiliations.add(aff)
+                            for target, level in restored.trust_engine.all_trust("self").items():
+                                restored_affiliations.trust_engine.set_trust("self", target, level)
+                    except Exception as actor_exc:
+                        # A single malformed persisted record (e.g. a legacy
+                        # actor_type value not in the current ActorType enum)
+                        # must not abort loading of every other actor in the
+                        # registry — that previously left the whole registry
+                        # empty after any one bad record, breaking prompt
+                        # execution for every actor, not just the bad one.
+                        bad_id = actor_data.get("identity", {}).get("actor_id", "<unknown>")
+                        logger.warning("Skipping malformed persisted actor %s: %s", bad_id, actor_exc)
                         continue
-                    
-                    # Register through SocietyRuntime; implementation actor
-                    # construction is hidden behind ActorRuntime.
-                    target_sr.register_actor(profile)
-                    loaded += 1
-                    # Multi-Actor Execution Handoff: this loop bypasses
-                    # PlanetaryRuntime.register_actor() (the method above
-                    # that would otherwise wire this) entirely — every
-                    # persisted actor needs its real NATS inbox
-                    # re-subscribed after every restart, same as a
-                    # brand-new registration.
-                    self._subscribe_actor_inbox(profile.identity.actor_id, profile)
-                    
-                    if "belief_state" in actor_data and actor_data["belief_state"]:
-                        from src.monkey_brain.kernel.society.belief import BeliefState
-                        state = target_sr.get_actor(profile.identity.actor_id)
-                        if state:
-                            state.belief_state = BeliefState.from_dict(actor_data["belief_state"])
 
-                    # Actor Registry: restore the persisted lifecycle
-                    # status too (register_actor() above always creates a
-                    # fresh REGISTERED state) -- without this, an actor
-                    # that was ACTIVE before a restart silently reverts to
-                    # REGISTERED on reload, and nothing re-activates it.
-                    # Unknown/legacy records (no "status" key, from before
-                    # this field existed) are left at the fresh default
-                    # rather than guessed.
-                    persisted_status = actor_data.get("status")
-                    if persisted_status:
-                        from src.monkey_brain.kernel.society.domain import ActorStatus
-                        state = target_sr.get_actor(profile.identity.actor_id)
-                        if state:
-                            try:
-                                state.status = ActorStatus(persisted_status)
-                            except ValueError:
-                                logger.debug("Unknown persisted actor status %r for %s", persisted_status, profile.identity.actor_id)
-
-                    restored_state = target_sr.get_actor(profile.identity.actor_id)
-                    restored_runtime = restored_state.actor_runtime if restored_state else None
-                    restored_affiliations = getattr(restored_runtime, "affiliations", None)
-                    if actor_data.get("affiliations") and restored_affiliations is not None:
-                        from src.monkey_brain.kernel.affiliations.manager import AffiliationManager
-                        restored = AffiliationManager.from_dict(actor_data["affiliations"])
-                        for aff in restored.all():
-                            restored_affiliations.add(aff)
-                        for target, level in restored.trust_engine.all_trust("self").items():
-                            restored_affiliations.trust_engine.set_trust("self", target, level)
-                
                 logger.info("Actors loaded: %d, skipped (already exist): %d", loaded, skipped)
         except Exception as exc:
             logger.warning("Actors load failed: %s", exc)

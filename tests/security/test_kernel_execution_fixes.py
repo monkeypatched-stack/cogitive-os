@@ -153,15 +153,19 @@ def test_normal_capability_still_completes_through_the_duck_typed_bus():
     g.add_node(GraphNode(id="n1", label="ok", type="step", props={"capability": "ok"}))
     asyncio.run(GraphScheduler(bus=bus).run(g))
 
-    assert bus.calls == [("ok", {})]                    # still called positionally
+    # step_bus_args (pipeline/graph_execution.py) now builds a richer
+    # {action, parameters, context} dict instead of bare kwargs -- still
+    # positional (capability_name, args), which is the actual contract
+    # this test guards.
+    assert bus.calls == [("ok", {"action": "ok", "parameters": {}, "context": {}})]
     assert g.get_state("n1") == NodeState.COMPLETE
 
 
 # ── K-7: unbounded growth ────────────────────────────────────────────────────────
 
 def test_compliance_results_are_bounded_but_totals_stay_accurate():
-    from src.monkey_brain.kernel.compliance import ComplianceEngine
-    eng = ComplianceEngine(max_results=100)
+    from src.monkey_brain.kernel.compliance import RegulatoryComplianceEngine
+    eng = RegulatoryComplianceEngine(max_results=100)
     for _ in range(200):
         eng.check("read_data", {"purpose": "x"})
     assert len(eng._results) <= 100                     # retention bounded

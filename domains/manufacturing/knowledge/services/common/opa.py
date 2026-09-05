@@ -66,12 +66,19 @@ except ImportError:
                     if isinstance(result, bool):
                         return {"allowed": result, "obligations": [], "source": "opa"}
                     if isinstance(result, dict):
-                        return {
+                        out = {
                             "allowed": bool(result.get("allow", default_allow)),
                             "obligations": result.get("obligations", []),
                             "reason": result.get("deny_reason", ""),
                             "source": "opa",
                         }
+                        # Runtime Approval Gate: mirror opa_client.py's
+                        # pass-through of the policy's own approval-mode/
+                        # risk fields when present -- purely additive.
+                        for key in ("approval_mode", "risk_level", "policy_rule", "requires_hitl"):
+                            if key in result:
+                                out[key] = result[key]
+                        return out
                 else:
                     logger.warning(
                         "OPA returned %d for %s — configured-but-unavailable, defaulting to allow=%s",
@@ -147,7 +154,15 @@ def require_opa(policy_path: str, *, action: str = "", resource: str = ""):
             "action": action,
             "resource": resource,
         }
-        allowed = await evaluate(policy_path, input_data)
+        # default_allow=True must be explicit here: this function's own
+        # docstring promises "falls back to allow only when OPA is not
+        # configured" (OPA_URL unset), but evaluate()'s own default for
+        # default_allow differs between backends -- False on the cerebellum
+        # implementation (used whenever that package is importable) vs True
+        # on this module's inline fallback -- so omitting it silently denied
+        # every request through an unconfigured OPA whenever cerebellum
+        # happened to be installed.
+        allowed = await evaluate(policy_path, input_data, default_allow=True)
         if not allowed:
             logger.warning(
                 "OPA denied: policy=%s principal=%s action=%s",

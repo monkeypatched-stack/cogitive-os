@@ -139,8 +139,13 @@ class TestHumanApprovalRequiredFlow:
         reset_operation_ledger_for_tests()
 
     @pytest.mark.asyncio
-    async def test_human_approval_required_raises_exception(self):
+    async def test_human_approval_required_raises_exception(self, monkeypatch):
         """HUMAN_APPROVAL_REQUIRED should raise HumanApprovalRequired."""
+        # OPA_REQUIRED=true forces require_opa() to honor OPA even under
+        # insecure-dev (production_gates.py) -- without it, _authorize()
+        # below is never even called (a documented, separate insecure-dev
+        # relaxation), so mocking it would silently prove nothing.
+        monkeypatch.setenv("OPA_REQUIRED", "true")
         operation_id = new_operation_id()
 
         async def mutate():
@@ -174,8 +179,9 @@ class TestHumanApprovalRequiredFlow:
         assert exc_info.value.approval_id is not None
 
     @pytest.mark.asyncio
-    async def test_human_approval_required_creates_artifact(self):
+    async def test_human_approval_required_creates_artifact(self, monkeypatch):
         """HUMAN_APPROVAL_REQUIRED should create approval artifact."""
+        monkeypatch.setenv("OPA_REQUIRED", "true")
         operation_id = new_operation_id()
 
         async def mutate():
@@ -215,8 +221,9 @@ class TestHumanApprovalRequiredFlow:
         assert artifact.approval_source == ApprovalSource.POLICY_AUTOMATIC
 
     @pytest.mark.asyncio
-    async def test_human_approval_required_queues_operation(self):
+    async def test_human_approval_required_queues_operation(self, monkeypatch):
         """HUMAN_APPROVAL_REQUIRED should transition to AWAITING_APPROVAL."""
+        monkeypatch.setenv("OPA_REQUIRED", "true")
         operation_id = new_operation_id()
 
         async def mutate():
@@ -265,8 +272,9 @@ class TestDenyFlow:
         reset_operation_ledger_for_tests()
 
     @pytest.mark.asyncio
-    async def test_deny_raises_security_boundary_denied(self):
+    async def test_deny_raises_security_boundary_denied(self, monkeypatch):
         """DENY should raise SecurityBoundaryDenied."""
+        monkeypatch.setenv("OPA_REQUIRED", "true")
         operation_id = new_operation_id()
         mutation_called = False
 
@@ -302,8 +310,9 @@ class TestDenyFlow:
         assert "denied by policy" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_deny_creates_artifact_for_audit(self):
+    async def test_deny_creates_artifact_for_audit(self, monkeypatch):
         """DENY should still create artifact for audit trail."""
+        monkeypatch.setenv("OPA_REQUIRED", "true")
         operation_id = new_operation_id()
 
         async def mutate():

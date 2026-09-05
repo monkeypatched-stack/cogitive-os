@@ -577,7 +577,9 @@ def _build_app() -> Any:
         from src.monkey_brain.api.internal_auth import require_internal_service_token
         from src.monkey_brain.api.routes.actors import run_actor_tick
         from src.monkey_brain.kernel.security_boundary import ensure_governed
-        from src.monkey_brain.kernel.trusted_auth import bind_trusted_auth, evidence_for_service
+        from src.monkey_brain.kernel.trusted_auth import (
+            bind_trusted_auth, evidence_for_service, evidence_from_spiffe, unauthenticated_evidence,
+        )
 
         require_internal_service_token(request)
 
@@ -589,7 +591,36 @@ def _build_app() -> Any:
         state = pr._society_runtime.get_actor(actor_id)
         if state is None:
             raise HTTPException(status_code=404, detail=f"Actor {actor_id} not resident on this Pod")
-        bind_trusted_auth(evidence_for_service(f"actor-runtime:{actor_id}"))
+
+        # SPIFFE/SPIRE workload identity layer: this is the real
+        # network-crossing agent-to-agent path (a cross-Pod HTTP call
+        # proxied from api/routes/actors.py::_proxy_execute_to_actor_pod)
+        # -- require_internal_service_token above is a shared-secret
+        # header, not per-workload cryptographic identity. Prefer a real
+        # verified SPIFFE identity for the responding actor; only when
+        # none is available (SPIRE not deployed) does this fall back to
+        # the plain service-name evidence already established, and never
+        # in production / when explicitly required (Non-negotiable #12:
+        # unknown/unauthenticated workload identity must not communicate
+        # in production).
+        from src.monkey_brain.kernel.workload_identity import get_workload_identity_provider
+        from src.monkey_brain.kernel.production_gates import production_mode_enabled
+        import os as _os
+
+        identity = await get_workload_identity_provider().get_current_identity()
+        if identity is not None:
+            bind_trusted_auth(evidence_from_spiffe(identity))
+        elif production_mode_enabled() or _os.getenv(
+            "COGNITIVEOS_REQUIRE_SPIFFE_AGENT_IDENTITY", "",
+        ).strip().lower() in ("true", "1", "yes", "on"):
+            bind_trusted_auth(unauthenticated_evidence())
+            raise HTTPException(
+                status_code=403,
+                detail="unauthenticated agent communication refused: no verified workload identity",
+            )
+        else:
+            bind_trusted_auth(evidence_for_service(f"actor-runtime:{actor_id}"))
+
         return await ensure_governed(
             "actor.tick",
             actor_id,

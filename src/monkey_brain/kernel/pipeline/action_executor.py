@@ -133,6 +133,22 @@ class ActionExecutor:
         async def _run() -> ExecutionResult:
             return await self._execute_actions(actions, context, execution_graph=execution_graph)
 
+        # NOT threading actions[0].correlation_id (execution_id) through as
+        # operation_id here, despite it being the stable per-tick id: a
+        # RESUMED execution (meta.resume_execution_id) deliberately reuses
+        # that SAME execution_id and re-enters this exact execute() method
+        # again, but SecurityOperation's ledger.create() (inside
+        # run_governed_mutation) unconditionally rejects a repeated
+        # operation_id with DuplicateSecurityOperation -- attempt #2+ of
+        # the SAME operation_id is only ever sanctioned through
+        # retry_execution_attempt(), which nothing here calls. Confirmed
+        # live: threading execution_id in broke every resume/restart
+        # scenario test (test_checkpoint_restart.py, test_human_approval.py,
+        # test_compound_disruption.py) with "duplicate operation". Making
+        # this batch-level call correctly idempotent across resumes would
+        # mean this method detecting "operation_id already exists in the
+        # ledger" and switching to retry_execution_attempt() itself --
+        # a commitment/reconciliation-semantics change, out of scope here.
         return await ensure_governed(
             "action_executor.execute",
             "actions",
@@ -1032,9 +1048,76 @@ class ActionExecutor:
                     return await capability.handle(handle_args)
                 return capability.handle(handle_args)
 
-            try:
-                result = await asyncio.wait_for(
+            # Live Capability Governance Closure: this call used to reach
+            # capability.handle() directly -- the SAME per-capability
+            # canonical boundary kernel/execute/capability_bus.py::
+            # CapabilityBus.execute() already wraps every one of ITS
+            # dispatches in (ensure_governed(f"capability.{name}", ...))
+            # was never actually on THIS path, because the real grocery/
+            # plan-execution flow goes through this class's direct
+            # discover()+handle() instead of that other CapabilityBus.
+            # Reusing the EXACT same action-naming convention here (not
+            # inventing a second one) so both dispatch paths produce
+            # identical OPA input shapes for the same capability. `extra`
+            # carries the actual capability/parameters being requested
+            # (Section 5: OPA evaluates THIS specific operation+scope, not
+            # just "agent may execute") -- strip_untrusted_security_signals
+            # (already invoked inside build_opa_input) drops any
+            # agent-shaped security-signal keys from it before OPA sees it.
+            #
+            # operation_id deliberately NOT threaded here (left at
+            # ensure_governed's default, a fresh id per call): an action
+            # already fully completed on a prior attempt is intercepted
+            # earlier by the dispatch-cache/checkpoint replay above and
+            # never reaches this line again -- threading action.action_id
+            # into SecurityOperation's ledger here would only matter for a
+            # within-attempt retry of one action, which is exactly the
+            # commitment/retry-semantics territory this task is explicitly
+            # scoped OUT of touching (confirmed risk from prior session
+            # work: a stable operation_id reused within an active
+            # commitment collides with SecurityOperation.create()'s
+            # duplicate-operation check).
+            from src.monkey_brain.kernel.security_boundary import (
+                HumanApprovalRequired, SecurityBoundaryDenied, ensure_governed,
+            )
+
+            async def _governed_invoke() -> Any:
+                return await asyncio.wait_for(
                     _invoke_handle(), timeout=_CAPABILITY_TIMEOUT_SECONDS,
+                )
+
+            # Portable Delegation integration point: a caller that has
+            # ALREADY run kernel/delegation.py::verify_delegation_chain
+            # (today: nothing does this automatically -- agent-to-agent
+            # message handling in kernel/domains/grocery.py does not yet
+            # extract+verify a delegation off an inbound message; this is
+            # the seam a future such integration plugs into) may stash the
+            # verified result via kernel/delegation.py::
+            # to_opa_delegation_context under context["verified_delegation"].
+            # Never read a caller-supplied "delegation" claim from
+            # action.parameters -- that would be exactly the self-asserted-
+            # authority path Section 21 forbids; this dict must already be
+            # the output of a verified chain, not agent-claimed content.
+            verified_delegation = (
+                context.get("verified_delegation") if isinstance(context, dict) else None
+            )
+
+            try:
+                result = await ensure_governed(
+                    f"capability.{action.capability}",
+                    action.capability,
+                    _governed_invoke,
+                    extra={"capability": action.capability, "parameters": action.parameters},
+                    # execute()'s own outer ensure_governed("action_executor.
+                    # execute", "actions", ...) call above already has
+                    # commitment active by the time every _execute_action
+                    # reaches this line -- without force_authorize=True this
+                    # call would silently no-op straight to capability.handle()
+                    # (see ensure_governed's/run_governed_mutation's own
+                    # docstrings for exactly why nesting normally does that,
+                    # and why this specific nesting needs to opt out of it).
+                    force_authorize=True,
+                    verified_delegation=verified_delegation,
                 )
             except asyncio.TimeoutError:
                 latency = (time.time() - start_time) * 1000
@@ -1044,6 +1127,50 @@ class ActionExecutor:
                     error=f"Timeout: {action.capability} — exceeded {_CAPABILITY_TIMEOUT_SECONDS:.0f}s deadline",
                     latency_ms=round(latency, 2),
                     result={"timeout": True, "capability": action.capability},
+                ))
+            except HumanApprovalRequired as exc:
+                # Governance decided this specific capability call requires
+                # a human decision -- capability.handle() above never ran.
+                # A clean ActionOutcome, not a raised exception escaping
+                # this action, so independent sibling actions in the same
+                # batch still get their own chance to run (the SAME "one
+                # step pauses, unrelated steps still complete" contract the
+                # existing capability-driven requires_approval convention
+                # -- OrderConfirmationCapability et al. -- already
+                # establishes; this is a second, policy-driven SOURCE of
+                # that same pause, not a second pause mechanism).
+                latency = (time.time() - start_time) * 1000
+                logger.warning(
+                    "[executor] capability %s requires human approval (approval_id=%s)",
+                    action.capability, exc.approval_id,
+                )
+                return _done(ActionOutcome(
+                    action_id=action.action_id,
+                    success=False,
+                    error=f"human approval required for {action.capability}",
+                    latency_ms=round(latency, 2),
+                    result={
+                        "requires_approval": True,
+                        "capability": action.capability,
+                        "approval_id": exc.approval_id,
+                        "operation_id": exc.operation_id,
+                    },
+                ))
+            except SecurityBoundaryDenied as exc:
+                # DENY, or a fail-closed AUTH/IDEMPOTENCY/AUDIT failure --
+                # capability.handle() above never ran either way. Same
+                # "clean outcome, not a crash" shape as the approval case.
+                latency = (time.time() - start_time) * 1000
+                logger.warning(
+                    "[executor] capability %s denied by governance: %s",
+                    action.capability, exc,
+                )
+                return _done(ActionOutcome(
+                    action_id=action.action_id,
+                    success=False,
+                    error=f"governance denied {action.capability}: {exc}",
+                    latency_ms=round(latency, 2),
+                    result={"denied": True, "capability": action.capability, "stage": getattr(exc, "stage", "")},
                 ))
 
             latency = (time.time() - start_time) * 1000
