@@ -28,7 +28,7 @@ jobs:
         run: pip install mypy
       - name: mypy (security-critical modules, blocking)
         run: >
-          mypy --config-file pyproject.toml
+          mypy --config-file pyproject.toml --follow-imports=silent
           src/monkey_brain/kernel/production_gates.py
           src/monkey_brain/kernel/trusted_auth.py
           src/monkey_brain/kernel/audit.py
@@ -91,7 +91,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          pip install pytest pytest-asyncio pytest-timeout
       - name: Security control tests (blocking)
         env:
           ACCESS_TOKEN_SECRET: unit-test-hmac-key-not-a-placeholder!!

@@ -161,7 +161,7 @@ class AuditLog:
         self._last_hash: str = ""
         self._lock = threading.Lock()
         self._max = max_entries
-        self._store = None  # AppendOnlyLog for durability (optional)
+        self._store: Any = None  # AppendOnlyLog for durability (optional)
 
     def set_store(self, store: Any) -> None:
         """Attach an AppendOnlyLog for durable persistence."""

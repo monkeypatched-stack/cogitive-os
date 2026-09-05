@@ -125,9 +125,16 @@ select = ["E9"]
 [tool.mypy]
 python_version = "3.11"
 explicit_package_bases = true
-mypy_path = "src"
 namespace_packages = true
 ignore_missing_imports = true
+# mypy_path = "src" removed: combined with CI passing file arguments as
+# src/monkey_brain/..., mypy resolved the identical file under two module
+# names ("monkey_brain.kernel.X" via mypy_path search, "src.monkey_brain.
+# kernel.X" via explicit_package_bases from the repo root) and refused to
+# proceed ("Source file found twice under different module names"). Every
+# import in this codebase already uses the "src.monkey_brain...." form
+# (never bare "monkey_brain...."), so explicit_package_bases alone
+# resolves everything mypy_path was for, without the ambiguity.
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
