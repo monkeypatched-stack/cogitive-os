@@ -48,7 +48,9 @@ Diagrams use [Mermaid](https://mermaid.js.org/). Syntax targets **GitHub's rende
 17. [Sequence: cogctl apply](#17-sequence-cogctl-apply)
 18. [Actor lifecycle states](#18-actor-lifecycle-states)
 19. [SittingFace knowledge retrieval](#19-sittingface-knowledge-retrieval)
-20. [Geography vs Society](#geography-vs-society-structural-axes)
+20. [Runtime governance pipeline](#20-runtime-governance-pipeline-ensure_governed)
+21. [Portable delegation and attenuation](#21-portable-delegation-and-attenuation)
+22. [Geography vs Society](#geography-vs-society-structural-axes)
 
 ---
 
@@ -174,7 +176,7 @@ the KnowledgeGraph or replace authoritative world state.
 flowchart TB
     Actor["ACTOR"]
     Bus["SOCIETY BUS NATS and Redis inbox"]
-    Cap["GOVERNED CAPABILITY"]
+    Cap["GOVERNED CAPABILITY via ensure_governed see section 20"]
     Soc["SOCIETY"]
     CCE["ContextConstructionEngine"]
     SF["SittingFace charts read-only"]
@@ -192,6 +194,12 @@ flowchart TB
     Cap --> WAPI
     WAPI --> Reality
 ```
+
+Every arrow into `WORLD API and KnowledgeGraph` from a capability now passes
+through the canonical governance boundary (`ensure_governed`,
+`kernel/security_boundary.py`) rather than calling `capability.handle()`
+directly — see section 20 for the pipeline itself, and section 21 for how a
+delegated (not the caller's own) authority is verified before it reaches OPA.
 
 ---
 
@@ -558,11 +566,12 @@ sequenceDiagram
     Cog->>Pipe: predict and decide
     Note over Pipe: TransitionModel gate
 
-    Pipe->>KG: ProductSelection
-    Pipe->>KG: OrderCreation
-    Pipe->>KG: PaymentConfirmation
-    Pipe->>KG: Payment
-    Pipe->>KG: OrderConfirmation
+    loop each ActionExecutor step
+        Pipe->>Pipe: ensure_governed force_authorize true
+        Note over Pipe: AUTH AUTHZ OPA APPROVAL see section 20
+        Pipe->>KG: capability handle
+    end
+    Note over Pipe: HouseholdCognition ProductSelection OrderCreation PaymentConfirmation Payment OrderConfirmation Delivery
 
     Note over Pipe: compare learn commit
     Cog-->>SR: tick result
@@ -572,7 +581,15 @@ sequenceDiagram
     API-->>Client: PromptResponse
 ```
 
-**Local demo:** `scripts/run_clean_grocery_pass.py`
+Confirmed live end to end as Priya Sharma buying 1 liter of milk (7 of 7 steps,
+goal achieved): `HouseholdCognition` (pantry check) to `ProductSelection` to
+`OrderCreation` to `PaymentConfirmation` to `Payment` (debit wallet) to
+`OrderConfirmation` to `Delivery` (rider assignment). Each step above is
+individually authorized — a DENY or HUMAN_APPROVAL_REQUIRED on any one step
+stops only that step with a clean failure result; sibling steps in the same
+batch still run.
+
+**Local demo:** `scripts/run_clean_grocery_pass.py`, `scripts/seed_world.py demo`
 
 ---
 
@@ -904,6 +921,108 @@ See [`SITTINGFACE_KNOWLEDGE_RETRIEVAL.md`](SITTINGFACE_KNOWLEDGE_RETRIEVAL.md) f
 
 ---
 
+## 20. Runtime governance pipeline (ensure_governed)
+
+The canonical boundary every capability call and mutating operation goes
+through (`kernel/security_boundary.py::ensure_governed`). `ActionExecutor`
+(the real grocery and plan execution engine) calls this per capability with
+`force_authorize=true`, so a batch-level commitment further up the call stack
+never silently skips a specific capability's own authorization — a real gap
+this closed (Live Capability Governance Closure): the execution path
+previously reached `capability.handle()` directly, bypassing OPA entirely.
+
+```mermaid
+flowchart TD
+    Start["capability request action resource extra"] --> Auth["AUTH TrustedAuthEvidence valid MFA satisfied"]
+    Auth -->|fail closed| DenyAuth["SecurityBoundaryDenied stage AUTH"]
+    Auth --> Authz["AUTHZ OPA evaluate build_opa_input"]
+    Note1["OPA input carries auth delegation see section 21 capability parameters. Agent supplied claims for these keys are stripped before this point"]
+    Authz -.-> Note1
+    Authz -->|unreachable or errors| DenyAuthz["fail closed DENY not silently allow"]
+    Authz --> Artifact["APPROVAL_ARTIFACT_CREATED ApprovalMode from policy"]
+    Artifact --> Mode{approval mode}
+    Mode -->|DENY| DenyMode["SecurityBoundaryDenied stage APPROVAL clean ActionOutcome"]
+    Mode -->|HUMAN_APPROVAL_REQUIRED| Human["HumanApprovalRequired approval_id returned no capability call"]
+    Mode -->|AUTO_APPROVE| Idem["IDEMPOTENCY SecurityOperation ledger dedupe by operation_id"]
+    Idem --> Intent["AUDIT_INTENT durable fail closed on persist error"]
+    Intent --> Validated["APPROVAL_VALIDATED re-check immediately before effect"]
+    Validated --> Mutation["MUTATION capability handle"]
+    Mutation --> Result["AUDIT_RESULT durable"]
+    Result --> Done["clean ActionOutcome success true"]
+```
+
+Sibling steps in the same batch are unaffected by one step's DENY or
+HUMAN_APPROVAL_REQUIRED — each capability call is its own governed decision,
+not a single all-or-nothing gate over the whole plan.
+
+A delegation is never itself an approval. `verified_delegation` (section 21)
+only narrows what OPA is allowed to evaluate as "requested"; the
+AUTO_APPROVE / HUMAN_APPROVAL_REQUIRED / DENY decision above remains
+exclusively OPA's and GovernanceEngine's.
+
+Negative-path tests exercising the real (non-mocked) `ActionExecutor` against
+this exact pipeline: `tests/security/test_live_capability_governance_closure.py`.
+
+---
+
+## 21. Portable delegation and attenuation
+
+Cryptographically verifiable, attenuable, chainable transfer of bounded
+authority between authenticated agents — independent of ApprovalArtifact
+(a delegation never itself constitutes human approval) and independent of
+transferring any identity or private key material.
+
+```mermaid
+flowchart LR
+    A["Agent A issuer authenticated"] -->|issues D1 grocery.purchase max 10000| B["Agent B delegate of D1 issuer of D2"]
+    B -->|attenuates issues D2 grocery.purchase max 5000| C["Agent C delegate of D2"]
+    C -->|presents chain D1 D2| Verify["verify_delegation_chain proof attenuation expiry revocation audience"]
+    Verify --> OPAG["OPA delegation capability check section 20 AUTHZ"]
+    OPAG --> Exec["Execution Governance capability handle"]
+```
+
+Invariant enforced at every hop: `Authority(D2) subset of Authority(D1)` —
+capabilities, scope, and constraints only ever narrow going down a chain,
+and a child can never outlive its parent. `issuer == delegate` (self
+delegation) is rejected at construction; capabilities matching human
+approval, MFA, or operator identity can never be delegated by an agent,
+regardless of what the issuing agent claims to hold.
+
+**Proof mechanism:** Ed25519 via `kernel/identity.py`'s existing
+`KeyManager`/`sign_bytes`/`verify_bytes` — the same primitive this codebase
+already uses to sign proposals, checkpoints, and execution graphs. Not
+`sign_payload`/`verify_signed_payload` (those bundle a nonce and timestamp
+for single-use anti-replay envelopes; a delegation is reusable authority,
+not a one-shot token). Signed fields cover every security-relevant column
+(`delegation_id`, `issuer`, `delegate`, `parent_delegation_id`, `scope`,
+`capabilities`, `constraints`, `issued_at`, `expires_at`, `audience`,
+`delegation_depth`) — altering any one after issuance invalidates the proof.
+
+**Where it plugs into the runtime governance pipeline (section 20):** a
+verified chain's leaf becomes `build_opa_input`'s `verified_delegation`
+parameter — the same trusted-only injection pattern already used for
+`recipient_spiffe_id` — never populated from agent-supplied `extra`.
+`ActionExecutor` reads a pre-verified delegation off
+`context["verified_delegation"]` when present and threads it through
+`ensure_governed`; nothing today automatically extracts and verifies a
+delegation off a live inbound agent-to-agent message, so this is the
+integration point a future message-handling change plugs into, not
+something the agent communication layer does on its own yet.
+
+**Revoking a parent invalidates every descendant:** `DelegationStore`
+tracks parent/child links and cascades `revoke()` down the chain; a
+verifier also independently re-checks every ancestor's own
+expiry/revocation on each use, so a descendant is never trusted purely
+because it was valid once.
+
+Core module: `kernel/delegation.py`. Security invariant tests (forged
+delegation, wrong delegate, privilege/capability/constraint escalation,
+broken chain, excessive depth, self-delegation, SPIFFE identity mismatch,
+OPA unavailable, delegation reaching real capability execution):
+`tests/security/test_portable_delegation.py`.
+
+---
+
 ## Geography vs Society (structural axes)
 
 ```mermaid
@@ -929,9 +1048,17 @@ flowchart LR
 
 | Layer | Mechanism | Question answered |
 |-------|-----------|-------------------|
-| Infrastructure authZ | OPA | Who can call which API route? |
-| In-world authority | TransitionGate and KG delegations | What may this actor do in the world? |
+| Workload identity | SPIFFE/SPIRE (`kernel/workload_identity.py`) | WHO is actually making this call? |
+| Portable delegation | `kernel/delegation.py` (section 21) | WHO GRANTED WHAT bounded authority TO WHOM? |
+| Infrastructure authZ | OPA (`kernel/governance.py`, section 20) | IS THIS SPECIFIC capability/action/resource ALLOWED right now? |
+| Human authorization | `ApprovalArtifact`/`ApprovalMode` (section 20) | Does THIS operation additionally require a human decision? |
+| Execution boundary | `ensure_governed` (section 20) | CAN the side effect actually happen — audited, idempotent? |
+| In-world authority | TransitionGate and KG delegations (`kernel/domains/domain_security.py`) | Domain-specific (e.g. household grocery) grant, unrelated to the above |
 | External reference | SittingFace charts and knowledge packs | What documented facts inform the LLM prompt? |
 
 Kubernetes RBAC is not a substitute for in-world actor authority.
 SittingFace knowledge informs reasoning but does not mutate authoritative world state.
+SPIFFE proves identity; delegation proves granted authority; OPA decides if
+it's allowed now; approval decides if a human must additionally sign off;
+execution governance decides if the side effect may proceed. Each stays a
+separate responsibility — none of them substitutes for another.
