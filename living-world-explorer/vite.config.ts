@@ -72,7 +72,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_PROXY || 'http://localhost:8000',
+        target: process.env.VITE_API_PROXY || 'http://localhost:8031',
         changeOrigin: true,
         ws: true,
         // Confirmed live: restarting the backend mid-session (a routine
@@ -91,9 +91,9 @@ export default defineConfig({
       },
       // Root-level health endpoints (src/monkey_brain/api/main.py) live
       // outside the /api/v1/agentos prefix.
-      '/live': process.env.VITE_API_PROXY || 'http://localhost:8000',
-      '/health': process.env.VITE_API_PROXY || 'http://localhost:8000',
-      '/ready': process.env.VITE_API_PROXY || 'http://localhost:8000',
+      '/live': process.env.VITE_API_PROXY || 'http://localhost:8031',
+      '/health': process.env.VITE_API_PROXY || 'http://localhost:8031',
+      '/ready': process.env.VITE_API_PROXY || 'http://localhost:8031',
     },
   },
 })
